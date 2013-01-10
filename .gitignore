@@ -1,0 +1,18 @@
+# System caches
+.DS_Store
+Thumbs.db
+
+# Application runtime
+static/
+*.egg-info/
+*.sqlite
+*.pyc
+*.log
+
+# IDE stuff
+fanboi2.iml
+.idea
+
+# Testing leftovers
+.coverage
+.noseids
