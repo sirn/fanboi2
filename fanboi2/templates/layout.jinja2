@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fanboi Channel</title>
+  <link rel="stylesheet" href="{{ request.static_url('fanboi2:static/stylesheets/main.css') }}">
+  <meta charset="utf-8">
+</head>
+<body>
+<header id="header">
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="brand" href="{{ request.resource_url(None) }}">Fanboi Channel</a>
+        <ul class="nav">
+          <li><a href="{{ request.resource_url(None) }}">Home</a></li>
+          {% if boards %}
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Boards <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              {% for board in boards %}
+                <li class="board"><a href="{{ request.resource_url(board) }}">{{ board.obj.title }}</a></li>
+              {% endfor %}
+            </ul>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>
+<section id="main">
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+</section>
+<footer id="footer">
+  <div class="container">
+    <p>All contents are responsibilty and copyright of its posters.</p>
+    <p>Fanboi2 is an open-source project. <a href="http://github.com/pxfs/fanboi2">Fork me</a>.</p>
+  </div>
+</footer>
+<script src="{{ request.static_url('fanboi2:static/javascripts/require.js') }}" type="text/javascript" data-main="{{ request.static_url('fanboi2:static/javascripts/main.js') }}"></script>
+</body>
+</html>

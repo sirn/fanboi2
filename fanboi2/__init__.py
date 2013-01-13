@@ -1,6 +1,9 @@
+import pyramid_jinja2
+import pyramid_zcml
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 from .models import DBSession, Base
+from .resources import RootFactory
 
 
 def main(global_config, **settings):
@@ -9,8 +12,9 @@ def main(global_config, **settings):
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
-    config = Configurator(settings=settings)
-    config.add_static_view('static', 'static', cache_max_age=3600)
-    config.add_route('index', '/')
+    config = Configurator(settings=settings, root_factory=RootFactory)
+    config.include(pyramid_jinja2)
+    config.include(pyramid_zcml)
+    config.load_zcml('routes.zcml')
     config.scan()
     return config.make_wsgi_app()

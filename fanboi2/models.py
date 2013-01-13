@@ -3,6 +3,7 @@ from sqlalchemy import func, Column, Integer, String, DateTime, Unicode,\
     ForeignKey
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
+from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
 from zope.sqlalchemy import ZopeTransactionExtension
 from .interfaces import IBoard, ITopic, IPost

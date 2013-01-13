@@ -1,7 +1,9 @@
-from pyramid.response import Response
-from pyramid.view import view_config
+def root_view(request):
+    boards = request.context.objs
+    return locals()
 
 
-@view_config(route_name='index')
-def index_view(request):
-    return Response("Hello, world!")
+def board_view(request):
+    boards = request.context.__parent__.objs
+    board = request.context
+    return locals()

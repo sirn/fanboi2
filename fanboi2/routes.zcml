@@ -1,0 +1,6 @@
+<configure xmlns="http://pylonshq.com/pyramid">
+  <include package="pyramid_zcml" />
+  <static name="static" path="static" cache_max_age="3600" />
+  <view view=".views.root_view" context=".resources.RootFactory" renderer="root.jinja2" />
+  <view view=".views.board_view" context=".interfaces.IBoard" renderer="board.jinja2" />
+</configure>

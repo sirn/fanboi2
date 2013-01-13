@@ -1,0 +1,8 @@
+{% extends "layout.jinja2" %}
+{% block content %}
+  {% for board in boards %}
+    <div class="block block-board" id="board_{{ board.obj.slug }}">
+      <h3><a href="{{ request.resource_url(board) }}">{{ board.obj.title }}</a></h3>
+    </div>
+  {% endfor %}
+{% endblock %}

@@ -12,6 +12,8 @@ requires = [
     'transaction',
     'pyramid_tm',
     'pyramid_debugtoolbar',
+    'pyramid_zcml',
+    'pyramid_jinja2',
     'zope.sqlalchemy',
     'waitress',
     'alembic',
@@ -41,5 +43,7 @@ setup(name='fanboi2',
       entry_points="""\
       [paste.app_factory]
       main = fanboi2:main
+      [console_scripts]
+      fb2_create_board = fanboi2.scripts.create_board:main
       """,
       )
