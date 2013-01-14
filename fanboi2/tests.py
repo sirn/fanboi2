@@ -76,7 +76,7 @@ class BoardModelTest(ModelMixin, unittest.TestCase):
 
     def test_relations(self):
         board = self._makeOne(title=u"Foobar", slug="foo")
-        self.assertListEqual(board.topics, [])
+        self.assertItemsEqual([], board.topics)
 
 
 class TopicModelTest(ModelMixin, unittest.TestCase):
@@ -108,8 +108,8 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         board = self._makeBoard(title=u"Foobar", slug="foo")
         topic = self._makeOne(board=board, topic=u"Lorem ipsum dolor")
         self.assertEqual(topic.board, board)
-        self.assertListEqual(topic.posts, [])
-        self.assertListEqual(board.topics, [topic])
+        self.assertItemsEqual([], topic.posts)
+        self.assertItemsEqual([topic], board.topics)
 
 
 class PostModelTest(ModelMixin, unittest.TestCase):
@@ -150,4 +150,88 @@ class PostModelTest(ModelMixin, unittest.TestCase):
         topic = self._makeTopic(board=board, topic=u"Lorem ipsum dolor sit")
         post = self._makeOne(topic=topic, body=u"Hello, world")
         self.assertEqual(post.topic, topic)
-        self.assertListEqual(topic.posts, [post])
+        self.assertItemsEqual([post], topic.posts)
+
+
+class RootFactoryTest(ModelMixin, unittest.TestCase):
+
+    def _getTargetClass(self):
+        from fanboi2.resources import RootFactory
+        return RootFactory
+
+    def _makeBoard(self, *args, **kwargs):
+        from fanboi2.models import Board
+        board = Board(*args, **kwargs)
+        DBSession.add(board)
+        DBSession.flush()
+        return board
+
+    def test_properties(self):
+        root = self._getTargetClass()({})
+        self.assertIsNone(root.__parent__)
+        self.assertIsNone(root.__name__)
+
+    def test_list_boards(self):
+        board1 = self._makeBoard(title=u"Foobar", slug="foobar")
+        board2 = self._makeBoard(title=u"Lorem", slug="lorem")
+        board3 = self._makeBoard(title=u"Amplifier", slug="amplifier")
+        root = self._getTargetClass()({})
+        self.assertEqual(root.objs[0].__parent__, root)
+        self.assertEqual(root.objs[0].__name__, "amplifier")
+        self.assertItemsEqual([board3, board1, board2],
+                              (b.obj for b in root.objs))
+
+    def test_get_board(self):
+        board = self._makeBoard(title=u"Foobar", slug="foobar")
+        root = self._getTargetClass()({})
+        self.assertEqual(root['foobar'].__parent__, root)
+        self.assertEqual(root['foobar'].__name__, 'foobar')
+        self.assertEqual(root['foobar'].obj, board)
+
+    def test_get_board_nonexists(self):
+        root = self._getTargetClass()({})
+        with self.assertRaises(KeyError):
+            assert not root["nonexists"]
+
+
+class BoardContainerTest(ModelMixin, unittest.TestCase):
+
+    def _getTargetClass(self):
+        from fanboi2.resources import BoardContainer
+        return BoardContainer
+
+    def _makeTopic(self, *args, **kwargs):
+        from fanboi2.models import Topic
+        topic = Topic(*args, **kwargs)
+        DBSession.add(topic)
+        DBSession.flush()
+        return topic
+
+    def _makeOne(self, *args, **kwargs):
+        from fanboi2.models import Board
+        board = Board(*args, **kwargs)
+        DBSession.add(board)
+        DBSession.flush()
+        return board
+
+    def test_objs(self):
+        board = self._makeOne(title=u"General", slug="general")
+        topic1 = self._makeTopic(board=board, topic=u"Lorem ipsum dolor sit")
+        topic2 = self._makeTopic(board=board, topic=u"Hello, world")
+        container = self._getTargetClass()({}, board)
+        self.assertItemsEqual([topic1, topic2],
+                              (t.obj for t in container.objs))
+
+    def test_getitem(self):
+        board = self._makeOne(title=u"General", slug="general")
+        topic1 = self._makeTopic(board=board, topic=u"Lorem ipsum dolor sit")
+        topic2 = self._makeTopic(board=board, topic=u"Hello, world")
+        container = self._getTargetClass()({}, board)
+        self.assertEqual(container[topic1.id].obj, topic1)
+        self.assertEqual(container[topic2.id].obj, topic2)
+
+    def test_getitem_notfound(self):
+        board = self._makeOne(title=u"General", slug="general")
+        container = self._getTargetClass()({}, board)
+        with self.assertRaises(KeyError):
+            assert not container[123456]  # Non-exists.

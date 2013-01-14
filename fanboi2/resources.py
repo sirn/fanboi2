@@ -1,6 +1,6 @@
 from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
-from .interfaces import IBoard
+from .interfaces import IBoard, ITopic
 from .models import DBSession, Board
 
 
@@ -39,3 +39,32 @@ class BoardContainer(object):
     def __init__(self, request, board):
         self.request = request
         self.obj = board
+        self._objs = None
+
+    @property
+    def objs(self):
+        if self._objs is None:
+            self._objs = []
+            for obj in self.obj.topics:
+                topic = TopicContainer(self.request, obj)
+                topic.__parent__ = self
+                topic.__name__ = obj.id
+                self._objs.append(topic)
+        return self._objs
+
+    def __getitem__(self, item):
+        try:
+            obj = self.obj.topics.filter_by(id=item).one()
+        except NoResultFound:
+            raise KeyError
+        topic = TopicContainer(self.request, obj)
+        topic.__parent__ = self
+        topic.__name__ = item
+        return topic
+
+
+@implementer(ITopic)
+class TopicContainer(object):
+    def __init__(self, request, topic):
+        self.request = request
+        self.obj = topic
