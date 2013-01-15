@@ -15,7 +15,7 @@
           <li><a href="{{ request.resource_url(None) }}">Home</a></li>
           {% if boards %}
           <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Boards <b class="caret"></b></a>
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% if board %}{{ board.obj.title }}{% else %}Boards{% endif %} <b class="caret"></b></a>
             <ul class="dropdown-menu">
               {% for board in boards %}
                 <li class="board"><a href="{{ request.resource_url(board) }}">{{ board.obj.title }}</a></li>
@@ -30,12 +30,13 @@
 </header>
 <section id="main">
   <div class="container">
+    {% block leader %}{% endblock %}
     {% block content %}{% endblock %}
   </div>
 </section>
 <footer id="footer">
   <div class="container">
-    <p>All contents are responsibilty and copyright of its posters.</p>
+    <p>All contents are responsibilty of its posters.</p>
     <p>Fanboi2 is an open-source project. <a href="http://github.com/pxfs/fanboi2">Fork me</a>.</p>
   </div>
 </footer>

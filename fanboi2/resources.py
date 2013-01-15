@@ -1,6 +1,7 @@
+from sqlalchemy.orm import undefer
 from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
-from .interfaces import IBoard, ITopic
+from .interfaces import IBoardResource, ITopicResource
 from .models import DBSession, Board
 
 
@@ -34,7 +35,7 @@ class RootFactory(object):
         return board
 
 
-@implementer(IBoard)
+@implementer(IBoardResource)
 class BoardContainer(object):
     def __init__(self, request, board):
         self.request = request
@@ -45,7 +46,8 @@ class BoardContainer(object):
     def objs(self):
         if self._objs is None:
             self._objs = []
-            for obj in self.obj.topics:
+            for obj in self.obj.topics.options(undefer('post_count'),
+                                               undefer('posted_at')):
                 topic = TopicContainer(self.request, obj)
                 topic.__parent__ = self
                 topic.__name__ = obj.id
@@ -54,8 +56,8 @@ class BoardContainer(object):
 
     def __getitem__(self, item):
         try:
-            obj = self.obj.topics.filter_by(id=item).one()
-        except NoResultFound:
+            obj = self.obj.topics.filter_by(id=int(item)).one()
+        except (ValueError, NoResultFound):
             raise KeyError
         topic = TopicContainer(self.request, obj)
         topic.__parent__ = self
@@ -63,7 +65,7 @@ class BoardContainer(object):
         return topic
 
 
-@implementer(ITopic)
+@implementer(ITopicResource)
 class TopicContainer(object):
     def __init__(self, request, topic):
         self.request = request

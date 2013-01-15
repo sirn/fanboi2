@@ -1,9 +1,9 @@
 import re
 from sqlalchemy import func, Column, Integer, String, DateTime, Unicode,\
-    ForeignKey
+    ForeignKey, select, desc
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import scoped_session, sessionmaker, relationship,\
+    backref, column_property
 from zope.interface import implementer
 from zope.sqlalchemy import ZopeTransactionExtension
 from .interfaces import IBoard, ITopic, IPost
@@ -41,12 +41,29 @@ class Board(BaseModel, Base):
 class Topic(BaseModel, Base):
     board_id = Column(Integer, ForeignKey('board.id'), nullable=False)
     topic = Column(Unicode(255), nullable=False)
-    board = relationship('Board', backref=backref('topics', lazy='dynamic'))
+    board = relationship('Board',
+                         backref=backref('topics',
+                                         lazy='dynamic',
+                                         order_by='desc(Topic.posted_at)'))
 
 
 @implementer(IPost)
 class Post(BaseModel, Base):
     topic_id = Column(Integer, ForeignKey('topic.id'), nullable=False)
     body = Column(Unicode, nullable=False)
-    topic = relationship('Topic', backref=backref('posts',
-                                                  order_by='Post.id'))
+    topic = relationship('Topic',
+                         backref=backref('posts',
+                                         order_by='Post.id'))
+
+Topic.post_count = column_property(
+    select([func.count(Post.id)]).where(Post.topic_id == Topic.id),
+    deferred=True,
+)
+
+Topic.posted_at = column_property(
+    select([Post.created_at]).
+        where(Post.topic_id == Topic.id).
+        order_by(desc(Post.created_at)).
+        limit(1),
+    deferred=True,
+)

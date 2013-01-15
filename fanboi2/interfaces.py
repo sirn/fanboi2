@@ -11,3 +11,15 @@ class ITopic(Interface):
 
 class IPost(Interface):
     pass
+
+
+class IBoardResource(Interface):
+    pass
+
+
+class ITopicResource(Interface):
+    pass
+
+
+class IPostResource(Interface):
+    pass

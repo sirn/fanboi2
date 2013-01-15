@@ -1,0 +1,28 @@
+{% extends "boards/layout.jinja2" %}
+
+{% block content %}
+  <table class="table table-bordered table-topics">
+    <thead>
+      <tr>
+        <th class="topic">Topic</th>
+        <th class="posts span2 hidden-phone">Posts</th>
+        <th class="commented span3 hidden-phone">Last commented</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for topic in board.objs %}
+        <tr>
+          <td class="topic"><a href="{{ request.resource_url(topic) }}">{{ topic.obj.topic }}</a></td>
+          <td class="posts hidden-phone">{{ topic.obj.post_count }} posts</td>
+          <td class="commented hidden-phone">{{ topic.obj.posted_at }}</td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="3">
+            No topics, be the first to <a href="{{ request.resource_url(board, "new") }}">post one</a>!
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

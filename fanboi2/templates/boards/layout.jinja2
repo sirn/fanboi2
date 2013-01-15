@@ -1,0 +1,13 @@
+{% extends "layout.jinja2" %}
+
+{% block leader %}
+  <h2>{{ board.obj.title }}</h2>
+  <div class="navbar">
+    <div class="navbar-inner">
+      <ul class="nav">
+        <li><a href="{{ request.resource_url(board) }}">All topics</a></li>
+        <li><a href="{{ request.resource_url(board, "new") }}">New topic</a></li>
+      </ul>
+    </div>
+  </div>
+{% endblock %}
