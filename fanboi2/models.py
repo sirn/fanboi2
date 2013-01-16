@@ -40,7 +40,7 @@ class Board(BaseModel, Base):
 @implementer(ITopic)
 class Topic(BaseModel, Base):
     board_id = Column(Integer, ForeignKey('board.id'), nullable=False)
-    topic = Column(Unicode(255), nullable=False)
+    title = Column(Unicode(255), nullable=False)
     board = relationship('Board',
                          backref=backref('topics',
                                          lazy='dynamic',

@@ -3,9 +3,9 @@
 {% block content %}
   <form action="{{ request.resource_url(board, "new") }}" method="POST" class="form-horizontal">
     <div class="control-group">
-      <label class="control-label" for="{{ form.topic.id }}">{{ form.topic.label.text }} <abbr class="Required">*</abbr></label>
+      <label class="control-label" for="{{ form.title.id }}">{{ form.title.label.text }} <abbr class="Required">*</abbr></label>
       <div class="controls">
-        {{ form.topic }}
+        {{ form.title }}
       </div>
     </div>
     <div class="control-group">

@@ -6,7 +6,7 @@ from .models import DBSession, Base
 from .resources import RootFactory
 
 
-def main(global_config, **settings):
+def main(global_config, **settings):  # pragma: no cover
     """ This function returns a Pyramid WSGI application.
     """
     engine = engine_from_config(settings, 'sqlalchemy.')

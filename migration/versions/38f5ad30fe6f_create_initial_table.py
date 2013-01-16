@@ -29,7 +29,7 @@ def upgrade():
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.Column('board_id', sa.Integer(), nullable=False),
-        sa.Column('topic', sa.Unicode(length=255), nullable=False),
+        sa.Column('title', sa.Unicode(length=255), nullable=False),
         sa.ForeignKeyConstraint(['board_id'], ['board.id'], ),
         sa.PrimaryKeyConstraint('id')
     )

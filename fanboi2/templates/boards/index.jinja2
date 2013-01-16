@@ -4,15 +4,15 @@
   <table class="table table-bordered table-topics">
     <thead>
       <tr>
-        <th class="topic">Topic</th>
+        <th class="topic">Title</th>
         <th class="posts span2 hidden-phone">Posts</th>
         <th class="commented span3 hidden-phone">Last commented</th>
       </tr>
     </thead>
     <tbody>
-      {% for topic in board.objs %}
+      {% for topic in topics %}
         <tr>
-          <td class="topic"><a href="{{ request.resource_url(topic) }}">{{ topic.obj.topic }}</a></td>
+          <td class="topic"><a href="{{ request.resource_url(topic) }}">{{ topic.obj.title }}</a></td>
           <td class="posts hidden-phone">{{ topic.obj.post_count }} posts</td>
           <td class="commented hidden-phone">{{ topic.obj.posted_at }}</td>
         </tr>
