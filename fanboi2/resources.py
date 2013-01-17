@@ -1,7 +1,7 @@
 from sqlalchemy.orm import undefer
 from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
-from .interfaces import IBoardResource, ITopicResource
+from .interfaces import IBoardResource, ITopicResource, IPostResource
 from .models import DBSession, Board
 
 
@@ -70,3 +70,22 @@ class TopicContainer(object):
     def __init__(self, request, topic):
         self.request = request
         self.obj = topic
+        self._objs = None
+
+    @property
+    def objs(self):
+        if self._objs is None:
+            self._objs = []
+            for obj in self.obj.posts:
+                post = PostContainer(self.request, obj)
+                post.__parent__ = self
+                post.__name__ = obj.id
+                self._objs.append(post)
+        return self._objs
+
+
+@implementer(IPostResource)
+class PostContainer(object):
+    def __init__(self, request, post):
+        self.request = request
+        self.obj = post

@@ -5,3 +5,7 @@ from wtforms.validators import Required, Length
 class TopicForm(Form):
     title = TextField(u'Title', validators=[Required(), Length(5, 200)])
     body = TextAreaField(u'Body', validators=[Required(), Length(2, 4000)])
+
+
+class PostForm(Form):
+    body = TextAreaField(u'Body', validators=[Required(), Length(2, 4000)])

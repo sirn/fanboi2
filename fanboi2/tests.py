@@ -310,10 +310,55 @@ class TopicContainerTest(ModelMixin, unittest.TestCase):
         from fanboi2.resources import TopicContainer
         return TopicContainer
 
+    def _makeOne(self, *args, **kwargs):
+        from fanboi2.models import Topic
+        topic = Topic(*args, **kwargs)
+        DBSession.add(topic)
+        DBSession.flush()
+        return topic
+
+    def _makeBoard(self, *args, **kwargs):
+        from fanboi2.models import Board
+        board = Board(*args, **kwargs)
+        DBSession.add(board)
+        DBSession.flush()
+        return board
+
+    def _makePost(self, *args, **kwargs):
+        from fanboi2.models import Post
+        post = Post(*args, **kwargs)
+        DBSession.add(post)
+        DBSession.flush()
+        return post
+
     def test_interface(self):
         from fanboi2.interfaces import ITopicResource
         container = self._getTargetClass()({}, None)
         self.assertTrue(verifyObject(ITopicResource, container))
+
+    def test_objs(self):
+        board = self._makeBoard(title=u"General", slug="general")
+        topic = self._makeOne(board=board, title=u"Boring topic is boring")
+        post1 = self._makePost(topic=topic, body=u"Hello, world")
+        post2 = self._makePost(topic=topic, body=u"Blah blah blah")
+        post3 = self._makePost(topic=topic, body=u"Lorem ipsum dolor")
+        container = self._getTargetClass()({}, topic)
+        self.assertEqual(container.objs[0].__parent__, container)
+        self.assertEqual(container.objs[0].__name__, post1.id)
+        self.assertItemsEqual([post1, post2, post3],
+                              (p.obj for p in container.objs))
+
+
+class PostContainerTest(ModelMixin, unittest.TestCase):
+
+    def _getTargetClass(self):
+        from fanboi2.resources import PostContainer
+        return PostContainer
+
+    def test_interface(self):
+        from fanboi2.interfaces import IPostResource
+        container = self._getTargetClass()({}, None)
+        self.assertTrue(verifyObject(IPostResource, container))
 
 
 class TestViews(ModelMixin, unittest.TestCase):
@@ -339,6 +384,13 @@ class TestViews(ModelMixin, unittest.TestCase):
         DBSession.add(topic)
         DBSession.flush()
         return topic
+
+    def _makePost(selfself, *args, **kwargs):
+        from fanboi2.models import Post
+        post = Post(*args, **kwargs)
+        DBSession.add(post)
+        DBSession.flush()
+        return post
 
     def test_root_view(self):
         from fanboi2.views import root_view
@@ -399,4 +451,44 @@ class TestViews(ModelMixin, unittest.TestCase):
         self.assertEqual(view["form"].title.data, 'One more thing...')
         self.assertDictEqual(view["form"].errors, {
             'body': [u'This field is required.']
+        })
+
+    def test_topic_view_get(self):
+        from fanboi2.views import topic_view
+        board = self._makeBoard(title=u"General", slug="general")
+        topic = self._makeTopic(board=board, title=u"Lorem ipsum dolor sit")
+        post1 = self._makePost(topic=topic, body=u"Hello, world!")
+        post2 = self._makePost(topic=topic, body=u"Boring post is boring!")
+        request = testing.DummyRequest(MultiDict({}))
+        request.context = self._getRoot(request)["general"][str(topic.id)]
+        view = topic_view(request)
+        self.assertItemsEqual([board], (b.obj for b in view["boards"]))
+        self.assertEqual(view["board"].obj, board)
+        self.assertEqual(view["topic"].obj, topic)
+        self.assertDictEqual(view["form"].errors, {})
+        self.assertItemsEqual([post1, post2],
+                              (p.obj for p in view["posts"]))
+
+    def test_topic_view_post(self):
+        from fanboi2.views import topic_view
+        board = self._makeBoard(title=u"General", slug="general")
+        topic = self._makeTopic(board=board, title=u"Lorem ipsum dolor sit")
+        request = testing.DummyRequest(MultiDict({
+            'body': "Boring post..."
+        }), post=True)
+        request.context = self._getRoot(request)["general"][str(topic.id)]
+        response = topic_view(request)
+        self.assertEqual(response.location,
+                         "http://example.com/general/%s/" % topic.id)
+
+    def test_topic_view_post_failure(self):
+        from fanboi2.views import topic_view
+        board = self._makeBoard(title=u"General", slug="general")
+        topic = self._makeTopic(board=board, title=u"Lorem ipsum dolor sit")
+        request = testing.DummyRequest(MultiDict({'body': 'x'}), post=True)
+        request.context = self._getRoot(request)["general"][str(topic.id)]
+        view = topic_view(request)
+        self.assertEqual(view["form"].body.data, 'x')
+        self.assertDictEqual(view["form"].errors, {
+            'body': [u'Field must be between 2 and 4000 characters long.'],
         })

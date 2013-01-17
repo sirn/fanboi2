@@ -1,0 +1,21 @@
+{% from "partials/form.jinja2" import form_field, form_submit %}
+{% extends "topics/layout.jinja2" %}
+
+{% block content %}
+  {% for post in posts %}
+    <div id="post-{{ post.obj.id }}" class="well">
+      <dl>
+        <dt>Posted at {{ post.obj.created_at }}</dt>
+        <dd>{{ post.obj.body }}</dd>
+      </dl>
+    </div>
+  {% endfor %}
+
+  <div class="well">
+    <h3>Reply</h3>
+    <form action="{{ request.resource_url(topic) }}" method="POST">
+      {{ form_field(form.body) }}
+      {{ form_submit("Post reply") }}
+    </form>
+  </div>
+{% endblock %}
