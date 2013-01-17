@@ -2,7 +2,7 @@
 {% extends "boards/layout.jinja2" %}
 
 {% block content %}
-  <form action="{{ request.resource_url(board, "new") }}" method="POST" class="form-horizontal">
+  <form action="{{ request.resource_url(board, "new") }}" method="POST">
     {{ form_field(form.title) }}
     {{ form_field(form.body) }}
     {{ form_submit("Post new topic") }}
