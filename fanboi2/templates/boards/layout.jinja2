@@ -5,8 +5,8 @@
   <div class="navbar">
     <div class="navbar-inner">
       <ul class="nav">
-        <li><a href="{{ request.resource_url(board) }}">All topics</a></li>
-        <li><a href="{{ request.resource_url(board, "new") }}">New topic</a></li>
+        <li{% if request.view_name == "" %} class="active"{% endif %}><a href="{{ request.resource_url(board) }}">All topics</a></li>
+        <li{% if request.view_name == "new" %} class="active"{% endif %}><a href="{{ request.resource_url(board, "new") }}">New topic</a></li>
       </ul>
     </div>
   </div>

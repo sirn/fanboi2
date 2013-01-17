@@ -1,0 +1,20 @@
+{% macro form_field(field) %}
+  <div id="field-{{ field.id }}" class="control-group{% if field.errors %} error{% endif %}">
+    <label class="control-label" for="{{ field.id }}">{{ field.label.text }}
+    {% if field.flags.required %}<abbr class="Required">*</abbr></label>{% endif %}
+    <div class="controls">
+      {{ field }}
+      {% if field.errors %}
+        <span class="help-inline">{{ field.errors[0] }}</span>
+      {% endif %}
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro form_submit(label) %}
+  <div class="control-group">
+    <div class="controls">
+      <button type="submit" class="btn">{{ label }}</button>
+    </div>
+  </div>
+{% endmacro %}

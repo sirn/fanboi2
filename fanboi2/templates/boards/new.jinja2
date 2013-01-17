@@ -1,23 +1,10 @@
+{% from "partials/form.jinja2" import form_field, form_submit %}
 {% extends "boards/layout.jinja2" %}
 
 {% block content %}
   <form action="{{ request.resource_url(board, "new") }}" method="POST" class="form-horizontal">
-    <div class="control-group">
-      <label class="control-label" for="{{ form.title.id }}">{{ form.title.label.text }} <abbr class="Required">*</abbr></label>
-      <div class="controls">
-        {{ form.title }}
-      </div>
-    </div>
-    <div class="control-group">
-      <label class="control-label" for="{{ form.body.id }}">{{ form.body.label.text }} <abbr class="Required">*</abbr></label>
-      <div class="controls">
-        {{ form.body }}
-      </div>
-    </div>
-    <div class="control-group">
-      <div class="controls">
-        <button type="submit" class="btn">Post new topic</button>
-      </div>
-    </div>
+    {{ form_field(form.title) }}
+    {{ form_field(form.body) }}
+    {{ form_submit("Post new topic") }}
   </form>
 {% endblock %}

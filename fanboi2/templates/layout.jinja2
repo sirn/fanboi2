@@ -12,9 +12,9 @@
       <div class="container">
         <a class="brand" href="{{ request.resource_url(None) }}">Fanboi Channel</a>
         <ul class="nav">
-          <li><a href="{{ request.resource_url(None) }}">Home</a></li>
+          <li{% if not board %} class="active"{% endif %}><a href="{{ request.resource_url(None) }}">Home</a></li>
           {% if boards %}
-          <li class="dropdown">
+          <li class="dropdown{% if board %} active{% endif %}">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% if board %}{{ board.obj.title }}{% else %}Boards{% endif %} <b class="caret"></b></a>
             <ul class="dropdown-menu">
               {% for board in boards %}
