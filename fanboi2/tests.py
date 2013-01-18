@@ -37,6 +37,77 @@ class ModelMixin(_ModelInstanceSetup):
         Base.metadata.bind = engine
 
 
+class TestRemoteAddr(unittest.TestCase):
+
+    def _getFunction(self):
+        from fanboi2 import remote_addr
+        return remote_addr
+
+    def _makeRequest(self, ipaddr, forwarded=None):
+        request = testing.DummyRequest()
+        request.environ = {'REMOTE_ADDR': ipaddr}
+        if forwarded:
+            request.environ['HTTP_X_FORWARDED_FOR'] = forwarded
+        return request
+
+    def test_remote_addr(self):
+        request = self._makeRequest("171.100.10.1")
+        self.assertEqual(self._getFunction()(request), "171.100.10.1")
+
+    def test_private_fallback(self):
+        request = self._makeRequest("10.0.1.1", "171.100.10.1")
+        self.assertEqual(self._getFunction()(request), "171.100.10.1")
+
+    def test_loopback_fallback(self):
+        request = self._makeRequest("127.0.0.1", "171.100.10.1")
+        self.assertEqual(self._getFunction()(request), "171.100.10.1")
+
+    def test_private_without_fallback(self):
+        request = self._makeRequest("10.0.1.1")
+        self.assertEqual(self._getFunction()(request), "10.0.1.1")
+
+    def test_loopback_without_fallback(self):
+        request = self._makeRequest("127.0.0.1")
+        self.assertEqual(self._getFunction()(request), "127.0.0.1")
+
+    def test_remote_fallback(self):
+        request = self._makeRequest("171.100.10.1", "8.8.8.8")
+        self.assertEqual(self._getFunction()(request), "171.100.10.1")
+
+
+class TestJsonType(unittest.TestCase):
+
+    def _getTargetClass(self):
+        from fanboi2.models import JsonType
+        return JsonType
+
+    def _makeOne(self):
+        from fanboi2.models import JsonType
+        from sqlalchemy import MetaData, Table, Column, Integer, create_engine
+        engine = create_engine('sqlite://')
+        metadata = MetaData(bind=engine)
+        table = Table(
+            'foo', metadata,
+            Column('baz', Integer),
+            Column('bar', JsonType),
+        )
+        metadata.create_all()
+        return table
+
+    def test_compile(self):
+        self.assertEqual(str(self._getTargetClass()()), "BLOB")
+
+    def test_field(self):
+        table = self._makeOne()
+        table.insert().execute(baz=1, bar={"x": 1})
+        table.insert().execute(baz=2, bar=None)
+        table.insert().execute(baz=3)  # bar should have default {} type.
+        self.assertItemsEqual(
+            [(1, {u'x': 1}), (2, None), (3, {})],
+            table.select().order_by(table.c.baz).execute().fetchall()
+        )
+
+
 class BaseModelTest(ModelMixin, unittest.TestCase):
 
     def _getTargetClass(self):
@@ -133,9 +204,9 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         board = self._makeBoard(title=u"Foobar", slug="foo")
         topic1 = self._makeOne(board=board, title=u"Lorem ipsum dolor")
         topic2 = self._makeOne(board=board, title=u"Some lonely topic")
-        post1 = Post(topic=topic1, body=u"Lorem")
-        post2 = Post(topic=topic1, body=u"Ipsum")
-        post3 = Post(topic=topic1, body=u"Dolor")
+        post1 = Post(topic=topic1, body=u"Lorem", ip_address="0.0.0.0")
+        post2 = Post(topic=topic1, body=u"Ipsum", ip_address="0.0.0.0")
+        post3 = Post(topic=topic1, body=u"Dolor", ip_address="0.0.0.0")
         DBSession.add(post1)
         DBSession.add(post2)
         DBSession.add(post3)
@@ -149,7 +220,10 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         topic = self._makeOne(board=board, title=u"Lorem ipsum dolor")
         self.assertEqual(topic.post_count, 0)
         for x in xrange(3):
-            post = Post(topic=topic, body=u"Hello, world!")
+            post = Post(
+                topic=topic,
+                body=u"Hello, world!",
+                ip_address="0.0.0.0")
             DBSession.add(post)
         DBSession.flush()
         self.assertEqual(topic.post_count, 3)
@@ -162,10 +236,11 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         for x in xrange(2):
             post = Post(topic=topic,
                         body=u"Hello, world!",
+                        ip_address="0.0.0.0",
                         created_at=datetime.datetime.now() -
                         datetime.timedelta(days=1))
             DBSession.add(post)
-        post = Post(topic=topic, body=u"Hello, world!")
+        post = Post(topic=topic, body=u"Hello, world!", ip_address="0.0.0.0")
         DBSession.add(post)
         DBSession.flush()
         self.assertEqual(topic.created_at, post.created_at)
@@ -192,6 +267,8 @@ class PostModelTest(ModelMixin, unittest.TestCase):
         return topic
 
     def _makeOne(self, *args, **kwargs):
+        if not kwargs.get('ip_address', None):
+            kwargs['ip_address'] = '0.0.0.0'
         post = self._getTargetClass()(*args, **kwargs)
         DBSession.add(post)
         DBSession.flush()
@@ -326,6 +403,8 @@ class TopicContainerTest(ModelMixin, unittest.TestCase):
 
     def _makePost(self, *args, **kwargs):
         from fanboi2.models import Post
+        if not kwargs.get('ip_address', None):
+            kwargs['ip_address'] = '0.0.0.0'
         post = Post(*args, **kwargs)
         DBSession.add(post)
         DBSession.flush()
@@ -387,6 +466,8 @@ class TestViews(ModelMixin, unittest.TestCase):
 
     def _makePost(selfself, *args, **kwargs):
         from fanboi2.models import Post
+        if not kwargs.get('ip_address', None):
+            kwargs['ip_address'] = '0.0.0.0'
         post = Post(*args, **kwargs)
         DBSession.add(post)
         DBSession.flush()
@@ -430,24 +511,29 @@ class TestViews(ModelMixin, unittest.TestCase):
 
     def test_new_board_view_post(self):
         from fanboi2.views import new_board_view
+        from fanboi2.models import DBSession, Topic
         self._makeBoard(title=u"General", slug="general")
         request = testing.DummyRequest(MultiDict({
-            'title': "One more thing...",
-            'body': "And now for something completely different...",
+            'title': u"One more thing...",
+            'body': u"And now for something completely different...",
         }), post=True)
+        request.remote_addr = "127.0.0.1"
         request.context = self._getRoot(request)["general"]
         response = new_board_view(request)
+        self.assertEqual(DBSession.query(Topic).count(), 1)
         self.assertEqual(response.location, "http://example.com/general/")
 
     def test_new_board_view_post_failure(self):
         from fanboi2.views import new_board_view
+        from fanboi2.models import DBSession, Topic
         self._makeBoard(title=u"General", slug="general")
         request = testing.DummyRequest(MultiDict({
-            'title': "One more thing...",
-            'body': "",
+            'title': u"One more thing...",
+            'body': u"",
         }), post=True)
         request.context = self._getRoot(request)["general"]
         view = new_board_view(request)
+        self.assertEqual(DBSession.query(Topic).count(), 0)
         self.assertEqual(view["form"].title.data, 'One more thing...')
         self.assertDictEqual(view["form"].errors, {
             'body': [u'This field is required.']
@@ -471,23 +557,28 @@ class TestViews(ModelMixin, unittest.TestCase):
 
     def test_topic_view_post(self):
         from fanboi2.views import topic_view
+        from fanboi2.models import DBSession, Post
         board = self._makeBoard(title=u"General", slug="general")
         topic = self._makeTopic(board=board, title=u"Lorem ipsum dolor sit")
         request = testing.DummyRequest(MultiDict({
-            'body': "Boring post..."
+            'body': u"Boring post..."
         }), post=True)
+        request.remote_addr = "127.0.0.1"
         request.context = self._getRoot(request)["general"][str(topic.id)]
         response = topic_view(request)
+        self.assertEqual(DBSession.query(Post).count(), 1)
         self.assertEqual(response.location,
                          "http://example.com/general/%s/" % topic.id)
 
     def test_topic_view_post_failure(self):
         from fanboi2.views import topic_view
+        from fanboi2.models import DBSession, Post
         board = self._makeBoard(title=u"General", slug="general")
         topic = self._makeTopic(board=board, title=u"Lorem ipsum dolor sit")
         request = testing.DummyRequest(MultiDict({'body': 'x'}), post=True)
         request.context = self._getRoot(request)["general"][str(topic.id)]
         view = topic_view(request)
+        self.assertEqual(DBSession.query(Post).count(), 0)
         self.assertEqual(view["form"].body.data, 'x')
         self.assertDictEqual(view["form"].errors, {
             'body': [u'Field must be between 2 and 4000 characters long.'],

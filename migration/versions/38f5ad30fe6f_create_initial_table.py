@@ -11,6 +11,7 @@ revision = '38f5ad30fe6f'
 down_revision = None
 
 from alembic import op
+from fanboi2.models import JsonType
 import sqlalchemy as sa
 
 
@@ -21,6 +22,7 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.Column('slug', sa.String(length=64), nullable=False),
         sa.Column('title', sa.Unicode(length=255), nullable=False),
+        sa.Column('settings', JsonType(), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('slug')
     )
@@ -38,6 +40,8 @@ def upgrade():
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.Column('topic_id', sa.Integer(), nullable=False),
+        sa.Column('ip_address', sa.String(), nullable=False),
+        sa.Column('ident', sa.String(length=32), nullable=True),
         sa.Column('body', sa.Unicode(), nullable=False),
         sa.ForeignKeyConstraint(['topic_id'], ['topic.id'], ),
         sa.PrimaryKeyConstraint('id')

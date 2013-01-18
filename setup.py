@@ -19,6 +19,7 @@ requires = [
     'alembic',
     'wtforms',
     'webtest',
+    'ipaddr',
     ]
 
 setup(name='fanboi2',

@@ -1,6 +1,7 @@
+import json
 import re
 from sqlalchemy import func, Column, Integer, String, DateTime, Unicode,\
-    ForeignKey, select, desc
+    ForeignKey, select, desc, TypeDecorator, Binary
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship,\
     backref, column_property
@@ -14,6 +15,18 @@ Base = declarative_base()
 
 RE_FIRST_CAP = re.compile('(.)([A-Z][a-z]+)')
 RE_ALL_CAP = re.compile('([a-z0-9])([A-Z])')
+
+
+class JsonType(TypeDecorator):
+    impl = Binary
+
+    def process_bind_param(self, value, dialect):
+        return json.dumps(value)
+
+    def process_result_value(self, value, dialect):
+        if not value:
+            return {}
+        return json.loads(value)
 
 
 class BaseModel(object):
@@ -35,6 +48,7 @@ class BaseModel(object):
 class Board(BaseModel, Base):
     slug = Column(String(64), unique=True, nullable=False)
     title = Column(Unicode(255), nullable=False)
+    settings = Column(JsonType, nullable=False, default={})
 
 
 @implementer(ITopic)
@@ -50,6 +64,8 @@ class Topic(BaseModel, Base):
 @implementer(IPost)
 class Post(BaseModel, Base):
     topic_id = Column(Integer, ForeignKey('topic.id'), nullable=False)
+    ip_address = Column(String, nullable=False)
+    ident = Column(String(32), nullable=True)
     body = Column(Unicode, nullable=False)
     topic = relationship('Topic',
                          backref=backref('posts',
