@@ -288,6 +288,25 @@ class PostModelTest(ModelMixin, unittest.TestCase):
         self.assertEqual(post.topic, topic)
         self.assertItemsEqual([post], topic.posts)
 
+    def test_number(self):
+        board = self._makeBoard(title=u"Foobar", slug="foo")
+        topic1 = self._makeTopic(board=board, title=u"Numbering one")
+        topic2 = self._makeTopic(board=board, title=u"Numbering two")
+        post1 = self._makeOne(topic=topic1, body=u"Topic 1, post 1")
+        post2 = self._makeOne(topic=topic1, body=u"Topic 1, post 2")
+        post3 = self._makeOne(topic=topic2, body=u"Topic 2, post 1")
+        post4 = self._makeOne(topic=topic1, body=u"Topic 1, post 3")
+        post5 = self._makeOne(topic=topic2, body=u"Topic 2, post 2")
+        # Force update to ensure its number remain the same.
+        post4.body = u"Topic1, post 3, updated!"
+        DBSession.add(post4)
+        DBSession.flush()
+        self.assertEqual(post1.number, 1)
+        self.assertEqual(post2.number, 2)
+        self.assertEqual(post3.number, 1)
+        self.assertEqual(post4.number, 3)
+        self.assertEqual(post5.number, 2)
+
 
 class RootFactoryTest(ModelMixin, unittest.TestCase):
 

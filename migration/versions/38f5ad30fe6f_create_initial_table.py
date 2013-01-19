@@ -42,6 +42,7 @@ def upgrade():
         sa.Column('topic_id', sa.Integer(), nullable=False),
         sa.Column('ip_address', sa.String(), nullable=False),
         sa.Column('ident', sa.String(length=32), nullable=True),
+        sa.Column('number', sa.Integer(), nullable=False),
         sa.Column('body', sa.Unicode(), nullable=False),
         sa.ForeignKeyConstraint(['topic_id'], ['topic.id'], ),
         sa.PrimaryKeyConstraint('id')

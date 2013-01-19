@@ -1,7 +1,7 @@
 import json
 import re
-from sqlalchemy import func, Column, Integer, String, DateTime, Unicode,\
-    ForeignKey, select, desc, TypeDecorator, Binary
+from sqlalchemy import Column, Integer, String, DateTime, Unicode, Binary,\
+    ForeignKey, TypeDecorator, func, select, desc, event
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship,\
     backref, column_property
@@ -66,10 +66,18 @@ class Post(BaseModel, Base):
     topic_id = Column(Integer, ForeignKey('topic.id'), nullable=False)
     ip_address = Column(String, nullable=False)
     ident = Column(String(32), nullable=True)
+    number = Column(Integer, nullable=False)
     body = Column(Unicode, nullable=False)
     topic = relationship('Topic',
                          backref=backref('posts',
                                          order_by='Post.id'))
+
+
+@event.listens_for(Post.__mapper__, 'before_insert')
+def populate_post_number(mapper, connection, target):
+    target.number = select([func.coalesce(func.max(Post.number), 0)+1]).\
+                    where(Post.topic_id == target.topic_id)
+
 
 Topic.post_count = column_property(
     select([func.count(Post.id)]).where(Post.topic_id == Topic.id),
