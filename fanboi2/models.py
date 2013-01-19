@@ -1,7 +1,7 @@
 import json
 import re
 from sqlalchemy import Column, Integer, String, DateTime, Unicode, Binary,\
-    ForeignKey, TypeDecorator, func, select, desc, event
+    ForeignKey, TypeDecorator, UniqueConstraint, func, select, desc, event
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship,\
     backref, column_property
@@ -63,6 +63,8 @@ class Topic(BaseModel, Base):
 
 @implementer(IPost)
 class Post(BaseModel, Base):
+    __table_args__ = (UniqueConstraint('topic_id', 'number'),)
+
     topic_id = Column(Integer, ForeignKey('topic.id'), nullable=False)
     ip_address = Column(String, nullable=False)
     ident = Column(String(32), nullable=True)

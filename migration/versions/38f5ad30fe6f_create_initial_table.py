@@ -45,6 +45,7 @@ def upgrade():
         sa.Column('number', sa.Integer(), nullable=False),
         sa.Column('body', sa.Unicode(), nullable=False),
         sa.ForeignKeyConstraint(['topic_id'], ['topic.id'], ),
+        sa.UniqueConstraint('topic_id', 'number'),
         sa.PrimaryKeyConstraint('id')
     )
 
