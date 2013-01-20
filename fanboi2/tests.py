@@ -20,6 +20,7 @@ class _ModelInstanceSetup(object):
     def setUp(self):
         super(_ModelInstanceSetup, self).setUp()
         transaction.begin()
+        Base.metadata.drop_all()
         Base.metadata.create_all()
 
     def tearDown(self):
@@ -32,7 +33,7 @@ class ModelMixin(_ModelInstanceSetup):
     @classmethod
     def setUpClass(cls):
         super(ModelMixin, cls).setUpClass()
-        engine = create_engine('sqlite://')
+        engine = create_engine('postgres://localhost:5432/fanboi2_test')
         DBSession.configure(bind=engine)
         Base.metadata.bind = engine
 

@@ -20,6 +20,7 @@ requires = [
     'wtforms',
     'webtest',
     'ipaddr',
+    'psycopg2',
     ]
 
 setup(name='fanboi2',
