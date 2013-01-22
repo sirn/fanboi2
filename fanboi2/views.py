@@ -1,6 +1,8 @@
+import transaction
 from pyramid.httpexceptions import HTTPFound
-from fanboi2.forms import TopicForm, PostForm
-from fanboi2.models import Topic, Post, DBSession
+from sqlalchemy.exc import IntegrityError
+from .forms import TopicForm, PostForm
+from .models import Topic, Post, DBSession
 
 
 def root_view(request):
@@ -34,8 +36,22 @@ def topic_view(request):
     posts = topic.objs
     form = PostForm(request.params)
     if request.method == 'POST' and form.validate():
-        post = Post(topic=topic.obj, ip_address=request.remote_addr)
-        form.populate_obj(post)
-        DBSession.add(post)
-        return HTTPFound(location=request.resource_url(topic))
+        # INSERT a post will issue subquery and may cause race condition.
+        # TODO: Switch to use tm.attempts to handle this.
+        # See also https://github.com/Pylons/pyramid_tm/pull/8
+        max_attempts = 5
+        while True:
+            sp = transaction.savepoint()
+            try:
+                post = Post(topic=topic.obj, ip_address=request.remote_addr)
+                form.populate_obj(post)
+                DBSession.add(post)
+                DBSession.flush()
+            except IntegrityError:
+                sp.rollback()
+                max_attempts -= 1
+                if not max_attempts:
+                    raise
+            else:
+                return HTTPFound(location=request.resource_url(topic))
     return locals()

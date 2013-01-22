@@ -12,6 +12,11 @@ In order to get the app running, you must first installed the following prerequi
 
     $ brew install python
 
+- `PostgreSQL 9.2 <http://www.postgresql.org/>`_. While any other databases *may* work, it is not tested is not supported.::
+
+    $ brew install postgres
+    $ launchctl load ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist
+
 - `Stylus <http://learnboost.github.com/stylus/>`_ and `nib <https://github.com/visionmedia/nib/>`_. You may also need to install `node.js <http://nodejs.org/>`_ and add ``/usr/local/share/npm/bin/`` to your ``$PATH``. These dependencies are required for assets compiling:::
 
     $ brew install nodejs
@@ -24,13 +29,15 @@ In order to get the app running, you must first installed the following prerequi
     $ npm install -g uglify-js
     $ npm install -g requirejs
 
-After all prerequisites are installed, you can now run setup and seed the database.::
+After all prerequisites are installed, you can now create the database, run setup and seed the database.::
 
+    $ createdb fanboi2_development
     $ python setup.py develop
     $ alembic upgrade head
 
-It is recommended to run tests and see if all tests passed.::
+It is recommended to run tests and see if all tests passed. Before doing so, you must first create the ``fanboi2_test`` database.::
 
+    $ createdb fanboi2_test
     $ nosetests
 
 If all tests passed, you can now run the application. You should also run ``make`` to compile all assets before running.::

@@ -18,6 +18,10 @@ RE_ALL_CAP = re.compile('([a-z0-9])([A-Z])')
 
 
 class JsonType(TypeDecorator):
+    """Serializible field for storing data as JSON text. If the field is
+    ``NULL`` in the database, a default value of empty :type:`dict` is
+    returned on retrieval.
+    """
     impl = Binary
 
     def process_bind_param(self, value, dialect):
@@ -30,6 +34,8 @@ class JsonType(TypeDecorator):
 
 
 class BaseModel(object):
+    """Primary mixin that provides common fields for SQLAlchemy models."""
+
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
@@ -46,6 +52,11 @@ class BaseModel(object):
 
 @implementer(IBoard)
 class Board(BaseModel, Base):
+    """Model class for board. This model serve as a category to topic and
+    also holds settings regarding how posts are created and displayed. It
+    should always be accessed using :attr:`slug`.
+    """
+
     slug = Column(String(64), unique=True, nullable=False)
     title = Column(Unicode(255), nullable=False)
     settings = Column(JsonType, nullable=False, default={})
@@ -53,6 +64,11 @@ class Board(BaseModel, Base):
 
 @implementer(ITopic)
 class Topic(BaseModel, Base):
+    """Model class for topic. This model only holds topic metadata such as
+    title or its associated board. The actual content of a topic belongs
+    to :class:`Post`.
+    """
+
     board_id = Column(Integer, ForeignKey('board.id'), nullable=False)
     title = Column(Unicode(255), nullable=False)
     board = relationship('Board',
@@ -63,6 +79,11 @@ class Topic(BaseModel, Base):
 
 @implementer(IPost)
 class Post(BaseModel, Base):
+    """Model class for posts. Each content in a :class:`Topic` and metadata
+    regarding its poster are stored here. It has :attr:`number` which is a
+    sequential number specifying its position within :class:`Topic`.
+    """
+
     __table_args__ = (UniqueConstraint('topic_id', 'number'),)
 
     topic_id = Column(Integer, ForeignKey('topic.id'), nullable=False)
@@ -72,11 +93,15 @@ class Post(BaseModel, Base):
     body = Column(Unicode, nullable=False)
     topic = relationship('Topic',
                          backref=backref('posts',
-                                         order_by='Post.id'))
+                                         order_by='Post.number'))
 
 
 @event.listens_for(Post.__mapper__, 'before_insert')
 def populate_post_number(mapper, connection, target):
+    """Populate sequential :attr:`Post.number` in each topic."""
+    # This will issue a subquery on every INSERT which may cause race
+    # condition problem. Our UNIQUE CONSTRAINT will detect that, so the
+    # calling code should retry accordingly.
     target.number = select([func.coalesce(func.max(Post.number), 0)+1]).\
                     where(Post.topic_id == target.topic_id)
 
