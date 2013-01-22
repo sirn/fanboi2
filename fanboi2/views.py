@@ -1,8 +1,8 @@
-from sqlalchemy.exc import IntegrityError
 import transaction
 from pyramid.httpexceptions import HTTPFound
-from fanboi2.forms import TopicForm, PostForm
-from fanboi2.models import Topic, Post, DBSession
+from sqlalchemy.exc import IntegrityError
+from .forms import TopicForm, PostForm
+from .models import Topic, Post, DBSession
 
 
 def root_view(request):
