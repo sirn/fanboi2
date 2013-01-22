@@ -9,6 +9,9 @@ from webob.multidict import MultiDict
 from zope.interface.verify import verifyObject
 
 
+DATABASE_URI = 'postgres://localhost:5432/fanboi2_test'
+
+
 class _ModelInstanceSetup(object):
 
     @classmethod
@@ -19,9 +22,9 @@ class _ModelInstanceSetup(object):
 
     def setUp(self):
         super(_ModelInstanceSetup, self).setUp()
-        transaction.begin()
         Base.metadata.drop_all()
         Base.metadata.create_all()
+        transaction.begin()
 
     def tearDown(self):
         super(_ModelInstanceSetup, self).tearDown()
@@ -33,7 +36,7 @@ class ModelMixin(_ModelInstanceSetup):
     @classmethod
     def setUpClass(cls):
         super(ModelMixin, cls).setUpClass()
-        engine = create_engine('postgres://localhost:5432/fanboi2_test')
+        engine = create_engine(DATABASE_URI)
         DBSession.configure(bind=engine)
         Base.metadata.bind = engine
 
@@ -85,13 +88,14 @@ class TestJsonType(unittest.TestCase):
     def _makeOne(self):
         from fanboi2.models import JsonType
         from sqlalchemy import MetaData, Table, Column, Integer, create_engine
-        engine = create_engine('sqlite://')
+        engine = create_engine(DATABASE_URI)
         metadata = MetaData(bind=engine)
         table = Table(
             'foo', metadata,
             Column('baz', Integer),
             Column('bar', JsonType),
         )
+        metadata.drop_all()
         metadata.create_all()
         return table
 
@@ -596,6 +600,7 @@ class TestViews(ModelMixin, unittest.TestCase):
         board = self._makeBoard(title=u"General", slug="general")
         topic = self._makeTopic(board=board, title=u"Lorem ipsum dolor sit")
         request = testing.DummyRequest(MultiDict({'body': 'x'}), post=True)
+        request.remote_addr = "127.0.0.1"
         request.context = self._getRoot(request)["general"][str(topic.id)]
         view = topic_view(request)
         self.assertEqual(DBSession.query(Post).count(), 0)
@@ -603,3 +608,31 @@ class TestViews(ModelMixin, unittest.TestCase):
         self.assertDictEqual(view["form"].errors, {
             'body': [u'Field must be between 2 and 4000 characters long.'],
         })
+
+    def test_topic_view_post_repeatable(self):
+        from fanboi2.models import DBSession, Post
+        from fanboi2.views import topic_view
+        from sqlalchemy.exc import IntegrityError
+        board = self._makeBoard(title=u"General", slug="general")
+        topic = self._makeTopic(board=board, title=u"Lorem ipsum dolor sit")
+
+        class InvalidRequest(testing.DummyRequest):
+            self.retries = False
+
+            def __init__(self, *args, **kwargs):
+                self.retries = 0
+                super(InvalidRequest, self).__init__(*args, **kwargs)
+
+            @property
+            def remote_addr(self):
+                self.retries += 1
+                raise IntegrityError("INSERT INTO %(something)",
+                                     {"something": "something"},
+                                     "duplicate key")
+
+        request = InvalidRequest(MultiDict({'body': 'xyz'}), post=True)
+        request.context = self._getRoot(request)["general"][str(topic.id)]
+        with self.assertRaises(IntegrityError):
+            assert not topic_view(request)
+        self.assertEqual(request.retries, 5)
+        self.assertEqual(DBSession.query(Post).count(), 0)
