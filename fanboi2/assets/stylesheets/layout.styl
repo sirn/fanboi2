@@ -1,11 +1,15 @@
 @import "nib"
+@import "shared"
+
+dark-orange = #cd2c0e
+
 
 body
-  background-color #d5d5d4
+  background-color #333
 
 
 header#header
-  background #f03f1e
+  background site-orange
   margin-bottom 0px
 
   div.navbar
@@ -36,7 +40,7 @@ header#header
       border-radius 2px
 
       span.icon-bar
-        background-color #f03f1e
+        background-color site-orange
         box-shadow none
 
     ul.nav
@@ -62,7 +66,7 @@ header#header
           > a
           > a:hover
           > a:focus
-            background-color #cd2c0e
+            background-color dark-orange
 
       li.dropdown.open
         > .dropdown-toggle
@@ -72,26 +76,7 @@ header#header
       li.dropdown.active
       li.dropdown.open.active
         > .dropdown-toggle
-          background-color #cd2c0e
-
-
-@media (max-width: 797px)
-  header#header
-
-    ul.nav
-      > li
-        > a:hover
-          background-color #cd2c0e
-
-    div.nav-collapse
-      ul.dropdown-menu
-        li
-          a
-            color #fff
-
-            &:hover
-              background-color #cd2c0e
-              background-image none
+          background-color dark-orange
 
 
 @media (max-width: 979px)
@@ -106,6 +91,21 @@ header#header
       a.btn-navbar
         margin-right 0
 
+    ul.nav
+      > li
+        > a:hover
+          background-color dark-orange
+
+    div.nav-collapse
+      ul.dropdown-menu
+        li
+          a
+            color #fff
+
+            &:hover
+              background-color dark-orange
+              background-image none
+
 
 @media (max-width: 767px)
   header#header
@@ -114,9 +114,16 @@ header#header
 
 
 footer#footer
+  padding 15px 0
   color #777
 
   p
     font-size 14px
     line-height 160%
     margin 0
+
+    a
+      color #ccc
+
+      &:hover
+        color #fff

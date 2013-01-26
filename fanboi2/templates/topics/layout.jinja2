@@ -1,16 +1,24 @@
 {% extends "layout.jinja2" %}
 
 {% block leader %}
-  <h2>{{ topic.obj.title }}</h2>
-  <div class="navbar">
-    <div class="navbar-inner">
-      <ul class="nav">
-        <li><a href="{{ request.resource_url(board) }}">All topics</a></li>
-        <li><a href="{{ request.resource_url(board, "new") }}">New topic</a></li>
-      </ul>
-      <ul class="nav pull-right">
-        <li{% if request.view_name == "" %} class="active"{% endif %}><a href="{{ request.resource_url(topic) }}">Show topic</a></li>
-      </ul>
+  <div class="leader topic-info">
+    <div class="container">
+      <h2>{{ topic.obj.title }}</h2>
+    </div>
+    <div class="wrapper">
+      <div class="container">
+        <div class="navbar">
+          <div class="navbar-inner">
+            <ul class="nav">
+              <li><a href="{{ request.resource_url(board) }}">All topics</a></li>
+              <li><a href="{{ request.resource_url(board, "new") }}">New topic</a></li>
+            </ul>
+            <ul class="nav pull-right">
+              <li{% if request.view_name == "" %} class="active"{% endif %}><a href="{{ request.resource_url(topic) }}">Show topic</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 {% endblock %}

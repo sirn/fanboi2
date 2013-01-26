@@ -1,0 +1,46 @@
+@import "nib"
+@import "shared"
+
+
+div.leader
+  background-color site-dark
+  padding 0
+
+  h2
+    color #ddd
+    font-weight normal
+    font-family "Montserrat", sans-serif
+    line-height 100%
+    margin 25px 0
+
+  div.wrapper
+    background-color site-dark-lighter
+    border-top 1px solid #192428
+
+    div.navbar
+      margin-bottom 0
+
+      div.navbar-inner
+        background-color inherit
+        background-image none
+        border none
+        border-radius none
+        box-shadow none
+        padding 0
+
+      ul.nav
+        > li
+          > a
+            color #aaa
+            text-shadow none
+
+            &:hover
+              color #fff
+
+        > li.active
+          > a
+          > a:hover
+            background-color #505a60
+            border-left 1px solid #192428
+            border-right 1px solid #192428
+            color #fff

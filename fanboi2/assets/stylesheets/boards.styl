@@ -1,1 +1,36 @@
 @import "nib"
+@import "shared"
+
+
+div.list-boards
+  background-color site-dark
+  margin-bottom 0
+  padding 40px 0
+
+  div.well
+    background-color site-dark-lighter
+    background-image none
+    border none
+    border-radius 0
+    box-shadow none
+    margin 0
+    padding 10px 20px
+
+    + div.well
+      margin-top 5px
+
+    h3
+      font-family "Montserrat", sans-serif
+      font-weight normal
+      margin 0
+      a
+        color #ddd
+
+    p.description
+      color #738289
+
+
+@media (max-width: 767px)
+  div.list-boards
+    margin 0 -20px
+    padding 20px 20px
