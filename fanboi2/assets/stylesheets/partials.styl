@@ -24,7 +24,7 @@ div.leader
         background-color inherit
         background-image none
         border none
-        border-radius none
+        border-radius 0
         box-shadow none
         padding 0
 
@@ -41,6 +41,22 @@ div.leader
           > a
           > a:hover
             background-color #505a60
-            border-left 1px solid #192428
-            border-right 1px solid #192428
             color #fff
+
+@media (max-width: 767px)
+  div.leader
+    margin 0 -20px
+    padding 0 20px
+
+    div.wrapper
+      margin 0 -20px
+      padding 0 20px
+
+
+.btn
+  border 1px solid rgba(100, 100, 100, 0.3)
+  border-radius 0
+
+  &.btn-success
+    background-color #52a615
+    background-image linear-gradient(top, #63c919, #52a615)

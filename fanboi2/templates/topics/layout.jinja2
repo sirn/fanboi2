@@ -10,11 +10,12 @@
         <div class="navbar">
           <div class="navbar-inner">
             <ul class="nav">
-              <li><a href="{{ request.resource_url(board) }}">All topics</a></li>
-              <li><a href="{{ request.resource_url(board, "new") }}">New topic</a></li>
+              <li><a href="{{ request.resource_url(board) }}"><i class="icon-list icon-white"></i> <span class="hidden-phone">All topics</span></a></li>
+              <li><a href="{{ request.resource_url(board, "new") }}"><i class="icon-plus icon-white"></i> <span class="hidden-phone">New topic</span></a></li>
             </ul>
             <ul class="nav pull-right">
-              <li{% if request.view_name == "" %} class="active"{% endif %}><a href="{{ request.resource_url(topic) }}">Show topic</a></li>
+              <li{% if request.view_name == "" %} class="active"{% endif %}><a href="{{ request.resource_url(topic) }}"><i class="icon-th-list icon-white"></i> <span class="hidden-phone">Show topic</span></a></li>
+              <li><a href="#reply"><i class="icon-share-alt icon-white"></i> <span class="hidden-phone">Reply</span></a></li>
             </ul>
           </div>
         </div>

@@ -19,7 +19,7 @@ header#header
     background-color inherit
     background-image none
     border none
-    border-radius none
+    border-radius 0
     box-shadow none
 
     a.brand
@@ -28,9 +28,9 @@ header#header
       width 91px
 
       span.logo
-        background-image url(../images/logo.png)
         background-repeat no-repeat
         float left
+        image "../images/logo.png" 91px
         width 91px
 
     a.btn-navbar
@@ -78,7 +78,6 @@ header#header
         > .dropdown-toggle
           background-color dark-orange
 
-
 @media (max-width: 979px)
   header#header
     div.navbar-inner
@@ -105,7 +104,6 @@ header#header
             &:hover
               background-color dark-orange
               background-image none
-
 
 @media (max-width: 767px)
   header#header

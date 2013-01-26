@@ -4,6 +4,7 @@
   <title>Fanboi Channel</title>
   <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Montserrat:400,700">
   <link rel="stylesheet" href="{{ request.static_url('fanboi2:static/stylesheets/main.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta charset="utf-8">
 </head>
 <body>
@@ -19,10 +20,10 @@
         </a>
         <div class="nav-collapse collapse">
           <ul class="nav">
-            <li{% if not board %} class="active"{% endif %}><a href="{{ request.resource_url(None) }}">Home</a></li>
+            <li{% if not board %} class="active"{% endif %}><a href="{{ request.resource_url(None) }}"><i class="icon-home icon-white"></i> Home</a></li>
             {% if boards %}
             <li class="dropdown{% if board %} active{% endif %}">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% if board %}{{ board.obj.title }}{% else %}Boards{% endif %} <b class="caret"></b></a>
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-th-large icon-white"></i> {% if board %}{{ board.obj.title }}{% else %}Boards{% endif %} <b class="caret"></b></a>
               <ul class="dropdown-menu">
                 {% for board in boards %}
                   <li class="board"><a href="{{ request.resource_url(board) }}">{{ board.obj.title }}</a></li>

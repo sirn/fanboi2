@@ -29,8 +29,112 @@ div.list-boards
     p.description
       color #738289
 
-
 @media (max-width: 767px)
   div.list-boards
     margin 0 -20px
     padding 20px 20px
+
+
+div.board-show
+  background-color #fff
+  padding 0
+
+  div.topic
+    div.well
+      background-color inherit
+      border none
+      border-radius 0
+      box-shadow none
+      margin 0
+      padding 0
+
+    header
+      background-color #444d52
+      padding 15px
+
+      h4
+        margin 0
+        padding 0
+        line-height 100%
+
+        a
+          color #ddd
+          font-weight normal
+
+          &:hover
+            color #fff
+
+        + ul.unstyled
+          margin-top 5px
+
+      ul.unstyled
+        margin-bottom 0
+
+        li
+          color #999
+          display inline-block
+          margin-right 5px
+
+    div.posts
+      padding 20px
+      position relative
+
+      ul.messages
+        margin-bottom 0
+
+        li
+          max-width 80%
+          overflow hidden
+          text-overflow ellipsis
+          white-space nowrap
+          color #777
+
+          strong
+            display inline-block
+            font-weight bold
+            width 40px
+
+    footer
+      background-color #e1e4e6
+      padding 15px
+
+      ul.unstyled
+        margin-bottom 0
+        overflow hidden
+
+        li
+          float left
+
+          a.btn
+            border-right-width 0
+
+          &:last-child
+            a.btn
+              border-right-width 1px
+
+@media (max-width: 767px)
+  div.board-show
+    margin 0 -20px
+    padding 0 0
+
+    div.topic
+      div.posts
+        ul.messages
+          li
+            max-width 100%
+
+@media (max-width: 480px)
+  div.board-show
+    div.topic
+      footer
+        ul.unstyled
+          li
+            display block
+            float none
+            margin-bottom 5px
+
+            a.btn
+              text-align left
+              border-right-width 1px
+              display block
+              padding 7px 15px
