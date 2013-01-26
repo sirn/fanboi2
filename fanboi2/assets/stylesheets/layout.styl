@@ -1,8 +1,25 @@
 @import "nib"
 
+body
+  background-color #d5d5d4
+
+
 header#header
+  background #f03f1e
+  margin-bottom 0px
+
+  div.navbar
+    margin-bottom 0
+
   div.navbar-inner
+    background-color inherit
+    background-image none
+    border none
+    border-radius none
+    box-shadow none
+
     a.brand
+      padding-left 0
       text-indent -1000em
       width 91px
 
@@ -12,6 +29,89 @@ header#header
         float left
         width 91px
 
+    a.btn-navbar
+      background-color #dfdfdf
+      background-image linear-gradient(top, #fff, #dfdfdf)
+      border 1px solid #e5310f
+      border-radius 2px
+
+      span.icon-bar
+        background-color #f03f1e
+        box-shadow none
+
+    ul.nav
+      > li
+        > a
+          color #ffcbc2
+          font-family "Montserrat", sans-serif
+          text-shadow 0 -1px 0 rgba(0, 0, 0, 0.25)
+
+          b.caret
+            border-top-color #ffcbc2
+            border-bottom-color #ffcbc2
+
+          &:focus
+          &:hover
+            color #fff
+
+            b.caret
+              border-top-color #fff
+              border-bottom-color #fff
+
+        &.active
+          > a
+          > a:hover
+          > a:focus
+            background-color #cd2c0e
+
+      li.dropdown.open
+        > .dropdown-toggle
+          background-color inherit
+          color #fff
+
+      li.dropdown.active
+      li.dropdown.open.active
+        > .dropdown-toggle
+          background-color #cd2c0e
+
+
+@media (max-width: 797px)
+  header#header
+
+    ul.nav
+      > li
+        > a:hover
+          background-color #cd2c0e
+
+    div.nav-collapse
+      ul.dropdown-menu
+        li
+          a
+            color #fff
+
+            &:hover
+              background-color #cd2c0e
+              background-image none
+
+
+@media (max-width: 979px)
+  header#header
+    div.navbar-inner
+      padding-left 0
+      padding-right 0
+
+      a.brand
+        margin-left 0
+
+      a.btn-navbar
+        margin-right 0
+
+
+@media (max-width: 767px)
+  header#header
+    margin 0 -20px
+    padding 0 20px
+
 
 footer#footer
   color #777
@@ -20,8 +120,3 @@ footer#footer
     font-size 14px
     line-height 160%
     margin 0
-
-
-@media (min-width: 980px)
-  body
-    padding-top 60px
