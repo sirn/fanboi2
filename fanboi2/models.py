@@ -93,6 +93,7 @@ class Post(BaseModel, Base):
     body = Column(Unicode, nullable=False)
     topic = relationship('Topic',
                          backref=backref('posts',
+                                         lazy='dynamic',
                                          order_by='Post.number'))
 
 

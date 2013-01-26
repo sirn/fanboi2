@@ -1,8 +1,9 @@
+import re
 from sqlalchemy.orm import undefer
 from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
 from .interfaces import IBoardResource, ITopicResource, IPostResource
-from .models import DBSession, Board
+from .models import DBSession, Board, Post
 
 
 class RootFactory(object):
@@ -107,9 +108,100 @@ class TopicContainer(object):
             for obj in self.obj.posts:
                 post = PostContainer(self.request, obj)
                 post.__parent__ = self
-                post.__name__ = obj.id
+                post.__name__ = obj.number
                 self._objs.append(post)
         return self._objs
+
+    def __getitem__(self, query):
+        """Returns a topic scoped to :data:`query`."""
+        topic = ScopedTopicContainer(self.request, self.obj, self, query)
+        topic.__parent__ = self
+        topic.__name__ = query
+        return topic
+
+
+@implementer(ITopicResource)
+class ScopedTopicContainer(object):
+    """Container for :class:`Topic` similar to :class:`TopicContainer` but
+    only return a list of :class:`Post` that are processed via :data:`query`
+    criteria. Unlike :class:`TopicContainer`, this class don't allow any
+    further traversal.
+    """
+    QUERY = (
+        ("_number", re.compile("^(\d+)$")),
+        ("_range",  re.compile("^(\d+)?\-(\d+)?$")),
+        ("_recent", re.compile("^recent$")),
+    )
+
+    def __init__(self, request, topic, parent, query):
+        self.request = request
+        self.obj = topic
+        self._objs = None
+
+        # __parent__ is set after init, so we need this one in order to make
+        # posts inherited from parent rather than this scoped topic (so this
+        # ScopedTopicContainer is called when user try to access post.)
+        self.parent = parent
+
+        # Need to raise KeyError for __getitem__ in TopicContainer in case
+        # query is invalid, so this is fetched here instead of in obj.
+        for handler, matcher in self.QUERY:
+            match = matcher.match(query)
+            if match:
+                func = getattr(self, handler)
+                self._objs = func(*match.groups())
+                break
+
+        if not self._objs:
+            raise KeyError
+
+    @property
+    def objs(self):
+        """Returns a :type:`list` of :class:`PostContainer` associated with
+        this :class:`Topic` but also scoped to :data:`query`.
+        """
+        return self._objs
+
+    def _number(self, number):
+        """Returns a single post as specified by :data:`number`."""
+        obj = self.obj.posts.filter_by(number=number).first()
+        if obj:
+            post = PostContainer(self.request, obj)
+            post.__parent__ = self.parent
+            post.__name__ = obj.number
+            return [post]
+
+    def _range(self, start, end):
+        """Returns a range of post of :data:`start` and :data:`end`. When
+        :data:`start` or :data:`end` is empty, the first and last posts are
+        assumed respectively.
+        """
+        if start is None:
+            start = 1
+        if end is None:
+            query = Post.number >= start
+        else:
+            query = Post.number.between(start, end)
+        posts = []
+        for obj in self.obj.posts.filter(query):
+            post = PostContainer(self.request, obj)
+            post.__parent__ = self.parent
+            post.__name__ = obj.number
+            posts.append(post)
+        return posts
+
+    def _recent(self):
+        """Return the last 30 posts."""
+        posts = []
+        for obj in reversed(DBSession.query(Post).
+                            order_by(Post.number.desc()).
+                            filter(Post.topic_id == self.obj.id).
+                            limit(30).all()):
+            post = PostContainer(self.request, obj)
+            post.__parent__ = self.parent
+            post.__name__ = obj.number
+            posts.append(post)
+        return posts
 
 
 @implementer(IPostResource)
