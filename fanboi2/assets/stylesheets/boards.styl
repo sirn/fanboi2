@@ -40,7 +40,7 @@ div.board-show
   padding 0
 
   div.topic
-    div.well
+    .well
       background-color inherit
       border none
       border-radius 0
@@ -48,39 +48,37 @@ div.board-show
       margin 0
       padding 0
 
-    header
-      background-color #444d52
-      padding 15px
+    div.summary
+      padding 0
 
-      h4
-        margin 0
-        padding 0
-        line-height 100%
+      header
+        margin 20px 0
 
-        a
-          color #ddd
-          font-weight normal
+        h4
+          line-height 100%
+          margin 0
+          padding 0
 
-          &:hover
-            color #fff
+          a
+            color site-orange
+            font-weight bold
 
-        + ul.unstyled
-          margin-top 5px
+            &:hover
+              color #555
 
-      ul.unstyled
-        margin-bottom 0
+          + ul.unstyled
+            margin-top 5px
 
-        li
-          color #999
-          display inline-block
-          margin-right 5px
+        ul.info
+          margin-bottom 0
 
-    div.posts
-      padding 20px
-      position relative
+          li
+            color #666
+            display inline-block
+            margin-right 5px
 
       ul.messages
-        margin-bottom 0
+        margin 20px 0
 
         li
           max-width 80%
@@ -118,7 +116,9 @@ div.board-show
     padding 0 0
 
     div.topic
-      div.posts
+      div.summary
+        padding 0 20px
+
         ul.messages
           li
             max-width 100%
