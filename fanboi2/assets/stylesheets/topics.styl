@@ -1,16 +1,6 @@
 @import "nib"
 @import "shared"
 
-form
-  div#field-title
-    input
-      width 300px
-
-  div#field-body
-    textarea
-      width 350px
-      height 100px
-
 
 div.topic-show
   padding 0
@@ -19,3 +9,77 @@ div.topic-show
   div.topic-show
     margin 0 -20px
     padding 0 0
+
+
+div.topic-new
+  header
+    background-color #fff
+    margin 0
+    padding 20px 0
+
+    h3
+      color site-orange
+      margin 0
+      line-height 100%
+
+  div.agreement
+    background-color #f3f5f6
+    color #333
+    margin 0
+    padding 20px 0
+
+    :last-child
+      margin-bottom 0
+
+  form
+    background-color #394044
+    padding 25px 0
+    margin 0
+
+    label
+      color #fff
+      font-size 12px
+      font-weight bold
+      line-height 100%
+
+      abbr[title="Required"]
+        font-weight normal
+        color #ddd
+        border-bottom none
+
+    textarea
+      border-radius 0
+      box-sizing border-box
+      height 150px
+      max-width 100%
+      width 100%
+
+      &#body
+        font-size 16px
+        line-height 145%
+
+    input
+      border-radius 0
+      box-sizing border-box
+      height 30px
+      width 100%
+
+      &#title
+        font-weight bold
+        font-size 20px
+        line-height 26px
+        height 40px
+
+    div.control-group
+      &:last-child
+        margin-bottom 0
+
+@media (max-width: 767px)
+  div.topic-new
+    margin 0 -20px
+
+    header
+    div.agreement
+    form
+      padding-left 20px
+      padding-right 20px

@@ -2,9 +2,33 @@
 {% extends "boards/layout.jinja2" %}
 
 {% block content %}
+<div class="topic-new">
+  <header>
+    <div class="container">
+      <h3>New topic</h3>
+    </div>
+  </header>
+  <div class="agreement">
+    <div class="container">
+      <p>We'll use this area to display posting agreement.</p>
+      <p>However as it is not yet implemented, this text serve as a placeholder.</p>
+      <p>Basically, we'll have few rules...</p>
+      <ul>
+        <li>Please start topic at the appropriate board.</li>
+        <li>There should be no active topic with the same subject before starting a new one.</li>
+        <li>Don't post anything that will get me into jail.</li>
+        <li>Do recycle topic.</li>
+      </ul>
+      <p>If you disagree, you may go back now:</p>
+      <a href="{{ request.resource_url(board) }}" class="btn btn-danger">Back</a>
+    </div>
+  </div>
   <form action="{{ request.resource_url(board, "new") }}" method="POST">
-    {{ form_field(form.title) }}
-    {{ form_field(form.body) }}
-    {{ form_submit("Post new topic") }}
+    <div class="container">
+      {{ form_field(form.title) }}
+      {{ form_field(form.body) }}
+      {{ form_submit("Post new topic") }}
+    </div>
   </form>
+</div>
 {% endblock %}

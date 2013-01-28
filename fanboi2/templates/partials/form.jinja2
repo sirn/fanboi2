@@ -1,7 +1,7 @@
 {% macro form_field(field) %}
   <div id="field-{{ field.id }}" class="control-group{% if field.errors %} error{% endif %}">
     <label class="control-label" for="{{ field.id }}">{{ field.label.text }}
-    {% if field.flags.required %}<abbr class="Required">*</abbr></label>{% endif %}
+    {% if field.flags.required %}<abbr title="Required">*</abbr></label>{% endif %}
     <div class="controls">
       {{ field }}
       {% if field.errors %}
@@ -14,7 +14,7 @@
 {% macro form_submit(label) %}
   <div class="control-group">
     <div class="controls">
-      <button type="submit" class="btn">{{ label }}</button>
+      <button type="submit" class="btn btn-primary">{{ label }}</button>
     </div>
   </div>
 {% endmacro %}
