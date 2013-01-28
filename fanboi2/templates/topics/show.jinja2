@@ -1,21 +1,25 @@
 {% from "partials/form.jinja2" import form_field, form_submit %}
+{% from "partials/post.jinja2" import post_block %}
 {% extends "topics/layout.jinja2" %}
 
 {% block content %}
-  {% for post in posts %}
-    <div id="post-{{ post.obj.id }}" class="well">
-      <dl id="p{{ post.obj.number }}">
-        <dt>{{ post.obj.number }}. Posted at {{ post.obj.created_at }}</dt>
-        <dd>{{ post.obj.body }}</dd>
-      </dl>
+<div class="topic-show">
+  <div class="posts">
+    <div class="container">
+      {% for post in posts %}
+        {{ post_block(post) }}
+      {% endfor %}
     </div>
-  {% endfor %}
-
-  <div class="well">
-    <h3>Reply</h3>
-    <form action="{{ request.resource_url(topic) }}" method="POST">
-      {{ form_field(form.body) }}
-      {{ form_submit("Post reply") }}
-    </form>
   </div>
+
+  <div class="container">
+    <div class="well">
+      <h3>Reply</h3>
+      <form action="{{ request.resource_url(topic) }}" method="POST">
+        {{ form_field(form.body) }}
+        {{ form_submit("Post reply") }}
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}

@@ -1,0 +1,44 @@
+div.posts
+  background-color #f3f5f6
+  padding 20px 0
+
+  div.post
+
+    + div.post
+      margin-top 8px
+
+    dl
+      background-color #fff
+      border 1px solid #d6dde0
+      margin 0
+      padding 0 20px 20px
+
+      dt
+        color #7f8f96
+        margin 15px 0
+
+        ul
+          display block
+          font-size 12px
+
+          li
+            display inline-block
+
+            &.number
+              a.label
+                background-color #7f9096
+                border-radius 0
+                color #fff
+                margin-right 5px
+                padding 3px 6px
+                text-shadow none
+
+      dd
+        color #333
+        font-size 16px
+        line-height 145%
+        margin 0
+
+@media (max-width: 767px)
+  div.posts
+    padding 20px
