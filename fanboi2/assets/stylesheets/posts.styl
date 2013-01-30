@@ -35,10 +35,34 @@ div.posts
 
       dd
         color #333
-        font-size 16px
-        line-height 145%
+        font-size post-font-size
+        line-height post-line-height
         margin 0
 
 @media (max-width: 767px)
   div.posts
     padding 20px
+
+
+div.post-new
+  background-color #fff
+
+  header
+    padding 15px 0
+
+    h3
+      color site-orange
+      font-size 20px
+      line-height 100%
+
+  form
+    reset-well()
+    padding 25px 0
+    margin 0
+
+@media (max-width: 768px)
+  div.post-new
+    header
+    form
+      padding-left 20px
+      padding-right 20px

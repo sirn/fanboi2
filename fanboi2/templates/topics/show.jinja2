@@ -12,14 +12,18 @@
     </div>
   </div>
 
-  <div class="container">
-    <div class="well">
+  <div class="post-new">
+    <header class="container">
       <h3>Reply</h3>
-      <form action="{{ request.resource_url(topic) }}" method="POST">
-        {{ form_field(form.body) }}
-        {{ form_submit("Post reply") }}
-      </form>
-    </div>
+    </header>
+    <form action="{{ request.resource_url(topic) }}" method="POST" class="form">
+      <div class="container">
+        <div class="well">
+          {{ form_field(form.body) }}
+          {{ form_submit("Post Reply") }}
+        </div>
+      </div>
+    </form>
   </div>
 </div>
 {% endblock %}

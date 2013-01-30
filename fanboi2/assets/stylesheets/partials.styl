@@ -76,3 +76,55 @@ div.leader
     background-color #c72843
     background-image linear-gradient(top, #ba253f, #c72843)
     border-color #fff
+
+
+.form
+  reset-well()
+  background-color #394044
+
+  label
+    color #fff
+    font-size 12px
+    font-weight bold
+    line-height 100%
+
+    abbr[title="Required"]
+      font-weight normal
+      color #ddd
+      border-bottom none
+
+  div.control-group
+    &:last-child
+      margin-bottom 0
+
+  input
+    border-radius 0
+    box-sizing border-box
+    height 30px
+    width 100%
+
+    &#title
+      font-weight bold
+      font-size 20px
+      line-height 26px
+      height 40px
+
+  textarea
+    border-radius 0
+    box-sizing border-box
+    height 150px
+    max-width 100%
+    width 100%
+
+    &#body
+      font-size post-font-size
+      line-height post-line-height
+
+
+div.empty
+  padding 30px 0
+  font-size 19px
+  line-height 100%
+
+  p:last-child
+    margin-bottom 0

@@ -36,7 +36,10 @@
     </div>
   {% else %}
     <div class="container">
-      <p>No topics, be the first to <a href="{{ request.resource_url(board, "new") }}">post one</a>!</p>
+      <div class="empty">
+        <p>No topics, be the first to post one!</p>
+        <a href="{{ request.resource_url(board, "new") }}" class="btn btn-primary">Start New Topic</a>
+      </div>
     </div>
   {% endfor %}
 </div>
