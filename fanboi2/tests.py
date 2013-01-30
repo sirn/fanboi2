@@ -100,14 +100,14 @@ class TestJsonType(unittest.TestCase):
         return table
 
     def test_compile(self):
-        self.assertEqual(str(self._getTargetClass()()), "BLOB")
+        self.assertEqual(str(self._getTargetClass()()), "TEXT")
 
     def test_field(self):
         table = self._makeOne()
         table.insert().execute(baz=1, bar={"x": 1})
         table.insert().execute(baz=2, bar=None)
         table.insert().execute(baz=3)  # bar should have default {} type.
-        self.assertItemsEqual(
+        self.assertEqual(
             [(1, {u'x': 1}), (2, None), (3, {})],
             table.select().order_by(table.c.baz).execute().fetchall()
         )
@@ -150,26 +150,26 @@ class BoardModelTest(ModelMixin, unittest.TestCase):
 
     def test_interface(self):
         from fanboi2.interfaces import IBoard
-        board = self._makeOne(title=u"Foobar", slug="foo")
+        board = self._makeOne(title="Foobar", slug="foo")
         self.assertTrue(verifyObject(IBoard, board))
 
     def test_relations(self):
-        board = self._makeOne(title=u"Foobar", slug="foo")
-        self.assertItemsEqual([], board.topics)
+        board = self._makeOne(title="Foobar", slug="foo")
+        self.assertEqual([], list(board.topics))
 
     def test_topics(self):
         from fanboi2.models import Topic
-        board1 = self._makeOne(title=u"Foobar", slug="foo")
-        board2 = self._makeOne(title=u"Lorem", slug="lorem")
-        topic1 = Topic(board=board1, title=u"Heavenly Moon")
-        topic2 = Topic(board=board1, title=u"Beastie Starter")
-        topic3 = Topic(board=board1, title=u"Evans")
+        board1 = self._makeOne(title="Foobar", slug="foo")
+        board2 = self._makeOne(title="Lorem", slug="lorem")
+        topic1 = Topic(board=board1, title="Heavenly Moon")
+        topic2 = Topic(board=board1, title="Beastie Starter")
+        topic3 = Topic(board=board1, title="Evans")
         DBSession.add(topic1)
         DBSession.add(topic2)
         DBSession.add(topic3)
         DBSession.flush()
-        self.assertItemsEqual([topic3, topic2, topic1], board1.topics)
-        self.assertItemsEqual([], board2.topics)
+        self.assertEqual(set([topic3, topic2, topic1]), set(board1.topics))
+        self.assertEqual([], list(board2.topics))
 
 
 class TopicModelTest(ModelMixin, unittest.TestCase):
@@ -193,41 +193,41 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
 
     def test_interface(self):
         from fanboi2.interfaces import ITopic
-        board = self._makeBoard(title=u"Foobar", slug="foo")
-        topic = self._makeOne(board=board, title=u"Lorem ipsum dolor")
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic = self._makeOne(board=board, title="Lorem ipsum dolor")
         self.assertTrue(verifyObject(ITopic, topic))
 
     def test_relations(self):
-        board = self._makeBoard(title=u"Foobar", slug="foo")
-        topic = self._makeOne(board=board, title=u"Lorem ipsum dolor")
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic = self._makeOne(board=board, title="Lorem ipsum dolor")
         self.assertEqual(topic.board, board)
-        self.assertItemsEqual([], topic.posts)
-        self.assertItemsEqual([topic], board.topics)
+        self.assertEqual([], list(topic.posts))
+        self.assertEqual([topic], list(board.topics))
 
     def test_posts(self):
         from fanboi2.models import Post
-        board = self._makeBoard(title=u"Foobar", slug="foo")
-        topic1 = self._makeOne(board=board, title=u"Lorem ipsum dolor")
-        topic2 = self._makeOne(board=board, title=u"Some lonely topic")
-        post1 = Post(topic=topic1, body=u"Lorem", ip_address="0.0.0.0")
-        post2 = Post(topic=topic1, body=u"Ipsum", ip_address="0.0.0.0")
-        post3 = Post(topic=topic1, body=u"Dolor", ip_address="0.0.0.0")
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic1 = self._makeOne(board=board, title="Lorem ipsum dolor")
+        topic2 = self._makeOne(board=board, title="Some lonely topic")
+        post1 = Post(topic=topic1, body="Lorem", ip_address="0.0.0.0")
+        post2 = Post(topic=topic1, body="Ipsum", ip_address="0.0.0.0")
+        post3 = Post(topic=topic1, body="Dolor", ip_address="0.0.0.0")
         DBSession.add(post1)
         DBSession.add(post2)
         DBSession.add(post3)
         DBSession.flush()
-        self.assertItemsEqual([post1, post2, post3], topic1.posts)
-        self.assertItemsEqual([], topic2.posts)
+        self.assertEqual([post1, post2, post3], list(topic1.posts))
+        self.assertEqual([], list(topic2.posts))
 
     def test_post_count(self):
         from fanboi2.models import Post
-        board = self._makeBoard(title=u"Foobar", slug="foo")
-        topic = self._makeOne(board=board, title=u"Lorem ipsum dolor")
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic = self._makeOne(board=board, title="Lorem ipsum dolor")
         self.assertEqual(topic.post_count, 0)
-        for x in xrange(3):
+        for x in range(3):
             post = Post(
                 topic=topic,
-                body=u"Hello, world!",
+                body="Hello, world!",
                 ip_address="0.0.0.0")
             DBSession.add(post)
         DBSession.flush()
@@ -235,17 +235,17 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
 
     def test_posted_at(self):
         from fanboi2.models import Post
-        board = self._makeBoard(title=u"Foobar", slug="foo")
-        topic = self._makeOne(board=board, title=u"Lorem ipsum dolor")
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic = self._makeOne(board=board, title="Lorem ipsum dolor")
         self.assertIsNone(topic.posted_at)
-        for x in xrange(2):
+        for x in range(2):
             post = Post(topic=topic,
-                        body=u"Hello, world!",
+                        body="Hello, world!",
                         ip_address="0.0.0.0",
                         created_at=datetime.datetime.now() -
                         datetime.timedelta(days=1))
             DBSession.add(post)
-        post = Post(topic=topic, body=u"Hello, world!", ip_address="0.0.0.0")
+        post = Post(topic=topic, body="Hello, world!", ip_address="0.0.0.0")
         DBSession.add(post)
         DBSession.flush()
         self.assertEqual(topic.created_at, post.created_at)
@@ -281,29 +281,29 @@ class PostModelTest(ModelMixin, unittest.TestCase):
 
     def test_interface(self):
         from fanboi2.interfaces import IPost
-        board = self._makeBoard(title=u"Foobar", slug="foo")
-        topic = self._makeTopic(board=board, title=u"Lorem ipsum dolor")
-        post = self._makeOne(topic=topic, body=u"Hello, world")
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
+        post = self._makeOne(topic=topic, body="Hello, world")
         self.assertTrue(verifyObject(IPost, post))
 
     def test_relations(self):
-        board = self._makeBoard(title=u"Foobar", slug="foo")
-        topic = self._makeTopic(board=board, title=u"Lorem ipsum dolor sit")
-        post = self._makeOne(topic=topic, body=u"Hello, world")
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
+        post = self._makeOne(topic=topic, body="Hello, world")
         self.assertEqual(post.topic, topic)
-        self.assertItemsEqual([post], topic.posts)
+        self.assertEqual([post], list(topic.posts))
 
     def test_number(self):
-        board = self._makeBoard(title=u"Foobar", slug="foo")
-        topic1 = self._makeTopic(board=board, title=u"Numbering one")
-        topic2 = self._makeTopic(board=board, title=u"Numbering two")
-        post1 = self._makeOne(topic=topic1, body=u"Topic 1, post 1")
-        post2 = self._makeOne(topic=topic1, body=u"Topic 1, post 2")
-        post3 = self._makeOne(topic=topic2, body=u"Topic 2, post 1")
-        post4 = self._makeOne(topic=topic1, body=u"Topic 1, post 3")
-        post5 = self._makeOne(topic=topic2, body=u"Topic 2, post 2")
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic1 = self._makeTopic(board=board, title="Numbering one")
+        topic2 = self._makeTopic(board=board, title="Numbering two")
+        post1 = self._makeOne(topic=topic1, body="Topic 1, post 1")
+        post2 = self._makeOne(topic=topic1, body="Topic 1, post 2")
+        post3 = self._makeOne(topic=topic2, body="Topic 2, post 1")
+        post4 = self._makeOne(topic=topic1, body="Topic 1, post 3")
+        post5 = self._makeOne(topic=topic2, body="Topic 2, post 2")
         # Force update to ensure its number remain the same.
-        post4.body = u"Topic1, post 3, updated!"
+        post4.body = "Topic1, post 3, updated!"
         DBSession.add(post4)
         DBSession.flush()
         self.assertEqual(post1.number, 1)
@@ -332,22 +332,22 @@ class RootFactoryTest(ModelMixin, unittest.TestCase):
         self.assertIsNone(root.__name__)
 
     def test_objs(self):
-        board1 = self._makeBoard(title=u"Foobar", slug="foobar")
-        board2 = self._makeBoard(title=u"Lorem", slug="lorem")
-        board3 = self._makeBoard(title=u"Amplifier", slug="amplifier")
+        board1 = self._makeBoard(title="Foobar", slug="foobar")
+        board2 = self._makeBoard(title="Lorem", slug="lorem")
+        board3 = self._makeBoard(title="Amplifier", slug="amplifier")
         root = self._getTargetClass()({})
         self.assertEqual(root.objs[0].__parent__, root)
         self.assertEqual(root.objs[0].__name__, "amplifier")
-        self.assertItemsEqual([board3, board1, board2],
-                              (b.obj for b in root.objs))
+        self.assertEqual([board3, board1, board2],
+                         [b.obj for b in root.objs])
 
     def test_get_board(self):
-        board = self._makeBoard(title=u"Foobar", slug="foobar")
+        board = self._makeBoard(title="Foobar", slug="foobar")
         root = self._getTargetClass()({})
         self.assertEqual(root['foobar'].__parent__, root)
         self.assertEqual(root['foobar'].__name__, 'foobar')
         self.assertEqual(root['foobar'].obj, board)
-        self.assertItemsEqual([], root['foobar'].objs)
+        self.assertEqual([], root['foobar'].objs)
 
     def test_get_board_nonexists(self):
         root = self._getTargetClass()({})
@@ -381,25 +381,25 @@ class BoardContainerTest(ModelMixin, unittest.TestCase):
         self.assertTrue(verifyObject(IBoardResource, container))
 
     def test_objs(self):
-        board = self._makeOne(title=u"General", slug="general")
-        topic1 = self._makeTopic(board=board, title=u"Lorem ipsum dolor sit")
-        topic2 = self._makeTopic(board=board, title=u"Hello, world")
+        board = self._makeOne(title="General", slug="general")
+        topic1 = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
+        topic2 = self._makeTopic(board=board, title="Hello, world")
         container = self._getTargetClass()({}, board)
         self.assertEqual(container.objs[0].__parent__, container)
         self.assertEqual(container.objs[0].__name__, topic1.id)
-        self.assertItemsEqual([topic1, topic2],
-                              (t.obj for t in container.objs))
+        self.assertEqual([topic1, topic2],
+                         [t.obj for t in container.objs])
 
     def test_getitem(self):
-        board = self._makeOne(title=u"General", slug="general")
-        topic1 = self._makeTopic(board=board, title=u"Lorem ipsum dolor sit")
-        topic2 = self._makeTopic(board=board, title=u"Hello, world")
+        board = self._makeOne(title="General", slug="general")
+        topic1 = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
+        topic2 = self._makeTopic(board=board, title="Hello, world")
         container = self._getTargetClass()({}, board)
         self.assertEqual(container[topic1.id].obj, topic1)
         self.assertEqual(container[topic2.id].obj, topic2)
 
     def test_getitem_notfound(self):
-        board = self._makeOne(title=u"General", slug="general")
+        board = self._makeOne(title="General", slug="general")
         container = self._getTargetClass()({}, board)
         with self.assertRaises(KeyError):
             assert not container[123456]  # Non-exists.
@@ -440,34 +440,34 @@ class TopicContainerTest(ModelMixin, unittest.TestCase):
         self.assertTrue(verifyObject(ITopicResource, container))
 
     def test_objs(self):
-        board = self._makeBoard(title=u"General", slug="general")
-        topic1 = self._makeOne(board=board, title=u"Boring topic is boring")
-        topic2 = self._makeOne(board=board, title=u"Yo dawg")
-        self._makePost(topic=topic2, body=u"I heard you like blah blah")
-        post1 = self._makePost(topic=topic1, body=u"Hello, world")
-        post2 = self._makePost(topic=topic1, body=u"Blah blah blah")
-        post3 = self._makePost(topic=topic1, body=u"Lorem ipsum dolor")
+        board = self._makeBoard(title="General", slug="general")
+        topic1 = self._makeOne(board=board, title="Boring topic is boring")
+        topic2 = self._makeOne(board=board, title="Yo dawg")
+        self._makePost(topic=topic2, body="I heard you like blah blah")
+        post1 = self._makePost(topic=topic1, body="Hello, world")
+        post2 = self._makePost(topic=topic1, body="Blah blah blah")
+        post3 = self._makePost(topic=topic1, body="Lorem ipsum dolor")
         container = self._getTargetClass()({}, topic1)
         self.assertEqual(container.objs[0].__parent__, container)
         self.assertEqual(container.objs[0].__name__, post1.number)
-        self.assertItemsEqual([post1, post2, post3],
-                              (p.obj for p in container.objs))
+        self.assertEqual([post1, post2, post3],
+                         [p.obj for p in container.objs])
 
     def test_getitem(self):
         from fanboi2.resources import ScopedTopicContainer
-        board = self._makeBoard(title=u"General", slug="general")
-        topic = self._makeOne(board=board, title=u"Lorem ipsum dolor sit")
-        self._makePost(topic=topic, body=u"Hello, world!")
-        self._makePost(topic=topic, body=u"Blah post!")
+        board = self._makeBoard(title="General", slug="general")
+        topic = self._makeOne(board=board, title="Lorem ipsum dolor sit")
+        self._makePost(topic=topic, body="Hello, world!")
+        self._makePost(topic=topic, body="Blah post!")
         container = self._getTargetClass()({}, topic)
         self.assertIsInstance(container["1"], ScopedTopicContainer)
         self.assertIsInstance(container["1-10"], ScopedTopicContainer)
         self.assertIsInstance(container["recent"], ScopedTopicContainer)
 
     def test_getitem_notfound(self):
-        board = self._makeBoard(title=u"General", slug="general")
-        topic = self._makeOne(board=board, title=u"Lorem ipsum dolor sit")
-        self._makePost(topic=topic, body=u"Hello, world!")
+        board = self._makeBoard(title="General", slug="general")
+        topic = self._makeOne(board=board, title="Lorem ipsum dolor sit")
+        self._makePost(topic=topic, body="Hello, world!")
         container = self._getTargetClass()({}, topic)
         self.assertRaises(KeyError, lambda: container["2"])   # Not found
         self.assertRaises(KeyError, lambda: container["2-3"]) # Not found
@@ -507,97 +507,97 @@ class ScopedTopicContainerTest(ModelMixin, unittest.TestCase):
         from fanboi2.interfaces import ITopicResource
         # Blah, need to pass in the real object since this method will raise
         # KeyError on invalid init.
-        board = self._makeBoard(title=u"Foobar", slug="foobar")
-        topic = self._makeTopic(board=board, title=u"Foo bar foo bar")
-        self._makePost(topic=topic, body=u"Blah, blah, blah")
+        board = self._makeBoard(title="Foobar", slug="foobar")
+        topic = self._makeTopic(board=board, title="Foo bar foo bar")
+        self._makePost(topic=topic, body="Blah, blah, blah")
         container = self._getTargetClass()({}, topic, None, "1")
         self.assertTrue(verifyObject(ITopicResource, container))
 
     def test_objs(self):
-        board = self._makeBoard(title=u"Foobar", slug="foobar")
-        topic = self._makeTopic(board=board, title=u"Hello, world!")
-        post1 = self._makePost(topic=topic, body=u"Blah, hello, hi")
+        board = self._makeBoard(title="Foobar", slug="foobar")
+        topic = self._makeTopic(board=board, title="Hello, world!")
+        post1 = self._makePost(topic=topic, body="Blah, hello, hi")
         container = self._getTargetClass()({}, topic, self, "1")
         self.assertEqual(container.objs[0].__parent__, self)
         self.assertEqual(container.objs[0].__name__, post1.number)
 
     def test_number_query(self):
-        board = self._makeBoard(title=u"Foobar", slug="foobar")
-        topic1 = self._makeTopic(board=board, title=u"Hello, world!")
-        topic2 = self._makeTopic(board=board, title=u"Another post!!1")
-        post1 = self._makePost(topic=topic1, body=u"Post 1")
-        post2 = self._makePost(topic=topic2, body=u"Post 1")
-        post3 = self._makePost(topic=topic1, body=u"Post 2")
-        post4 = self._makePost(topic=topic2, body=u"Post 2")
+        board = self._makeBoard(title="Foobar", slug="foobar")
+        topic1 = self._makeTopic(board=board, title="Hello, world!")
+        topic2 = self._makeTopic(board=board, title="Another post!!1")
+        post1 = self._makePost(topic=topic1, body="Post 1")
+        post2 = self._makePost(topic=topic2, body="Post 1")
+        post3 = self._makePost(topic=topic1, body="Post 2")
+        post4 = self._makePost(topic=topic2, body="Post 2")
         container = self._getTargetClass()({}, topic1, self, "2")
         self.assertEqual(container.objs[0].__parent__, self)
         self.assertEqual(container.objs[0].__name__, post3.number)
-        self.assertItemsEqual([post3], (p.obj for p in container.objs))
+        self.assertEqual([post3], [p.obj for p in container.objs])
 
     def test_range_query(self):
-        board = self._makeBoard(title=u"Foobar", slug="foobar")
-        topic1 = self._makeTopic(board=board, title=u"Hello, world!")
-        topic2 = self._makeTopic(board=board, title=u"Another test")
-        post1 = self._makePost(topic=topic1, body=u"Topic 1, Post 1")
-        post2 = self._makePost(topic=topic1, body=u"Topic 1, Post 2")
-        post3 = self._makePost(topic=topic1, body=u"Topic 1, Post 3")
-        post4 = self._makePost(topic=topic1, body=u"Topic 1, Post 4")
-        post5 = self._makePost(topic=topic2, body=u"Topic 2, Post 1")
-        post6 = self._makePost(topic=topic2, body=u"Topic 2, Post 2")
-        post7 = self._makePost(topic=topic1, body=u"Topic 1, Post 5")
+        board = self._makeBoard(title="Foobar", slug="foobar")
+        topic1 = self._makeTopic(board=board, title="Hello, world!")
+        topic2 = self._makeTopic(board=board, title="Another test")
+        post1 = self._makePost(topic=topic1, body="Topic 1, Post 1")
+        post2 = self._makePost(topic=topic1, body="Topic 1, Post 2")
+        post3 = self._makePost(topic=topic1, body="Topic 1, Post 3")
+        post4 = self._makePost(topic=topic1, body="Topic 1, Post 4")
+        post5 = self._makePost(topic=topic2, body="Topic 2, Post 1")
+        post6 = self._makePost(topic=topic2, body="Topic 2, Post 2")
+        post7 = self._makePost(topic=topic1, body="Topic 1, Post 5")
         container = self._getTargetClass()({}, topic1, self, "2-5")
         self.assertEqual(container.objs[0].__parent__, self)
         self.assertEqual(container.objs[0].__name__, post2.number)
-        self.assertItemsEqual([post2, post3, post4, post7],
-                              (p.obj for p in container.objs))
+        self.assertEqual([post2, post3, post4, post7],
+                         [p.obj for p in container.objs])
 
     def test_range_query_without_end(self):
-        board = self._makeBoard(title=u"Foobar", slug="foobar")
-        topic1 = self._makeTopic(board=board, title=u"Hello, world!")
-        topic2 = self._makeTopic(board=board, title=u"Another test")
-        post1 = self._makePost(topic=topic1, body=u"Topic 1, Post 1")
-        post2 = self._makePost(topic=topic1, body=u"Topic 1, Post 2")
-        post3 = self._makePost(topic=topic1, body=u"Topic 1, Post 3")
-        post4 = self._makePost(topic=topic1, body=u"Topic 1, Post 4")
-        post5 = self._makePost(topic=topic2, body=u"Topic 2, Post 1")
-        post6 = self._makePost(topic=topic2, body=u"Topic 2, Post 2")
-        post7 = self._makePost(topic=topic1, body=u"Topic 1, Post 5")
+        board = self._makeBoard(title="Foobar", slug="foobar")
+        topic1 = self._makeTopic(board=board, title="Hello, world!")
+        topic2 = self._makeTopic(board=board, title="Another test")
+        post1 = self._makePost(topic=topic1, body="Topic 1, Post 1")
+        post2 = self._makePost(topic=topic1, body="Topic 1, Post 2")
+        post3 = self._makePost(topic=topic1, body="Topic 1, Post 3")
+        post4 = self._makePost(topic=topic1, body="Topic 1, Post 4")
+        post5 = self._makePost(topic=topic2, body="Topic 2, Post 1")
+        post6 = self._makePost(topic=topic2, body="Topic 2, Post 2")
+        post7 = self._makePost(topic=topic1, body="Topic 1, Post 5")
         container = self._getTargetClass()({}, topic1, self, "3-")
         self.assertEqual(container.objs[0].__parent__, self)
         self.assertEqual(container.objs[0].__name__, post3.number)
-        self.assertItemsEqual([post3, post4, post7],
-                              (p.obj for p in container.objs))
+        self.assertEqual([post3, post4, post7],
+                         [p.obj for p in container.objs])
 
     def test_range_query_without_start(self):
-        board = self._makeBoard(title=u"Foobar", slug="foobar")
-        topic1 = self._makeTopic(board=board, title=u"Hello, world!")
-        topic2 = self._makeTopic(board=board, title=u"Another test")
-        post1 = self._makePost(topic=topic1, body=u"Topic 1, Post 1")
-        post2 = self._makePost(topic=topic1, body=u"Topic 1, Post 2")
-        post3 = self._makePost(topic=topic1, body=u"Topic 1, Post 3")
-        post4 = self._makePost(topic=topic1, body=u"Topic 1, Post 4")
-        post5 = self._makePost(topic=topic2, body=u"Topic 2, Post 1")
-        post6 = self._makePost(topic=topic2, body=u"Topic 2, Post 2")
-        post7 = self._makePost(topic=topic1, body=u"Topic 1, Post 5")
+        board = self._makeBoard(title="Foobar", slug="foobar")
+        topic1 = self._makeTopic(board=board, title="Hello, world!")
+        topic2 = self._makeTopic(board=board, title="Another test")
+        post1 = self._makePost(topic=topic1, body="Topic 1, Post 1")
+        post2 = self._makePost(topic=topic1, body="Topic 1, Post 2")
+        post3 = self._makePost(topic=topic1, body="Topic 1, Post 3")
+        post4 = self._makePost(topic=topic1, body="Topic 1, Post 4")
+        post5 = self._makePost(topic=topic2, body="Topic 2, Post 1")
+        post6 = self._makePost(topic=topic2, body="Topic 2, Post 2")
+        post7 = self._makePost(topic=topic1, body="Topic 1, Post 5")
         container = self._getTargetClass()({}, topic1, self, "-3")
         self.assertEqual(container.objs[0].__parent__, self)
         self.assertEqual(container.objs[0].__name__, post1.number)
-        self.assertItemsEqual([post1, post2, post3],
-                              (p.obj for p in container.objs))
+        self.assertEqual([post1, post2, post3],
+                         [p.obj for p in container.objs])
 
     def test_recent_query(self):
-        board = self._makeBoard(title=u"Foobar", slug="foobar")
-        topic1 = self._makeTopic(board=board, title=u"Hello, world!")
-        topic2 = self._makeTopic(board=board, title=u"Another test")
-        post1 = self._makePost(topic=topic1, body=u"Topic 1, Post 1")
-        post2 = self._makePost(topic=topic1, body=u"Topic 1, Post 2")
-        for i in xrange(5):
-            self._makePost(topic=topic2, body=u"Dummy post, blah blah.")
-        post3 = self._makePost(topic=topic2, body=u"Topic 2, Post 6")
-        post4 = self._makePost(topic=topic1, body=u"Topic 1, Post 3")
-        for i in xrange(28):
-            self._makePost(topic=topic2, body=u"Another dummy post, blah.")
-        post5 = self._makePost(topic=topic2, body=u"Topic 2, Post 35")
+        board = self._makeBoard(title="Foobar", slug="foobar")
+        topic1 = self._makeTopic(board=board, title="Hello, world!")
+        topic2 = self._makeTopic(board=board, title="Another test")
+        post1 = self._makePost(topic=topic1, body="Topic 1, Post 1")
+        post2 = self._makePost(topic=topic1, body="Topic 1, Post 2")
+        for i in range(5):
+            self._makePost(topic=topic2, body="Dummy post, blah blah.")
+        post3 = self._makePost(topic=topic2, body="Topic 2, Post 6")
+        post4 = self._makePost(topic=topic1, body="Topic 1, Post 3")
+        for i in range(28):
+            self._makePost(topic=topic2, body="Another dummy post, blah.")
+        post5 = self._makePost(topic=topic2, body="Topic 2, Post 35")
         container = self._getTargetClass()({}, topic2, self, "recent")
         self.assertEqual(container.objs[0].__parent__, self)
         self.assertEqual(container.objs[0].__name__, post3.number)
@@ -652,47 +652,47 @@ class TestViews(ModelMixin, unittest.TestCase):
 
     def test_root_view(self):
         from fanboi2.views import root_view
-        board1 = self._makeBoard(title=u"General", slug="general")
-        board2 = self._makeBoard(title=u"Foobar", slug="foo")
+        board1 = self._makeBoard(title="General", slug="general")
+        board2 = self._makeBoard(title="Foobar", slug="foo")
         request = testing.DummyRequest()
         request.context = self._getRoot(request)
         view = root_view(request)
         self.assertEqual(request.resource_path(view["boards"][0]), "/foo/")
-        self.assertItemsEqual([board2, board1],
-                              (b.obj for b in view["boards"]))
+        self.assertEqual([board2, board1],
+                         [b.obj for b in view["boards"]])
 
     def test_board_view(self):
         from fanboi2.views import board_view
-        board = self._makeBoard(title=u"General", slug="general")
-        topic1 = self._makeTopic(board=board, title=u"Hello, world!")
-        topic2 = self._makeTopic(board=board, title=u"Python!!!11one")
+        board = self._makeBoard(title="General", slug="general")
+        topic1 = self._makeTopic(board=board, title="Hello, world!")
+        topic2 = self._makeTopic(board=board, title="Python!!!11one")
         request = testing.DummyRequest()
         request.context = self._getRoot(request)["general"]
         view = board_view(request)
-        self.assertItemsEqual([board], (b.obj for b in view["boards"]))
+        self.assertEqual([board], [b.obj for b in view["boards"]])
         self.assertEqual(view["board"].obj, board)
         self.assertEqual(request.resource_path(view["topics"][0]),
                          "/general/%s/" % topic1.id)
-        self.assertItemsEqual([topic1, topic2],
-                              (t.obj for t in view["topics"]))
+        self.assertEqual([topic1, topic2],
+                         [t.obj for t in view["topics"]])
 
     def test_new_board_view_get(self):
         from fanboi2.views import new_board_view
-        board = self._makeBoard(title=u"General", slug="general")
+        board = self._makeBoard(title="General", slug="general")
         request = testing.DummyRequest(MultiDict({}))
         request.context = self._getRoot(request)["general"]
         view = new_board_view(request)
-        self.assertItemsEqual([board], (b.obj for b in view["boards"]))
+        self.assertEqual([board], [b.obj for b in view["boards"]])
         self.assertEqual(view["board"].obj, board)
         self.assertDictEqual(view["form"].errors, {})
 
     def test_new_board_view_post(self):
         from fanboi2.views import new_board_view
         from fanboi2.models import DBSession, Topic
-        self._makeBoard(title=u"General", slug="general")
+        self._makeBoard(title="General", slug="general")
         request = testing.DummyRequest(MultiDict({
-            'title': u"One more thing...",
-            'body': u"And now for something completely different...",
+            'title': "One more thing...",
+            'body': "And now for something completely different...",
         }), post=True)
         request.remote_addr = "127.0.0.1"
         request.context = self._getRoot(request)["general"]
@@ -703,10 +703,10 @@ class TestViews(ModelMixin, unittest.TestCase):
     def test_new_board_view_post_failure(self):
         from fanboi2.views import new_board_view
         from fanboi2.models import DBSession, Topic
-        self._makeBoard(title=u"General", slug="general")
+        self._makeBoard(title="General", slug="general")
         request = testing.DummyRequest(MultiDict({
-            'title': u"One more thing...",
-            'body': u"",
+            'title': "One more thing...",
+            'body': "",
         }), post=True)
         request.context = self._getRoot(request)["general"]
         view = new_board_view(request)
@@ -718,27 +718,27 @@ class TestViews(ModelMixin, unittest.TestCase):
 
     def test_topic_view_get(self):
         from fanboi2.views import topic_view
-        board = self._makeBoard(title=u"General", slug="general")
-        topic = self._makeTopic(board=board, title=u"Lorem ipsum dolor sit")
-        post1 = self._makePost(topic=topic, body=u"Hello, world!")
-        post2 = self._makePost(topic=topic, body=u"Boring post is boring!")
+        board = self._makeBoard(title="General", slug="general")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
+        post1 = self._makePost(topic=topic, body="Hello, world!")
+        post2 = self._makePost(topic=topic, body="Boring post is boring!")
         request = testing.DummyRequest(MultiDict({}))
         request.context = self._getRoot(request)["general"][str(topic.id)]
         view = topic_view(request)
-        self.assertItemsEqual([board], (b.obj for b in view["boards"]))
+        self.assertEqual([board], [b.obj for b in view["boards"]])
         self.assertEqual(view["board"].obj, board)
         self.assertEqual(view["topic"].obj, topic)
         self.assertDictEqual(view["form"].errors, {})
-        self.assertItemsEqual([post1, post2],
-                              (p.obj for p in view["posts"]))
+        self.assertEqual([post1, post2],
+                         [p.obj for p in view["posts"]])
 
     def test_topic_view_post(self):
         from fanboi2.views import topic_view
         from fanboi2.models import DBSession, Post
-        board = self._makeBoard(title=u"General", slug="general")
-        topic = self._makeTopic(board=board, title=u"Lorem ipsum dolor sit")
+        board = self._makeBoard(title="General", slug="general")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
         request = testing.DummyRequest(MultiDict({
-            'body': u"Boring post..."
+            'body': "Boring post..."
         }), post=True)
         request.remote_addr = "127.0.0.1"
         request.context = self._getRoot(request)["general"][str(topic.id)]
@@ -750,8 +750,8 @@ class TestViews(ModelMixin, unittest.TestCase):
     def test_topic_view_post_failure(self):
         from fanboi2.views import topic_view
         from fanboi2.models import DBSession, Post
-        board = self._makeBoard(title=u"General", slug="general")
-        topic = self._makeTopic(board=board, title=u"Lorem ipsum dolor sit")
+        board = self._makeBoard(title="General", slug="general")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
         request = testing.DummyRequest(MultiDict({'body': 'x'}), post=True)
         request.remote_addr = "127.0.0.1"
         request.context = self._getRoot(request)["general"][str(topic.id)]
@@ -766,8 +766,8 @@ class TestViews(ModelMixin, unittest.TestCase):
         from fanboi2.models import DBSession, Post
         from fanboi2.views import topic_view
         from sqlalchemy.exc import IntegrityError
-        board = self._makeBoard(title=u"General", slug="general")
-        topic = self._makeTopic(board=board, title=u"Lorem ipsum dolor sit")
+        board = self._makeBoard(title="General", slug="general")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
 
         class InvalidRequest(testing.DummyRequest):
             self.retries = False

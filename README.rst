@@ -8,9 +8,9 @@ Getting Started
 
 In order to get the app running, you must first installed the following prerequisites. These instruction will assume you're running Mac OS X with `Homebrew <http://mxcl.github.com/homebrew/>`_ as package manager and setting up a development environment.
 
-- `Python 2.7 <http://www.python.org/>`_ (only 2.x series is supported). Using `virtualenv <http://pypi.python.org/pypi/virtualenv>`_ is recommended but not required.::
+- `Python 3.3 <http://www.python.org/>`_ (**only 3.3** is supported). Using `virtualenv <http://pypi.python.org/pypi/virtualenv>`_ is recommended but not required.::
 
-    $ brew install python
+    $ brew install python3
 
 - `PostgreSQL 9.2 <http://www.postgresql.org/>`_. While any other databases *may* work, it is not tested is not supported.::
 

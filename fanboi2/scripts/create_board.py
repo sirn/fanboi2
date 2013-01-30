@@ -28,7 +28,7 @@ def main(config_uri=sys.argv[1], argv=sys.argv[2:]):
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     with transaction.manager:
-        board = Board(title=unicode(options.title), slug=slug)
+        board = Board(title=options.title, slug=slug)
         DBSession.add(board)
         DBSession.flush()
-        print "Successfully added %s (slug: %s)" % (board.title, board.slug)
+        print("Successfully added %s (slug: %s)" % (board.title, board.slug))

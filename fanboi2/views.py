@@ -23,7 +23,7 @@ def new_board_view(request):
     form = TopicForm(request.params)
     if request.method == 'POST' and form.validate():
         post = Post(body=form.body.data, ip_address=request.remote_addr)
-        post.topic = Topic(board=board.obj, title=unicode(form.title.data))
+        post.topic = Topic(board=board.obj, title=form.title.data)
         DBSession.add(post)
         return HTTPFound(location=request.resource_url(board))
     return locals()
