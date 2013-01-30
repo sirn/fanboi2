@@ -46,7 +46,7 @@ class BaseModel(object):
         return RE_ALL_CAP.sub(r'\1_\2', name).lower()
 
     def __init__(self, **kwargs):
-        for key, value in kwargs.items():
+        for key, value in list(kwargs.items()):
             setattr(self, key, value)
 
 

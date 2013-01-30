@@ -104,7 +104,7 @@ class TestJsonType(unittest.TestCase):
         table.insert().execute(baz=2, bar=None)
         table.insert().execute(baz=3)  # bar should have default {} type.
         self.assertEqual(
-            [(1, {u'x': 1}), (2, None), (3, {})],
+            [(1, {'x': 1}), (2, None), (3, {})],
             table.select().order_by(table.c.baz).execute().fetchall()
         )
 
@@ -735,7 +735,7 @@ class TestViews(ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Topic).count(), 0)
         self.assertEqual(view["form"].title.data, 'One more thing...')
         self.assertDictEqual(view["form"].errors, {
-            'body': [u'This field is required.']
+            'body': ['This field is required.']
         })
 
     def test_topic_view_get(self):
@@ -781,7 +781,7 @@ class TestViews(ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Post).count(), 0)
         self.assertEqual(view["form"].body.data, 'x')
         self.assertDictEqual(view["form"].errors, {
-            'body': [u'Field must be between 2 and 4000 characters long.'],
+            'body': ['Field must be between 2 and 4000 characters long.'],
         })
 
     def test_topic_view_post_repeatable(self):
