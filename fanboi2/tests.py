@@ -16,18 +16,15 @@ class _ModelInstanceSetup(object):
 
     @classmethod
     def tearDownClass(cls):
-        super(_ModelInstanceSetup, cls).tearDownClass()
         Base.metadata.bind = None
         DBSession.remove()
 
     def setUp(self):
-        super(_ModelInstanceSetup, self).setUp()
         Base.metadata.drop_all()
         Base.metadata.create_all()
         transaction.begin()
 
     def tearDown(self):
-        super(_ModelInstanceSetup, self).tearDown()
         transaction.abort()
 
 
@@ -35,7 +32,6 @@ class ModelMixin(_ModelInstanceSetup):
 
     @classmethod
     def setUpClass(cls):
-        super(ModelMixin, cls).setUpClass()
         engine = create_engine(DATABASE_URI)
         DBSession.configure(bind=engine)
         Base.metadata.bind = engine
@@ -204,15 +200,15 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         from fanboi2.models import Topic
         return Topic
 
-    def _makeBoard(self, *args, **kwargs):
+    def _makeBoard(self, **kwargs):
         from fanboi2.models import Board
-        board = Board(*args, **kwargs)
+        board = Board(**kwargs)
         DBSession.add(board)
         DBSession.flush()
         return board
 
-    def _makeOne(self, *args, **kwargs):
-        topic = self._getTargetClass()(*args, **kwargs)
+    def _makeOne(self, **kwargs):
+        topic = self._getTargetClass()(**kwargs)
         DBSession.add(topic)
         DBSession.flush()
         return topic
@@ -283,24 +279,24 @@ class PostModelTest(ModelMixin, unittest.TestCase):
         from fanboi2.models import Post
         return Post
 
-    def _makeBoard(self, *args, **kwargs):
+    def _makeBoard(self, **kwargs):
         from fanboi2.models import Board
-        board = Board(*args, **kwargs)
+        board = Board(**kwargs)
         DBSession.add(board)
         DBSession.flush()
         return board
 
-    def _makeTopic(self, *args, **kwargs):
+    def _makeTopic(self, **kwargs):
         from fanboi2.models import Topic
-        topic = Topic(*args, **kwargs)
+        topic = Topic(**kwargs)
         DBSession.add(topic)
         DBSession.flush()
         return topic
 
-    def _makeOne(self, *args, **kwargs):
+    def _makeOne(self, **kwargs):
         if not kwargs.get('ip_address', None):
             kwargs['ip_address'] = '0.0.0.0'
-        post = self._getTargetClass()(*args, **kwargs)
+        post = self._getTargetClass()(**kwargs)
         DBSession.add(post)
         DBSession.flush()
         return post
@@ -345,9 +341,9 @@ class RootFactoryTest(ModelMixin, unittest.TestCase):
         from fanboi2.resources import RootFactory
         return RootFactory
 
-    def _makeBoard(self, *args, **kwargs):
+    def _makeBoard(self, **kwargs):
         from fanboi2.models import Board
-        board = Board(*args, **kwargs)
+        board = Board(**kwargs)
         DBSession.add(board)
         DBSession.flush()
         return board
@@ -387,16 +383,16 @@ class BoardContainerTest(ModelMixin, unittest.TestCase):
         from fanboi2.resources import BoardContainer
         return BoardContainer
 
-    def _makeTopic(self, *args, **kwargs):
+    def _makeTopic(self, **kwargs):
         from fanboi2.models import Topic
-        topic = Topic(*args, **kwargs)
+        topic = Topic(**kwargs)
         DBSession.add(topic)
         DBSession.flush()
         return topic
 
-    def _makeOne(self, *args, **kwargs):
+    def _makeOne(self, **kwargs):
         from fanboi2.models import Board
-        board = Board(*args, **kwargs)
+        board = Board(**kwargs)
         DBSession.add(board)
         DBSession.flush()
         return board
@@ -437,25 +433,25 @@ class TopicContainerTest(ModelMixin, unittest.TestCase):
         from fanboi2.resources import TopicContainer
         return TopicContainer
 
-    def _makeOne(self, *args, **kwargs):
+    def _makeOne(self, **kwargs):
         from fanboi2.models import Topic
-        topic = Topic(*args, **kwargs)
+        topic = Topic(**kwargs)
         DBSession.add(topic)
         DBSession.flush()
         return topic
 
-    def _makeBoard(self, *args, **kwargs):
+    def _makeBoard(self, **kwargs):
         from fanboi2.models import Board
-        board = Board(*args, **kwargs)
+        board = Board(**kwargs)
         DBSession.add(board)
         DBSession.flush()
         return board
 
-    def _makePost(self, *args, **kwargs):
+    def _makePost(self, **kwargs):
         from fanboi2.models import Post
         if not kwargs.get('ip_address', None):
             kwargs['ip_address'] = '0.0.0.0'
-        post = Post(*args, **kwargs)
+        post = Post(**kwargs)
         DBSession.add(post)
         DBSession.flush()
         return post
@@ -506,25 +502,25 @@ class ScopedTopicContainerTest(ModelMixin, unittest.TestCase):
         from fanboi2.resources import ScopedTopicContainer
         return ScopedTopicContainer
 
-    def _makeTopic(self, *args, **kwargs):
+    def _makeTopic(self, **kwargs):
         from fanboi2.models import Topic
-        topic = Topic(*args, **kwargs)
+        topic = Topic(**kwargs)
         DBSession.add(topic)
         DBSession.flush()
         return topic
 
-    def _makeBoard(self, *args, **kwargs):
+    def _makeBoard(self, **kwargs):
         from fanboi2.models import Board
-        board = Board(*args, **kwargs)
+        board = Board(**kwargs)
         DBSession.add(board)
         DBSession.flush()
         return board
 
-    def _makePost(self, *args, **kwargs):
+    def _makePost(self, **kwargs):
         from fanboi2.models import Post
         if not kwargs.get('ip_address', None):
             kwargs['ip_address'] = '0.0.0.0'
-        post = Post(*args, **kwargs)
+        post = Post(**kwargs)
         DBSession.add(post)
         DBSession.flush()
         return post
@@ -653,25 +649,25 @@ class TestViews(ModelMixin, unittest.TestCase):
         from fanboi2.resources import RootFactory
         return RootFactory(request)
 
-    def _makeBoard(self, *args, **kwargs):
+    def _makeBoard(self, **kwargs):
         from fanboi2.models import Board
-        board = Board(*args, **kwargs)
+        board = Board(**kwargs)
         DBSession.add(board)
         DBSession.flush()
         return board
 
-    def _makeTopic(self, *args, **kwargs):
+    def _makeTopic(self, **kwargs):
         from fanboi2.models import Topic
-        topic = Topic(*args, **kwargs)
+        topic = Topic(**kwargs)
         DBSession.add(topic)
         DBSession.flush()
         return topic
 
-    def _makePost(selfself, *args, **kwargs):
+    def _makePost(self, **kwargs):
         from fanboi2.models import Post
         if not kwargs.get('ip_address', None):
             kwargs['ip_address'] = '0.0.0.0'
-        post = Post(*args, **kwargs)
+        post = Post(**kwargs)
         DBSession.add(post)
         DBSession.flush()
         return post
