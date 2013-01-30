@@ -168,8 +168,34 @@ class BoardModelTest(ModelMixin, unittest.TestCase):
         DBSession.add(topic2)
         DBSession.add(topic3)
         DBSession.flush()
-        self.assertEqual(set([topic3, topic2, topic1]), set(board1.topics))
+        self.assertEqual({topic3, topic2, topic1}, set(board1.topics))
         self.assertEqual([], list(board2.topics))
+
+    def test_topics_sort(self):
+        from datetime import datetime, timedelta
+        from fanboi2.models import Topic, Post
+        board = self._makeOne(title="Foobar", slug="foobar")
+        topic1 = Topic(board=board, title="First!!!111")
+        topic2 = Topic(board=board, title="11111111111!!!!!!!!!")
+        topic3 = Topic(board=board, title="Third!!!11")
+        DBSession.add(topic1)
+        DBSession.add(topic2)
+        DBSession.add(topic3)
+        DBSession.flush()
+        DBSession.add(Post(topic=topic1, body="!!1", ip_address="1.1.1.1"))
+        DBSession.add(Post(
+            topic=topic3,
+            body="333",
+            ip_address="3.3.3.3",
+            created_at=datetime.now() + timedelta(seconds=3)))
+        DBSession.add(Post(
+            topic=topic2,
+            body="LOOK HOW I'M TOTALLY THE FIRST POST!!",
+            ip_address="1.1.1.1",
+            created_at=datetime.now() + timedelta(seconds=5)))
+        DBSession.flush()
+        DBSession.refresh(board)
+        self.assertEqual([topic2, topic3, topic1], list(board.topics))
 
 
 class TopicModelTest(ModelMixin, unittest.TestCase):
@@ -243,7 +269,7 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
                         body="Hello, world!",
                         ip_address="0.0.0.0",
                         created_at=datetime.datetime.now() -
-                        datetime.timedelta(days=1))
+                                   datetime.timedelta(days=1))
             DBSession.add(post)
         post = Post(topic=topic, body="Hello, world!", ip_address="0.0.0.0")
         DBSession.add(post)
@@ -387,8 +413,8 @@ class BoardContainerTest(ModelMixin, unittest.TestCase):
         container = self._getTargetClass()({}, board)
         self.assertEqual(container.objs[0].__parent__, container)
         self.assertEqual(container.objs[0].__name__, topic1.id)
-        self.assertEqual([topic1, topic2],
-                         [t.obj for t in container.objs])
+        self.assertEqual({topic1, topic2},
+                         {t.obj for t in container.objs})
 
     def test_getitem(self):
         board = self._makeOne(title="General", slug="general")
@@ -673,8 +699,8 @@ class TestViews(ModelMixin, unittest.TestCase):
         self.assertEqual(view["board"].obj, board)
         self.assertEqual(request.resource_path(view["topics"][0]),
                          "/general/%s/" % topic1.id)
-        self.assertEqual([topic1, topic2],
-                         [t.obj for t in view["topics"]])
+        self.assertEqual({topic1, topic2},
+                         {t.obj for t in view["topics"]})
 
     def test_new_board_view_get(self):
         from fanboi2.views import new_board_view
