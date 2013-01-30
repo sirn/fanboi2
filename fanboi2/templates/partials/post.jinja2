@@ -7,7 +7,7 @@
         <li class="created">Posted {{ post.obj.created_at }}</li>
       </ul>
     </dt>
-    <dd>{{ post.obj.body }}</dd>
+    <dd>{{ post.obj.body|format_text }}</dd>
   </dl>
 </div>
 {% endmacro %}

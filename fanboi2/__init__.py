@@ -5,6 +5,7 @@ from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 from .models import DBSession, Base
 from .resources import RootFactory
+from .formatters import format_text
 
 
 def remote_addr(request):
@@ -29,5 +30,9 @@ def main(global_config, **settings):  # pragma: no cover
     config.include(pyramid_jinja2)
     config.include(pyramid_zcml)
     config.load_zcml('routes.zcml')
+
+    jinja2_env = config.get_jinja2_environment()
+    jinja2_env.filters['format_text'] = format_text
+
     config.scan()
     return config.make_wsgi_app()
