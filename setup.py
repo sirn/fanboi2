@@ -19,7 +19,6 @@ requires = [
     'alembic',
     'wtforms',
     'webtest',
-    'ipaddr',
     'psycopg2',
     ]
 
@@ -29,6 +28,7 @@ setup(name='fanboi2',
       long_description=readme + '\n\n' + changes,
       classifiers=[
         "programming language :: python",
+        "programming language :: python :: 3",
         "framework :: pyramid",
         "topic :: internet :: www/http",
         "topic :: internet :: www/http :: wsgi :: application",

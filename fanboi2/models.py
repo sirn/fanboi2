@@ -1,6 +1,6 @@
 import json
 import re
-from sqlalchemy import Column, Integer, String, DateTime, Unicode, Binary,\
+from sqlalchemy import Column, Integer, String, DateTime, Unicode, Text,\
     ForeignKey, TypeDecorator, UniqueConstraint, func, select, desc, event
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship,\
@@ -22,7 +22,7 @@ class JsonType(TypeDecorator):
     ``NULL`` in the database, a default value of empty :type:`dict` is
     returned on retrieval.
     """
-    impl = Binary
+    impl = Text
 
     def process_bind_param(self, value, dialect):
         return json.dumps(value)
@@ -46,7 +46,7 @@ class BaseModel(object):
         return RE_ALL_CAP.sub(r'\1_\2', name).lower()
 
     def __init__(self, **kwargs):
-        for key, value in kwargs.iteritems():
+        for key, value in list(kwargs.items()):
             setattr(self, key, value)
 
 
@@ -90,7 +90,7 @@ class Post(BaseModel, Base):
     ip_address = Column(String, nullable=False)
     ident = Column(String(32), nullable=True)
     number = Column(Integer, nullable=False)
-    body = Column(Unicode, nullable=False)
+    body = Column(Text, nullable=False)
     topic = relationship('Topic',
                          backref=backref('posts',
                                          lazy='dynamic',
