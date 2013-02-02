@@ -12,14 +12,14 @@ def root_view(request):
 
 def board_view(request):
     board = request.context
-    boards = board.__parent__.objs
+    boards = request.context.boards
     topics = board.objs
     return locals()
 
 
 def new_board_view(request):
     board = request.context
-    boards = board.__parent__.objs
+    boards = request.context.boards
     form = TopicForm(request.params)
     if request.method == 'POST' and form.validate():
         post = Post(body=form.body.data, ip_address=request.remote_addr)
@@ -31,8 +31,8 @@ def new_board_view(request):
 
 def topic_view(request):
     topic = request.context
-    board = topic.__parent__
-    boards = board.__parent__.objs
+    board = request.context.board
+    boards = request.context.boards
     posts = topic.objs
     form = PostForm(request.params)
     if request.method == 'POST' and form.validate():

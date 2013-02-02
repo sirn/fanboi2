@@ -335,6 +335,66 @@ class PostModelTest(ModelMixin, unittest.TestCase):
         self.assertEqual(post5.number, 2)
 
 
+class BaseContainerTest(unittest.TestCase):
+
+    def _getTargetClass(self):
+        from fanboi2.resources import BaseContainer
+
+        class MockContainer(BaseContainer):
+            pass
+        return MockContainer
+
+    def test_init(self):
+        container = self._getTargetClass()("request")
+        self.assertEqual(container.request, "request")
+        self.assertEqual(container.__parent__, None)
+        self.assertEqual(container.__name__, None)
+
+    def test_root(self):
+        class MockRootContainer(object):
+            @property
+            def root(self):
+                return self
+
+        mock = MockRootContainer()
+        container = self._getTargetClass()({})
+        container.__parent__ = mock
+        self.assertEqual(container.root, mock)
+
+    def test_boards(self):
+        class MockBoardsContainer(object):
+            @property
+            def boards(self):
+                return self
+
+        mock = MockBoardsContainer()
+        container = self._getTargetClass()({})
+        container.__parent__ = mock
+        self.assertEqual(container.boards, mock)
+
+    def test_board(self):
+        class MockBoardContainer(object):
+            @property
+            def board(self):
+                return self
+
+        mock = MockBoardContainer()
+        container = self._getTargetClass()({})
+        container.__parent__ = mock
+        self.assertEqual(container.board, mock)
+
+    def test_topic(self):
+        class MockTopicContainer(object):
+            @property
+            def topic(self):
+                return self
+
+        mock = MockTopicContainer()
+        container = self._getTargetClass()({})
+        container.__parent__ = mock
+        self.assertEqual(container.topic, mock)
+
+
 class RootFactoryTest(ModelMixin, unittest.TestCase):
 
     def _getTargetClass(self):
@@ -362,6 +422,11 @@ class RootFactoryTest(ModelMixin, unittest.TestCase):
         self.assertEqual(root.objs[0].__name__, "amplifier")
         self.assertEqual([board3, board1, board2],
                          [b.obj for b in root.objs])
+
+    def test_accessors(self):
+        root = self._getTargetClass()({})
+        self.assertEqual(root.root, root)
+        self.assertEqual(root.boards, root.objs)
 
     def test_get_board(self):
         board = self._makeBoard(title="Foobar", slug="foobar")
@@ -411,6 +476,17 @@ class BoardContainerTest(ModelMixin, unittest.TestCase):
         self.assertEqual(container.objs[0].__name__, topic1.id)
         self.assertEqual({topic1, topic2},
                          {t.obj for t in container.objs})
+
+    def test_accessors(self):
+        from fanboi2.resources import RootFactory
+        root = RootFactory({})
+        board = self._makeOne(title="General", slug="general")
+        container = self._getTargetClass()({}, board)
+        container.__parent__ = root
+        self.assertEqual(container.root, root)
+        self.assertEqual(container.boards, root.objs)
+        self.assertEqual(container.board, container)
+        self.assertRaises(AttributeError, lambda: container.topic)
 
     def test_getitem(self):
         board = self._makeOne(title="General", slug="general")
@@ -474,6 +550,19 @@ class TopicContainerTest(ModelMixin, unittest.TestCase):
         self.assertEqual(container.objs[0].__name__, post1.number)
         self.assertEqual([post1, post2, post3],
                          [p.obj for p in container.objs])
+
+    def test_accessors(self):
+        from fanboi2.resources import RootFactory, BoardContainer
+        root = RootFactory({})
+        board = BoardContainer({}, self._makeBoard(title="Foo", slug="foo"))
+        board.__parent__ = root
+        topic = self._makeOne(board=board.obj, title="At first I was like...")
+        container = self._getTargetClass()({}, topic)
+        container.__parent__ = board
+        self.assertEqual(container.root, root)
+        self.assertEqual(container.boards, root.objs)
+        self.assertEqual(container.board, board)
+        self.assertEqual(container.topic, container)
 
     def test_getitem(self):
         from fanboi2.resources import ScopedTopicContainer
@@ -542,6 +631,23 @@ class ScopedTopicContainerTest(ModelMixin, unittest.TestCase):
         container = self._getTargetClass()({}, topic, self, "1")
         self.assertEqual(container.objs[0].__parent__, self)
         self.assertEqual(container.objs[0].__name__, post1.number)
+
+    def test_accessors(self):
+        from fanboi2.resources import RootFactory, BoardContainer, \
+            TopicContainer
+        root = RootFactory({})
+        board = BoardContainer({}, self._makeBoard(title="Foo", slug="foo"))
+        board.__parent__ = root
+        obj = self._makeTopic(board=board.obj, title="Foobar blah blah")
+        self._makePost(topic=obj, body="Hello world foo bar")
+        topic = TopicContainer({}, obj)
+        topic.__parent__ = board
+        container = self._getTargetClass()({}, obj, topic, "1")
+        container.__parent__ = topic
+        self.assertEqual(container.root, root)
+        self.assertEqual(container.boards, root.objs)
+        self.assertEqual(container.board, board)
+        self.assertEqual(container.topic, topic)
 
     def test_number_query(self):
         board = self._makeBoard(title="Foobar", slug="foobar")
@@ -633,10 +739,50 @@ class PostContainerTest(ModelMixin, unittest.TestCase):
         from fanboi2.resources import PostContainer
         return PostContainer
 
+    def _makeTopic(self, **kwargs):
+        from fanboi2.models import Topic
+        topic = Topic(**kwargs)
+        DBSession.add(topic)
+        DBSession.flush()
+        return topic
+
+    def _makeBoard(self, **kwargs):
+        from fanboi2.models import Board
+        board = Board(**kwargs)
+        DBSession.add(board)
+        DBSession.flush()
+        return board
+
+    def _makePost(self, **kwargs):
+        from fanboi2.models import Post
+        if not kwargs.get('ip_address', None):
+            kwargs['ip_address'] = '0.0.0.0'
+        post = Post(**kwargs)
+        DBSession.add(post)
+        DBSession.flush()
+        return post
+
     def test_interface(self):
         from fanboi2.interfaces import IPostResource
         container = self._getTargetClass()({}, None)
         self.assertTrue(verifyObject(IPostResource, container))
+
+    def test_accessors(self):
+        from fanboi2.resources import RootFactory, BoardContainer, \
+            TopicContainer
+        root = RootFactory({})
+        board = BoardContainer({}, self._makeBoard(title="Foo", slug="foo"))
+        board.__parent__ = root
+        topic = TopicContainer({}, self._makeTopic(board=board.obj,
+                                                   title="Blah blah"))
+        topic.__parent__ = board
+        container = self._getTargetClass()({}, self._makePost(topic=topic.obj,
+                                                              body="Hello"))
+        container.__parent__ = topic
+        self.assertEqual(container.root, root)
+        self.assertEqual(container.boards, root.objs)
+        self.assertEqual(container.board, board)
+        self.assertEqual(container.topic, topic)
 
 
 class TestFormatters(unittest.TestCase):
@@ -785,6 +931,21 @@ class TestViews(ModelMixin, unittest.TestCase):
         self.assertDictEqual(view["form"].errors, {})
         self.assertEqual([post1, post2],
                          [p.obj for p in view["posts"]])
+
+    def test_topic_view_get_scoped(self):
+        from fanboi2.views import topic_view
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic = self._makeTopic(board=board, title="Hello, world!")
+        post1 = self._makePost(topic=topic, body="Boring test is boring!")
+        post2 = self._makePost(topic=topic, body="Boring post is boring!")
+        request = testing.DummyRequest(MultiDict({}))
+        request.context = self._getRoot(request)["foo"][str(topic.id)]["2"]
+        view = topic_view(request)
+        self.assertEqual([board], [b.obj for b in view["boards"]])
+        self.assertEqual(view["board"].obj, board)
+        self.assertEqual(view["topic"].obj, topic)
+        self.assertDictEqual(view["form"].errors, {})
+        self.assertEqual([post2], [p.obj for p in view["posts"]])
 
     def test_topic_view_post(self):
         from fanboi2.views import topic_view

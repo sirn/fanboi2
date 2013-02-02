@@ -6,6 +6,33 @@ from .interfaces import IBoardResource, ITopicResource, IPostResource
 from .models import DBSession, Board, Post
 
 
+class BaseContainer(object):
+    def __init__(self, request):
+        self.__parent__ = None
+        self.__name__ = None
+        self.request = request
+
+    @property
+    def root(self):
+        """Returns the topmost object of the traversal tree."""
+        return self.__parent__.root
+
+    @property
+    def boards(self):
+        """Returns a list of all boards."""
+        return self.__parent__.boards
+
+    @property
+    def board(self):
+        """Returns board associated with this container."""
+        return self.__parent__.board
+
+    @property
+    def topic(self):
+        """Returns topic associated with this container."""
+        return self.__parent__.topic
+
+
 class RootFactory(object):
     """A :type:`dict`-like object that return the traversable root."""
     __parent__ = None
@@ -30,6 +57,14 @@ class RootFactory(object):
                 self._objs.append(board)
         return self._objs
 
+    @property
+    def root(self):
+        return self
+
+    @property
+    def boards(self):
+        return self.objs
+
     def __getitem__(self, item):
         """Retrieve a single :class:`Board` from the database using slug. If
         no board could be found, an :exception:`KeyError` exception is raise.
@@ -46,11 +81,11 @@ class RootFactory(object):
 
 
 @implementer(IBoardResource)
-class BoardContainer(object):
+class BoardContainer(BaseContainer):
     """Container for :class:`Board` object and is used in traversal."""
 
     def __init__(self, request, board):
-        self.request = request
+        super(BoardContainer, self).__init__(request)
         self.obj = board
         self._objs = None
 
@@ -72,6 +107,10 @@ class BoardContainer(object):
                 self._objs.append(topic)
         return self._objs
 
+    @property
+    def board(self):
+        return self
+
     def __getitem__(self, item):
         """Retrieve a single :class:`Topic` scoped to current :class:`Board`.
         If no topic could be found, or not belong to this :class:`Board`, a
@@ -89,11 +128,11 @@ class BoardContainer(object):
 
 
 @implementer(ITopicResource)
-class TopicContainer(object):
+class TopicContainer(BaseContainer):
     """Container for :class:`Topic` object and is used in traversal."""
 
     def __init__(self, request, topic):
-        self.request = request
+        super(TopicContainer, self).__init__(request)
         self.obj = topic
         self._objs = None
 
@@ -112,6 +151,10 @@ class TopicContainer(object):
                 self._objs.append(post)
         return self._objs
 
+    @property
+    def topic(self):
+        return self
+
     def __getitem__(self, query):
         """Returns a topic scoped to :data:`query`."""
         topic = ScopedTopicContainer(self.request, self.obj, self, query)
@@ -121,7 +164,7 @@ class TopicContainer(object):
 
 
 @implementer(ITopicResource)
-class ScopedTopicContainer(object):
+class ScopedTopicContainer(BaseContainer):
     """Container for :class:`Topic` similar to :class:`TopicContainer` but
     only return a list of :class:`Post` that are processed via :data:`query`
     criteria. Unlike :class:`TopicContainer`, this class don't allow any
@@ -134,6 +177,7 @@ class ScopedTopicContainer(object):
     )
 
     def __init__(self, request, topic, parent, query):
+        super(ScopedTopicContainer, self).__init__(request)
         self.request = request
         self.obj = topic
         self._objs = None
@@ -205,9 +249,9 @@ class ScopedTopicContainer(object):
 
 
 @implementer(IPostResource)
-class PostContainer(object):
+class PostContainer(BaseContainer):
     """Container for :class:`Post` object and is used in traversal."""
 
     def __init__(self, request, post):
-        self.request = request
+        super(PostContainer, self).__init__(request)
         self.obj = post
