@@ -37,8 +37,8 @@ class BaseModel(object):
     """Primary mixin that provides common fields for SQLAlchemy models."""
 
     id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     @declared_attr
     def __tablename__(self):

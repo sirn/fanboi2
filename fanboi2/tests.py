@@ -639,6 +639,38 @@ class PostContainerTest(ModelMixin, unittest.TestCase):
         self.assertTrue(verifyObject(IPostResource, container))
 
 
+class TestFormatters(unittest.TestCase):
+
+    def _makeRegistry(self):
+        from pyramid.registry import Registry
+        registry = Registry()
+        registry.settings = {'app.timezone': 'Asia/Bangkok'}
+        return registry
+
+    def test_format_text(self):
+        from fanboi2.formatters import format_text
+        self.assertEqual(format_text("Hello, world!"), "Hello, world!")
+
+    def test_format_datetime(self):
+        from datetime import datetime, timezone
+        from fanboi2.formatters import format_datetime
+        testing.setUp(registry=self._makeRegistry())
+        d1 = datetime(2013, 1, 2, 0, 4, 1, 0, timezone.utc)
+        d2 = datetime(2012, 12, 31, 16, 59, 59, 0, timezone.utc)
+        self.assertEqual(format_datetime(d1), "Jan 02, 2013 at 07:04:01")
+        self.assertEqual(format_datetime(d2), "Dec 31, 2012 at 23:59:59")
+
+    def test_format_isotime(self):
+        from datetime import datetime, timezone, timedelta
+        from fanboi2.formatters import format_isotime
+        ict = timezone(timedelta(hours=7))
+        testing.setUp(registry=self._makeRegistry())
+        d1 = datetime(2013, 1, 2, 7, 4, 1, 0, ict)
+        d2 = datetime(2012, 12, 31, 23, 59, 59, 0, ict)
+        self.assertEqual(format_isotime(d1), "2013-01-02T00:04:01Z")
+        self.assertEqual(format_isotime(d2), "2012-12-31T16:59:59Z")
+
+
 class TestViews(ModelMixin, unittest.TestCase):
 
     def setUp(self):

@@ -18,8 +18,8 @@ import sqlalchemy as sa
 def upgrade():
     op.create_table('board',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=True),
-        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('slug', sa.String(length=64), nullable=False),
         sa.Column('title', sa.Unicode(length=255), nullable=False),
         sa.Column('settings', JsonType(), nullable=False),
@@ -28,8 +28,8 @@ def upgrade():
     )
     op.create_table('topic',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=True),
-        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('board_id', sa.Integer(), nullable=False),
         sa.Column('title', sa.Unicode(length=255), nullable=False),
         sa.ForeignKeyConstraint(['board_id'], ['board.id'], ),
@@ -37,8 +37,8 @@ def upgrade():
     )
     op.create_table('post',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=True),
-        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('topic_id', sa.Integer(), nullable=False),
         sa.Column('ip_address', sa.String(), nullable=False),
         sa.Column('ident', sa.String(length=32), nullable=True),
