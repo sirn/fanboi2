@@ -2,14 +2,16 @@
 
 {% macro post_block(post) %}
 <div id="post-{{ post.obj.id }}" class="post">
-  <dl id="p{{ post.obj.number }}">
-    <dt>
-      <ul class="unstyled">
-        <li class="number"><a class="label">{{ post.obj.number }}</a></li>
-        <li class="created">Posted {{ time_tag(post.obj.created_at) }}</li>
-      </ul>
-    </dt>
-    <dd>{{ post.obj.body|markup }}</dd>
-  </dl>
+  <div class="container">
+    <dl id="p{{ post.obj.number }}">
+      <dt>
+        <ul class="unstyled">
+          <li class="number"><a class="label">{{ post.obj.number }}</a></li>
+          <li class="created">Posted {{ time_tag(post.obj.created_at) }}</li>
+        </ul>
+      </dt>
+      <dd>{{ post.obj.body|markup }}</dd>
+    </dl>
+  </div>
 </div>
 {% endmacro %}

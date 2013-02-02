@@ -18,11 +18,9 @@
         </div>
       </header>
       <div class="posts">
-        <div class="container">
-          {% for post in topic.objs[-5:] %}
-            {{ post_block(post) }}
-          {% endfor %}
-        </div>
+        {% for post in topic.objs[-5:] %}
+          {{ post_block(post) }}
+        {% endfor %}
       </div>
       <footer>
         <div class="container">

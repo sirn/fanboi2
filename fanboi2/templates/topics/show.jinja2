@@ -5,11 +5,9 @@
 {% block content %}
 <div class="topic-show">
   <div class="posts">
-    <div class="container">
-      {% for post in posts %}
-        {{ post_block(post) }}
-      {% endfor %}
-    </div>
+    {% for post in posts %}
+      {{ post_block(post) }}
+    {% endfor %}
   </div>
 
   <div class="post-new">
