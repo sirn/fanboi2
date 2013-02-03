@@ -6,7 +6,7 @@
         {% for board in boards %}
           <div id="board-{{ board.obj.slug }}" class="well">
             <h3><a href="{{ request.resource_path(board) }}">{{ board.obj.title }}</a></h3>
-            <p class="description">This is where we should write what this board is about. But this is not implemented yet.</p>
+            {% if board.obj.description %}<div class="description">{{ board.obj.description|markdown }}</div>{% endif %}
           </div>
         {% endfor %}
       </div>

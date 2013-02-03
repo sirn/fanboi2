@@ -826,6 +826,18 @@ class TestFormatters(unittest.TestCase):
         for source, target in tests:
             self.assertEqual(format_text(source), Markup(target))
 
+    def test_format_markdown(self):
+        from fanboi2.formatters import format_markdown
+        from jinja2 import Markup
+        tests = [
+            ('**Hello, world!**', '<p><strong>Hello, world!</strong></p>\n'),
+            ('<b>Foobar</b>', '<p><b>Foobar</b></p>\n'),
+            ('Split\n\nParagraph', '<p>Split</p>\n\n<p>Paragraph</p>\n'),
+            ('Split\nlines', '<p>Split\nlines</p>\n'),
+        ]
+        for source, target in tests:
+            self.assertEqual(format_markdown(source), Markup(target))
+
     def test_format_datetime(self):
         from datetime import datetime, timezone
         from fanboi2.formatters import format_datetime

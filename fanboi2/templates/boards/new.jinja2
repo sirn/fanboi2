@@ -8,18 +8,11 @@
       <h3>New topic</h3>
     </div>
   </header>
+  {% if board.obj.agreements %}
   <div class="agreement">
     <div class="container">
       <div class="text">
-        <p>We'll use this area to display posting agreement.</p>
-        <p>However as it is not yet implemented, this text serve as a placeholder.</p>
-        <p>Basically, we'll have few rules...</p>
-        <ul>
-          <li>Please start topic at the appropriate board.</li>
-          <li>There should be no active topic with the same subject before starting a new one.</li>
-          <li>Don't post anything that will get me into jail.</li>
-          <li>Do recycle topic.</li>
-        </ul>
+        {{ board.obj.agreements|markdown }}
       </div>
       <div class="back">
         <p>By continuing, you're agree to the above agreement. Otherwise, you may go back now:</p>
@@ -27,6 +20,7 @@
       </div>
     </div>
   </div>
+  {% endif %}
   <form action="{{ request.resource_path(board, "new") }}" method="POST" class="form">
     <div class="container">
       <div class="well">

@@ -21,6 +21,7 @@ requires = [
     'psycopg2',
     'isodate',
     'pytz',
+    'misaka',
     ]
 
 setup(name='fanboi2',
@@ -48,5 +49,6 @@ setup(name='fanboi2',
       main = fanboi2:main
       [console_scripts]
       fb2_create_board = fanboi2.scripts.create_board:main
+      fb2_update_board = fanboi2.scripts.update_board:main
       """,
       )

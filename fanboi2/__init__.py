@@ -29,10 +29,11 @@ def main(global_config, **settings):  # pragma: no cover
     config.include(pyramid_jinja2)
 
     jinja2_env = config.get_jinja2_environment()
-    jinja2_env.filters['markup'] = format_text
-    jinja2_env.filters['formatpost'] = format_post
     jinja2_env.filters['datetime'] = format_datetime
+    jinja2_env.filters['formatpost'] = format_post
     jinja2_env.filters['isotime'] = format_isotime
+    jinja2_env.filters['markdown'] = format_markdown
+    jinja2_env.filters['markup'] = format_text
 
     config.add_static_view('static', path='static', cache_max_age=3600)
     config.add_view('.views.root_view',

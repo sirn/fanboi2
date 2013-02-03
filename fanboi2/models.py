@@ -60,6 +60,8 @@ class Board(BaseModel, Base):
     slug = Column(String(64), unique=True, nullable=False)
     title = Column(Unicode(255), nullable=False)
     settings = Column(JsonType, nullable=False, default={})
+    agreements = Column(Text, nullable=True)
+    description = Column(Text, nullable=True)
 
 
 @implementer(ITopic)

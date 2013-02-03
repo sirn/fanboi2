@@ -22,6 +22,8 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('slug', sa.String(length=64), nullable=False),
         sa.Column('title', sa.Unicode(length=255), nullable=False),
+        sa.Column('agreements', sa.Text, nullable=True),
+        sa.Column('description', sa.Text, nullable=True),
         sa.Column('settings', JsonType(), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('slug')

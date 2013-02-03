@@ -1,5 +1,6 @@
 import html
 import isodate
+import misaka
 import pytz
 import re
 from jinja2 import Markup
@@ -22,6 +23,11 @@ def format_text(text):
             paragraph = re_newline.sub("<br>", paragraph)
             output.append(paragraph)
     return Markup('\n'.join(output))
+
+
+def format_markdown(text):
+    """Format text using Markdown parser."""
+    return Markup(misaka.html(text))
 
 
 re_anchor = re.compile(r'%s(\d+)(\-)?(\d+)?' % html.escape('>>'))
