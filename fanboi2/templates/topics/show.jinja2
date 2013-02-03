@@ -8,6 +8,15 @@
     {% for post in posts %}
       {{ post_block(post) }}
     {% endfor %}
+    <div class="quicklinks">
+      <div class="container">
+        <ul class="unstyled">
+          <li><a href="{{ request.resource_path(topic) }}" class="btn"><i class="icon-th-list"></i> All posts</a></li>
+          <li><a href="{{ request.resource_path(topic, "recent") }}" class="btn"><i class="icon-inbox"></i> Recent posts</a></li>
+          <li><a href="{{ request.resource_path(topic, "%s-" % topic.obj.post_count) }}" class="btn"><i class="icon-forward"></i> New since visit</a></li>
+        </ul>
+      </div>
+    </div>
   </div>
 
   <div class="post-new">

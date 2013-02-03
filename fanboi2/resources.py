@@ -157,9 +157,9 @@ class TopicContainer(BaseContainer):
 
     def __getitem__(self, query):
         """Returns a topic scoped to :data:`query`."""
-        topic = ScopedTopicContainer(self.request, self.obj, self, query)
-        topic.__parent__ = self
-        topic.__name__ = query
+        topic = ScopedTopicContainer(self.request, self, query)
+        topic.__parent__ = self.__parent__  # Inherited for URL generation.
+        topic.__name__ = self.__name__  # Inherited for URL generation.
         return topic
 
 
@@ -169,6 +169,9 @@ class ScopedTopicContainer(BaseContainer):
     only return a list of :class:`Post` that are processed via :data:`query`
     criteria. Unlike :class:`TopicContainer`, this class don't allow any
     further traversal.
+
+    This class should inherits its parent :attr:`TopicContainer.__name__`
+    and :attr:`TopicContainer.__parent__` for URL generation.
     """
     QUERY = (
         ("_number", re.compile("^(\d+)$")),
@@ -176,16 +179,12 @@ class ScopedTopicContainer(BaseContainer):
         ("_recent", re.compile("^recent$")),
     )
 
-    def __init__(self, request, topic, parent, query):
+    def __init__(self, request, topic, query):
         super(ScopedTopicContainer, self).__init__(request)
         self.request = request
-        self.obj = topic
+        self.obj = topic.obj
+        self._topic = topic
         self._objs = None
-
-        # __parent__ is set after init, so we need this one in order to make
-        # posts inherited from parent rather than this scoped topic (so this
-        # ScopedTopicContainer is called when user try to access post.)
-        self.parent = parent
 
         # Need to raise KeyError for __getitem__ in TopicContainer in case
         # query is invalid, so this is fetched here instead of in obj.
@@ -211,7 +210,7 @@ class ScopedTopicContainer(BaseContainer):
         obj = self.obj.posts.filter_by(number=number).first()
         if obj:
             post = PostContainer(self.request, obj)
-            post.__parent__ = self.parent
+            post.__parent__ = self._topic
             post.__name__ = obj.number
             return [post]
 
@@ -229,7 +228,7 @@ class ScopedTopicContainer(BaseContainer):
         posts = []
         for obj in self.obj.posts.filter(query):
             post = PostContainer(self.request, obj)
-            post.__parent__ = self.parent
+            post.__parent__ = self._topic
             post.__name__ = obj.number
             posts.append(post)
         return posts
@@ -242,7 +241,7 @@ class ScopedTopicContainer(BaseContainer):
                             filter(Post.topic_id == self.obj.id).
                             limit(30).all()):
             post = PostContainer(self.request, obj)
-            post.__parent__ = self.parent
+            post.__parent__ = self._topic
             post.__name__ = obj.number
             posts.append(post)
         return posts

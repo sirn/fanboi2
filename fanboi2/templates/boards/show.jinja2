@@ -21,16 +21,16 @@
         {% for post in topic.objs[-5:] %}
           {{ post_block(post) }}
         {% endfor %}
-      </div>
-      <footer>
-        <div class="container">
-          <ul class="unstyled">
-            <li><a href="{{ request.resource_path(topic) }}" class="btn"><i class="icon-th-list"></i> All posts</a></li>
-            <li><a href="{{ request.resource_path(topic, "recent") }}" class="btn"><i class="icon-inbox"></i> Recent posts</a></li>
-            <li><a href="{{ request.resource_path(topic, "recent") }}#reply" class="btn btn-success"><i class="icon-share-alt icon-white"></i> Reply</a></li>
-          </ul>
+        <div class="quicklinks">
+          <div class="container">
+            <ul class="unstyled">
+              <li><a href="{{ request.resource_path(topic) }}" class="btn"><i class="icon-th-list"></i> All posts</a></li>
+              <li><a href="{{ request.resource_path(topic, "recent") }}" class="btn"><i class="icon-inbox"></i> Recent posts</a></li>
+              <li><a href="{{ request.resource_path(topic, "recent") }}#reply" class="btn btn-success"><i class="icon-share-alt icon-white"></i> Reply</a></li>
+            </ul>
+          </div>
         </div>
-      </footer>
+      </div>
       <hr>
     </div>
   {% else %}

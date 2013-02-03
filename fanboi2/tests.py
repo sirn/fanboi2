@@ -572,9 +572,13 @@ class TopicContainerTest(ModelMixin, unittest.TestCase):
         self._makePost(topic=topic, body="Hello, world!")
         self._makePost(topic=topic, body="Blah post!")
         container = self._getTargetClass()({}, topic)
+        container.__parent__ = 'Foo'
+        container.__name__ = 'Bar'
         self.assertIsInstance(container["1"], ScopedTopicContainer)
         self.assertIsInstance(container["1-10"], ScopedTopicContainer)
         self.assertIsInstance(container["recent"], ScopedTopicContainer)
+        self.assertEqual(container["1"].__parent__, container.__parent__)
+        self.assertEqual(container["1"].__name__, container.__name__)
 
     def test_getitem_notfound(self):
         board = self._makeBoard(title="General", slug="general")
@@ -615,35 +619,41 @@ class ScopedTopicContainerTest(ModelMixin, unittest.TestCase):
         DBSession.flush()
         return post
 
+    def _wrapTopic(self, topic, request={}):
+        from fanboi2.resources import TopicContainer
+        return TopicContainer(request, topic)
+
     def test_interface(self):
         from fanboi2.interfaces import ITopicResource
+        from fanboi2.resources import TopicContainer
         # Blah, need to pass in the real object since this method will raise
         # KeyError on invalid init.
         board = self._makeBoard(title="Foobar", slug="foobar")
         topic = self._makeTopic(board=board, title="Foo bar foo bar")
         self._makePost(topic=topic, body="Blah, blah, blah")
-        container = self._getTargetClass()({}, topic, None, "1")
+        topic_container = TopicContainer({}, topic)
+        container = self._getTargetClass()({}, topic_container, "1")
         self.assertTrue(verifyObject(ITopicResource, container))
 
     def test_objs(self):
         board = self._makeBoard(title="Foobar", slug="foobar")
         topic = self._makeTopic(board=board, title="Hello, world!")
         post1 = self._makePost(topic=topic, body="Blah, hello, hi")
-        container = self._getTargetClass()({}, topic, self, "1")
-        self.assertEqual(container.objs[0].__parent__, self)
+        topic_container = self._wrapTopic(topic)
+        container = self._getTargetClass()({}, topic_container, "1")
+        self.assertEqual(container.objs[0].__parent__, topic_container)
         self.assertEqual(container.objs[0].__name__, post1.number)
 
     def test_accessors(self):
-        from fanboi2.resources import RootFactory, BoardContainer, \
-            TopicContainer
+        from fanboi2.resources import RootFactory, BoardContainer
         root = RootFactory({})
         board = BoardContainer({}, self._makeBoard(title="Foo", slug="foo"))
         board.__parent__ = root
         obj = self._makeTopic(board=board.obj, title="Foobar blah blah")
         self._makePost(topic=obj, body="Hello world foo bar")
-        topic = TopicContainer({}, obj)
+        topic = self._wrapTopic(obj)
         topic.__parent__ = board
-        container = self._getTargetClass()({}, obj, topic, "1")
+        container = self._getTargetClass()({}, topic, "1")
         container.__parent__ = topic
         self.assertEqual(container.root, root)
         self.assertEqual(container.boards, root.objs)
@@ -658,8 +668,9 @@ class ScopedTopicContainerTest(ModelMixin, unittest.TestCase):
         post2 = self._makePost(topic=topic2, body="Post 1")
         post3 = self._makePost(topic=topic1, body="Post 2")
         post4 = self._makePost(topic=topic2, body="Post 2")
-        container = self._getTargetClass()({}, topic1, self, "2")
-        self.assertEqual(container.objs[0].__parent__, self)
+        topic_container = self._wrapTopic(topic1)
+        container = self._getTargetClass()({}, topic_container, "2")
+        self.assertEqual(container.objs[0].__parent__, topic_container)
         self.assertEqual(container.objs[0].__name__, post3.number)
         self.assertEqual([post3], [p.obj for p in container.objs])
 
@@ -674,8 +685,9 @@ class ScopedTopicContainerTest(ModelMixin, unittest.TestCase):
         post5 = self._makePost(topic=topic2, body="Topic 2, Post 1")
         post6 = self._makePost(topic=topic2, body="Topic 2, Post 2")
         post7 = self._makePost(topic=topic1, body="Topic 1, Post 5")
-        container = self._getTargetClass()({}, topic1, self, "2-5")
-        self.assertEqual(container.objs[0].__parent__, self)
+        topic_container = self._wrapTopic(topic1)
+        container = self._getTargetClass()({}, topic_container, "2-5")
+        self.assertEqual(container.objs[0].__parent__, topic_container)
         self.assertEqual(container.objs[0].__name__, post2.number)
         self.assertEqual([post2, post3, post4, post7],
                          [p.obj for p in container.objs])
@@ -691,8 +703,9 @@ class ScopedTopicContainerTest(ModelMixin, unittest.TestCase):
         post5 = self._makePost(topic=topic2, body="Topic 2, Post 1")
         post6 = self._makePost(topic=topic2, body="Topic 2, Post 2")
         post7 = self._makePost(topic=topic1, body="Topic 1, Post 5")
-        container = self._getTargetClass()({}, topic1, self, "3-")
-        self.assertEqual(container.objs[0].__parent__, self)
+        topic_container = self._wrapTopic(topic1)
+        container = self._getTargetClass()({}, topic_container, "3-")
+        self.assertEqual(container.objs[0].__parent__, topic_container)
         self.assertEqual(container.objs[0].__name__, post3.number)
         self.assertEqual([post3, post4, post7],
                          [p.obj for p in container.objs])
@@ -708,8 +721,9 @@ class ScopedTopicContainerTest(ModelMixin, unittest.TestCase):
         post5 = self._makePost(topic=topic2, body="Topic 2, Post 1")
         post6 = self._makePost(topic=topic2, body="Topic 2, Post 2")
         post7 = self._makePost(topic=topic1, body="Topic 1, Post 5")
-        container = self._getTargetClass()({}, topic1, self, "-3")
-        self.assertEqual(container.objs[0].__parent__, self)
+        topic_container = self._wrapTopic(topic1)
+        container = self._getTargetClass()({}, topic_container, "-3")
+        self.assertEqual(container.objs[0].__parent__, topic_container)
         self.assertEqual(container.objs[0].__name__, post1.number)
         self.assertEqual([post1, post2, post3],
                          [p.obj for p in container.objs])
@@ -727,8 +741,9 @@ class ScopedTopicContainerTest(ModelMixin, unittest.TestCase):
         for i in range(28):
             self._makePost(topic=topic2, body="Another dummy post, blah.")
         post5 = self._makePost(topic=topic2, body="Topic 2, Post 35")
-        container = self._getTargetClass()({}, topic2, self, "recent")
-        self.assertEqual(container.objs[0].__parent__, self)
+        topic_container = self._wrapTopic(topic2)
+        container = self._getTargetClass()({}, topic_container, "recent")
+        self.assertEqual(container.objs[0].__parent__, topic_container)
         self.assertEqual(container.objs[0].__name__, post3.number)
         self.assertEqual(container.objs[0].obj, post3)
         self.assertEqual(container.objs[-1].obj, post5)
