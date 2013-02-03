@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import datetime
 import transaction
 import unittest
@@ -581,7 +582,7 @@ class TopicContainerTest(ModelMixin, unittest.TestCase):
         self._makePost(topic=topic, body="Hello, world!")
         container = self._getTargetClass()({}, topic)
         self.assertRaises(KeyError, lambda: container["2"])   # Not found
-        self.assertRaises(KeyError, lambda: container["2-3"]) # Not found
+        self.assertRaises(KeyError, lambda: container["2-3"])  # Not found
         self.assertRaises(KeyError, lambda: container["invalid"])
 
 
@@ -795,7 +796,20 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_text(self):
         from fanboi2.formatters import format_text
-        self.assertEqual(format_text("Hello, world!"), "Hello, world!")
+        from jinja2 import Markup
+        tests = [
+            ('Hello, world!', '<p>Hello, world!</p>'),
+            ('H\n\n\nello\nworld', '<p>H</p>\n<p>ello<br>world</p>'),
+            ('Foo\r\n\r\n\r\n\nBar', '<p>Foo</p>\n<p><br>Bar</p>'),
+            ('Newline at the end\n', '<p>Newline at the end</p>'),
+            ('STRIP ME!!!1\n\n', '<p>STRIP ME!!!1</p>'),
+            ('ほげ\n\nほげ', '<p>ほげ</p>\n<p>ほげ</p>'),
+            ('ไก่จิกเด็ก\n\nตายบนปากโอ่ง',
+             '<p>ไก่จิกเด็ก</p>\n<p>ตายบนปากโอ่ง</p>'),
+            ('<script></script>', '<p>&lt;script&gt;&lt;/script&gt;</p>'),
+        ]
+        for source, target in tests:
+            self.assertEqual(format_text(source), Markup(target))
 
     def test_format_datetime(self):
         from datetime import datetime, timezone
@@ -815,6 +829,65 @@ class TestFormatters(unittest.TestCase):
         d2 = datetime(2012, 12, 31, 23, 59, 59, 0, ict)
         self.assertEqual(format_isotime(d1), "2013-01-02T00:04:01Z")
         self.assertEqual(format_isotime(d2), "2012-12-31T16:59:59Z")
+
+
+class TestFormattersWithModel(ModelMixin, unittest.TestCase):
+
+    def _makeBoard(self, **kwargs):
+        from fanboi2.models import Board
+        from fanboi2.resources import RootFactory, BoardContainer
+        board = Board(**kwargs)
+        DBSession.add(board)
+        DBSession.flush()
+        container = BoardContainer({}, board)
+        container.__name__ = board.slug
+        container.__parent__ = RootFactory({})
+        return container
+
+    def _makeTopic(self, board_container, **kwargs):
+        from fanboi2.models import Topic
+        from fanboi2.resources import TopicContainer
+        topic = Topic(**kwargs)
+        topic.board = board_container.obj
+        DBSession.add(topic)
+        DBSession.flush()
+        container = TopicContainer({}, topic)
+        container.__name__ = topic.id
+        container.__parent__ = board_container
+        return container
+
+    def _makePost(self, topic_container, **kwargs):
+        from fanboi2.models import Post
+        from fanboi2.resources import PostContainer
+        if not kwargs.get('ip_address', None):
+            kwargs['ip_address'] = '0.0.0.0'
+        post = Post(**kwargs)
+        post.topic = topic_container.obj
+        DBSession.add(post)
+        DBSession.flush()
+        container = PostContainer({}, post)
+        container.__parent__ = topic_container
+        container.__name__ = post.number
+        return container
+
+    def test_format_post(self):
+        from fanboi2.formatters import format_post
+        from jinja2 import Markup
+        testing.setUp(request=testing.DummyRequest())
+        board = self._makeBoard(title="Foobar", slug="foobar")
+        topic = self._makeTopic(board, title="Hogehogehogehogehoge")
+        post1 = self._makePost(topic, body="Hogehoge\nHogehoge")
+        post2 = self._makePost(topic, body=">>1")
+        post3 = self._makePost(topic, body=">>1-2\nHoge")
+        tests = [
+            (post1, "<p>Hogehoge<br>Hogehoge</p>"),
+            (post2, "<p><a href=\"/foobar/1/1\" class=\"anchor\">" +
+                    "&gt;&gt;1</a></p>"),
+            (post3, "<p><a href=\"/foobar/1/1-2\" class=\"anchor\">" +
+                    "&gt;&gt;1-2</a><br>Hoge</p>"),
+        ]
+        for source, target in tests:
+            self.assertEqual(format_post(source), Markup(target))
 
 
 class TestViews(ModelMixin, unittest.TestCase):

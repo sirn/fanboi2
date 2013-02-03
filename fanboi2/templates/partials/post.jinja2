@@ -10,7 +10,7 @@
           <li class="created">Posted {{ time_tag(post.obj.created_at) }}</li>
         </ul>
       </dt>
-      <dd>{{ post.obj.body|markup }}</dd>
+      <dd>{{ post|formatpost }}</dd>
     </dl>
   </div>
 </div>

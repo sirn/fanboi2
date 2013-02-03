@@ -4,7 +4,7 @@ from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 from .models import DBSession, Base
 from .resources import RootFactory
-from .formatters import format_text, format_datetime, format_isotime
+from .formatters import *
 
 
 def remote_addr(request):
@@ -30,6 +30,7 @@ def main(global_config, **settings):  # pragma: no cover
 
     jinja2_env = config.get_jinja2_environment()
     jinja2_env.filters['markup'] = format_text
+    jinja2_env.filters['formatpost'] = format_post
     jinja2_env.filters['datetime'] = format_datetime
     jinja2_env.filters['isotime'] = format_isotime
 
