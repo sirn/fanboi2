@@ -9,7 +9,7 @@
       <header>
         <div class="container">
           <div class="well">
-            <h4><a href="{{ request.resource_url(topic) }}">{{ topic.obj.title }}</a></h4>
+            <h4><a href="{{ request.resource_path(topic) }}">{{ topic.obj.title }}</a></h4>
             <ul class="info unstyled">
               <li class="hidden-phone"><i class="icon-info-sign"></i> Last posted {{ time_tag(topic.obj.posted_at) }}</li>
               <li><i class="icon-info-sign"></i> <strong>{{ topic.obj.post_count }} posts</strong></li>
@@ -25,9 +25,9 @@
       <footer>
         <div class="container">
           <ul class="unstyled">
-            <li><a href="{{ request.resource_url(topic) }}" class="btn"><i class="icon-th-list"></i> All posts</a></li>
-            <li><a href="{{ request.resource_url(topic, "recent") }}" class="btn"><i class="icon-inbox"></i> Recent posts</a></li>
-            <li><a href="{{ request.resource_url(topic, "recent") }}#reply" class="btn btn-success"><i class="icon-share-alt icon-white"></i> Reply</a></li>
+            <li><a href="{{ request.resource_path(topic) }}" class="btn"><i class="icon-th-list"></i> All posts</a></li>
+            <li><a href="{{ request.resource_path(topic, "recent") }}" class="btn"><i class="icon-inbox"></i> Recent posts</a></li>
+            <li><a href="{{ request.resource_path(topic, "recent") }}#reply" class="btn btn-success"><i class="icon-share-alt icon-white"></i> Reply</a></li>
           </ul>
         </div>
       </footer>
@@ -37,7 +37,7 @@
     <div class="container">
       <div class="empty">
         <p>No topics, be the first to post one!</p>
-        <a href="{{ request.resource_url(board, "new") }}" class="btn btn-primary">Start New Topic</a>
+        <a href="{{ request.resource_path(board, "new") }}" class="btn btn-primary">Start New Topic</a>
       </div>
     </div>
   {% endfor %}

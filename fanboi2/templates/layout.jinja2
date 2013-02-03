@@ -12,7 +12,7 @@
   <div class="container">
     <div class="navbar">
       <div class="navbar-inner">
-        <a class="brand" href="{{ request.resource_url(None) }}"><span class="logo">Fanboi Channel</span></a>
+        <a class="brand" href="{{ request.resource_path(None) }}"><span class="logo">Fanboi Channel</span></a>
         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
@@ -20,13 +20,13 @@
         </a>
         <div class="nav-collapse collapse">
           <ul class="nav">
-            <li{% if not board %} class="active"{% endif %}><a href="{{ request.resource_url(None) }}"><i class="icon-home icon-white"></i> Home</a></li>
+            <li{% if not board %} class="active"{% endif %}><a href="{{ request.resource_path(None) }}"><i class="icon-home icon-white"></i> Home</a></li>
             {% if boards %}
             <li class="dropdown{% if board %} active{% endif %}">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-th-large icon-white"></i> {% if board %}{{ board.obj.title }}{% else %}Boards{% endif %} <b class="caret"></b></a>
               <ul class="dropdown-menu">
                 {% for board in boards %}
-                  <li class="board"><a href="{{ request.resource_url(board) }}">{{ board.obj.title }}</a></li>
+                  <li class="board"><a href="{{ request.resource_path(board) }}">{{ board.obj.title }}</a></li>
                 {% endfor %}
               </ul>
             </li>

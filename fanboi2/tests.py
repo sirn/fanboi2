@@ -971,7 +971,7 @@ class TestViews(ModelMixin, unittest.TestCase):
         request.context = self._getRoot(request)["general"]
         response = new_board_view(request)
         self.assertEqual(DBSession.query(Topic).count(), 1)
-        self.assertEqual(response.location, "http://example.com/general/")
+        self.assertEqual(response.location, "/general/")
 
     def test_new_board_view_post_failure(self):
         from fanboi2.views import new_board_view
@@ -1032,8 +1032,7 @@ class TestViews(ModelMixin, unittest.TestCase):
         request.context = self._getRoot(request)["general"][str(topic.id)]
         response = topic_view(request)
         self.assertEqual(DBSession.query(Post).count(), 1)
-        self.assertEqual(response.location,
-                         "http://example.com/general/%s/" % topic.id)
+        self.assertEqual(response.location, "/general/%s/" % topic.id)
 
     def test_topic_view_post_failure(self):
         from fanboi2.views import topic_view

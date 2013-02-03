@@ -25,7 +25,7 @@ def new_board_view(request):
         post = Post(body=form.body.data, ip_address=request.remote_addr)
         post.topic = Topic(board=board.obj, title=form.title.data)
         DBSession.add(post)
-        return HTTPFound(location=request.resource_url(board))
+        return HTTPFound(location=request.resource_path(board))
     return locals()
 
 
@@ -53,5 +53,5 @@ def topic_view(request):
                 if not max_attempts:
                     raise
             else:
-                return HTTPFound(location=request.resource_url(topic))
+                return HTTPFound(location=request.resource_path(topic))
     return locals()

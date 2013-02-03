@@ -2,9 +2,9 @@ import pyramid_jinja2
 from ipaddress import ip_address
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
+from .formatters import *
 from .models import DBSession, Base
 from .resources import RootFactory
-from .formatters import *
 
 
 def remote_addr(request):

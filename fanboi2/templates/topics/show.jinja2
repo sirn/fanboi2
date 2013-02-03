@@ -14,7 +14,7 @@
     <header class="container">
       <h3>Reply</h3>
     </header>
-    <form action="{{ request.resource_url(topic) }}" method="POST" class="form">
+    <form action="{{ request.resource_path(topic) }}" method="POST" class="form">
       <div class="container">
         <div class="well">
           {{ form_field(form.body) }}
