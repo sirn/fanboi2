@@ -36,19 +36,5 @@ def main(global_config, **settings):  # pragma: no cover
     jinja2_env.filters['markup'] = format_text
 
     config.add_static_view('static', path='static', cache_max_age=3600)
-    config.add_view('.views.root_view',
-                    context='.resources.RootFactory',
-                    renderer='root.jinja2')
-    config.add_view('.views.board_view',
-                    context='.interfaces.IBoardResource',
-                    renderer='boards/show.jinja2')
-    config.add_view('.views.new_board_view',
-                    context='.interfaces.IBoardResource',
-                    renderer='boards/new.jinja2',
-                    name='new')
-    config.add_view('.views.topic_view',
-                    context='.interfaces.ITopicResource',
-                    renderer='topics/show.jinja2')
-
     config.scan()
     return config.make_wsgi_app()

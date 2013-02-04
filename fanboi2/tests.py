@@ -1143,3 +1143,33 @@ class TestViews(ModelMixin, unittest.TestCase):
             assert not topic_view(request)
         self.assertEqual(request.retries, 5)
         self.assertEqual(DBSession.query(Post).count(), 0)
+
+    def test_topic_view_post_archived(self):
+        from fanboi2.models import DBSession, Post
+        from fanboi2.views import topic_view
+        board = self._makeBoard(title="Foo", slug="foo")
+        topic = self._makeTopic(board=board, title="Hoge", status='archived')
+        self.assertEqual(DBSession.query(Post).count(), 0)
+        request = testing.DummyRequest(MultiDict({
+            'body': "Topic is archived and post shouldn't get through."
+        }), post=True)
+        request.remote_addr = "127.0.0.1"
+        request.context = self._getRoot(request)["foo"][str(topic.id)]
+        self.config.testing_add_renderer('topics/error.jinja2')
+        topic_view(request)
+        self.assertEqual(DBSession.query(Post).count(), 0)
+
+    def test_topic_view_post_locked(self):
+        from fanboi2.models import DBSession, Post
+        from fanboi2.views import topic_view
+        board = self._makeBoard(title="Foo", slug="foo")
+        topic = self._makeTopic(board=board, title="Hoge", status='locked')
+        self.assertEqual(DBSession.query(Post).count(), 0)
+        request = testing.DummyRequest(MultiDict({
+            'body': "Topic is locked and post shouldn't get through."
+        }), post=True)
+        request.remote_addr = "127.0.0.1"
+        request.context = self._getRoot(request)["foo"][str(topic.id)]
+        self.config.testing_add_renderer('topics/error.jinja2')
+        topic_view(request)
+        self.assertEqual(DBSession.query(Post).count(), 0)

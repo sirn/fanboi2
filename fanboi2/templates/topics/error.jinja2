@@ -1,0 +1,15 @@
+{% extends "topics/layout.jinja2" %}
+
+{% block content %}
+<div class="post-new">
+  <header class="container">
+    {% if topic.obj.status == "archived" %}
+      <h3>Post limit exceeded</h3>
+      <p>Please start a new topic.</p>
+    {% elif topic.obj.status == "locked" %}
+      <h3>Topic locked</h3>
+      <p>Topic has been locked by moderator.</p>
+    {% endif %}
+  </header>
+</div>
+{% endblock %}
