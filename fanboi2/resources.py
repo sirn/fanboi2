@@ -99,6 +99,10 @@ class BoardContainer(BaseContainer):
         """
         if self._objs is None:
             self._objs = []
+            # TODO: Optimize me, accessing posts here requires 1+N queries.
+            # However we can't eager-loading posts since posts will have to
+            # be stored in memory which should be very expensive for large
+            # board (maximum of 1000 posts x 10 topics, or 10k rows.)
             for obj in self.obj.topics.options(undefer('post_count'),
                                                undefer('posted_at')):
                 topic = TopicContainer(self.request, obj)

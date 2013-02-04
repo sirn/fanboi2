@@ -34,6 +34,10 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('board_id', sa.Integer(), nullable=False),
         sa.Column('title', sa.Unicode(length=255), nullable=False),
+        sa.Column('status',
+                  sa.Enum('open', 'locked', 'archived', name='topic_status'),
+                  default='open',
+                  nullable=False),
         sa.ForeignKeyConstraint(['board_id'], ['board.id'], ),
         sa.PrimaryKeyConstraint('id')
     )

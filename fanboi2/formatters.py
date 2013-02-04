@@ -7,8 +7,8 @@ from jinja2 import Markup
 from pyramid.threadlocal import get_current_registry, get_current_request
 
 
-re_newline = re.compile(r'(?:\r\n|\n|\r)')
-re_paragraph = re.compile(r'(?:(?P<newline>\r\n|\n|\r)(?P=newline)+)')
+RE_NEWLINE = re.compile(r'(?:\r\n|\n|\r)')
+RE_PARAGRAPH = re.compile(r'(?:(?P<newline>\r\n|\n|\r)(?P=newline)+)')
 
 
 def format_text(text):
@@ -16,11 +16,11 @@ def format_text(text):
     consecutive newlines and adds ``<br>`` to any line with line break.
     """
     output = []
-    for paragraph in re_paragraph.split(text):
+    for paragraph in RE_PARAGRAPH.split(text):
         paragraph = paragraph.rstrip("\r\n")
         if paragraph:
             paragraph = '<p>%s</p>' % html.escape(paragraph)
-            paragraph = re_newline.sub("<br>", paragraph)
+            paragraph = RE_NEWLINE.sub("<br>", paragraph)
             output.append(paragraph)
     return Markup('\n'.join(output))
 
@@ -30,7 +30,7 @@ def format_markdown(text):
     return Markup(misaka.html(text))
 
 
-re_anchor = re.compile(r'%s(\d+)(\-)?(\d+)?' % html.escape('>>'))
+RE_ANCHOR = re.compile(r'%s(\d+)(\-)?(\d+)?' % html.escape('>>'))
 
 
 def format_post(post):
@@ -46,7 +46,7 @@ def format_post(post):
         return Markup("<a href=\"%s\" class=\"anchor\">%s</a>" % (
             request.resource_path(post.topic, anchor),
             html.escape(">>%s" % anchor),))
-    text = re_anchor.sub(_anchor, text)
+    text = RE_ANCHOR.sub(_anchor, text)
     return Markup(text)
 
 

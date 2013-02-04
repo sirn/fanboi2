@@ -154,6 +154,17 @@ class BoardModelTest(ModelMixin, unittest.TestCase):
         board = self._makeOne(title="Foobar", slug="foo")
         self.assertEqual([], list(board.topics))
 
+    def test_settings(self):
+        from fanboi2.models import DBSession, DEFAULT_BOARD_CONFIG
+        board = self._makeOne(title="Foobar", slug="Foo")
+        self.assertEqual(board.settings, DEFAULT_BOARD_CONFIG)
+        board.settings = {'name': 'Hamster'}
+        new_settings = DEFAULT_BOARD_CONFIG.copy()
+        new_settings.update({'name': 'Hamster'})
+        DBSession.add(board)
+        DBSession.flush()
+        self.assertEqual(board.settings, new_settings)
+
     def test_topics(self):
         from fanboi2.models import Topic
         board1 = self._makeOne(title="Foobar", slug="foo")
@@ -241,6 +252,35 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         DBSession.flush()
         self.assertEqual([post1, post2, post3], list(topic1.posts))
         self.assertEqual([], list(topic2.posts))
+
+    def test_auto_archive(self):
+        from fanboi2.models import Post
+        board = self._makeBoard(title="Foobar", slug="foo", settings={
+            'max_posts': 5,
+        })
+        topic = self._makeOne(board=board, title="Lorem ipsum dolor")
+        for i in range(4):
+            post = Post(topic=topic, body="Post %s" % i, ip_address="0.0.0.0")
+            DBSession.add(post)
+        DBSession.flush()
+        self.assertEqual(topic.status, "open")
+        DBSession.add(Post(topic=topic, body='Post 5', ip_address='0.0.0.0'))
+        DBSession.flush()
+        self.assertEqual(topic.status, "archived")
+
+    def test_auto_archive_locked(self):
+        from fanboi2.models import Post
+        board = self._makeBoard(title="Foobar", slug="foo", settings={
+            'max_posts': 3,
+        })
+        topic = self._makeOne(board=board,
+                              title="Lorem ipsum dolor",
+                              status='locked')
+        for i in range(3):
+            post = Post(topic=topic, body="Post %s" % i, ip_address="0.0.0.0")
+            DBSession.add(post)
+        DBSession.flush()
+        self.assertEqual(topic.status, "locked")
 
     def test_post_count(self):
         from fanboi2.models import Post

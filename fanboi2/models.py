@@ -1,10 +1,11 @@
 import json
 import re
 from sqlalchemy import Column, Integer, String, DateTime, Unicode, Text,\
-    ForeignKey, TypeDecorator, UniqueConstraint, func, select, desc, event
+    Enum, ForeignKey, TypeDecorator, UniqueConstraint, func, select,\
+    desc, event
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship,\
-    backref, column_property
+    backref, column_property, synonym
 from zope.interface import implementer
 from zope.sqlalchemy import ZopeTransactionExtension
 from .interfaces import IBoard, ITopic, IPost
@@ -15,6 +16,12 @@ Base = declarative_base()
 
 RE_FIRST_CAP = re.compile('(.)([A-Z][a-z]+)')
 RE_ALL_CAP = re.compile('([a-z0-9])([A-Z])')
+
+DEFAULT_BOARD_CONFIG = {
+    'name': 'Nameless Fanboi',
+    'display_ident': True,
+    'max_posts': 1000,
+}
 
 
 class JsonType(TypeDecorator):
@@ -59,9 +66,22 @@ class Board(BaseModel, Base):
 
     slug = Column(String(64), unique=True, nullable=False)
     title = Column(Unicode(255), nullable=False)
-    settings = Column(JsonType, nullable=False, default={})
+    _settings = Column('settings', JsonType, nullable=False, default={})
     agreements = Column(Text, nullable=True)
     description = Column(Text, nullable=True)
+
+    def get_settings(self):
+        settings = DEFAULT_BOARD_CONFIG.copy()
+        settings.update(self._settings)
+        return settings
+
+    def set_settings(self, value):
+        self._settings = value
+
+    @declared_attr
+    def settings(cls):
+        return synonym('_settings', descriptor=property(cls.get_settings,
+                                                        cls.set_settings))
 
 
 @implementer(ITopic)
@@ -73,6 +93,9 @@ class Topic(BaseModel, Base):
 
     board_id = Column(Integer, ForeignKey('board.id'), nullable=False)
     title = Column(Unicode(255), nullable=False)
+    status = Column(Enum('open', 'locked', 'archived', name='topic_status'),
+                    default='open',
+                    nullable=False)
     board = relationship('Board',
                          backref=backref('topics',
                                          lazy='dynamic',
@@ -99,13 +122,24 @@ class Post(BaseModel, Base):
                                          order_by='Post.number'))
 
 
+@event.listens_for(DBSession, 'before_flush')
+def update_topic_status(session, context, instance):
+    for model in filter(lambda m: isinstance(m, Post), session.new):
+        topic = model.topic
+        if topic.post_count is not None and \
+                topic.status == 'open' and \
+                topic.post_count >= (topic.board.settings['max_posts'] - 1):
+            topic.status = 'archived'
+            session.add(topic)
+
+
 @event.listens_for(Post.__mapper__, 'before_insert')
 def populate_post_number(mapper, connection, target):
     """Populate sequential :attr:`Post.number` in each topic."""
     # This will issue a subquery on every INSERT which may cause race
     # condition problem. Our UNIQUE CONSTRAINT will detect that, so the
     # calling code should retry accordingly.
-    target.number = select([func.coalesce(func.max(Post.number), 0)+1]).\
+    target.number = select([func.coalesce(func.max(Post.number), 0) + 1]).\
                     where(Post.topic_id == target.topic_id)
 
 

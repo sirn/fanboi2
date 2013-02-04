@@ -1,3 +1,4 @@
+import json
 import optparse
 import os
 import sys
@@ -8,7 +9,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy.orm.exc import NoResultFound
 from subprocess import call
 from fanboi2 import DBSession
-from fanboi2.models import Board
+from fanboi2.models import Board, JsonType
 
 
 DESCRIPTION = "Update board settings."
@@ -34,6 +35,7 @@ def main(config_uri=sys.argv[1], argv=sys.argv[2:]):
         original = None
         modified = None
         board = None
+        serialized = False
 
         try:
             board = DBSession.query(Board).filter_by(slug=options.slug).one()
@@ -49,13 +51,22 @@ def main(config_uri=sys.argv[1], argv=sys.argv[2:]):
 
         with tempfile.NamedTemporaryFile(suffix='.tmp') as tmp:
             if original is not None:
-                tmp.write(bytes(str(original).encode('utf8')))
+                if isinstance(getattr(Board, options.field).type, JsonType):
+                    serialized = True
+                    dumps = json.dumps(original, indent=4)
+                    tmp.write(bytes(dumps.encode('utf8')))
+                else:
+                    tmp.write(bytes(str(original).encode('utf8')))
                 tmp.flush()
             call([os.environ.get('EDITOR', 'vi'), tmp.name])
             modified = open(tmp.name, "r").read()
 
-        original = original if original is not None else str()
-        modified = modified.rstrip("\r\n")
+        if serialized:
+            modified = json.loads(modified)
+        else:
+            original = original if original is not None else str()
+            modified = modified.rstrip("\r\n")
+
         if modified == original:
             print('Not modified.')
         else:
