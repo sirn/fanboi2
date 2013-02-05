@@ -11,6 +11,37 @@ div.topic-show
     padding 0 0
 
 
+div.topics-all
+  background-color #fff
+  padding 20px 0
+
+  table
+    color #666
+    width 100%
+
+    tr
+      td
+        padding 10px 0
+
+        span.posts
+          font-weight bold
+          margin-left 5px
+
+        &.updated
+          text-align right
+          width 300px
+
+      + tr
+        td
+          border-top 1px solid #ddd
+
+@media (max-width: 767px)
+  div.topics-all
+    margin 0 -20px
+    padding-left 20px
+    padding-right 20px
+
+
 div.topic-new
   header
     background-color #fff

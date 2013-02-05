@@ -509,14 +509,54 @@ class BoardContainerTest(ModelMixin, unittest.TestCase):
         self.assertTrue(verifyObject(IBoardResource, container))
 
     def test_objs(self):
+        from fanboi2.models import Topic
         board = self._makeOne(title="General", slug="general")
-        topic1 = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-        topic2 = self._makeTopic(board=board, title="Hello, world")
+        topics = []
+        for i in range(11):
+            topic = Topic(board=board, title="Topic %i" % i)
+            topics.append(topic)
+            DBSession.add(topic)
+        DBSession.flush()
         container = self._getTargetClass()({}, board)
         self.assertEqual(container.objs[0].__parent__, container)
-        self.assertEqual(container.objs[0].__name__, topic1.id)
-        self.assertEqual({topic1, topic2},
-                         {t.obj for t in container.objs})
+        self.assertEqual(container.objs[0].__name__, topics[0].id)
+        self.assertNotIn(topics[-1], [t.obj for t in container.objs])
+        self.assertEqual(set(topics[:10]), {t.obj for t in container.objs})
+
+    def test_objs_all(self):
+        from fanboi2.models import Topic, Post
+        board = self._makeOne(title="General", slug="general")
+        topics = []
+        old_topic = self._makeTopic(board=board, title="Really old topic")
+        old_topic.status = 'archived'
+        old_post = Post(topic=old_topic, body="Hi!", ip_address="0.0.0.0")
+        old_post.created_at = datetime.datetime.now() - \
+                              datetime.timedelta(days=8)
+        DBSession.add(old_topic)
+        DBSession.add(old_post)
+        newer_topic = self._makeTopic(board=board, title="Newer old topic")
+        newer_topic.status = 'locked'
+        newer_post = Post(topic=newer_topic, body="Hi!", ip_address="0.0.0.0")
+        newer_post.created_at = datetime.datetime.now() - \
+                                datetime.timedelta(days=2)
+        DBSession.add(newer_topic)
+        DBSession.add(newer_post)
+        date_start = datetime.datetime.now()
+        for i in range(13):
+            topic = Topic(board=board, title="Topic %i" % i)
+            post = Post(topic=topic, body="Hello!", ip_address="0.0.0.0")
+            post.created_at = date_start
+            date_start = date_start - datetime.timedelta(days=1)
+            topics.append(topic)
+            DBSession.add(topic)
+            DBSession.add(post)
+        DBSession.flush()
+        container = self._getTargetClass()({}, board)
+        self.assertEqual(14, len(container.objs_all))
+        self.assertNotIn(old_topic, [t.obj for t in container.objs_all])
+        self.assertEqual(set(topics + [newer_topic]),
+                         {t.obj for t in container.objs_all})
+
 
     def test_accessors(self):
         from fanboi2.resources import RootFactory
@@ -1009,6 +1049,21 @@ class TestViews(ModelMixin, unittest.TestCase):
         request = testing.DummyRequest()
         request.context = self._getRoot(request)["general"]
         view = board_view(request)
+        self.assertEqual([board], [b.obj for b in view["boards"]])
+        self.assertEqual(view["board"].obj, board)
+        self.assertEqual(request.resource_path(view["topics"][0]),
+                         "/general/%s/" % topic1.id)
+        self.assertEqual({topic1, topic2},
+                         {t.obj for t in view["topics"]})
+
+    def test_all_board_view(self):
+        from fanboi2.views import all_board_view
+        board = self._makeBoard(title="General", slug="general")
+        topic1 = self._makeTopic(board=board, title="Hello, world!")
+        topic2 = self._makeTopic(board=board, title="Foobar")
+        request = testing.DummyRequest()
+        request.context = self._getRoot(request)["general"]
+        view = all_board_view(request)
         self.assertEqual([board], [b.obj for b in view["boards"]])
         self.assertEqual(view["board"].obj, board)
         self.assertEqual(request.resource_path(view["topics"][0]),

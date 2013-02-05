@@ -10,7 +10,8 @@
         <div class="navbar">
           <div class="navbar-inner">
             <ul class="nav">
-              <li{% if request.view_name == "" %} class="active"{% endif %}><a href="{{ request.resource_path(board) }}"><i class="icon-list icon-white"></i> <span class="hidden-phone">All topics</span></a></li>
+              <li{% if request.view_name == "" %} class="active"{% endif %}><a href="{{ request.resource_path(board) }}"><i class="icon-th icon-white"></i> <span class="hidden-phone">Overview</span></a></li>
+              <li{% if request.view_name == "all" %} class="active"{% endif %}><a href="{{ request.resource_path(board, "all") }}"><i class="icon-list icon-white"></i> <span class="hidden-phone">All topics</span></a></li>
               <li{% if request.view_name == "new" %} class="active"{% endif %}><a href="{{ request.resource_path(board, "new") }}"><i class="icon-plus icon-white"></i> <span class="hidden-phone">New topic</span></a></li>
             </ul>
           </div>

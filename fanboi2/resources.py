@@ -1,9 +1,11 @@
+from datetime import timedelta, datetime
 import re
+from sqlalchemy import or_, and_
 from sqlalchemy.orm import undefer
 from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
 from .interfaces import IBoardResource, ITopicResource, IPostResource
-from .models import DBSession, Board, Post
+from .models import DBSession, Board, Post, Topic
 
 
 class BaseContainer(object):
@@ -87,29 +89,50 @@ class BoardContainer(BaseContainer):
     def __init__(self, request, board):
         super(BoardContainer, self).__init__(request)
         self.obj = board
-        self._objs = None
+        self._objs = {}
+
+    def _query_posts(self, query_fn=lambda n: n):
+        if not query_fn in self._objs:
+            self._objs[query_fn] = []
+            for obj in query_fn(self.obj.topics):
+                topic = TopicContainer(self.request, obj)
+                topic.__parent__ = self
+                topic.__name__ = obj.id
+                self._objs[query_fn].append(topic)
+        return self._objs[query_fn]
 
     @property
     def objs(self):
-        """Return a :type:`list` of :class:`TopicContainer` associated with
-        this :class:`Board`. Deferred columns :attr:`post_count` and
+        """Return a :type:`list` of recently updated :class:`TopicContainer`
+        associated with this :class:`Board`. Only the top 10 recent topics
+        are returned by this method. Deferred columns :attr:`post_count` and
         :attr:`posted_at` are undeferred to prevent N+1 queries when used
         for listing topics. Each object will have this board as its parent
         and will resolve to a `/slug/topic_id` URL.
         """
-        if self._objs is None:
-            self._objs = []
-            # TODO: Optimize me, accessing posts here requires 1+N queries.
-            # However we can't eager-loading posts since posts will have to
-            # be stored in memory which should be very expensive for large
-            # board (maximum of 1000 posts x 10 topics, or 10k rows.)
-            for obj in self.obj.topics.options(undefer('post_count'),
-                                               undefer('posted_at')):
-                topic = TopicContainer(self.request, obj)
-                topic.__parent__ = self
-                topic.__name__ = obj.id
-                self._objs.append(topic)
-        return self._objs
+        # TODO: Optimize me, accessing posts here requires 1+N queries.
+        # However we can't eager-loading posts since posts will have to
+        # be stored in memory which should be very expensive for large
+        # board (maximum of 1000 posts x 10 topics, or 10k rows.)
+        return self._query_posts(lambda q: q.limit(10).\
+                                             options(undefer('post_count'),
+                                                     undefer('posted_at')))
+
+    @property
+    def objs_all(self):
+        """Return a :type:`list` of all :class:`TopicContainer` associated
+        with this :class:`Board`. Unlike :meth:`objs`, this method returns
+        all active topics that are not archived or archived but within the
+        last 1 week. Like :meth:`objs`, deferred columns are also undeferred.
+        """
+        def _query(query):
+            last_week = datetime.now() - timedelta(days=7)
+            return query.options(undefer('post_count'),
+                                 undefer('posted_at')). \
+                         filter(or_(Topic.status == "open",
+                                    and_(Topic.status != "open",
+                                         Topic.posted_at >= last_week)))
+        return self._query_posts(_query)
 
     @property
     def board(self):

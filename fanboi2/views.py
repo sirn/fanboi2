@@ -22,6 +22,14 @@ def board_view(request):
     return locals()
 
 
+@view_config(context=IBoardResource, renderer='boards/all.jinja2', name='all')
+def all_board_view(request):
+    board = request.context
+    boards = request.context.boards
+    topics = board.objs_all
+    return locals()
+
+
 @view_config(context=IBoardResource, renderer='boards/new.jinja2', name='new')
 def new_board_view(request):
     board = request.context
