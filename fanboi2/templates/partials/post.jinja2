@@ -5,10 +5,8 @@
   <div class="container">
     <dl id="p{{ post.obj.number }}">
       <dt>
-        <ul class="unstyled">
-          <li class="number"><a class="label">{{ post.obj.number }}</a></li>
-          <li class="created">Posted {{ time_tag(post.obj.created_at) }}</li>
-        </ul>
+        <span class="number"><a class="label">{{ post.obj.number }}</a></span>
+        <span class="created">Posted {{ time_tag(post.obj.created_at) }}</span>
       </dt>
       <dd>{{ post|formatpost }}</dd>
     </dl>
