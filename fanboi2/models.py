@@ -115,6 +115,7 @@ class Post(BaseModel, Base):
     ip_address = Column(String, nullable=False)
     ident = Column(String(32), nullable=True)
     number = Column(Integer, nullable=False)
+    name = Column(String, nullable=False)
     body = Column(Text, nullable=False)
     topic = relationship('Topic',
                          backref=backref('posts',
@@ -141,6 +142,15 @@ def populate_post_number(mapper, connection, target):
     # calling code should retry accordingly.
     target.number = select([func.coalesce(func.max(Post.number), 0) + 1]).\
                     where(Post.topic_id == target.topic_id)
+
+
+@event.listens_for(Post.__mapper__, 'before_insert')
+def populate_post_name(mapper, connection, target):
+    """Populate :attr:`Post.name` using name set within :attr:`Post.settings`
+    if name is empty otherwise use user input.
+    """
+    if target.name is None:
+        target.name = target.topic.board.settings['name']
 
 
 Topic.post_count = column_property(

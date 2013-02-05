@@ -1144,7 +1144,7 @@ class TestViews(ModelMixin, unittest.TestCase):
 
     def test_topic_view_post(self):
         from fanboi2.views import topic_view
-        from fanboi2.models import DBSession, Post
+        from fanboi2.models import DBSession, Post, DEFAULT_BOARD_CONFIG
         board = self._makeBoard(title="General", slug="general")
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
         request = testing.DummyRequest(MultiDict({
@@ -1155,6 +1155,8 @@ class TestViews(ModelMixin, unittest.TestCase):
         response = topic_view(request)
         self.assertEqual(DBSession.query(Post).count(), 1)
         self.assertEqual(response.location, "/general/%s/" % topic.id)
+        self.assertEqual(DBSession.query(Post).first().name,
+                         DEFAULT_BOARD_CONFIG['name'])
 
     def test_topic_view_post_failure(self):
         from fanboi2.views import topic_view

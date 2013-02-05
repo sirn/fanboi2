@@ -6,7 +6,8 @@
     <dl id="p{{ post.obj.number }}">
       <dt>
         <span class="number"><a class="label">{{ post.obj.number }}</a></span>
-        <span class="created">Posted {{ time_tag(post.obj.created_at) }}</span>
+        <span class="name">{{ post.obj.name }}</span>
+        <span class="created"><span class="hidden-phone">Posted</span> {{ time_tag(post.obj.created_at) }}</span>
       </dt>
       <dd>{{ post|formatpost }}</dd>
     </dl>
