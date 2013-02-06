@@ -18,10 +18,12 @@ div.posts
         span
           display inline-block
 
+          + span
+            margin-right 5px
+
           &.name
             background-color #fff
             line-height 14px
-            margin-right 5px
             padding 3px 6px
 
           &.number
@@ -32,6 +34,9 @@ div.posts
               margin-right 5px
               padding 3px 6px
               text-shadow none
+
+          &.ident
+            color #aabbc4
 
       dd
         color #333
@@ -70,6 +75,19 @@ div.posts
 
 @media (max-width: 480px)
   div.posts
+    div.post
+      dl
+        position relative
+        dt
+          span.created
+            position absolute
+            font-weight normal
+            font-style italic
+            left 0
+            bottom 17px
+        dd
+          margin-bottom 25px
+
     div.quicklinks
       ul.unstyled
         li

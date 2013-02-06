@@ -22,6 +22,8 @@ requires = [
     'isodate',
     'pytz',
     'misaka',
+    'redis',
+    'hiredis',
     ]
 
 setup(name='fanboi2',

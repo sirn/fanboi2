@@ -6,11 +6,26 @@ from fanboi2 import DBSession, Base
 from pyramid import testing
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from webob.multidict import MultiDict
 from zope.interface.verify import verifyObject
 
 
 DATABASE_URI = 'postgres://localhost:5432/fanboi2_test'
+
+
+class DummyRedis(object):
+
+    def __init__(self):
+        self._store = {}
+
+    def get(self, key):
+        return self._store.get(key, None)
+
+    def setnx(self, key, value):
+        if not self.get(key):
+            self._store[key] = bytes(value.encode('utf-8'))
+
+    def expire(self, key, time):
+        pass  # Do nothing.
 
 
 class _ModelInstanceSetup(object):
@@ -24,9 +39,49 @@ class _ModelInstanceSetup(object):
         Base.metadata.drop_all()
         Base.metadata.create_all()
         transaction.begin()
+        self.request = self._makeRequest()
+        self.registry = self._makeRegistry()
+        self.config = testing.setUp(
+            request=self.request,
+            registry=self.registry)
 
     def tearDown(self):
+        testing.tearDown()
         transaction.abort()
+
+    def _makeRequest(self):
+        request = testing.DummyRequest()
+        request.redis = DummyRedis()
+        return request
+
+    def _makeRegistry(self):
+        from pyramid.registry import Registry
+        registry = Registry()
+        registry.settings = {'app.timezone': 'Asia/Bangkok'}
+        return registry
+
+    def _makeBoard(self, **kwargs):
+        from fanboi2.models import Board
+        board = Board(**kwargs)
+        DBSession.add(board)
+        DBSession.flush()
+        return board
+
+    def _makeTopic(self, **kwargs):
+        from fanboi2.models import Topic
+        topic = Topic(**kwargs)
+        DBSession.add(topic)
+        DBSession.flush()
+        return topic
+
+    def _makePost(self, **kwargs):
+        from fanboi2.models import Post
+        if not kwargs.get('ip_address', None):
+            kwargs['ip_address'] = '0.0.0.0'
+        post = Post(**kwargs)
+        DBSession.add(post)
+        DBSession.flush()
+        return post
 
 
 class ModelMixin(_ModelInstanceSetup):
@@ -135,28 +190,18 @@ class BaseModelTest(ModelMixin, unittest.TestCase):
 
 class BoardModelTest(ModelMixin, unittest.TestCase):
 
-    def _getTargetClass(self):
-        from fanboi2.models import Board
-        return Board
-
-    def _makeOne(self, *args, **kwargs):
-        board = self._getTargetClass()(*args, **kwargs)
-        DBSession.add(board)
-        DBSession.flush()
-        return board
-
     def test_interface(self):
         from fanboi2.interfaces import IBoard
-        board = self._makeOne(title="Foobar", slug="foo")
+        board = self._makeBoard(title="Foobar", slug="foo")
         self.assertTrue(verifyObject(IBoard, board))
 
     def test_relations(self):
-        board = self._makeOne(title="Foobar", slug="foo")
+        board = self._makeBoard(title="Foobar", slug="foo")
         self.assertEqual([], list(board.topics))
 
     def test_settings(self):
         from fanboi2.models import DBSession, DEFAULT_BOARD_CONFIG
-        board = self._makeOne(title="Foobar", slug="Foo")
+        board = self._makeBoard(title="Foobar", slug="Foo")
         self.assertEqual(board.settings, DEFAULT_BOARD_CONFIG)
         board.settings = {'name': 'Hamster'}
         new_settings = DEFAULT_BOARD_CONFIG.copy()
@@ -167,8 +212,8 @@ class BoardModelTest(ModelMixin, unittest.TestCase):
 
     def test_topics(self):
         from fanboi2.models import Topic
-        board1 = self._makeOne(title="Foobar", slug="foo")
-        board2 = self._makeOne(title="Lorem", slug="lorem")
+        board1 = self._makeBoard(title="Foobar", slug="foo")
+        board2 = self._makeBoard(title="Lorem", slug="lorem")
         topic1 = Topic(board=board1, title="Heavenly Moon")
         topic2 = Topic(board=board1, title="Beastie Starter")
         topic3 = Topic(board=board1, title="Evans")
@@ -182,7 +227,7 @@ class BoardModelTest(ModelMixin, unittest.TestCase):
     def test_topics_sort(self):
         from datetime import datetime, timedelta
         from fanboi2.models import Topic, Post
-        board = self._makeOne(title="Foobar", slug="foobar")
+        board = self._makeBoard(title="Foobar", slug="foobar")
         topic1 = Topic(board=board, title="First!!!111")
         topic2 = Topic(board=board, title="11111111111!!!!!!!!!")
         topic3 = Topic(board=board, title="Third!!!11")
@@ -208,32 +253,15 @@ class BoardModelTest(ModelMixin, unittest.TestCase):
 
 class TopicModelTest(ModelMixin, unittest.TestCase):
 
-    def _getTargetClass(self):
-        from fanboi2.models import Topic
-        return Topic
-
-    def _makeBoard(self, **kwargs):
-        from fanboi2.models import Board
-        board = Board(**kwargs)
-        DBSession.add(board)
-        DBSession.flush()
-        return board
-
-    def _makeOne(self, **kwargs):
-        topic = self._getTargetClass()(**kwargs)
-        DBSession.add(topic)
-        DBSession.flush()
-        return topic
-
     def test_interface(self):
         from fanboi2.interfaces import ITopic
         board = self._makeBoard(title="Foobar", slug="foo")
-        topic = self._makeOne(board=board, title="Lorem ipsum dolor")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
         self.assertTrue(verifyObject(ITopic, topic))
 
     def test_relations(self):
         board = self._makeBoard(title="Foobar", slug="foo")
-        topic = self._makeOne(board=board, title="Lorem ipsum dolor")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
         self.assertEqual(topic.board, board)
         self.assertEqual([], list(topic.posts))
         self.assertEqual([topic], list(board.topics))
@@ -241,8 +269,8 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
     def test_posts(self):
         from fanboi2.models import Post
         board = self._makeBoard(title="Foobar", slug="foo")
-        topic1 = self._makeOne(board=board, title="Lorem ipsum dolor")
-        topic2 = self._makeOne(board=board, title="Some lonely topic")
+        topic1 = self._makeTopic(board=board, title="Lorem ipsum dolor")
+        topic2 = self._makeTopic(board=board, title="Some lonely topic")
         post1 = Post(topic=topic1, body="Lorem", ip_address="0.0.0.0")
         post2 = Post(topic=topic1, body="Ipsum", ip_address="0.0.0.0")
         post3 = Post(topic=topic1, body="Dolor", ip_address="0.0.0.0")
@@ -258,7 +286,7 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         board = self._makeBoard(title="Foobar", slug="foo", settings={
             'max_posts': 5,
         })
-        topic = self._makeOne(board=board, title="Lorem ipsum dolor")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
         for i in range(4):
             post = Post(topic=topic, body="Post %s" % i, ip_address="0.0.0.0")
             DBSession.add(post)
@@ -273,9 +301,9 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         board = self._makeBoard(title="Foobar", slug="foo", settings={
             'max_posts': 3,
         })
-        topic = self._makeOne(board=board,
-                              title="Lorem ipsum dolor",
-                              status='locked')
+        topic = self._makeTopic(board=board,
+                                title="Lorem ipsum dolor",
+                                status='locked')
         for i in range(3):
             post = Post(topic=topic, body="Post %s" % i, ip_address="0.0.0.0")
             DBSession.add(post)
@@ -285,7 +313,7 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
     def test_post_count(self):
         from fanboi2.models import Post
         board = self._makeBoard(title="Foobar", slug="foo")
-        topic = self._makeOne(board=board, title="Lorem ipsum dolor")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
         self.assertEqual(topic.post_count, 0)
         for x in range(3):
             post = Post(
@@ -299,7 +327,7 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
     def test_posted_at(self):
         from fanboi2.models import Post
         board = self._makeBoard(title="Foobar", slug="foo")
-        topic = self._makeOne(board=board, title="Lorem ipsum dolor")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
         self.assertIsNone(topic.posted_at)
         for x in range(2):
             post = Post(topic=topic,
@@ -316,43 +344,17 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
 
 class PostModelTest(ModelMixin, unittest.TestCase):
 
-    def _getTargetClass(self):
-        from fanboi2.models import Post
-        return Post
-
-    def _makeBoard(self, **kwargs):
-        from fanboi2.models import Board
-        board = Board(**kwargs)
-        DBSession.add(board)
-        DBSession.flush()
-        return board
-
-    def _makeTopic(self, **kwargs):
-        from fanboi2.models import Topic
-        topic = Topic(**kwargs)
-        DBSession.add(topic)
-        DBSession.flush()
-        return topic
-
-    def _makeOne(self, **kwargs):
-        if not kwargs.get('ip_address', None):
-            kwargs['ip_address'] = '0.0.0.0'
-        post = self._getTargetClass()(**kwargs)
-        DBSession.add(post)
-        DBSession.flush()
-        return post
-
     def test_interface(self):
         from fanboi2.interfaces import IPost
         board = self._makeBoard(title="Foobar", slug="foo")
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
-        post = self._makeOne(topic=topic, body="Hello, world")
+        post = self._makePost(topic=topic, body="Hello, world")
         self.assertTrue(verifyObject(IPost, post))
 
     def test_relations(self):
         board = self._makeBoard(title="Foobar", slug="foo")
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-        post = self._makeOne(topic=topic, body="Hello, world")
+        post = self._makePost(topic=topic, body="Hello, world")
         self.assertEqual(post.topic, topic)
         self.assertEqual([post], list(topic.posts))
 
@@ -360,11 +362,11 @@ class PostModelTest(ModelMixin, unittest.TestCase):
         board = self._makeBoard(title="Foobar", slug="foo")
         topic1 = self._makeTopic(board=board, title="Numbering one")
         topic2 = self._makeTopic(board=board, title="Numbering two")
-        post1 = self._makeOne(topic=topic1, body="Topic 1, post 1")
-        post2 = self._makeOne(topic=topic1, body="Topic 1, post 2")
-        post3 = self._makeOne(topic=topic2, body="Topic 2, post 1")
-        post4 = self._makeOne(topic=topic1, body="Topic 1, post 3")
-        post5 = self._makeOne(topic=topic2, body="Topic 2, post 2")
+        post1 = self._makePost(topic=topic1, body="Topic 1, post 1")
+        post2 = self._makePost(topic=topic1, body="Topic 1, post 2")
+        post3 = self._makePost(topic=topic2, body="Topic 2, post 1")
+        post4 = self._makePost(topic=topic1, body="Topic 1, post 3")
+        post5 = self._makePost(topic=topic2, body="Topic 2, post 2")
         # Force update to ensure its number remain the same.
         post4.body = "Topic1, post 3, updated!"
         DBSession.add(post4)
@@ -374,6 +376,40 @@ class PostModelTest(ModelMixin, unittest.TestCase):
         self.assertEqual(post3.number, 1)
         self.assertEqual(post4.number, 3)
         self.assertEqual(post5.number, 2)
+
+    def test_name(self):
+        board = self._makeBoard(title="Foobar", slug="foo", settings={
+            'name': 'Nobody Nowhere',
+        })
+        topic = self._makeTopic(board=board, title="No name!")
+        post1 = self._makePost(topic=topic, body="I'm nameless")
+        post2 = self._makePost(topic=topic, body="I have a name", name="John")
+        self.assertEqual(post1.name, "Nobody Nowhere")
+        self.assertEqual(post2.name, "John")
+
+    def test_ident(self):
+        board = self._makeBoard(title="Testbed", slug="test")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
+        post1 = self._makePost(topic=topic, body="Hi", ip_address="127.0.0.1")
+        post2 = self._makePost(topic=topic, body="Yo", ip_address="10.0.1.18")
+        post3 = self._makePost(topic=topic, body="Hey", ip_address="10.0.1.1")
+        post4 = self._makePost(topic=topic, body="!!", ip_address="127.0.0.1")
+        self.assertIsInstance(post1.ident, str)
+        self.assertIsInstance(post4.ident, str)
+        self.assertNotEqual(post1.ident, post2.ident)
+        self.assertNotEqual(post1.ident, post3.ident)
+        self.assertNotEqual(post2.ident, post3.ident)
+        self.assertEqual(post1.ident, post4.ident)
+
+    def test_ident_disabled(self):
+        board = self._makeBoard(title="Testbed", slug="test", settings={
+            'use_ident': False,
+        })
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
+        post1 = self._makePost(topic=topic, body="Hi", ip_address="127.0.0.1")
+        post2 = self._makePost(topic=topic, body="Yo", ip_address="10.0.2.8")
+        self.assertIsNone(post1.ident)
+        self.assertIsNone(post2.ident)
 
 
 class BaseContainerTest(unittest.TestCase):
@@ -442,13 +478,6 @@ class RootFactoryTest(ModelMixin, unittest.TestCase):
         from fanboi2.resources import RootFactory
         return RootFactory
 
-    def _makeBoard(self, **kwargs):
-        from fanboi2.models import Board
-        board = Board(**kwargs)
-        DBSession.add(board)
-        DBSession.flush()
-        return board
-
     def test_properties(self):
         root = self._getTargetClass()({})
         self.assertIsNone(root.__parent__)
@@ -489,20 +518,6 @@ class BoardContainerTest(ModelMixin, unittest.TestCase):
         from fanboi2.resources import BoardContainer
         return BoardContainer
 
-    def _makeTopic(self, **kwargs):
-        from fanboi2.models import Topic
-        topic = Topic(**kwargs)
-        DBSession.add(topic)
-        DBSession.flush()
-        return topic
-
-    def _makeOne(self, **kwargs):
-        from fanboi2.models import Board
-        board = Board(**kwargs)
-        DBSession.add(board)
-        DBSession.flush()
-        return board
-
     def test_interface(self):
         from fanboi2.interfaces import IBoardResource
         container = self._getTargetClass()({}, None)
@@ -510,7 +525,7 @@ class BoardContainerTest(ModelMixin, unittest.TestCase):
 
     def test_objs(self):
         from fanboi2.models import Topic
-        board = self._makeOne(title="General", slug="general")
+        board = self._makeBoard(title="General", slug="general")
         topics = []
         for i in range(11):
             topic = Topic(board=board, title="Topic %i" % i)
@@ -525,7 +540,7 @@ class BoardContainerTest(ModelMixin, unittest.TestCase):
 
     def test_objs_all(self):
         from fanboi2.models import Topic, Post
-        board = self._makeOne(title="General", slug="general")
+        board = self._makeBoard(title="General", slug="general")
         topics = []
         old_topic = self._makeTopic(board=board, title="Really old topic")
         old_topic.status = 'archived'
@@ -561,7 +576,7 @@ class BoardContainerTest(ModelMixin, unittest.TestCase):
     def test_accessors(self):
         from fanboi2.resources import RootFactory
         root = RootFactory({})
-        board = self._makeOne(title="General", slug="general")
+        board = self._makeBoard(title="General", slug="general")
         container = self._getTargetClass()({}, board)
         container.__parent__ = root
         self.assertEqual(container.root, root)
@@ -570,7 +585,7 @@ class BoardContainerTest(ModelMixin, unittest.TestCase):
         self.assertRaises(AttributeError, lambda: container.topic)
 
     def test_getitem(self):
-        board = self._makeOne(title="General", slug="general")
+        board = self._makeBoard(title="General", slug="general")
         topic1 = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
         topic2 = self._makeTopic(board=board, title="Hello, world")
         container = self._getTargetClass()({}, board)
@@ -578,7 +593,7 @@ class BoardContainerTest(ModelMixin, unittest.TestCase):
         self.assertEqual(container[topic2.id].obj, topic2)
 
     def test_getitem_notfound(self):
-        board = self._makeOne(title="General", slug="general")
+        board = self._makeBoard(title="General", slug="general")
         container = self._getTargetClass()({}, board)
         with self.assertRaises(KeyError):
             assert not container[123456]  # Non-exists.
@@ -590,29 +605,6 @@ class TopicContainerTest(ModelMixin, unittest.TestCase):
         from fanboi2.resources import TopicContainer
         return TopicContainer
 
-    def _makeOne(self, **kwargs):
-        from fanboi2.models import Topic
-        topic = Topic(**kwargs)
-        DBSession.add(topic)
-        DBSession.flush()
-        return topic
-
-    def _makeBoard(self, **kwargs):
-        from fanboi2.models import Board
-        board = Board(**kwargs)
-        DBSession.add(board)
-        DBSession.flush()
-        return board
-
-    def _makePost(self, **kwargs):
-        from fanboi2.models import Post
-        if not kwargs.get('ip_address', None):
-            kwargs['ip_address'] = '0.0.0.0'
-        post = Post(**kwargs)
-        DBSession.add(post)
-        DBSession.flush()
-        return post
-
     def test_interface(self):
         from fanboi2.interfaces import ITopicResource
         container = self._getTargetClass()({}, None)
@@ -620,8 +612,8 @@ class TopicContainerTest(ModelMixin, unittest.TestCase):
 
     def test_objs(self):
         board = self._makeBoard(title="General", slug="general")
-        topic1 = self._makeOne(board=board, title="Boring topic is boring")
-        topic2 = self._makeOne(board=board, title="Yo dawg")
+        topic1 = self._makeTopic(board=board, title="Boring topic is boring")
+        topic2 = self._makeTopic(board=board, title="Yo dawg")
         self._makePost(topic=topic2, body="I heard you like blah blah")
         post1 = self._makePost(topic=topic1, body="Hello, world")
         post2 = self._makePost(topic=topic1, body="Blah blah blah")
@@ -637,7 +629,7 @@ class TopicContainerTest(ModelMixin, unittest.TestCase):
         root = RootFactory({})
         board = BoardContainer({}, self._makeBoard(title="Foo", slug="foo"))
         board.__parent__ = root
-        topic = self._makeOne(board=board.obj, title="At first I was like...")
+        topic = self._makeTopic(board=board.obj, title="At first I was like...")
         container = self._getTargetClass()({}, topic)
         container.__parent__ = board
         self.assertEqual(container.root, root)
@@ -648,7 +640,7 @@ class TopicContainerTest(ModelMixin, unittest.TestCase):
     def test_getitem(self):
         from fanboi2.resources import ScopedTopicContainer
         board = self._makeBoard(title="General", slug="general")
-        topic = self._makeOne(board=board, title="Lorem ipsum dolor sit")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
         self._makePost(topic=topic, body="Hello, world!")
         self._makePost(topic=topic, body="Blah post!")
         container = self._getTargetClass()({}, topic)
@@ -662,7 +654,7 @@ class TopicContainerTest(ModelMixin, unittest.TestCase):
 
     def test_getitem_notfound(self):
         board = self._makeBoard(title="General", slug="general")
-        topic = self._makeOne(board=board, title="Lorem ipsum dolor sit")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
         self._makePost(topic=topic, body="Hello, world!")
         container = self._getTargetClass()({}, topic)
         self.assertRaises(KeyError, lambda: container["2"])   # Not found
@@ -675,29 +667,6 @@ class ScopedTopicContainerTest(ModelMixin, unittest.TestCase):
     def _getTargetClass(self):
         from fanboi2.resources import ScopedTopicContainer
         return ScopedTopicContainer
-
-    def _makeTopic(self, **kwargs):
-        from fanboi2.models import Topic
-        topic = Topic(**kwargs)
-        DBSession.add(topic)
-        DBSession.flush()
-        return topic
-
-    def _makeBoard(self, **kwargs):
-        from fanboi2.models import Board
-        board = Board(**kwargs)
-        DBSession.add(board)
-        DBSession.flush()
-        return board
-
-    def _makePost(self, **kwargs):
-        from fanboi2.models import Post
-        if not kwargs.get('ip_address', None):
-            kwargs['ip_address'] = '0.0.0.0'
-        post = Post(**kwargs)
-        DBSession.add(post)
-        DBSession.flush()
-        return post
 
     def _wrapTopic(self, topic, request={}):
         from fanboi2.resources import TopicContainer
@@ -835,29 +804,6 @@ class PostContainerTest(ModelMixin, unittest.TestCase):
         from fanboi2.resources import PostContainer
         return PostContainer
 
-    def _makeTopic(self, **kwargs):
-        from fanboi2.models import Topic
-        topic = Topic(**kwargs)
-        DBSession.add(topic)
-        DBSession.flush()
-        return topic
-
-    def _makeBoard(self, **kwargs):
-        from fanboi2.models import Board
-        board = Board(**kwargs)
-        DBSession.add(board)
-        DBSession.flush()
-        return board
-
-    def _makePost(self, **kwargs):
-        from fanboi2.models import Post
-        if not kwargs.get('ip_address', None):
-            kwargs['ip_address'] = '0.0.0.0'
-        post = Post(**kwargs)
-        DBSession.add(post)
-        DBSession.flush()
-        return post
-
     def test_interface(self):
         from fanboi2.interfaces import IPostResource
         container = self._getTargetClass()({}, None)
@@ -940,38 +886,27 @@ class TestFormatters(unittest.TestCase):
 
 class TestFormattersWithModel(ModelMixin, unittest.TestCase):
 
-    def _makeBoard(self, **kwargs):
-        from fanboi2.models import Board
+    def _wrapBoard(self, **kwargs):
         from fanboi2.resources import RootFactory, BoardContainer
-        board = Board(**kwargs)
-        DBSession.add(board)
-        DBSession.flush()
+        board = self._makeBoard(**kwargs)
         container = BoardContainer({}, board)
         container.__name__ = board.slug
         container.__parent__ = RootFactory({})
         return container
 
-    def _makeTopic(self, board_container, **kwargs):
-        from fanboi2.models import Topic
+    def _wrapTopic(self, board_container, **kwargs):
         from fanboi2.resources import TopicContainer
-        topic = Topic(**kwargs)
-        topic.board = board_container.obj
-        DBSession.add(topic)
-        DBSession.flush()
+        kwargs['board'] = board_container.obj
+        topic = self._makeTopic(**kwargs)
         container = TopicContainer({}, topic)
         container.__name__ = topic.id
         container.__parent__ = board_container
         return container
 
-    def _makePost(self, topic_container, **kwargs):
-        from fanboi2.models import Post
+    def _wrapPost(self, topic_container, **kwargs):
         from fanboi2.resources import PostContainer
-        if not kwargs.get('ip_address', None):
-            kwargs['ip_address'] = '0.0.0.0'
-        post = Post(**kwargs)
-        post.topic = topic_container.obj
-        DBSession.add(post)
-        DBSession.flush()
+        kwargs['topic'] = topic_container.obj
+        post = self._makePost(**kwargs)
         container = PostContainer({}, post)
         container.__parent__ = topic_container
         container.__name__ = post.number
@@ -980,12 +915,11 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
     def test_format_post(self):
         from fanboi2.formatters import format_post
         from jinja2 import Markup
-        testing.setUp(request=testing.DummyRequest())
-        board = self._makeBoard(title="Foobar", slug="foobar")
-        topic = self._makeTopic(board, title="Hogehogehogehogehoge")
-        post1 = self._makePost(topic, body="Hogehoge\nHogehoge")
-        post2 = self._makePost(topic, body=">>1")
-        post3 = self._makePost(topic, body=">>1-2\nHoge")
+        board = self._wrapBoard(title="Foobar", slug="foobar")
+        topic = self._wrapTopic(board, title="Hogehogehogehogehoge")
+        post1 = self._wrapPost(topic, body="Hogehoge\nHogehoge")
+        post2 = self._wrapPost(topic, body=">>1")
+        post3 = self._wrapPost(topic, body=">>1-2\nHoge")
         tests = [
             (post1, "<p>Hogehoge<br>Hogehoge</p>"),
             (post2, "<p><a href=\"/foobar/1/1\" class=\"anchor\">" +
@@ -999,43 +933,33 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
 
 class TestViews(ModelMixin, unittest.TestCase):
 
-    def setUp(self):
-        self.config = testing.setUp()
-        super(TestViews, self).setUp()
-
-    def _getRoot(self, request):
+    def _getRoot(self, request=None):
         from fanboi2.resources import RootFactory
+        if request is None:
+            request = self.request
         return RootFactory(request)
 
-    def _makeBoard(self, **kwargs):
-        from fanboi2.models import Board
-        board = Board(**kwargs)
-        DBSession.add(board)
-        DBSession.flush()
-        return board
+    def _POST(self, data=None):
+        from webob.multidict import MultiDict
+        self.request.method = 'POST'
+        self.request.remote_addr = "127.0.0.1"
+        self.request.params = MultiDict(data)
+        return self.request
 
-    def _makeTopic(self, **kwargs):
-        from fanboi2.models import Topic
-        topic = Topic(**kwargs)
-        DBSession.add(topic)
-        DBSession.flush()
-        return topic
-
-    def _makePost(self, **kwargs):
-        from fanboi2.models import Post
-        if not kwargs.get('ip_address', None):
-            kwargs['ip_address'] = '0.0.0.0'
-        post = Post(**kwargs)
-        DBSession.add(post)
-        DBSession.flush()
-        return post
+    def _GET(self, data=None):
+        from webob.multidict import MultiDict
+        if data is None:
+            data = {}
+        self.request.remote_addr = "127.0.0.1"
+        self.request.params = MultiDict(data)
+        return self.request
 
     def test_root_view(self):
         from fanboi2.views import root_view
         board1 = self._makeBoard(title="General", slug="general")
         board2 = self._makeBoard(title="Foobar", slug="foo")
-        request = testing.DummyRequest()
-        request.context = self._getRoot(request)
+        request = self._GET()
+        request.context = self._getRoot()
         view = root_view(request)
         self.assertEqual(request.resource_path(view["boards"][0]), "/foo/")
         self.assertEqual([board2, board1],
@@ -1046,8 +970,8 @@ class TestViews(ModelMixin, unittest.TestCase):
         board = self._makeBoard(title="General", slug="general")
         topic1 = self._makeTopic(board=board, title="Hello, world!")
         topic2 = self._makeTopic(board=board, title="Python!!!11one")
-        request = testing.DummyRequest()
-        request.context = self._getRoot(request)["general"]
+        request = self._GET()
+        request.context = self._getRoot()["general"]
         view = board_view(request)
         self.assertEqual([board], [b.obj for b in view["boards"]])
         self.assertEqual(view["board"].obj, board)
@@ -1061,8 +985,8 @@ class TestViews(ModelMixin, unittest.TestCase):
         board = self._makeBoard(title="General", slug="general")
         topic1 = self._makeTopic(board=board, title="Hello, world!")
         topic2 = self._makeTopic(board=board, title="Foobar")
-        request = testing.DummyRequest()
-        request.context = self._getRoot(request)["general"]
+        request = self._GET()
+        request.context = self._getRoot()["general"]
         view = all_board_view(request)
         self.assertEqual([board], [b.obj for b in view["boards"]])
         self.assertEqual(view["board"].obj, board)
@@ -1074,8 +998,8 @@ class TestViews(ModelMixin, unittest.TestCase):
     def test_new_board_view_get(self):
         from fanboi2.views import new_board_view
         board = self._makeBoard(title="General", slug="general")
-        request = testing.DummyRequest(MultiDict({}))
-        request.context = self._getRoot(request)["general"]
+        request = self._GET()
+        request.context = self._getRoot()["general"]
         view = new_board_view(request)
         self.assertEqual([board], [b.obj for b in view["boards"]])
         self.assertEqual(view["board"].obj, board)
@@ -1085,12 +1009,11 @@ class TestViews(ModelMixin, unittest.TestCase):
         from fanboi2.views import new_board_view
         from fanboi2.models import DBSession, Topic
         self._makeBoard(title="General", slug="general")
-        request = testing.DummyRequest(MultiDict({
+        request = self._POST({
             'title': "One more thing...",
             'body': "And now for something completely different...",
-        }), post=True)
-        request.remote_addr = "127.0.0.1"
-        request.context = self._getRoot(request)["general"]
+        })
+        request.context = self._getRoot()["general"]
         response = new_board_view(request)
         self.assertEqual(DBSession.query(Topic).count(), 1)
         self.assertEqual(response.location, "/general/")
@@ -1099,11 +1022,11 @@ class TestViews(ModelMixin, unittest.TestCase):
         from fanboi2.views import new_board_view
         from fanboi2.models import DBSession, Topic
         self._makeBoard(title="General", slug="general")
-        request = testing.DummyRequest(MultiDict({
+        request = self._POST({
             'title': "One more thing...",
             'body': "",
-        }), post=True)
-        request.context = self._getRoot(request)["general"]
+        })
+        request.context = self._getRoot()["general"]
         view = new_board_view(request)
         self.assertEqual(DBSession.query(Topic).count(), 0)
         self.assertEqual(view["form"].title.data, 'One more thing...')
@@ -1117,8 +1040,8 @@ class TestViews(ModelMixin, unittest.TestCase):
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
         post1 = self._makePost(topic=topic, body="Hello, world!")
         post2 = self._makePost(topic=topic, body="Boring post is boring!")
-        request = testing.DummyRequest(MultiDict({}))
-        request.context = self._getRoot(request)["general"][str(topic.id)]
+        request = self._GET()
+        request.context = self._getRoot()["general"][str(topic.id)]
         view = topic_view(request)
         self.assertEqual([board], [b.obj for b in view["boards"]])
         self.assertEqual(view["board"].obj, board)
@@ -1133,8 +1056,8 @@ class TestViews(ModelMixin, unittest.TestCase):
         topic = self._makeTopic(board=board, title="Hello, world!")
         post1 = self._makePost(topic=topic, body="Boring test is boring!")
         post2 = self._makePost(topic=topic, body="Boring post is boring!")
-        request = testing.DummyRequest(MultiDict({}))
-        request.context = self._getRoot(request)["foo"][str(topic.id)]["2"]
+        request = self._GET()
+        request.context = self._getRoot()["foo"][str(topic.id)]["2"]
         view = topic_view(request)
         self.assertEqual([board], [b.obj for b in view["boards"]])
         self.assertEqual(view["board"].obj, board)
@@ -1147,11 +1070,8 @@ class TestViews(ModelMixin, unittest.TestCase):
         from fanboi2.models import DBSession, Post, DEFAULT_BOARD_CONFIG
         board = self._makeBoard(title="General", slug="general")
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-        request = testing.DummyRequest(MultiDict({
-            'body': "Boring post..."
-        }), post=True)
-        request.remote_addr = "127.0.0.1"
-        request.context = self._getRoot(request)["general"][str(topic.id)]
+        request = self._POST({'body': "Boring post..."})
+        request.context = self._getRoot()["general"][str(topic.id)]
         response = topic_view(request)
         self.assertEqual(DBSession.query(Post).count(), 1)
         self.assertEqual(response.location, "/general/%s/" % topic.id)
@@ -1163,9 +1083,8 @@ class TestViews(ModelMixin, unittest.TestCase):
         from fanboi2.models import DBSession, Post
         board = self._makeBoard(title="General", slug="general")
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-        request = testing.DummyRequest(MultiDict({'body': 'x'}), post=True)
-        request.remote_addr = "127.0.0.1"
-        request.context = self._getRoot(request)["general"][str(topic.id)]
+        request = self._POST({'body': 'x'})
+        request.context = self._getRoot()["general"][str(topic.id)]
         view = topic_view(request)
         self.assertEqual(DBSession.query(Post).count(), 0)
         self.assertEqual(view["form"].body.data, 'x')
@@ -1177,6 +1096,7 @@ class TestViews(ModelMixin, unittest.TestCase):
         from fanboi2.models import DBSession, Post
         from fanboi2.views import topic_view
         from sqlalchemy.exc import IntegrityError
+        from webob.multidict import MultiDict
         board = self._makeBoard(title="General", slug="general")
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
 
@@ -1207,11 +1127,10 @@ class TestViews(ModelMixin, unittest.TestCase):
         board = self._makeBoard(title="Foo", slug="foo")
         topic = self._makeTopic(board=board, title="Hoge", status='archived')
         self.assertEqual(DBSession.query(Post).count(), 0)
-        request = testing.DummyRequest(MultiDict({
+        request = self._POST({
             'body': "Topic is archived and post shouldn't get through."
-        }), post=True)
-        request.remote_addr = "127.0.0.1"
-        request.context = self._getRoot(request)["foo"][str(topic.id)]
+        })
+        request.context = self._getRoot()["foo"][str(topic.id)]
         self.config.testing_add_renderer('topics/error.jinja2')
         topic_view(request)
         self.assertEqual(DBSession.query(Post).count(), 0)
@@ -1222,11 +1141,10 @@ class TestViews(ModelMixin, unittest.TestCase):
         board = self._makeBoard(title="Foo", slug="foo")
         topic = self._makeTopic(board=board, title="Hoge", status='locked')
         self.assertEqual(DBSession.query(Post).count(), 0)
-        request = testing.DummyRequest(MultiDict({
+        request = self._POST({
             'body': "Topic is locked and post shouldn't get through."
-        }), post=True)
-        request.remote_addr = "127.0.0.1"
-        request.context = self._getRoot(request)["foo"][str(topic.id)]
+        })
+        request.context = self._getRoot()["foo"][str(topic.id)]
         self.config.testing_add_renderer('topics/error.jinja2')
         topic_view(request)
         self.assertEqual(DBSession.query(Post).count(), 0)

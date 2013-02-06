@@ -1,5 +1,11 @@
+import datetime
+import string
+import hashlib
 import json
+import pytz
+import random
 import re
+from pyramid.threadlocal import get_current_request
 from sqlalchemy import Column, Integer, String, DateTime, Unicode, Text,\
     Enum, ForeignKey, TypeDecorator, UniqueConstraint, func, select,\
     desc, event
@@ -19,7 +25,7 @@ RE_ALL_CAP = re.compile('([a-z0-9])([A-Z])')
 
 DEFAULT_BOARD_CONFIG = {
     'name': 'Nameless Fanboi',
-    'display_ident': True,
+    'use_ident': True,
     'max_posts': 1000,
 }
 
@@ -151,6 +157,39 @@ def populate_post_name(mapper, connection, target):
     """
     if target.name is None:
         target.name = target.topic.board.settings['name']
+
+
+def _generate_ident(ip_address):
+    """Retrieve user ident from Redis or generate a new one if it does not
+    already exists. Date is used as an ident key to ensure a new key is
+    generated every day.
+    """
+    request = get_current_request()
+
+    # Use timezone to generate date for ident key so it is reset at the same
+    # time as displayed in the board.
+    timezone = pytz.timezone(request.registry.settings['app.timezone'])
+    today = datetime.datetime.now(timezone).strftime("%Y%m%d")
+    key = "ident:%s:%s" % (today, hashlib.md5(ip_address.encode('utf8')).\
+                                          hexdigest())
+
+    # Generate ident if not exists and store it. Use SETNX to ensure we don't
+    # overwrite the key if it somehow gets stored while code is running.
+    ident = request.redis.get(key)
+    if ident is None:
+        strings = string.ascii_letters + string.digits + "+/."
+        ident = ''.join(random.choice(strings) for x in range(9))
+        request.redis.setnx(key, ident)
+        request.redis.expire(key, 86400)
+    else:
+        ident = ident.decode('utf-8')
+    return ident
+
+
+@event.listens_for(Post.__mapper__, 'before_insert')
+def populate_post_ident(mapper, connection, target):
+    if target.topic.board.settings['use_ident']:
+        target.ident = _generate_ident(target.ip_address)
 
 
 Topic.post_count = column_property(

@@ -8,6 +8,7 @@
         <span class="number"><a class="label">{{ post.obj.number }}</a></span>
         <span class="name">{{ post.obj.name }}</span>
         <span class="created"><span class="hidden-phone">Posted</span> {{ time_tag(post.obj.created_at) }}</span>
+        {% if post.obj.ident %}<span class="ident">ID:{{ post.obj.ident }}</span>{% endif %}
       </dt>
       <dd>{{ post|formatpost }}</dd>
     </dl>
