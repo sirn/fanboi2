@@ -15,7 +15,14 @@ In order to get the app running, you must first installed the following prerequi
 - `PostgreSQL 9.2 <http://www.postgresql.org/>`_. While any other databases *may* work, it is not tested is not supported.::
 
     $ brew install postgres
+    $ ln -sfv /usr/local/opt/postgresql/*.plist ~/Library/LaunchAgents
     $ launchctl load ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist
+
+- `Redis <http://redis.io>` for caching and ID generation.::
+
+    $ brew install redis
+    $ ln -sfv /usr/local/opt/redis/*.plist ~/Library/LaunchAgents
+    $ launchctl load ~/Library/LaunchAgents/homebrew.mxcl.redis.plist
 
 - `Stylus <http://learnboost.github.com/stylus/>`_ and `nib <https://github.com/visionmedia/nib/>`_. You may also need to install `node.js <http://nodejs.org/>`_ and add ``/usr/local/share/npm/bin/`` to your ``$PATH``. These dependencies are required for assets compiling:::
 
