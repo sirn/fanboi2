@@ -3,6 +3,7 @@ import redis
 from ipaddress import ip_address
 from pyramid.config import Configurator
 from pyramid.events import NewRequest
+from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from sqlalchemy import engine_from_config
 from .formatters import *
 from .models import DBSession, Base
@@ -26,12 +27,20 @@ def main(global_config, **settings):  # pragma: no cover
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
-    config = Configurator(settings=settings, root_factory=RootFactory)
+
+    config = Configurator(
+        settings=settings,
+        session_factory=UnencryptedCookieSessionFactoryConfig('temp'),
+        root_factory=RootFactory)
+
     config.set_request_property(remote_addr)
     config.include(pyramid_jinja2)
 
-    # TODO: Remove Redis usage (we only use it for ID generation)
-    # Use some kind of hashing algorithm instead?
+    # TODO: Replace UnencryptedCookieSessionFactoryConfig with Dogpile.
+    from warnings import warn
+    warn("Insecure session factory in use!", Warning)
+
+    # Redis setup.
     redis_conn = redis.StrictRedis.from_url(settings['redis.url'])
     config.registry.settings['redis_conn'] = redis_conn
     def _add_redis(event):

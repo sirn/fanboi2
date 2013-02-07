@@ -34,7 +34,7 @@ def all_board_view(request):
 def new_board_view(request):
     board = request.context
     boards = request.context.boards
-    form = TopicForm(request.params)
+    form = TopicForm(request.params, request=request)
     if request.method == 'POST' and form.validate():
         post = Post(body=form.body.data, ip_address=request.remote_addr)
         post.topic = Topic(board=board.obj, title=form.title.data)
@@ -49,7 +49,7 @@ def topic_view(request):
     board = request.context.board
     boards = request.context.boards
     posts = topic.objs
-    form = PostForm(request.params)
+    form = PostForm(request.params, request=request)
     if request.method == 'POST' and form.validate():
 
         # INSERT a post will issue a SELECT subquery and may cause race

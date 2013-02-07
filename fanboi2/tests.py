@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import os
 import transaction
 import unittest
 from fanboi2 import DBSession, Base
@@ -57,7 +58,10 @@ class _ModelInstanceSetup(object):
     def _makeRegistry(self):
         from pyramid.registry import Registry
         registry = Registry()
-        registry.settings = {'app.timezone': 'Asia/Bangkok'}
+        registry.settings = {
+            'app.timezone': 'Asia/Bangkok',
+            'app.secret': 'Silently test in secret',
+        }
         return registry
 
     def _makeBoard(self, **kwargs):
@@ -836,6 +840,57 @@ class PostContainerTest(ModelMixin, unittest.TestCase):
         self.assertEqual(container.topic, topic)
 
 
+class TestSecureForm(unittest.TestCase):
+
+    def _makeRequest(self):
+        request = testing.DummyRequest()
+        request.registry.settings = {'app.secret': 'TESTME'}
+        return request
+
+    def _makeForm(self, data):
+        from webob.multidict import MultiDict
+        return MultiDict(data)
+
+    def _makeOne(self, form, request):
+        from fanboi2.forms import SecureForm
+        form = SecureForm(self._makeForm(form), request=request)
+        form.validate()
+        return form
+
+    def test_csrf_token(self):
+        import hmac
+        from hashlib import sha1
+        request = self._makeRequest()
+        request.session['csrf'] = sha1(os.urandom(64)).hexdigest()
+        token = hmac.new(
+            bytes(request.registry.settings['app.secret'].encode('utf8')),
+            bytes(request.session['csrf'].encode('utf8')),
+            digestmod=sha1,
+        ).hexdigest()
+        form = self._makeOne({'csrf_token': token}, request)
+        self.assertTrue(form.validate())
+        self.assertEqual(form.errors, {})
+
+    def test_csrf_token_empty(self):
+        request = self._makeRequest()
+        form = self._makeOne({}, request)
+        self.assertDictEqual(form.errors, {
+            'csrf_token': ['CSRF token missing'],
+        })
+
+    def test_csrf_token_invalid(self):
+        request = self._makeRequest()
+        form = self._makeOne({'csrf_token': 'invalid'}, request)
+        self.assertDictEqual(form.errors, {
+            'csrf_token': ['CSRF token mismatched'],
+        })
+
+    def test_data(self):
+        request = self._makeRequest()
+        form = self._makeOne({'csrf_token': 'strip_me'}, request)
+        self.assertDictEqual(form.data, {})
+
+
 class TestFormatters(unittest.TestCase):
 
     def _makeRegistry(self):
@@ -948,6 +1003,17 @@ class TestViews(ModelMixin, unittest.TestCase):
             request = self.request
         return RootFactory(request)
 
+    def _make_csrf(self, request):
+        import hmac
+        from hashlib import sha1
+        request.session['csrf'] = sha1(os.urandom(64)).hexdigest()
+        request.params['csrf_token'] = hmac.new(
+            bytes(request.registry.settings['app.secret'].encode('utf8')),
+            bytes(request.session['csrf'].encode('utf8')),
+            digestmod=sha1,
+        ).hexdigest()
+        return request
+
     def _POST(self, data=None):
         from webob.multidict import MultiDict
         self.request.method = 'POST'
@@ -1018,10 +1084,10 @@ class TestViews(ModelMixin, unittest.TestCase):
         from fanboi2.views import new_board_view
         from fanboi2.models import DBSession, Topic
         self._makeBoard(title="General", slug="general")
-        request = self._POST({
+        request = self._make_csrf(self._POST({
             'title': "One more thing...",
             'body': "And now for something completely different...",
-        })
+        }))
         request.context = self._getRoot()["general"]
         response = new_board_view(request)
         self.assertEqual(DBSession.query(Topic).count(), 1)
@@ -1031,10 +1097,10 @@ class TestViews(ModelMixin, unittest.TestCase):
         from fanboi2.views import new_board_view
         from fanboi2.models import DBSession, Topic
         self._makeBoard(title="General", slug="general")
-        request = self._POST({
+        request = self._make_csrf(self._POST({
             'title': "One more thing...",
             'body': "",
-        })
+        }))
         request.context = self._getRoot()["general"]
         view = new_board_view(request)
         self.assertEqual(DBSession.query(Topic).count(), 0)
@@ -1079,7 +1145,7 @@ class TestViews(ModelMixin, unittest.TestCase):
         from fanboi2.models import DBSession, Post, DEFAULT_BOARD_CONFIG
         board = self._makeBoard(title="General", slug="general")
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-        request = self._POST({'body': "Boring post..."})
+        request = self._make_csrf(self._POST({'body': "Boring post..."}))
         request.context = self._getRoot()["general"][str(topic.id)]
         response = topic_view(request)
         self.assertEqual(DBSession.query(Post).count(), 1)
@@ -1092,7 +1158,7 @@ class TestViews(ModelMixin, unittest.TestCase):
         from fanboi2.models import DBSession, Post
         board = self._makeBoard(title="General", slug="general")
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-        request = self._POST({'body': 'x'})
+        request = self._make_csrf(self._POST({'body': 'x'}))
         request.context = self._getRoot()["general"][str(topic.id)]
         view = topic_view(request)
         self.assertEqual(DBSession.query(Post).count(), 0)
@@ -1124,6 +1190,7 @@ class TestViews(ModelMixin, unittest.TestCase):
                                      "duplicate key")
 
         request = InvalidRequest(MultiDict({'body': 'xyz'}), post=True)
+        request = self._make_csrf(request)
         request.context = self._getRoot(request)["general"][str(topic.id)]
         with self.assertRaises(IntegrityError):
             assert not topic_view(request)
@@ -1136,9 +1203,9 @@ class TestViews(ModelMixin, unittest.TestCase):
         board = self._makeBoard(title="Foo", slug="foo")
         topic = self._makeTopic(board=board, title="Hoge", status='archived')
         self.assertEqual(DBSession.query(Post).count(), 0)
-        request = self._POST({
+        request = self._make_csrf(self._POST({
             'body': "Topic is archived and post shouldn't get through."
-        })
+        }))
         request.context = self._getRoot()["foo"][str(topic.id)]
         self.config.testing_add_renderer('topics/error.jinja2')
         topic_view(request)
@@ -1150,9 +1217,9 @@ class TestViews(ModelMixin, unittest.TestCase):
         board = self._makeBoard(title="Foo", slug="foo")
         topic = self._makeTopic(board=board, title="Hoge", status='locked')
         self.assertEqual(DBSession.query(Post).count(), 0)
-        request = self._POST({
+        request = self._make_csrf(self._POST({
             'body': "Topic is locked and post shouldn't get through."
-        })
+        }))
         request.context = self._getRoot()["foo"][str(topic.id)]
         self.config.testing_add_renderer('topics/error.jinja2')
         topic_view(request)
