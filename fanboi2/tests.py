@@ -411,6 +411,15 @@ class PostModelTest(ModelMixin, unittest.TestCase):
         self.assertIsNone(post1.ident)
         self.assertIsNone(post2.ident)
 
+    def test_ident_namespaced(self):
+        board1 = self._makeBoard(title="Test 1", slug="test1")
+        board2 = self._makeBoard(title="Test 2", slug="test2")
+        topic1 = self._makeTopic(board=board1, title="First topic")
+        topic2 = self._makeTopic(board=board2, title="Second topic")
+        p1 = self._makePost(topic=topic1, body="Test", ip_address="10.0.1.1")
+        p2 = self._makePost(topic=topic2, body="Test", ip_address="10.0.1.1")
+        self.assertNotEqual(p1.ident, p2.ident)
+
 
 class BaseContainerTest(unittest.TestCase):
 

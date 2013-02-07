@@ -159,7 +159,7 @@ def populate_post_name(mapper, connection, target):
         target.name = target.topic.board.settings['name']
 
 
-def _generate_ident(ip_address):
+def _generate_ident(ip_address, namespace="default"):
     """Retrieve user ident from Redis or generate a new one if it does not
     already exists. Date is used as an ident key to ensure a new key is
     generated every day.
@@ -170,8 +170,10 @@ def _generate_ident(ip_address):
     # time as displayed in the board.
     timezone = pytz.timezone(request.registry.settings['app.timezone'])
     today = datetime.datetime.now(timezone).strftime("%Y%m%d")
-    key = "ident:%s:%s" % (today, hashlib.md5(ip_address.encode('utf8')).\
-                                          hexdigest())
+    key = "ident:%s:%s:%s" % (today,
+                              namespace,
+                              hashlib.md5(ip_address.encode('utf8')).\
+                                      hexdigest())
 
     # Generate ident if not exists and store it. Use SETNX to ensure we don't
     # overwrite the key if it somehow gets stored while code is running.
@@ -188,8 +190,9 @@ def _generate_ident(ip_address):
 
 @event.listens_for(Post.__mapper__, 'before_insert')
 def populate_post_ident(mapper, connection, target):
-    if target.topic.board.settings['use_ident']:
-        target.ident = _generate_ident(target.ip_address)
+    board = target.topic.board
+    if board.settings['use_ident']:
+        target.ident = _generate_ident(target.ip_address, board.slug)
 
 
 Topic.post_count = column_property(
