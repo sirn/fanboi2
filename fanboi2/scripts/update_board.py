@@ -16,7 +16,10 @@ DESCRIPTION = "Update board settings."
 USAGE = "Usage: %prog config arguments"
 
 
-def main(config_uri=sys.argv[1], argv=sys.argv[2:]):
+def main(argv=sys.argv):
+    config_uri = argv[1]
+    argv = argv[2:]
+
     parser = optparse.OptionParser(usage=USAGE, description=DESCRIPTION)
     parser.add_option('-f', '--field', dest='field', type='string')
     parser.add_option('-s', '--slug', dest='slug', type='string')
