@@ -8,6 +8,8 @@ static/
 *.sqlite
 *.pyc
 *.log
+.vagrant
+.tmp
 
 # IDE stuff
 fanboi2.iml

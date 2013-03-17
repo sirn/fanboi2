@@ -18,12 +18,14 @@ requires = [
     'alembic',
     'wtforms',
     'webtest',
-    'psycopg2',
     'isodate',
     'pytz',
     'misaka',
     'redis',
     'hiredis',
+
+    # See also http://psycopg.lighthouseapp.com/projects/62710/tickets/153
+    'pg8000-py3',
     ]
 
 setup(name='fanboi2',
