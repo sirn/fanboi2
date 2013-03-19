@@ -1,10 +1,10 @@
 node default {
-  Exec {path => ['/usr/local/bin', '/usr/bin', '/bin']}
 
   # Update only if PostgreSQL is not installed. Psql requires updating APT.
   exec {"apt-update":
     command => 'apt-get update',
     unless  => 'which psql',
+    path    => '/usr/local/bin:/usr/bin:/bin',
     timeout => 0,
   }
 
