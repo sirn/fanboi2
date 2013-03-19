@@ -11,15 +11,18 @@ class python3 {
     }
   }
 
+  file {'/usr/local/src/': ensure => directory}
+
   wget::fetch {'distribute':
     source      => 'http://python-distribute.org/distribute_setup.py',
-    destination => '/tmp/distribute_setup.py',
+    destination => '/usr/local/src/distribute_setup.py',
+    require     => File['/usr/local/src/'],
   }
 
   exec {'python3-install-distribute':
     path        => '/usr/local/bin:/usr/bin:/bin',
     refreshonly => true,
-    command     => 'python3 /tmp/distribute_setup.py',
+    command     => 'python3 /usr/local/src/distribute_setup.py',
     require     => [Package['python3'], Wget::Fetch['distribute']],
     subscribe   => Package['python3'],
   }
