@@ -38,13 +38,44 @@ node default {
     system_site => true,
   }
 
+  # Some project settings.
+  $fb2_venv = '/usr/local/venv/fanboi2/'
+  $fb2_root = '/vagrant/'
+  $fb2_user = 'vagrant'
+
   # Setup project as development mode (i.e. python setup.py develop).
   python3::setup {'fanboi2':
     mode     => 'develop',
-    setup    => '/vagrant/setup.py',
-    venv     => '/usr/local/venv/fanboi2/',
-    user     => 'vagrant',
+    setup    => "setup.py",
+    venv     => $fb2_venv,
+    user     => $fb2_user,
+    cwd      => $fb2_root,
     require  => [Python3::Venv['fanboi2'], Class['postgresql::server']],
+  }
+
+  # Migration!
+  exec {'fanboi2-migrate':
+    command  => "${fb2_venv}bin/alembic upgrade head",
+    user     => $fb2_user,
+    cwd      => $fb2_root,
+    require  => [Service['postgresql'], Python3::Setup['fanboi2']],
+  }
+
+  # Actually running stuff.
+  class {'supervisord':}
+
+  supervisord::program {'watch':
+    command  => 'make watch',
+    user     => $fb2_user,
+    cwd      => $fb2_root,
+    require  => Python3::Setup['fanboi2'],
+  }
+
+  supervisord::program {'pserve':
+    command  => "${fb2_venv}bin/pserve development.ini --reload",
+    user     => $fb2_user,
+    cwd      => $fb2_root,
+    require  => [Exec['fanboi2-migrate'], Python3::Setup['fanboi2']],
   }
 
 }

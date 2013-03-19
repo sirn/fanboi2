@@ -2,6 +2,7 @@ define python3::setup (
   $setup  = undef,
   $mode   = 'install',
   $python = 'python3',
+  $cwd    = undef,
   $venv   = undef,
   $user   = undef
 ) {
@@ -10,7 +11,7 @@ define python3::setup (
     command     => "${python} ${setup} ${mode}",
     environment => ['LANG=en_US.UTF-8'], # Fix Unicode error with Python 3.
     unless      => "${python} -c 'import ${title}'",
-    cwd         => "/tmp/",
+    cwd         => $cwd,
     user        => $user,
     timeout     => 0,
   }
