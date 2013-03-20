@@ -9,6 +9,7 @@ requires = [
     'pyramid',
     'sqlalchemy',
     'transaction',
+    'psycopg2',
     'pyramid_tm',
     'pyramid_debugtoolbar',
     'pyramid_zcml',
@@ -23,9 +24,9 @@ requires = [
     'misaka',
     'redis',
     'hiredis',
-
-    # See also http://psycopg.lighthouseapp.com/projects/62710/tickets/153
-    'pg8000-py3',
+    'IPy',
+    'nose',
+    'coverage',
     ]
 
 setup(name='fanboi2',

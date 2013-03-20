@@ -58,7 +58,7 @@ node default {
     command  => "${fb2_venv}bin/alembic upgrade head",
     user     => $fb2_user,
     cwd      => $fb2_root,
-    require  => [Service['postgresql'], Python3::Setup['fanboi2']],
+    require  => [Postgresql::Db['fanboi2_dev'], Python3::Setup['fanboi2']],
   }
 
   # Actually running stuff.
