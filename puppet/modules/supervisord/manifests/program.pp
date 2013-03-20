@@ -3,7 +3,7 @@ define supervisord::program (
   $user    = undef,
   $env     = undef,
   $cwd     = undef,
-  $retries = 3
+  $retries = 65535
 ) {
   $config_dir = '/etc/supervisor/conf.d/'
 

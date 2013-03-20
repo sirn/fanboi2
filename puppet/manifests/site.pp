@@ -63,6 +63,7 @@ node default {
 
   # Actually running stuff.
   class {'supervisord':}
+  class {'supervisord::inet':}
 
   supervisord::program {'watch':
     command  => 'make watch',

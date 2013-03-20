@@ -14,15 +14,15 @@ We use `Vagrant <http://www.vagrantup.com/>`_ for development environment provis
     $ vagrant init precise64 http://files.vagrantup.com/precise64.box
     $ vagrant up
 
-That's it! You can now visit http://localhost:5000/ and proceed on development. After you've done, you can now run either ``vagrant destroy`` to completely remove the VM or ``vagrant halt`` to shutdown the VM. See also `Teardown <http://docs.vagrantup.com/v2/getting-started/teardown.html>`_ section of Vagrant documentation.
+That's it! You can now visit http://localhost:6543/ and proceed on development. After you've done, you can now run either ``vagrant destroy`` to completely remove the VM or ``vagrant halt`` to shutdown the VM. See also `Teardown <http://docs.vagrantup.com/v2/getting-started/teardown.html>`_ section of Vagrant documentation.
 
 The Adventurous Way
 ~~~~~~~~~~~~~~~~~~~
 
-If you don't want to use Vagrant. You can manually install everything, including:
+If you don't want to use Vagrant (oh you sadistic), you can manually install everything, including:
 
 - `Python 3.2 <http://www.python.org/>`_
-- `PostgreSQL 9.0 <http://www.postgresql.org/>`_
+- `PostgreSQL 9.1 <http://www.postgresql.org/>`_
 - `Redis <http://redis.io>`_
 - `node.js <http://nodejs.org>`_ with the following `npm modules <https://npmjs.org/>`_:
 
@@ -58,7 +58,7 @@ You may also found ``make watch`` useful for automatic assets compilation::
 Management Scripts
 ------------------
 
-We currently uses CLI to manage board settings. If you use Vagrant, you will need to SSH into the development box and run the following commands before begin. Usually, this need to be done only once (if you don't destroy the VM)::
+We currently uses CLI to manage board settings. If you use Vagrant, you will need to SSH into the development box and run the following commands before begin::
 
     $ vagrant ssh
     $ cd /vagrant
@@ -75,6 +75,11 @@ Above commands will create a board named "Lounge" and "Demo" at ``/lounge`` and 
 
 Slug is used here to identify which board to edit. All database fields in board are editable this way. Some field, such as ``settings`` must be a **valid JSON**. Both commands also accepts ``--help`` which will display some available options.
 
+Troubleshooting
+---------------
+
+For Vagrant user, if for some reason the URL isn't accessible, you can try visiting http://localhost:9001/ to visit Supervisor web interface and restart all processes.
+
 Contributing
 ------------
 
@@ -84,7 +89,7 @@ We use `git-flow <https://github.com/nvie/gitflow>`_ as primary branching model.
 2. Start a new feature with ``git flow feature start feature-name``.
 3. After you've done, open a pull request against **develop** branch of this repo.
 
-Please make sure that test coverage is 100% and everything passed.
+Please make sure that test coverage is 100% and everything passed. It's also a good idea to open a bug ticket for feature you want to implement before starting.
 
 License
 -------
@@ -101,6 +106,6 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Icons License
--------------
+~~~~~~~~~~~~~
 
 Icons included with this software package are part of Glyphicons and are **not covered by the open-source license**. You must purchase a separate license for use outside the project at `Glyphicons <http://glyphicons.com/>`_ website.
