@@ -11,6 +11,7 @@ The Better Way
 
 We use `Vagrant <http://www.vagrantup.com/>`_ for development environment provisioning. You must first `install Vagrant <http://docs.vagrantup.com/v2/installation/>`_ (and `VirtualBox <https://www.virtualbox.org/>`_ or any other available `providers <http://docs.vagrantup.com/v2/providers/index.html>`_) and run the following commands::
 
+    $ git submodule update --init
     $ vagrant init precise64 http://files.vagrantup.com/precise64.box
     $ vagrant up
 
