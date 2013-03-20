@@ -33,7 +33,8 @@ class SecureForm(Form):
         if not field.data:
             raise ValidationError('CSRF token missing')
         hmac_compare = self._generate_hmac(field.csrf_key)
-        if not hmac.compare_digest(field.data, hmac_compare):
+        # TODO: FIXME. Non constant-time comparison! compare_digest is 3.3.
+        if not field.data == hmac_compare:
             raise ValidationError('CSRF token mismatched')
 
     @property

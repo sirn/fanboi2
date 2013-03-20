@@ -10,7 +10,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from zope.interface.verify import verifyObject
 
 
-DATABASE_URI = 'postgres://localhost:5432/fanboi2_test'
+DATABASE_URI = 'postgresql://fanboi2:dev@localhost:5432/fanboi2_test'
 
 
 class DummyRedis(object):

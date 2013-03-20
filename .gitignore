@@ -8,6 +8,7 @@ static/
 *.sqlite
 *.pyc
 *.log
+.tmp
 
 # IDE stuff
 fanboi2.iml
@@ -16,3 +17,7 @@ fanboi2.iml
 # Testing leftovers
 .coverage
 .noseids
+
+# Vagrant stuff
+.vagrant
+*.gz

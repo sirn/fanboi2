@@ -1,6 +1,6 @@
 import pyramid_jinja2
 import redis
-from ipaddress import ip_address
+from IPy import IP
 from pyramid.config import Configurator
 from pyramid.events import NewRequest
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
@@ -15,8 +15,8 @@ def remote_addr(request):
     ``HTTP_X_FORWARDED_FOR`` if defined and ``REMOTE_ADDR`` is private or
     loopback address.
     """
-    ipaddr = ip_address(request.environ.get('REMOTE_ADDR', '255.255.255.255'))
-    if ipaddr.is_private or ipaddr.is_loopback:
+    ipaddr = IP(request.environ.get('REMOTE_ADDR', '255.255.255.255'))
+    if ipaddr.iptype() == "PRIVATE":
         return request.environ.get('HTTP_X_FORWARDED_FOR', str(ipaddr))
     return str(ipaddr)
 
@@ -33,7 +33,7 @@ def main(global_config, **settings):  # pragma: no cover
         session_factory=UnencryptedCookieSessionFactoryConfig('temp'),
         root_factory=RootFactory)
 
-    config.set_request_property(remote_addr)
+    # config.set_request_property(remote_addr)
     config.include(pyramid_jinja2)
 
     # TODO: Replace UnencryptedCookieSessionFactoryConfig with Dogpile.

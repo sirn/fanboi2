@@ -9,6 +9,7 @@ requires = [
     'pyramid',
     'sqlalchemy',
     'transaction',
+    'psycopg2',
     'pyramid_tm',
     'pyramid_debugtoolbar',
     'pyramid_zcml',
@@ -18,12 +19,14 @@ requires = [
     'alembic',
     'wtforms',
     'webtest',
-    'psycopg2',
     'isodate',
     'pytz',
     'misaka',
     'redis',
     'hiredis',
+    'IPy',
+    'nose',
+    'coverage',
     ]
 
 setup(name='fanboi2',
