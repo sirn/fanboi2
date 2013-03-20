@@ -33,7 +33,7 @@ def main(global_config, **settings):  # pragma: no cover
         session_factory=UnencryptedCookieSessionFactoryConfig('temp'),
         root_factory=RootFactory)
 
-    # config.set_request_property(remote_addr)
+    config.set_request_property(remote_addr)
     config.include(pyramid_jinja2)
 
     # TODO: Replace UnencryptedCookieSessionFactoryConfig with Dogpile.
