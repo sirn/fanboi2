@@ -1,26 +1,14 @@
 {% extends "layout.jinja2" %}
 
 {% block leader %}
-  <div class="leader topic-info">
-    <div class="container">
-      <h2>{{ topic.obj.title }}</h2>
-    </div>
-    <div class="wrapper">
-      <div class="container">
-        <div class="navbar">
-          <div class="navbar-inner">
-            <ul class="nav">
-              <li><a href="{{ request.resource_path(board) }}"><i class="icon-th icon-white"></i> <span class="hidden-phone">Overview</span></a></li>
-              <li><a href="{{ request.resource_path(board, "all") }}"><i class="icon-list icon-white"></i> <span class="hidden-phone">All topics</span></a></li>
-              <li><a href="{{ request.resource_path(board, "new") }}"><i class="icon-plus icon-white"></i> <span class="hidden-phone">New topic</span></a></li>
-            </ul>
-            <ul class="nav pull-right">
-              <li{% if request.view_name == "" %} class="active"{% endif %}><a href="{{ request.resource_path(topic) }}"><i class="icon-th-list icon-white"></i> <span class="hidden-phone">Show topic</span></a></li>
-              <li><a href="#reply"><i class="icon-share-alt icon-white"></i> <span class="hidden-phone">Reply</span></a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+<div id="topics-layout">
+  <h2>{{ topic.obj.title }}</h2>
+  <ul>
+    <li><a href="{{ request.resource_path(board) }}">Overview</a></li>
+    <li><a href="{{ request.resource_path(board, "all") }}">All topics</a></li>
+    <li><a href="{{ request.resource_path(board, "new") }}">New topic</a></li>
+    <li{% if request.view_name == "" %} class="active"{% endif %}><a href="{{ request.resource_path(topic) }}">Show topic</a></li>
+    <li><a href="#reply">Reply</a></li>
+  </ul>
+</div>
 {% endblock %}

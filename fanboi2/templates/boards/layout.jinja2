@@ -1,22 +1,12 @@
 {% extends "layout.jinja2" %}
 
 {% block leader %}
-  <div class="leader board-info">
-    <div class="container">
-      <h2>{{ board.obj.title }}</h2>
-    </div>
-    <div class="wrapper">
-      <div class="container">
-        <div class="navbar">
-          <div class="navbar-inner">
-            <ul class="nav">
-              <li{% if request.view_name == "" %} class="active"{% endif %}><a href="{{ request.resource_path(board) }}"><i class="icon-th icon-white"></i> <span class="hidden-phone">Overview</span></a></li>
-              <li{% if request.view_name == "all" %} class="active"{% endif %}><a href="{{ request.resource_path(board, "all") }}"><i class="icon-list icon-white"></i> <span class="hidden-phone">All topics</span></a></li>
-              <li{% if request.view_name == "new" %} class="active"{% endif %}><a href="{{ request.resource_path(board, "new") }}"><i class="icon-plus icon-white"></i> <span class="hidden-phone">New topic</span></a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+<div id="boards-layout">
+  <h2>{{ board.obj.title }}</h2>
+  <ul>
+    <li{% if request.view_name == "" %} class="active"{% endif %}><a href="{{ request.resource_path(board) }}">Overview</a></li>
+    <li{% if request.view_name == "all" %} class="active"{% endif %}><a href="{{ request.resource_path(board, "all") }}">All topics</a></li>
+    <li{% if request.view_name == "new" %} class="active"{% endif %}><a href="{{ request.resource_path(board, "new") }}">New topic</a></li>
+  </ul>
+</div>
 {% endblock %}

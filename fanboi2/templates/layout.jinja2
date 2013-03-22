@@ -8,43 +8,28 @@
 </head>
 <body>
 <header id="header">
-  <div class="container">
-    <div class="navbar">
-      <div class="navbar-inner">
-        <a class="brand" href="{{ request.resource_path(None) }}"><span class="logo">Fanboi Channel</span></a>
-        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </a>
-        <div class="nav-collapse collapse">
-          <ul class="nav">
-            <li{% if not board %} class="active"{% endif %}><a href="{{ request.resource_path(None) }}"><i class="icon-home icon-white"></i> Home</a></li>
-            {% if boards %}
-            <li class="dropdown{% if board %} active{% endif %}">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-th-large icon-white"></i> {% if board %}{{ board.obj.title }}{% else %}Boards{% endif %} <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                {% for board in boards %}
-                  <li class="board"><a href="{{ request.resource_path(board) }}">{{ board.obj.title }}</a></li>
-                {% endfor %}
-              </ul>
-            </li>
-            {% endif %}
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
+  <a href="{{ request.resource_path(None) }}">Fanboi Channel</a>
+  <ul>
+    <li{% if not board %} class="active"{% endif %}><a href="{{ request.resource_path(None) }}">Home</a></li>
+    {% if boards %}
+    <li{% if board %} class="active"{% endif %}>
+      <a href="#">{% if board %}{{ board.obj.title }}{% else %}Boards{% endif %}</a>
+      <ul>
+        {% for board in boards %}
+          <li><a href="{{ request.resource_path(board) }}">{{ board.obj.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </li>
+    {% endif %}
+  </ul>
 </header>
 <section id="main">
   {% block leader %}{% endblock %}
   {% block content %}{% endblock %}
 </section>
 <footer id="footer">
-  <div class="container">
-    <p>All contents are responsibilty of its posters.</p>
-    <p>Fanboi2 is an open-source project. <a href="http://github.com/pxfs/fanboi2">Fork me</a>.</p>
-  </div>
+  <p>All contents are responsibilty of its posters.</p>
+  <p>Fanboi2 is an open-source project. <a href="http://github.com/pxfs/fanboi2">Fork me</a>.</p>
 </footer>
 <script src="{{ request.static_url('fanboi2:static/javascripts/require.js') }}" type="text/javascript" data-main="{{ request.static_url('fanboi2:static/javascripts/main.js') }}"></script>
 </body>

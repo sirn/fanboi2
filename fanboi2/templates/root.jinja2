@@ -1,15 +1,11 @@
 {% extends "layout.jinja2" %}
 {% block content %}
-  <div class="list-boards">
-    <div class="container">
-      <div class="wrapper">
-        {% for board in boards %}
-          <div id="board-{{ board.obj.slug }}" class="well">
-            <h3><a href="{{ request.resource_path(board) }}">{{ board.obj.title }}</a></h3>
-            {% if board.obj.description %}<div class="description">{{ board.obj.description|markdown }}</div>{% endif %}
-          </div>
-        {% endfor %}
+  <div id="root">
+    {% for board in boards %}
+      <div id="board-{{ board.obj.slug }}">
+        <h3><a href="{{ request.resource_path(board) }}">{{ board.obj.title }}</a></h3>
+        {% if board.obj.description %}<div>{{ board.obj.description|markdown }}</div>{% endif %}
       </div>
-    </div>
+    {% endfor %}
   </div>
 {% endblock %}
