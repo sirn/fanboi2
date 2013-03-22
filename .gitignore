@@ -4,6 +4,7 @@ Thumbs.db
 
 # Application runtime
 static/
+tmp/
 *.egg-info/
 *.sqlite
 *.pyc
@@ -11,6 +12,7 @@ static/
 .tmp
 
 # IDE stuff
+out/
 fanboi2.iml
 .idea
 

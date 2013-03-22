@@ -1,9 +1,9 @@
+from pyramid_beaker import session_factory_from_settings
 import pyramid_jinja2
 import redis
 from IPy import IP
 from pyramid.config import Configurator
 from pyramid.events import NewRequest
-from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from sqlalchemy import engine_from_config
 from .formatters import *
 from .models import DBSession, Base
@@ -27,18 +27,12 @@ def main(global_config, **settings):  # pragma: no cover
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
-
-    config = Configurator(
-        settings=settings,
-        session_factory=UnencryptedCookieSessionFactoryConfig('temp'),
-        root_factory=RootFactory)
-
+    session_factory = session_factory_from_settings(settings)
+    config = Configurator(settings=settings)
+    config.set_session_factory(session_factory)
+    config.set_root_factory(RootFactory)
     config.set_request_property(remote_addr)
     config.include(pyramid_jinja2)
-
-    # TODO: Replace UnencryptedCookieSessionFactoryConfig with Dogpile.
-    from warnings import warn
-    warn("Insecure session factory in use!", Warning)
 
     # Redis setup.
     redis_conn = redis.StrictRedis.from_url(settings['redis.url'])
