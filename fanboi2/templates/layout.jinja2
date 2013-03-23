@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Fanboi Channel</title>
-  <link rel="stylesheet" href="{{ request.static_url('fanboi2:static/stylesheets/main.css') }}">
+  <link rel="stylesheet" href="{{ request.static_url('fanboi2:static/stylesheets/app.css') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta charset="utf-8">
 </head>
@@ -31,6 +31,7 @@
   <p>All contents are responsibilty of its posters.</p>
   <p>Fanboi2 is an open-source project. <a href="http://github.com/pxfs/fanboi2">Fork me</a>.</p>
 </footer>
-<script src="{{ request.static_url('fanboi2:static/javascripts/require.js') }}" type="text/javascript" data-main="{{ request.static_url('fanboi2:static/javascripts/main.js') }}"></script>
+<script src="{{ request.static_url('fanboi2:static/javascripts/vendor.js') }}" type="text/javascript"></script>
+<script src="{{ request.static_url('fanboi2:static/javascripts/app.js') }}" type="text/javascript"></script>
 </body>
 </html>

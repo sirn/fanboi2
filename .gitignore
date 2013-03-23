@@ -20,6 +20,11 @@ fanboi2.iml
 .coverage
 .noseids
 
+# Assets
+node_modules/
+results/
+logs/
+
 # Vagrant stuff
 .vagrant
 *.gz
