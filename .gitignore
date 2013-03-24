@@ -24,6 +24,7 @@ fanboi2.iml
 node_modules/
 results/
 logs/
+*.min.js
 
 # Vagrant stuff
 .vagrant

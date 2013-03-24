@@ -1,0 +1,109 @@
+@import "nib"
+global-reset()
+
+
+body
+  background-color #333
+  background-image url(../background.png)
+  font-family sans-serif
+  margin 0
+  min-width 320px
+  padding 0
+
+
+div#container
+  min-width 100%
+
+
+header#header
+  $logo-width = 91px
+  $logo-height = 18px
+  $min-height = 21px
+  $container-height = $min-height + 10px + 10px  /* min-height + padding */
+
+  background-color #eb3a17
+  box-shadow 0 0 5px 0 rgba(0, 0, 0, 0.5)
+  font-size 16px
+  height $min-height
+  line-height 16px
+  overflow hidden
+  padding 10px 15px
+
+  a
+    color #ffcbc2
+    text-decoration none
+    &:hover
+      color #fff
+
+  h1
+    background-repeat no-repeat
+    float left
+    height $logo-height
+    image '../logo.png' $logo-width $logo-height
+    text-indent -10000em
+    width $logo-width
+
+    a
+      float left
+      height $logo-height
+      width $logo-width
+
+  @media (max-width: 639px)
+
+    ul
+      display none
+
+  @media (min-width: 640px)
+
+    ul
+      display block
+      float left
+      font-size 14px
+      height $container-height
+      text-shadow 0 -1px 0 rgba(0, 0, 0, 0.2)
+      line-height $container-height
+      margin-left 15px
+      margin-top -10px  /* Size of header padding-top. */
+
+      li
+        border-color #ee5335
+        border-left-width 1px
+        border-style solid
+        display block
+        float left
+
+        &:last-child
+          border-right-width 1px
+
+        a
+          display inline-block
+          font-weight bold
+          height $container-height
+          padding 0 15px
+
+          &:hover
+            color #fff
+
+        &.active
+          a
+            background-color #cd2c0e
+            box-shadow 0 2px 5px 1px rgba(0, 0, 0, 0.15) inset
+            color #fff
+
+
+section#main
+  background-color #fff
+
+
+footer#footer
+  color #777
+  font-size 14px
+  line-height 150%
+  text-shadow 0 1px 0 rgba(0, 0, 0, 0.5)
+  padding 15px
+
+  a
+    color #ccc
+    text-decoration none
+    &:hover
+      color #fff

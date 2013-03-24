@@ -14,5 +14,5 @@ exports.config =
       joinTo:
         'stylesheets/app.css': /^(app|vendor)/
       order:
-        before: []
+        before: ['app/stylesheets/main.css']
         after: []

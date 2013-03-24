@@ -7,31 +7,27 @@
   <meta charset="utf-8">
 </head>
 <body>
-<header id="header">
-  <a href="{{ request.resource_path(None) }}">Fanboi Channel</a>
-  <ul>
-    <li{% if not board %} class="active"{% endif %}><a href="{{ request.resource_path(None) }}">Home</a></li>
-    {% if boards %}
-    <li{% if board %} class="active"{% endif %}>
-      <a href="#">{% if board %}{{ board.obj.title }}{% else %}Boards{% endif %}</a>
+  <div id="container">
+    <header id="header">
+      <h1><a href="{{ request.resource_path(None) }}">Fanboi Channel</a></h1>
       <ul>
-        {% for board in boards %}
-          <li><a href="{{ request.resource_path(board) }}">{{ board.obj.title }}</a></li>
+        <li{% if not board %} class="active"{% endif %}><a href="{{ request.resource_path(None) }}">Boards</a></li>
+        {% for b in boards %}
+          <li{% if board and board.obj.id == b.obj.id %} class="active"{% endif %}><a href="{{ request.resource_path(b) }}">{{ b.obj.title }}</a></li>
         {% endfor %}
       </ul>
-    </li>
-    {% endif %}
-  </ul>
-</header>
-<section id="main">
-  {% block leader %}{% endblock %}
-  {% block content %}{% endblock %}
-</section>
-<footer id="footer">
-  <p>All contents are responsibilty of its posters.</p>
-  <p>Fanboi2 is an open-source project. <a href="http://github.com/pxfs/fanboi2">Fork me</a>.</p>
-</footer>
-<script src="{{ request.static_url('fanboi2:static/javascripts/vendor.js') }}" type="text/javascript"></script>
-<script src="{{ request.static_url('fanboi2:static/javascripts/app.js') }}" type="text/javascript"></script>
+    </header>
+    <section id="main">
+      {% block leader %}{% endblock %}
+      {% block content %}{% endblock %}
+    </section>
+    <footer id="footer">
+      <p>All contents are responsibilty of its posters.</p>
+      <p>Fanboi2 is an open-source project. <a href="http://github.com/pxfs/fanboi2">Fork me</a>.</p>
+    </footer>
+  </div>
+  <script src="{{ request.static_url('fanboi2:static/javascripts/vendor.js') }}"></script>
+  <script src="{{ request.static_url('fanboi2:static/javascripts/app.js') }}"></script>
+  <script>require('initialize');</script>
 </body>
 </html>
