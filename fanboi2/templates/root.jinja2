@@ -1,10 +1,11 @@
 {% extends "layout.jinja2" %}
 {% block content %}
 <div id="root">
+  <div class="help">Please select category from list below.</div>
   {% for board in boards %}
-    <div id="board-{{ board.obj.slug }}">
+    <div id="board-{{ board.obj.slug }}" class="board">
       <h3><a href="{{ request.resource_path(board) }}">{{ board.obj.title }}</a></h3>
-      {% if board.obj.description %}<div>{{ board.obj.description|markdown }}</div>{% endif %}
+      {% if board.obj.description %}<div class="description">{{ board.obj.description|markdown }}</div>{% endif %}
     </div>
   {% endfor %}
 </div>

@@ -1,7 +1,8 @@
 @import "nib"
+@import "_variables"
 
 body
-  background-color #333
+  background-color #efefef
   background-image url(../background.png)
   font-family sans-serif
   margin 0
@@ -19,11 +20,11 @@ header#header
   $container-height = 42px
   $nav-padding = 10px
 
-  background-color #eb3a17
+  background-color $color-primary
   font-size 16px
   position relative
   line-height 16px
-  padding 0 15px
+  padding 0 $gutter-width
 
   a
     color #ffcbc2
@@ -150,18 +151,17 @@ header#header
 
 
 section#main
-  background-color #fff
+  pass
 
 
 footer#footer
   color #777
   font-size 14px
   line-height 150%
-  text-shadow 0 1px 0 rgba(0, 0, 0, 0.5)
-  padding 15px
+  margin 15px $gutter-width
 
   a
-    color #ccc
+    color $color-link
     text-decoration none
     &:hover
-      color #fff
+      color $color-link-hover
