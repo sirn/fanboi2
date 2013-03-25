@@ -3,18 +3,18 @@ domready(function(){
   var header = document.getElementById('header');
   var menu = document.getElementById('toggler-menu');
   var togglerItems = document.querySelectorAll('#toggler-menu > li');
+  var classNameRe = /(\s+)?\bactive\b(\s+)?/;
 
-  /* Enables the navbar and set height on click. This is because we can't
-   * transition from height: 0 to height: auto and using max-height instead
-   * will make element animate to max-height rather than just visible area.
-   * This cause the detoggle animation to delay by few milliseconds (since
-   * it animates back from the non-visible area). */
-  toggler.addEventListener('click', function(e){
+  /* Enables the navbar and set height on click. We can't transition from
+   * height: 0 to height: auto and animating max-height will make element
+   * animate to and from max-height rather than just visible area and creates
+   * few second of delay. */
+  window.addEventListener && toggler.addEventListener('click', function(e){
     e.preventDefault();
 
-    if (header.classList.contains('active')) {
+    if (classNameRe.test(header.className)) {
 
-      header.classList.remove('active');
+      header.className = header.className.replace(classNameRe, "");
       menu.style.height = 0;
 
     } else {
@@ -28,7 +28,7 @@ domready(function(){
         totalHeight += togglerItems[i].clientHeight;
       }
 
-      header.classList.add('active');
+      header.className = 'active';
       menu.style.height = totalHeight + 'px';
 
     }
