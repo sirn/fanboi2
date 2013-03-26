@@ -9,6 +9,11 @@ body
   min-width 320px
   padding 0
 
+  /* Force disable CSS animation on initial page load. */
+  &.preload *
+    transition all 0s linear !important
+    transition none
+
 
 div#container
   min-width 100%

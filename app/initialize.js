@@ -1,4 +1,15 @@
 domready(function(){
+
+  /* Animation disabler
+   * --------------------------------------------------------------------- */
+
+  var body = document.getElementsByTagName('body')[0];
+  body.className = '';
+
+
+  /* Navbar toggler
+   * --------------------------------------------------------------------- */
+
   var toggler = document.getElementById('toggler');
   var header = document.getElementById('header');
   var menu = document.getElementById('toggler-menu');
