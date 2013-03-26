@@ -3,14 +3,21 @@
 {% extends "boards/layout.jinja2" %}
 
 {% block content %}
-<div id="boards-all">
-  <table>
-    {% for topic in topics %}
-      <tr id="topic-{{ topic.obj.id }}">
-        <td><a href="{{ request.resource_url(topic) }}">{{ topic.obj.title }}</a> {{ topic.obj.post_count }} posts</td>
-        <td>Last updated {{ time_tag(topic.obj.posted_at) }}</td>
-      </tr>
-    {% endfor %}
-  </table>
+<div class="topics cascade">
+  {% if topic %}
+    <table>
+      {% for topic in topics %}
+        <tr id="topic-{{ topic.obj.id }}">
+          <td><a href="{{ request.resource_url(topic) }}">{{ topic.obj.title }}</a> {{ topic.obj.post_count }} posts</td>
+          <td>Last updated {{ time_tag(topic.obj.posted_at) }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <div class="empty">
+      <p>No topics, be the first to post one!</p>
+      <a href="{{ request.resource_path(board, "new") }}" class="button">Start New Topic</a>
+    </div>
+  {% endif %}
 </div>
 {% endblock %}

@@ -1,0 +1,36 @@
+@import "nib"
+@import "_variables"
+
+section#main
+
+  /* Topic listing in board page.
+   * URL: /<slug>
+   */
+  div.topics
+    background-color #fff
+
+    div.empty
+      padding 25px $gutter-width
+
+      p
+        color #666
+
+      a.button
+        background-color #45ba02
+        border-color #328802
+        color #fff
+        margin-top 10px
+
+        &:hover
+          background-color #fff
+          border-color #45ba02
+          color #328802
+
+    @media (max-width: 639px)
+      div.empty
+        padding-bottom 35px
+        padding-top 35px
+        text-align center
+
+        a.button
+          margin-top 15px

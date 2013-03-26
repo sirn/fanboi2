@@ -3,9 +3,9 @@
 {% extends "boards/layout.jinja2" %}
 
 {% block content %}
-<div id="boards-show">
+<div class="topics">
   {% for topic in topics %}
-    <div id="topic-{{ topic.obj.id }}">
+    <div id="topic-{{ topic.obj.id }}" class="topic">
       <header>
         <h4><a href="{{ request.resource_path(topic) }}">{{ topic.obj.title }}</a></h4>
         <ul>
@@ -26,9 +26,9 @@
       <hr>
     </div>
   {% else %}
-    <div>
+    <div class="empty">
       <p>No topics, be the first to post one!</p>
-      <a href="{{ request.resource_path(board, "new") }}">Start New Topic</a>
+      <a href="{{ request.resource_path(board, "new") }}" class="button">Start New Topic</a>
     </div>
   {% endfor %}
 </div>

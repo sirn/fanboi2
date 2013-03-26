@@ -14,6 +14,12 @@ body
     transition all 0s linear !important
     transition none
 
+  a
+    color $color-link
+    text-decoration none
+    &:hover
+      color $color-link-hover
+
 
 div#container
   min-width 100%
@@ -156,7 +162,7 @@ header#header
 
 
 section#main
-  pass
+  box-shadow 0 0 2px 0 rgba(0, 0, 0, 0.2)
 
 
 footer#footer
@@ -164,9 +170,3 @@ footer#footer
   font-size 14px
   line-height 150%
   margin 15px $gutter-width
-
-  a
-    color $color-link
-    text-decoration none
-    &:hover
-      color $color-link-hover
