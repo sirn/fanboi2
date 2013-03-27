@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="topics cascade">
-  {% if topic %}
+  {% if topics %}
     <table>
       {% for topic in topics %}
         <tr id="topic-{{ topic.obj.id }}">
@@ -16,7 +16,7 @@
   {% else %}
     <div class="empty">
       <p>No topics, be the first to post one!</p>
-      <a href="{{ request.resource_path(board, "new") }}" class="button">Start New Topic</a>
+      <a href="{{ request.resource_path(board, "new") }}" class="button action">Start New Topic</a>
     </div>
   {% endif %}
 </div>

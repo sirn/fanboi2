@@ -1,4 +1,5 @@
 @import "nib"
+@import "_variables"
 
 i[class^="icon-"],
 i[class*=" icon-"]
@@ -7,28 +8,50 @@ i[class*=" icon-"]
 
   &.icon-home
     height 13px
-    image '../icons/home.png' 13px 13px
+    image '../icons/white/home.png' 13px 13px
     width 13px
 
   &.icon-th-large
     height 11px
-    image '../icons/th-large.png' 11px 11px
+    image '../icons/white/th-large.png' 11px 11px
     width 11px
 
   &.icon-th
     height 11px
-    image '../icons/th.png' 11px 11px
+    image '../icons/white/th.png' 11px 11px
     width 11px
 
   &.icon-th-list
     height 11px
-    image '../icons/th-list.png' 12px 11px
+    image '../icons/white/th-list.png' 12px 11px
     width 12px
 
   &.icon-plus
     height 11px
-    image '../icons/plus.png' 11px 11px
+    image '../icons/white/plus.png' 11px 11px
     width 11px
+
+  &.icon-share-alt
+    height 10px
+    image '../icons/white/share-alt.png' 12px 10px
+    width 12px
+
+  &.inverted
+
+    &.icon-info-sign
+      height 12px
+      image '../icons/black/info-sign.png' 12px 12px
+      width 12px
+
+    &.icon-th-list
+      height 11px
+      image '../icons/black/th-list.png' 12px 11px
+      width 12px
+
+    &.icon-inbox
+      height 12px
+      image '../icons/black/inbox.png' 12px 12px
+      width 12px
 
 
 a.button
@@ -38,11 +61,21 @@ a.button
   color #fff
   display inline-block
   font-size 14px
-  line-height 16px
+  line-height 34px
   max-height 34px
-  padding 8px 12px
+  padding 0 12px
+  vertical-align baseline
 
   &:hover
     background-color #f0f0f0
     border-color #aaa
     color #555
+
+  &.action
+    background-color #45ba02
+    border-color #328802
+
+    &:hover
+      background-color #fff
+      border-color #45ba02
+      color #328802

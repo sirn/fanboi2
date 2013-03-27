@@ -16,15 +16,7 @@ section#main
         color #666
 
       a.button
-        background-color #45ba02
-        border-color #328802
-        color #fff
         margin-top 10px
-
-        &:hover
-          background-color #fff
-          border-color #45ba02
-          color #328802
 
     @media (max-width: 639px)
       div.empty
@@ -34,3 +26,94 @@ section#main
 
         a.button
           margin-top 15px
+
+
+  /* Topic item in board page.
+   * URL: /<slug>
+   */
+  article.topic
+    background-color #f5f7f8
+
+    > header
+      background-color #fff
+      padding 20px $gutter-width
+
+      h4
+        font-size 18px
+        font-weight bold
+        line-height 18px
+
+      ul
+        color #666
+        display block
+        font-size 14px
+        line-height 14px
+        margin-top 7px
+
+        li
+          display block
+          margin-top 3px
+
+          &.posts
+            font-weight bold
+
+          i
+            opacity 0.6
+
+    ul.tools
+      background-color #e1e4e6
+      padding $gutter-width
+
+      li
+        a.button
+          display inline-block
+          width 100%
+
+          &.all
+          &.recent
+            background-color #f5f5f5
+            border-color #d0d0d0
+            color #666
+
+            &:hover
+              background-color #fff
+              border-color #aaa
+              color #333
+
+              i
+                opacity 0.8
+
+            i
+              opacity 0.5
+
+          &.reply
+            font-weight bold
+
+            &:hover
+              i.icon-share-alt
+                image '../icons/green/share-alt.png' 12px 10px
+
+        + li
+          margin-top 2px
+
+    + article.topic
+      border-top 1px solid #d3d8db
+
+    @media (max-width: 639px)
+      ul.tools
+        li
+          a.button
+            i
+              width 15px
+
+    @media (min-width: 640px)
+      > header
+        ul
+          li
+            display inline-block
+            margin-right 5px
+            margin-top 0
+
+      ul.tools
+        li
+          display inline-block

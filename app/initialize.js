@@ -3,8 +3,10 @@ domready(function(){
   /* Animation disabler
    * --------------------------------------------------------------------- */
 
-  var body = document.getElementsByTagName('body')[0];
-  body.className = '';
+  setTimeout(function(){
+    var body = document.getElementsByTagName('body')[0];
+    body.className = '';
+  }, 1000);
 
 
   /* Navbar toggler

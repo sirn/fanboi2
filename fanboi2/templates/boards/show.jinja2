@@ -5,30 +5,29 @@
 {% block content %}
 <div class="topics">
   {% for topic in topics %}
-    <div id="topic-{{ topic.obj.id }}" class="topic">
+    <article id="topic-{{ topic.obj.id }}" class="topic">
       <header>
         <h4><a href="{{ request.resource_path(topic) }}">{{ topic.obj.title }}</a></h4>
         <ul>
-          <li>Last posted {{ time_tag(topic.obj.posted_at) }}</li>
-          <li><strong>{{ topic.obj.post_count }} posts</strong></li>
+          <li class="created"><i class="icon-info-sign inverted"></i> Last posted {{ time_tag(topic.obj.posted_at) }}</li>
+          <li class="posts"><i class="icon-info-sign inverted"></i> <strong>{{ topic.obj.post_count }} posts</strong></li>
         </ul>
       </header>
-      <div>
+      <div class="posts">
         {% for post in topic.objs[-5:] %}
           {{ post_block(post) }}
         {% endfor %}
-        <ul>
-          <li><a href="{{ request.resource_path(topic) }}">All posts</a></li>
-          <li><a href="{{ request.resource_path(topic, "recent") }}">Recent posts</a></li>
-          <li><a href="{{ request.resource_path(topic, "recent") }}#reply">Reply</a></li>
-        </ul>
       </div>
-      <hr>
-    </div>
+      <ul class="tools">
+        <li><a href="{{ request.resource_path(topic) }}" class="button all"><i class="icon-th-list inverted"></i> All posts</a></li>
+        <li><a href="{{ request.resource_path(topic, "recent") }}" class="button recent"><i class="icon-inbox inverted"></i> Recent posts</a></li>
+        <li><a href="{{ request.resource_path(topic, "recent") }}#reply" class="button reply action"><i class="icon-share-alt"></i> Reply</a></li>
+      </ul>
+    </article>
   {% else %}
     <div class="empty">
       <p>No topics, be the first to post one!</p>
-      <a href="{{ request.resource_path(board, "new") }}" class="button">Start New Topic</a>
+      <a href="{{ request.resource_path(board, "new") }}" class="button action">Start New Topic</a>
     </div>
   {% endfor %}
 </div>
