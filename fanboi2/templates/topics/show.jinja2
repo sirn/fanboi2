@@ -3,17 +3,19 @@
 {% extends "topics/layout.jinja2" %}
 
 {% block content %}
-<div id="topics-show">
-  {% for post in posts %}
-    {{ post_block(post) }}
-  {% endfor %}
-
-  <ul>
-    <li><a href="{{ request.resource_path(topic) }}">All posts</a></li>
-    <li><a href="{{ request.resource_path(topic, "recent") }}">Recent posts</a></li>
-    <li><a href="{{ request.resource_path(topic, "%s-" % topic.obj.post_count) }}">New since visit</a></li>
+<article id="topic-{{ topic.obj.id }}" class="topic">
+  <div class="posts">
+    {% for post in posts %}
+      {{ post_block(post) }}
+    {% endfor %}
+  </div>
+  <ul class="tools">
+    <li><a href="{{ request.resource_path(topic) }}" class="button all"><i class="icon-th-list inverted"></i> All posts</a></li>
+    <li><a href="{{ request.resource_path(topic, "recent") }}" class="button recent"><i class="icon-inbox inverted"></i> Recent posts</a></li>
+    <li><a href="{{ request.resource_path(topic, "%s-" % topic.obj.post_count) }}" class="button visited"><i class="icon-forward"></i> New since visit</a></li>
   </ul>
-
+</article>
+<div id="reply" class="reply">
   {% if topic.obj.status == "open" %}
     <h3>Reply</h3>
     <form action="{{ request.resource_path(topic) }}" method="POST">

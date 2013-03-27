@@ -93,6 +93,16 @@ section#main
               i.icon-share-alt
                 image '../icons/green/share-alt.png' 12px 10px
 
+          &.visited
+            &:hover
+              background-color #fff
+              border-coor #aaa
+              color #333
+
+              i.icon-forward
+                image '../icons/black/forward.png' 11px 11px
+                opacity 0.8
+
         + li
           margin-top 2px
 
@@ -117,3 +127,31 @@ section#main
       ul.tools
         li
           display inline-block
+
+
+  /* Topic header in topic page.
+   * URL: /<slug>/<id>
+   */
+  header.topic
+    h2
+      max-width 100%
+      overflow auto
+
+    p
+      span
+        display block
+        margin-top 5px
+
+        strong
+          color #8e9ba1
+          font-weight bold
+
+    @media (min-width: 360px)
+      ul
+        li
+          a[href='#reply']
+            background-color #44ba03
+            color #fff
+
+            i.icon-share-alt
+              opacity 1

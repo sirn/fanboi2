@@ -9,7 +9,7 @@
       <header>
         <h4><a href="{{ request.resource_path(topic) }}">{{ topic.obj.title }}</a></h4>
         <ul>
-          <li class="created"><i class="icon-info-sign inverted"></i> Last posted {{ time_tag(topic.obj.posted_at) }}</li>
+          <li class="posted"><i class="icon-info-sign inverted"></i> Last posted {{ time_tag(topic.obj.posted_at) }}</li>
           <li class="posts"><i class="icon-info-sign inverted"></i> <strong>{{ topic.obj.post_count }} posts</strong></li>
         </ul>
       </header>

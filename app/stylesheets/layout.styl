@@ -164,6 +164,77 @@ header#header
 section#main
   box-shadow 0 0 2px 0 rgba(0, 0, 0, 0.2)
 
+  > header
+    background-color $color-darker
+    padding $gutter-width
+
+    h2
+      color #ddd
+      display block
+      font-size 24px
+      font-weight bold
+      line-height 24px
+
+    p
+      color $color-dark-highlight
+      display block
+      font-size 13px
+      line-height 13px
+      margin-top 10px
+
+
+    ul
+      display block
+      margin-top 15px
+      overflow hidden
+
+      li
+        display inline-block
+
+        a
+          color #aaa
+          display inline-block
+          font-size 14px
+          line-height 16px
+          margin 0 5px
+          text-decoration none
+
+          i
+            opacity 0.6
+
+          &:hover
+            color #fff
+
+            i
+              opacity 1
+
+        &.active
+          a
+            color #fff
+
+            i
+              opacity 1
+
+  @media (min-width: 360px)
+    > header
+      ul
+        li
+          a
+            padding 10px
+
+          &.active
+            background-color $color-dark
+
+  @media (max-width: 639px)
+    > header
+      h2, p
+        text-align center
+
+      ul
+        margin-left $gutter-width * -1
+        margin-right $gutter-width * -1
+        text-align center
+
 
 footer#footer
   color #777

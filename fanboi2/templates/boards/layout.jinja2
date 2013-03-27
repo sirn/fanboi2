@@ -6,7 +6,7 @@
   <p>{{ board.obj.description }}</p>
   <ul>
     <li{% if request.view_name == "" %} class="active"{% endif %}><a href="{{ request.resource_path(board) }}"><i class="icon-th"></i> Overview</a></li>
-    <li{% if request.view_name == "all" %} class="active"{% endif %}><a href="{{ request.resource_path(board, "all") }}"><i class="icon-th-list"></i> All topics</a></li>
+    <li{% if request.view_name == "all" %} class="active"{% endif %}><a href="{{ request.resource_path(board, "all") }}"><i class="icon-list"></i> All topics</a></li>
     <li{% if request.view_name == "new" %} class="active"{% endif %}><a href="{{ request.resource_path(board, "new") }}"><i class="icon-plus"></i> New topic</a></li>
   </ul>
 </header>
