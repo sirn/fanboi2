@@ -1,6 +1,10 @@
 @import "nib"
 @import "_variables"
 
+global-reset()
+reset-html5()
+
+
 i[class^="icon-"],
 i[class*=" icon-"]
   background-repeat no-repeat
@@ -74,17 +78,18 @@ i[class*=" icon-"]
       width 11px
 
 
-a.button
+.button
   background-color #4e4e4e
   border 1px solid #3f3f3f
   box-sizing border-box
   color #fff
+  cursor pointer
   display inline-block
   font-size 14px
-  line-height 34px
-  max-height 34px
-  padding 0 12px
-  vertical-align baseline
+  line-height 14px
+  padding 10px 12px 9px
+  vertical-align middle
+  box-shadow 0 1px 0 0 rgba(255, 255, 255, 0.3) inset
 
   &:hover
     background-color #f0f0f0
@@ -99,3 +104,87 @@ a.button
       background-color #fff
       border-color #45ba02
       color #328802
+
+
+input.button
+button.button
+  font-family sans-serif
+
+  &::-moz-focus-inner
+    padding 0
+    border 0
+
+
+form.form
+  > fieldset
+    > div
+      + div
+        margin-top 10px
+
+      label
+        color #666
+        font-size 12px
+        font-weight bold
+        line-height 12px
+
+        abbr
+          color #ccc
+
+        + div
+          margin-top 3px
+
+      &.errors
+        input
+        textarea
+        span.error
+          box-shadow 3px 3px 0 0 #f2bdc7
+          border-color #be2541
+
+        span.error
+          background-color #be2541
+          color #fff
+          display inline-block
+          font-size 13px
+          line-height 13px
+          margin-top -1px
+          padding 5px 10px
+
+    input
+    textarea
+      border 1px solid #d0d0d0
+      box-shadow 3px 3px 0 0 #eee
+      box-sizing border-box
+      margin 0
+      max-width 100%
+      min-width 100%
+      width 100%
+
+      &:focus
+        border-color #eb3916
+        box-shadow 3px 3px 0 0 #fdede9
+
+    input
+      font-size 20px
+      font-weight bold
+      height 43px
+      line-height 20px
+      padding 0 5px
+
+    textarea
+      color #333
+      font-family sans-serif
+      font-size $post-font-size
+      line-height $post-line-height
+      min-height 130px
+      padding 5px
+
+    button.button
+      background-image linear-gradient(top, #29566f, #22485c)
+      border-color #171e22
+      box-shadow 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 3px 3px 0 0 #eee
+
+      &:hover
+        background-color #fff
+        background-image none
+        border-color #22485c
+        color #29566f

@@ -15,24 +15,30 @@
     <li><a href="{{ request.resource_path(topic, "%s-" % topic.obj.post_count) }}" class="button visited"><i class="icon-forward"></i> New since visit</a></li>
   </ul>
 </article>
-<div id="reply" class="reply">
-  {% if topic.obj.status == "open" %}
-    <h3>Reply</h3>
-    <form action="{{ request.resource_path(topic) }}" method="POST">
+{% if topic.obj.status == "open" %}
+  <form action="{{ request.resource_path(topic) }}" method="post" id="reply" class="post form">
+    <header>
+      <h3>Reply</h3>
+    </header>
+    <fieldset>
       {{ form.csrf_token }}
       {{ form_field(form.body) }}
       {{ form_submit("Post Reply") }}
-    </form>
-  {% elif topic.obj.status == "archived" %}
+    </fieldset>
+  </form>
+{% elif topic.obj.status == "archived" %}
+  <div id="reply" class="post locked">
     <header>
       <h3>Post limit exceeded</h3>
       <p>Please start a new topic.</p>
     </header>
-  {% elif topic.obj.status == "locked" %}
+  </div>
+{% elif topic.obj.status == "locked" %}
+  <div id="reply" class="post locked">
     <header>
       <h3>Topic locked</h3>
       <p>Topic has been locked by moderator.</p>
     </header>
-  {% endif %}
-</div>
+  </div>
+{% endif %}
 {% endblock %}

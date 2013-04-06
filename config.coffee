@@ -15,7 +15,6 @@ exports.config =
         'stylesheets/app.css': /^(app|vendor)/
       order:
         before: [
-          'vendor/stylesheets/reset.css',
           'app/stylesheets/elements.styl',
           'app/stylesheets/layout.styl']
         after: []

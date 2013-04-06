@@ -1,16 +1,18 @@
 {% macro form_field(field) %}
-<div>
-  <label for="{{ field.id }}">{{ field.label.text }}
-  {% if field.flags.required %}<abbr title="Required">*</abbr></label>{% endif %}
+<div{% if field.errors %} class="errors"{% endif %}>
+  <label for="{{ field.id }}">
+    {{ field.label.text }}
+    {% if field.flags.required %}<abbr title="Required">*</abbr>{% endif %}
+  </label>
   <div>
     {{ field }}
-    {% if field.errors %}<span>{{ field.errors[0] }}</span>{% endif %}
+    {% if field.errors %}<span class="error">{{ field.errors[0] }}</span>{% endif %}
   </div>
 </div>
 {% endmacro %}
 
 {% macro form_submit(label) %}
 <div>
-  <button type="submit">{{ label }}</button>
+  <button type="submit" class="button">{{ label }}</button>
 </div>
 {% endmacro %}

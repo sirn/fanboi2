@@ -46,8 +46,8 @@ section#main
 
     > div
       color #333
-      font-size 16px
-      line-height 140%
+      font-size $post-font-size
+      line-height $post-line-height
       margin-top 15px
 
       p + p
@@ -66,3 +66,25 @@ section#main
           left $gutter-width
           margin-left 0
           position absolute
+
+
+  /* Post form and locked status in topic show page.
+   * URL: /<slug>/<id>
+   */
+  .post
+    background-color #fff
+    padding $post-padding $gutter-width
+
+    > header
+      color #666
+
+      h3
+        color $color-primary
+        font-size 18px
+        font-weight bold
+        line-height 18px
+        margin-bottom 5px
+
+    > fieldset
+      label
+        display none

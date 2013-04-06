@@ -2,22 +2,22 @@
 {% extends "boards/layout.jinja2" %}
 
 {% block content %}
-<div id="boards-new">
+<form action="{{ request.resource_path(board, "new") }}" method="post" class="topic form">
   <header>
     <h3>New topic</h3>
+    {% if board.obj.agreements %}
+    <article>{{ board.obj.agreements|markdown }}</article>
+    <div>
+      <p>By continuing, you're agree to the above agreement. Otherwise, you may go back now:</p>
+      <a href="{{ request.resource_path(board) }}" class="button">Back</a>
+    </div>
+    {% endif %}
   </header>
-  {% if board.obj.agreements %}
-  <div>
-    {{ board.obj.agreements|markdown }}
-    <p>By continuing, you're agree to the above agreement. Otherwise, you may go back now:</p>
-    <a href="{{ request.resource_path(board) }}">Back</a>
-  </div>
-  {% endif %}
-  <form action="{{ request.resource_path(board, "new") }}" method="POST">
+  <fieldset>
     {{ form.csrf_token }}
     {{ form_field(form.title) }}
     {{ form_field(form.body) }}
     {{ form_submit("Post New Topic") }}
-  </form>
-</div>
+  </fieldset>
+</form>
 {% endblock %}

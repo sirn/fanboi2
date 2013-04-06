@@ -208,3 +208,49 @@ section#main
 
             i.icon-share-alt
               opacity 1
+
+
+  /* New topic form
+   * URL: /<slug>/new
+   */
+  form.topic
+    $form-spacing = 20px
+
+    background-color #fff
+
+    > header
+      background-color #f3f5f6
+      padding $form-spacing $gutter-width
+
+      h3
+        color $color-primary
+        font-size 22px
+        font-weight bold
+        line-height 22px
+
+      > article
+        color #444
+        margin 15px 0
+
+        ul
+          line-height 150%
+          list-style disc
+          margin-left 20px
+
+      > div
+        color #7e949f
+        font-size 14px
+        line-height 20px
+
+        a.button
+          background-color #be2541
+          border-color #931d32
+          margin-top 10px
+
+          &:hover
+            background-color #fff
+            border-color #be2541
+            color #931d32
+
+    > fieldset
+      padding $form-spacing $gutter-width
