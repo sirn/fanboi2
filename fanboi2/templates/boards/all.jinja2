@@ -8,8 +8,9 @@
     <table>
       {% for topic in topics %}
         <tr id="topic-{{ topic.obj.id }}">
-          <td><a href="{{ request.resource_url(topic) }}">{{ topic.obj.title }}</a> {{ topic.obj.post_count }} posts</td>
-          <td>Last updated {{ time_tag(topic.obj.posted_at) }}</td>
+          <td class="count">{{ topic.obj.post_count }} posts</td>
+          <td class="title"><a href="{{ request.resource_url(topic) }}">{{ topic.obj.title }}</a></td>
+          <td class="updated">Last updated {{ time_tag(topic.obj.posted_at) }}</td>
         </tr>
       {% endfor %}
     </table>

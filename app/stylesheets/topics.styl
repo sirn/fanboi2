@@ -28,6 +28,59 @@ section#main
           margin-top 15px
 
 
+  /* Topic listing in all topics page.
+   * URL: /<slug>/all
+   */
+  div.topics.cascade
+    table
+      width 100%
+
+      tr
+        + tr
+          border-top 1px solid #f5f7f8
+
+        &:hover
+          background-color #f5f7f8
+
+        &:nth-child(-n+3)
+          td
+            &.title
+              font-weight bold
+
+        td
+          padding 20px $gutter-width
+
+          &.count
+            color #8d9ca1
+            display block
+            font-size 13px
+            font-weight normal
+            line-height 13px
+            padding-right 0
+            text-align right
+            width 70px
+
+          &.updated
+            display none
+
+    @media (min-width: 640px)
+      table
+        tr
+          td
+            &.count
+              display table-cell
+              float none
+              margin-right 10px
+
+            &.updated
+              color #999
+              display table-cell
+              font-size 13px
+              line-height 13px
+              text-align right
+              width 235px
+
+
   /* Topic item in board page.
    * URL: /<slug>
    */
