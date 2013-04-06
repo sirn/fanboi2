@@ -1,0 +1,13 @@
+{
+  "author":              "Kridsada Thanabulpong",
+  "name":                "fanboi2",
+  "description":         "Assets for Fanboi2 board app",
+  "version":             "0.0.1",
+  "dependencies": {
+    "javascript-brunch":    ">= 1.0 < 1.6",
+    "css-brunch":           ">= 1.0 < 1.6",
+    "stylus-brunch":        ">= 1.0 < 1.6",
+    "uglify-js-brunch":     ">= 1.0 < 1.6",
+    "clean-css-brunch":     ">= 1.0 < 1.6"
+  }
+}

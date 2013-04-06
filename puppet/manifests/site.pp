@@ -23,8 +23,7 @@ node default {
   postgresql::db {'fanboi2_test': user => 'fanboi2', password => 'dev'}
 
   # Assets packages and ensure they're installed after NodeJS.
-  package {'yui-compressor': ensure => installed}
-  package {['stylus', 'nib', 'uglify-js', 'requirejs']:
+  package {['brunch']:
     ensure   => present,
     provider => 'npm',
     require  => Class['nodejs'],
@@ -61,15 +60,24 @@ node default {
     require  => [Postgresql::Db['fanboi2_dev'], Python3::Setup['fanboi2']],
   }
 
+  # Assets setup.
+  exec {'fanboi2-assets':
+    command  => 'npm install',
+    user     => $fb2_user,
+    cwd      => $fb2_root,
+    path     => '/usr/local/bin:/usr/bin:/bin',
+    require  => Python3::Setup['fanboi2'],
+  }
+
   # Actually running stuff.
   class {'supervisord':}
   class {'supervisord::inet':}
 
   supervisord::program {'watch':
-    command  => 'make watch',
+    command  => 'brunch watch',
     user     => $fb2_user,
     cwd      => $fb2_root,
-    require  => Python3::Setup['fanboi2'],
+    require  => Exec['fanboi2-assets'],
   }
 
   supervisord::program {'pserve':

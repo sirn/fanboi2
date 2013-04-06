@@ -1,0 +1,243 @@
+@import "nib"
+@import "_variables"
+
+body
+  background-color #efefef
+  background-image url(../background.png)
+  font-family sans-serif
+  margin 0
+  min-width 320px
+  padding 0
+
+  /* Force disable CSS animation on initial page load. */
+  &.preload *
+    transition all 0s linear !important
+    transition none
+
+  a
+    color $color-link
+    text-decoration none
+    &:hover
+      color $color-link-hover
+
+
+div#container
+  min-width 100%
+
+
+header#header
+  $logo-width = 91px
+  $logo-height = 18px
+  $container-height = 42px
+  $nav-padding = 10px
+
+  background-color $color-primary
+  font-size 16px
+  position relative
+  line-height 16px
+  padding 0 $gutter-width
+
+  a
+    color #ffcbc2
+    text-decoration none
+    &:hover
+      color #fff
+
+  h1
+    background-repeat no-repeat
+    background-position 0 ($logo-height / 2.0)
+    height $container-height
+    image '../logo.png' $logo-width $logo-height
+    text-indent -10000em
+    width $logo-width
+
+    a
+      float left
+      height $container-height
+      width $logo-width
+
+  ul
+    display block
+    font-size 14px
+    line-height 14px
+    padding-bottom $nav-padding
+    text-shadow 0 -1px 0 rgba(0, 0, 0, 0.2)
+
+    a
+      display block
+      font-weight bold
+      padding 12px 15px
+
+      i
+        opacity 0.7
+
+      &:hover
+        color #fff
+
+        i
+          opacity 1
+
+    li.active
+      a
+        background-color #cd2c0e
+        border-radius 3px
+        box-shadow 0 2px 5px 1px rgba(0, 0, 0, 0.15) inset
+        color #fff
+
+        i
+          opacity 1
+
+    div#toggler
+      display none
+
+  @media (max-width: 639px)
+    min-height $container-height
+
+    h1
+      float right
+
+    ul
+      height 0
+      overflow hidden
+      padding-bottom 0
+      transition 0.6s
+      visibility hidden
+      width 100%
+
+      i
+        width 15px
+
+    div#toggler
+      max-height $container-height
+
+      a
+        background-color #fff
+        background-image linear-gradient(top, #fff, #e8e8e8)
+        border-radius 1px
+        display inline-block
+        padding 3px 10px
+        margin-top 8px
+
+        span.line
+          background-color #e53e1d
+          display block
+          margin 3px 0
+          padding 1px
+          width 15px
+
+    &.active
+      ul
+        display block
+        padding-bottom $nav-padding
+        visibility visible
+
+  @media (min-width: 640px)
+    height $container-height
+    overflow hidden
+
+    h1
+      float left
+
+    ul
+      display block
+      float left
+      height $container-height
+      line-height $container-height
+      margin-left 15px
+      padding-bottom 0
+
+      li
+        display block
+        float left
+
+        a
+          background-color inherit
+          display inline-block
+          height $container-height
+          padding 0 15px
+
+        &.active
+          a
+            border-radius 0
+
+
+section#main
+  box-shadow 0 0 2px 0 rgba(0, 0, 0, 0.2)
+
+  > header
+    background-color $color-darker
+    padding $gutter-width
+
+    h2
+      color #ddd
+      display block
+      font-size 24px
+      font-weight bold
+      line-height 28px
+
+    p
+      color $color-dark-highlight
+      display block
+      font-size 13px
+      line-height 13px
+      margin-top 10px
+
+
+    ul
+      display block
+      margin-top 15px
+      overflow hidden
+
+      li
+        display inline-block
+
+        a
+          color #aaa
+          display inline-block
+          font-size 14px
+          line-height 16px
+          margin 0 5px
+          text-decoration none
+
+          i
+            opacity 0.6
+
+          &:hover
+            color #fff
+
+            i
+              opacity 1
+
+        &.active
+          a
+            color #fff
+
+            i
+              opacity 1
+
+  @media (min-width: 360px)
+    > header
+      ul
+        li
+          a
+            padding 10px
+
+          &.active
+            background-color $color-dark
+
+  @media (max-width: 639px)
+    > header
+      h2, p
+        text-align center
+
+      ul
+        margin-left $gutter-width * -1
+        margin-right $gutter-width * -1
+        text-align center
+
+
+footer#footer
+  color #777
+  font-size 14px
+  line-height 150%
+  margin 15px $gutter-width

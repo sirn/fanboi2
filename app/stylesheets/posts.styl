@@ -1,0 +1,93 @@
+@import "nib"
+@import "_variables"
+
+section#main
+
+  $header-line = 14px
+  $post-padding = 20px
+
+  /* Post container in board page and topic page.
+   * URL: /<slug>, /<slug>/<id>
+   */
+  article.post
+    display block
+    max-width 100%
+    overflow-x auto
+    padding $post-padding $gutter-width
+
+    + article.post
+      border-top 1px solid #fff
+
+    > header
+      $body-color = #8d9ca1
+
+      color $body-color
+      font-size 12px
+      line-height $header-line
+      font-weight bold
+
+      span
+        display inline
+
+        + span
+          margin-left 5px
+
+        &.number
+          background-color $body-color
+          color #fff
+          padding 4px 6px
+
+        &.name
+          background-color #fff
+          padding 4px 6px
+
+        &.ident
+          color #aabbc4
+
+    > div
+      color #333
+      font-size $post-font-size
+      line-height $post-line-height
+      margin-top 15px
+
+      p + p
+        margin-top 10px
+
+  @media (max-width: 639px)
+    article.post
+      position relative
+      padding-bottom 12px + $header-line + $post-padding
+
+      > header
+        span.created
+          bottom $post-padding
+          font-style italic
+          font-weight normal
+          left $gutter-width
+          margin-left 0
+          position absolute
+
+
+  /* Post form and locked status in topic show page.
+   * URL: /<slug>/<id>
+   */
+  .post
+    padding $post-padding $gutter-width
+
+    > header
+      color #666
+
+      h3
+        color $color-primary
+        font-size 18px
+        font-weight bold
+        line-height 18px
+        margin-bottom 5px
+
+    > fieldset
+      label
+        display none
+
+  form.post
+  div.post.locked
+    background-color #fff

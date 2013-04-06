@@ -1,0 +1,95 @@
+@import "nib"
+@import "_variables"
+
+section#main
+
+  /* All boards listing in the root page.
+   * URL: /
+   */
+  div.boards
+    background-color $color-secondary
+
+    div.help
+      background-color $color-dark
+      color $color-dark-highlight
+      font-size 15px
+      line-height 15px
+      padding 15px $gutter-width
+
+      i
+        opacity 0.3
+        margin-right 3px
+
+    div.board
+      padding 18px $gutter-width
+      position relative
+
+      + div.board
+        border-top 1px solid #eee
+
+      &:hover
+        background-color #fefefe
+
+      h3
+        font-size 22px
+        font-weight bold
+        margin-bottom 3px
+
+        a
+          text-decoration none
+          color #606060
+          &:hover
+            text-decoration underline
+
+      div.description
+        color #738289
+        font-size 14px
+        line-height 130%
+
+    @media (max-width: 639px)
+      div.board
+        $chevron-width = 15px
+
+        padding-top 15px
+        padding-bottom 15px
+        padding-right $gutter-width + $chevron-width + 15px
+        position relative
+
+        h3
+          a
+            font-size 16px
+            line-height 16px
+
+            &:hover
+              text-decoration none
+              color #333
+
+              &:after
+                opacity 0.8
+
+            &:before
+              bottom 0
+              content ''
+              left 0
+              position absolute
+              right 0
+              top 0
+              z-index 1
+
+            &:after
+              content ''
+              height 22px
+              background-image url('../icons/pro/chevron-right.png')
+              margin-top -11px  /* Half of height. */
+              opacity 0.6
+              position absolute
+              right $gutter-width
+              top 50%
+              width $chevron-width
+
+    /* Can't nest media queries so image mixin doesn't work :'(
+     * https://github.com/LearnBoost/stylus/issues/931 */
+    @media (max-width: 639px) and (-webkit-min-device-pixel-ratio: 1.5)
+      div.board h3 a:after
+        background-image url('../icons/pro/chevron-right@2x.png')
+        background-size 15px 22px

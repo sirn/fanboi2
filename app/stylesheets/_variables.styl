@@ -1,0 +1,31 @@
+/* Site colors */
+$color-primary = #eb3a17
+$color-secondary = #f6f6f4
+$color-body = #404040
+$color-dark = #2d3336
+$color-darker = #212628
+$color-dark-highlight = #738289
+
+/* Link colors */
+$color-link = $color-primary
+$color-link-hover = #999
+
+/* Metrics */
+$gutter-width = 18px
+$post-font-size = 16px
+$post-line-height = 140%
+
+/* Shared mixins */
+
+/* Override nib's image mixin to provide support for other browsers. */
+image(path, w = auto, h = auto)
+  background-image: url(path)
+  @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+         only screen and (min--moz-device-pixel-ratio: 1.5),
+         only screen and (-o-device-pixel-ratio: 3/2),
+         only screen and (min-device-pixel-ratio: 1.5),
+         only screen and (min-resolution: 1.5dppx)
+    ext = extname(path)
+    path = pathjoin(dirname(path), basename(path, ext) + '@2x' + ext)
+    background-image: url(path)
+    background-size: w h

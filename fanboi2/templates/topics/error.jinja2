@@ -1,8 +1,8 @@
 {% extends "topics/layout.jinja2" %}
 
 {% block content %}
-<div class="post-new">
-  <header class="container">
+<div id="topics-error">
+  <header>
     {% if topic.obj.status == "archived" %}
       <h3>Post limit exceeded</h3>
       <p>Please start a new topic.</p>

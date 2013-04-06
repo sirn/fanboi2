@@ -25,16 +25,9 @@ If you don't want to use Vagrant (oh you sadistic), you can manually install eve
 - `Python 3.2 <http://www.python.org/>`_
 - `PostgreSQL 9.1 <http://www.postgresql.org/>`_
 - `Redis <http://redis.io>`_
-- `node.js <http://nodejs.org>`_ with the following `npm modules <https://npmjs.org/>`_:
+- `node.js <http://nodejs.org>`_ with `brunch <http://brunch.io/>`_
 
-  * `Stylus <http://learnboost.github.com/stylus/>`_
-  * `nib <https://github.com/visionmedia/nib/>`_
-  * `RequireJS <http://requirejs.org/>`_
-  * `UglifyJS <https://github.com/mishoo/UglifyJS>`_
-
-- `YUI Compressor <http://developer.yahoo.com/yui/compressor/css.html>`_
-
-After all prerequisites are installed, you can now create the database, run setup and seed the database.::
+After all prerequisites are installed, you can now create the database, run setup and seed the database::
 
     $ createuser -P fanboi2  # Set "dev" as password.
     $ createdb -O fanboi2 fanboi2_dev
@@ -47,14 +40,15 @@ It is recommended to run tests and see if all tests passed. Before doing so, you
     $ pip install nose
     $ nosetests
 
-If all tests passed, you can now run the application. You should also run ``make`` to compile all assets before running::
+If all tests passed, you can now run the application. You must first setup assets compilation and do an initial compile before running::
 
-    $ make
+    $ npm install
+    $ brunch build
     $ pserve development.ini --reload
 
-You may also found ``make watch`` useful for automatic assets compilation::
+You may also found ``brunch watch`` useful for automatic assets compilation::
 
-    $ make watch
+    $ brunch watch
 
 Management Scripts
 ------------------
