@@ -16,8 +16,10 @@
     </table>
   {% else %}
     <div class="empty">
-      <p>No topics, be the first to post one!</p>
-      <a href="{{ request.resource_path(board, "new") }}" class="button action">Start New Topic</a>
+      <div class="container">
+        <p>No topics, be the first to post one!</p>
+        <a href="{{ request.resource_path(board, "new") }}" class="button action">Start New Topic</a>
+      </div>
     </div>
   {% endif %}
 </div>

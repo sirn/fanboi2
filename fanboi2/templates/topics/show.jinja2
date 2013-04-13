@@ -9,35 +9,47 @@
       {{ post_block(post) }}
     {% endfor %}
   </div>
-  <ul class="tools">
-    <li><a href="{{ request.resource_path(topic) }}" class="button all"><i class="icon-th-list inverted"></i> All posts</a></li>
-    <li><a href="{{ request.resource_path(topic, "recent") }}" class="button recent"><i class="icon-inbox inverted"></i> Recent posts</a></li>
-    <li><a href="{{ request.resource_path(topic, "%s-" % topic.obj.post_count) }}" class="button visited"><i class="icon-forward"></i> New since visit</a></li>
-  </ul>
+  <div class="tools">
+    <div class="container">
+      <ul>
+        <li><a href="{{ request.resource_path(topic) }}" class="button all"><i class="icon-th-list inverted"></i> All posts</a></li>
+        <li><a href="{{ request.resource_path(topic, "recent") }}" class="button recent"><i class="icon-inbox inverted"></i> Recent posts</a></li>
+        <li><a href="{{ request.resource_path(topic, "%s-" % topic.obj.post_count) }}" class="button visited"><i class="icon-forward"></i> New since visit</a></li>
+      </ul>
+    </div>
+  </div>
 </article>
 {% if topic.obj.status == "open" %}
   <form action="{{ request.resource_path(topic) }}" method="post" id="reply" class="post form">
     <header>
-      <h3>Reply</h3>
+      <div class="container">
+        <h3>Reply</h3>
+      </div>
     </header>
     <fieldset>
-      {{ form.csrf_token }}
-      {{ form_field(form.body) }}
-      {{ form_submit("Post Reply") }}
+      <div class="container">
+        {{ form.csrf_token }}
+        {{ form_field(form.body) }}
+        {{ form_submit("Post Reply") }}
+      </div>
     </fieldset>
   </form>
 {% elif topic.obj.status == "archived" %}
   <div id="reply" class="post locked">
     <header>
-      <h3>Post limit exceeded</h3>
-      <p>Please start a new topic.</p>
+      <div class="container">
+        <h3>Post limit exceeded</h3>
+        <p>Please start a new topic.</p>
+      </div>
     </header>
   </div>
 {% elif topic.obj.status == "locked" %}
   <div id="reply" class="post locked">
     <header>
-      <h3>Topic locked</h3>
-      <p>Topic has been locked by moderator.</p>
+      <div class="container">
+        <h3>Topic locked</h3>
+        <p>Topic has been locked by moderator.</p>
+      </div>
     </header>
   </div>
 {% endif %}

@@ -2,12 +2,14 @@
 
 {% macro post_block(post) %}
 <article id="post-{{ post.obj.id }}" class="post">
-  <header>
-    <span class="number">{{ post.obj.number }}</span>
-    <span class="name">{{ post.obj.name }}</span>
-    <span class="created">Posted {{ time_tag(post.obj.created_at) }}</span>
-    {% if post.obj.ident %}<span class="ident">ID:{{ post.obj.ident }}</span>{% endif %}
-  </header>
-  <div>{{ post|formatpost }}</div>
+  <div class="container">
+    <header>
+      <span class="number">{{ post.obj.number }}</span>
+      <span class="name">{{ post.obj.name }}</span>
+      <span class="created">Posted {{ time_tag(post.obj.created_at) }}</span>
+      {% if post.obj.ident %}<span class="ident">ID:{{ post.obj.ident }}</span>{% endif %}
+    </header>
+    <div>{{ post|formatpost }}</div>
+  </div>
 </article>
 {% endmacro %}

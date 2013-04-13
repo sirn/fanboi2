@@ -24,6 +24,16 @@ body
 div#container
   min-width 100%
 
+  div.container
+    padding 0 $gutter-width
+
+  @media (min-width: 1024px)
+    div.container
+      margin auto
+      min-width auto
+      padding 0
+      width 980px
+
 
 header#header
   $logo-width = 91px
@@ -35,7 +45,7 @@ header#header
   font-size 16px
   position relative
   line-height 16px
-  padding 0 $gutter-width
+  padding 0
 
   a
     color #ffcbc2
@@ -166,7 +176,7 @@ section#main
 
   > header
     background-color $color-darker
-    padding $gutter-width
+    padding $vertical-gutter-width 0
 
     h2
       color #ddd
@@ -231,8 +241,6 @@ section#main
         text-align center
 
       ul
-        margin-left $gutter-width * -1
-        margin-right $gutter-width * -1
         text-align center
 
 
@@ -240,4 +248,4 @@ footer#footer
   color #777
   font-size 14px
   line-height 150%
-  margin 15px $gutter-width
+  margin 15px 0

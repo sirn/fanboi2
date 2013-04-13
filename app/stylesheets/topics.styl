@@ -10,7 +10,7 @@ section#main
     background-color #fff
 
     div.empty
-      padding 25px $gutter-width
+      padding 25px 0
 
       p
         color #666
@@ -89,7 +89,7 @@ section#main
 
     > header
       background-color #fff
-      padding 20px $gutter-width
+      padding 20px 0
 
       h4
         font-size 18px
@@ -113,9 +113,9 @@ section#main
           i
             opacity 0.6
 
-    ul.tools
+    div.tools
       background-color #e1e4e6
-      padding $gutter-width
+      padding $vertical-gutter-width 0
 
       li
         a.button
@@ -163,7 +163,7 @@ section#main
       border-top 1px solid #d3d8db
 
     @media (max-width: 639px)
-      ul.tools
+      div.tools
         li
           a.button
             i
@@ -177,7 +177,7 @@ section#main
             margin-right 5px
             margin-top 0
 
-      ul.tools
+      div.tools
         li
           display inline-block
 
@@ -220,37 +220,38 @@ section#main
 
     > header
       background-color #f3f5f6
-      padding $form-spacing $gutter-width
+      padding $form-spacing 0
 
-      h3
-        color $color-primary
-        font-size 22px
-        font-weight bold
-        line-height 22px
+      > div.container
+        h3
+          color $color-primary
+          font-size 22px
+          font-weight bold
+          line-height 22px
 
-      > article
-        color #444
-        margin 15px 0
+        > article
+          color #444
+          margin 15px 0
 
-        ul
-          line-height 150%
-          list-style disc
-          margin-left 20px
+          ul
+            line-height 150%
+            list-style disc
+            margin-left 20px
 
-      > div
-        color #7e949f
-        font-size 14px
-        line-height 20px
+        > div
+          color #7e949f
+          font-size 14px
+          line-height 20px
 
-        a.button
-          background-color #be2541
-          border-color #931d32
-          margin-top 10px
+          a.button
+            background-color #be2541
+            border-color #931d32
+            margin-top 10px
 
-          &:hover
-            background-color #fff
-            border-color #be2541
-            color #931d32
+            &:hover
+              background-color #fff
+              border-color #be2541
+              color #931d32
 
     > fieldset
-      padding $form-spacing $gutter-width
+      padding $form-spacing 0
