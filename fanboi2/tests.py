@@ -980,6 +980,33 @@ class TestFormatters(unittest.TestCase):
         registry.settings = {'app.timezone': 'Asia/Bangkok'}
         return registry
 
+    def test_extract_thumbnail(self):
+        from fanboi2.formatters import extract_thumbnail
+        text = """
+        Inline page: http://imgur.com/image1
+        Inline image: http://i.imgur.com/image2.jpg
+        Subdomain image: http://fanboi2.imgur.com/image3.png
+
+        http://i.imgur.com/image4.jpeg
+        http://i.imgur.com/image5.gif
+        http://imgur.com/<script>alert("haxx0red!!")</script>.jpg
+        http://<script></script>.imgur.com/image6.gif
+        http://imgur.com/ほげ
+
+        Lorem ipsum dolor sit amet.
+
+        https://imgur.com/image5
+        https://i.imgur.com/image7.jpg
+        """
+        self.assertTupleEqual(tuple(extract_thumbnail(text)), (
+            ('http://i.imgur.com/image1s.jpg', 'http://imgur.com/image1'),
+            ('http://i.imgur.com/image2s.jpg', 'http://imgur.com/image2'),
+            ('http://i.imgur.com/image3s.jpg', 'http://imgur.com/image3'),
+            ('http://i.imgur.com/image4s.jpg', 'http://imgur.com/image4'),
+            ('http://i.imgur.com/image5s.jpg', 'http://imgur.com/image5'),
+            ('http://i.imgur.com/image7s.jpg', 'http://imgur.com/image7'),
+        ))
+
     def test_format_text(self):
         from fanboi2.formatters import format_text
         from jinja2 import Markup
@@ -996,6 +1023,33 @@ class TestFormatters(unittest.TestCase):
         ]
         for source, target in tests:
             self.assertEqual(format_text(source), Markup(target))
+
+    def test_format_text_thumbnail(self):
+        from fanboi2.formatters import format_text
+        from jinja2 import Markup
+        text = ("New product! https://imgur.com/foobar1\n\n"
+                "http://i.imgur.com/foobar2.png\n"
+                "http://imgur.com/foobar3.jpg\n"
+                "Buy today get TWO for FREE!!1")
+        self.assertEqual(
+            format_text(text),
+            Markup('<p>New product! https://imgur.com/foobar1</p>\n'
+                   '<p>http://i.imgur.com/foobar2.png<br>'
+                      'http://imgur.com/foobar3.jpg<br>'
+                      'Buy today get TWO for FREE!!1</p>\n'
+                   '<p><a href="http://imgur.com/foobar1" '
+                         'class="thumbnail" target="_blank">'
+                         '<img src="http://i.imgur.com/foobar1s.jpg">'
+                         '</a>'
+                       '<a href="http://imgur.com/foobar2" '
+                         'class="thumbnail" target="_blank">'
+                         '<img src="http://i.imgur.com/foobar2s.jpg">'
+                         '</a>'
+                       '<a href="http://imgur.com/foobar3" '
+                         'class="thumbnail" target="_blank">'
+                         '<img src="http://i.imgur.com/foobar3s.jpg">'
+                         '</a>'
+                       '</p>'))
 
     def test_format_markdown(self):
         from fanboi2.formatters import format_markdown
