@@ -1,9 +1,12 @@
-from pyramid_beaker import session_factory_from_settings
+import os
 import pyramid_jinja2
 import redis
+from functools import lru_cache
 from IPy import IP
 from pyramid.config import Configurator
 from pyramid.events import NewRequest
+from pyramid.path import AssetResolver
+from pyramid_beaker import session_factory_from_settings
 from sqlalchemy import engine_from_config
 from .formatters import *
 from .models import DBSession, Base
@@ -21,6 +24,26 @@ def remote_addr(request):
     return str(ipaddr)
 
 
+@lru_cache(maxsize=10)
+def _get_asset_mtime(path):
+    if ':' in path:
+        package, path = path.split(':')
+        resolver = AssetResolver(package)
+    else:
+        resolver = AssetResolver()
+    fullpath = resolver.resolve(path).abspath()
+    return int(os.path.getmtime(fullpath))
+
+
+def tagged_static_path(request, path, **kwargs):
+    """Similar to built-in :meth:`request.static_path` but appends last
+    modified time of asset as query string ``t`` to it forcing proxy server
+    and browsers to expire cache immediately after the file is modified.
+    """
+    kwargs['_query'] = {'t': _get_asset_mtime(path)}
+    return request.static_path(path, **kwargs)
+
+
 def main(global_config, **settings):  # pragma: no cover
     """ This function returns a Pyramid WSGI application.
     """
@@ -32,6 +55,7 @@ def main(global_config, **settings):  # pragma: no cover
     config.set_session_factory(session_factory)
     config.set_root_factory(RootFactory)
     config.set_request_property(remote_addr)
+    config.add_request_method(tagged_static_path)
     config.include(pyramid_jinja2)
 
     # Redis setup.
