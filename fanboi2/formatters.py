@@ -11,7 +11,7 @@ from pyramid.threadlocal import get_current_registry, get_current_request
 RE_NEWLINE = re.compile(r'(?:\r\n|\n|\r)')
 RE_PARAGRAPH = re.compile(r'(?:(?P<newline>\r\n|\n|\r)(?P=newline)+)')
 RE_THUMBNAILS = (
-    (re.compile('https?\:\/\/(?:(?:\w+\.)?imgur\.com)\/(\w+)'),
+    (re.compile(r"https?\:\/\/(?:(?:\w+\.)?imgur\.com)\/(\w+)", re.ASCII),
      'http://i.imgur.com/{}s.jpg',
      'http://imgur.com/{}'),
 )
@@ -29,7 +29,7 @@ def extract_thumbnail(text):
                 if not isinstance(item, tuple):
                     item = [item]
                 thumbnails[thumb.format(*item)] = url.format(*item)
-            except IndexError:
+            except IndexError:  # pragma: no cover
                 pass
     return thumbnails.items()
 
