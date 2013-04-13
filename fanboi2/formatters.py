@@ -3,25 +3,62 @@ import isodate
 import misaka
 import pytz
 import re
+from collections import OrderedDict
 from jinja2 import Markup
 from pyramid.threadlocal import get_current_registry, get_current_request
 
 
 RE_NEWLINE = re.compile(r'(?:\r\n|\n|\r)')
 RE_PARAGRAPH = re.compile(r'(?:(?P<newline>\r\n|\n|\r)(?P=newline)+)')
+RE_THUMBNAILS = (
+    (re.compile('https?\:\/\/(?:(?:\w+\.)?imgur\.com)\/(\w+)'),
+     'http://i.imgur.com/{}s.jpg',
+     'http://imgur.com/{}'),
+)
 
+
+def extract_thumbnail(text):
+    """Extract thumbnailable URLs from text and create a list of 2-tuples
+    containing ``(thumbnail_url, link_url)`` for use in clickable thumbnail
+    links creation.
+    """
+    thumbnails = OrderedDict()
+    for re, thumb, url in RE_THUMBNAILS:
+        for item in re.findall(text):
+            try:
+                if not isinstance(item, tuple):
+                    item = [item]
+                thumbnails[thumb.format(*item)] = url.format(*item)
+            except IndexError:
+                pass
+    return thumbnails.items()
+
+
+TP_THUMB = '<a href="%s" class="thumbnail" target="_blank"><img src="%s"></a>'
+TP_PARAGRAPH = '<p>%s</p>'
 
 def format_text(text):
     """Format lines of text into HTML. Split into paragraphs at two or more
     consecutive newlines and adds ``<br>`` to any line with line break.
     """
     output = []
+    thumbs = []
+
+    # Turns text into paragraph.
     for paragraph in RE_PARAGRAPH.split(text):
         paragraph = paragraph.rstrip("\r\n")
         if paragraph:
-            paragraph = '<p>%s</p>' % html.escape(paragraph)
+            paragraph = TP_PARAGRAPH % html.escape(paragraph)
             paragraph = RE_NEWLINE.sub("<br>", paragraph)
             output.append(paragraph)
+
+    # Display thumbnail at the end of post.
+    thumbnails = extract_thumbnail(text)
+    if thumbnails:
+        for thumbnail, link in extract_thumbnail(text):
+            thumbs.append(TP_THUMB % (link, thumbnail))
+        output.append(TP_PARAGRAPH % ''.join(thumbs))
+
     return Markup('\n'.join(output))
 
 

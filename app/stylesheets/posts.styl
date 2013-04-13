@@ -61,6 +61,25 @@ section#main
                         color #005580
                         text-decoration underline
 
+                a.thumbnail
+                    $max-width = 90px
+                    $max-height = 90px
+
+                    display inline-block
+                    float left
+                    height $max-height
+                    margin-bottom 3px
+                    margin-right 3px
+                    overflow hidden
+                    width $max-width
+
+                    &:last-child
+                        margin-right 0
+                        clear right
+
+                    &:hover
+                        opacity 0.8
+
     @media (max-width: 639px)
         article.post
             position relative
