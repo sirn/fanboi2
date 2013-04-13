@@ -4,16 +4,18 @@
 
 {% block content %}
 <div class="topics cascade">
-  {% if topics %}
-    <table>
-      {% for topic in topics %}
-        <tr id="topic-{{ topic.obj.id }}">
-          <td class="count">{{ topic.obj.post_count }} posts</td>
-          <td class="title"><a href="{{ request.resource_url(topic) }}">{{ topic.obj.title }}</a></td>
-          <td class="updated">Last updated {{ time_tag(topic.obj.posted_at) }}</td>
-        </tr>
-      {% endfor %}
-    </table>
+  {% for topic in topics %}
+    <article id="topic-{{ topic.obj.id }}" class="topic">
+      <header>
+        <div class="container">
+          <h4><a href="{{ request.resource_url(topic) }}">{{ topic.obj.title }}</a></h4>
+          <ul>
+            <li class="posted">Last updated {{ time_tag(topic.obj.posted_at) }}</li>
+            <li class="posts">{{ topic.obj.post_count }} posts</li>
+          </ul>
+        </div>
+      </header>
+    </article>
   {% else %}
     <div class="empty">
       <div class="container">
@@ -21,6 +23,6 @@
         <a href="{{ request.resource_path(board, "new") }}" class="button action">Start New Topic</a>
       </div>
     </div>
-  {% endif %}
+  {% endfor %}
 </div>
 {% endblock %}
