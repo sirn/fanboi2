@@ -7,184 +7,192 @@ reset-html5()
 
 i[class^="icon-"],
 i[class*=" icon-"]
-  background-repeat no-repeat
-  display inline-block
+    background-repeat no-repeat
+    display inline-block
 
-  &.icon-home
-    height 13px
-    image '../icons/white/home.png' 13px 13px
-    width 13px
+    &.icon-home
+        height 13px
+        image '../icons/white/home.png' 13px 13px
+        width 13px
 
-  &.icon-th-large
-    height 11px
-    image '../icons/white/th-large.png' 11px 11px
-    width 11px
+    &.icon-th-large
+        height 11px
+        image '../icons/white/th-large.png' 11px 11px
+        width 11px
 
-  &.icon-th
-    height 11px
-    image '../icons/white/th.png' 11px 11px
-    width 11px
-
-  &.icon-th-list
-    height 11px
-    image '../icons/white/th-list.png' 12px 11px
-    width 12px
-
-  &.icon-plus
-    height 11px
-    image '../icons/white/plus.png' 11px 11px
-    width 11px
-
-  &.icon-share-alt
-    height 10px
-    image '../icons/white/share-alt.png' 12px 10px
-    width 12px
-
-  &.icon-list
-    height 11px
-    image '../icons/white/list.png' 12px 11px
-    width 12px
-
-  &.icon-left
-    height 10px
-    image '../icons/white/left.png' 12px 10px
-    width 12px
-
-  &.icon-forward
-    height 11px
-    image '../icons/white/forward.png' 11px 11px
-    width 11px
-
-  &.inverted
-
-    &.icon-info-sign
-      height 12px
-      image '../icons/black/info-sign.png' 12px 12px
-      width 12px
+    &.icon-th
+        height 11px
+        image '../icons/white/th.png' 11px 11px
+        width 11px
 
     &.icon-th-list
-      height 11px
-      image '../icons/black/th-list.png' 12px 11px
-      width 12px
+        height 11px
+        image '../icons/white/th-list.png' 12px 11px
+        width 12px
 
-    &.icon-inbox
-      height 12px
-      image '../icons/black/inbox.png' 12px 12px
-      width 12px
+    &.icon-plus
+        height 11px
+        image '../icons/white/plus.png' 11px 11px
+        width 11px
+
+    &.icon-share-alt
+        height 10px
+        image '../icons/white/share-alt.png' 12px 10px
+        width 12px
+
+    &.icon-list
+        height 11px
+        image '../icons/white/list.png' 12px 11px
+        width 12px
+
+    &.icon-left
+        height 10px
+        image '../icons/white/left.png' 12px 10px
+        width 12px
 
     &.icon-forward
-      height 11px
-      image '../icons/black/forward.png' 11px 11px
-      width 11px
+        height 11px
+        image '../icons/white/forward.png' 11px 11px
+        width 11px
+
+    &.inverted
+
+        &.icon-info-sign
+            height 12px
+            image '../icons/black/info-sign.png' 12px 12px
+            width 12px
+
+        &.icon-th-list
+            height 11px
+            image '../icons/black/th-list.png' 12px 11px
+            width 12px
+
+        &.icon-inbox
+            height 12px
+            image '../icons/black/inbox.png' 12px 12px
+            width 12px
+
+        &.icon-forward
+            height 11px
+            image '../icons/black/forward.png' 11px 11px
+            width 11px
 
 
 .button
-  background-color #4e4e4e
-  border 1px solid #3f3f3f
-  box-sizing border-box
-  color #fff
-  cursor pointer
-  display inline-block
-  font-size 14px
-  line-height 14px
-  padding 10px 12px 9px
-  vertical-align middle
-  box-shadow 0 1px 0 0 rgba(255, 255, 255, 0.3) inset
-
-  &:hover
-    background-color #f0f0f0
-    border-color #aaa
-    color #555
-
-  &.action
-    background-color #45ba02
-    border-color #328802
+    background-color #4e4e4e
+    border 1px solid #3f3f3f
+    box-sizing border-box
+    color #fff
+    cursor pointer
+    display inline-block
+    font-size 14px
+    line-height 14px
+    padding 10px 12px 9px
+    vertical-align middle
+    box-shadow 0 1px 0 0 rgba(255, 255, 255, 0.3) inset
 
     &:hover
-      background-color #fff
-      border-color #45ba02
-      color #328802
+        background-color #f0f0f0
+        border-color #aaa
+        color #555
+
+    &.action
+        background-color #45ba02
+        border-color #328802
+
+        &:hover
+            background-color #fff
+            border-color #45ba02
+            color #328802
 
 
 input.button
 button.button
-  font-family sans-serif
+    font-family sans-serif
 
-  &::-moz-focus-inner
-    padding 0
-    border 0
+    &::-moz-focus-inner
+        padding 0
+        border 0
 
 
 form.form
-  > fieldset
-    > div
-      + div
-        margin-top 10px
+    > fieldset
+        > div.container
+            > div
+                + div
+                    margin-top 10px
 
-      label
-        color #666
-        font-size 12px
-        font-weight bold
-        line-height 12px
+                label
+                    color #666
+                    font-size 12px
+                    font-weight bold
+                    line-height 12px
 
-        abbr
-          color #ccc
+                    abbr
+                        color #ccc
 
-        + div
-          margin-top 3px
+                    + div
+                        margin-top 3px
 
-      &.errors
-        input
-        textarea
-        span.error
-          box-shadow 3px 3px 0 0 #f2bdc7
-          border-color #be2541
+                &.errors
+                    input
+                    textarea
+                    span.error
+                        box-shadow 3px 3px 0 0 #f2bdc7
+                        border-color #be2541
 
-        span.error
-          background-color #be2541
-          color #fff
-          display inline-block
-          font-size 13px
-          line-height 13px
-          margin-top -1px
-          padding 5px 10px
+                    span.error
+                        background-color #be2541
+                        color #fff
+                        display inline-block
+                        font-size 13px
+                        line-height 13px
+                        margin-top -1px
+                        padding 5px 10px
 
-    input
-    textarea
-      border 1px solid #d0d0d0
-      box-shadow 3px 3px 0 0 #eee
-      box-sizing border-box
-      margin 0
-      max-width 100%
-      min-width 100%
-      width 100%
+            input
+            textarea
+                background-color #fff  /* Firefox Desktop. */
+                background-image none  /* Firefox Mobile. */
+                border 1px solid #d0d0d0
+                border-radius 0
+                box-shadow 3px 3px 0 0 #eee
+                box-sizing border-box
+                margin 0
+                max-width 100%
+                min-width 100%
+                width 100%
 
-      &:focus
-        border-color #eb3916
-        box-shadow 3px 3px 0 0 #fdede9
+                &:focus
+                    border-color #eb3916
+                    box-shadow 3px 3px 0 0 #fdede9
 
-    input
-      font-size 20px
-      font-weight bold
-      height 43px
-      line-height 20px
-      padding 0 5px
+            input
+                font-size 20px
+                font-weight bold
+                height 43px
+                line-height 20px
+                padding 0 5px
 
-    textarea
-      color #333
-      font-family sans-serif
-      font-size $post-font-size
-      line-height $post-line-height
-      min-height 130px
-      padding 5px
+            textarea
+                color #333
+                font-family sans-serif
+                font-size $post-font-size
+                line-height $post-line-height
+                min-height 130px
+                padding 5px
 
-    button.button
-      background-image linear-gradient(top, #29566f, #22485c)
-      border-color #171e22
-      box-shadow 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 3px 3px 0 0 #eee
+            button.button
+                $outer-shadow = 3px 3px 0 0 #eee
+                $inner-shadow = 0 1px 0 0 rgba(255, 255, 255, 0.1) inset
 
-      &:hover
-        background-color #fff
-        background-image none
-        border-color #22485c
-        color #29566f
+                background-image linear-gradient(top, #29566f, #22485c)
+                border-color #171e22
+                border-radius 0
+                box-shadow $inner-shadow, $outer-shadow
+
+                &:hover
+                    background-color #fff
+                    background-image none
+                    border-color #22485c
+                    color #29566f

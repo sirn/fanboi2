@@ -2,22 +2,26 @@
 {% extends "boards/layout.jinja2" %}
 
 {% block content %}
-<form action="{{ request.resource_path(board, "new") }}" method="post" class="topic form">
-  <header>
-    <h3>New topic</h3>
-    {% if board.obj.agreements %}
-    <article>{{ board.obj.agreements|markdown }}</article>
-    <div>
-      <p>By continuing, you're agree to the above agreement. Otherwise, you may go back now:</p>
-      <a href="{{ request.resource_path(board) }}" class="button">Back</a>
-    </div>
-    {% endif %}
-  </header>
-  <fieldset>
-    {{ form.csrf_token }}
-    {{ form_field(form.title) }}
-    {{ form_field(form.body) }}
-    {{ form_submit("Post New Topic") }}
-  </fieldset>
-</form>
+    <form action="{{ request.resource_path(board, "new") }}" method="post" class="topic form">
+        <header>
+            <div class="container">
+                <h3>New topic</h3>
+                {% if board.obj.agreements %}
+                    <article>{{ board.obj.agreements|markdown }}</article>
+                    <div>
+                        <p>By continuing, you're agree to the above agreement. Otherwise, you may go back now:</p>
+                        <a href="{{ request.resource_path(board) }}" class="button">Back</a>
+                    </div>
+                {% endif %}
+            </div>
+        </header>
+        <fieldset>
+            <div class="container">
+                {{ form.csrf_token }}
+                {{ form_field(form.title) }}
+                {{ form_field(form.body) }}
+                {{ form_submit("Post New Topic") }}
+            </div>
+        </fieldset>
+    </form>
 {% endblock %}

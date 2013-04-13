@@ -3,254 +3,226 @@
 
 section#main
 
-  /* Topic listing in board page.
-   * URL: /<slug>
-   */
-  div.topics
-    background-color #fff
+    /* Topic listing in board page.
+     * URL: /<slug>
+     */
+    div.topics
+        background-color #fff
 
-    div.empty
-      padding 25px $gutter-width
+        div.empty
+            padding 25px 0
 
-      p
-        color #666
+            p
+                color #666
 
-      a.button
-        margin-top 10px
+            a.button
+                margin-top 10px
 
-    @media (max-width: 639px)
-      div.empty
-        padding-bottom 35px
-        padding-top 35px
-        text-align center
+        @media (max-width: 639px)
+            div.empty
+                padding-bottom 35px
+                padding-top 35px
+                text-align center
 
-        a.button
-          margin-top 15px
-
-
-  /* Topic listing in all topics page.
-   * URL: /<slug>/all
-   */
-  div.topics.cascade
-    table
-      width 100%
-
-      tr
-        + tr
-          border-top 1px solid #f5f7f8
-
-        &:hover
-          background-color #f5f7f8
-
-        &:nth-child(-n+3)
-          td
-            &.title
-              font-weight bold
-
-        td
-          padding 20px $gutter-width
-
-          &.count
-            color #8d9ca1
-            display block
-            font-size 13px
-            font-weight normal
-            line-height 13px
-            padding-right 0
-            text-align right
-            width 70px
-
-          &.updated
-            display none
-
-    @media (min-width: 640px)
-      table
-        tr
-          td
-            &.count
-              display table-cell
-              float none
-              margin-right 10px
-
-            &.updated
-              color #999
-              display table-cell
-              font-size 13px
-              line-height 13px
-              text-align right
-              width 235px
+                a.button
+                    margin-top 15px
 
 
-  /* Topic item in board page.
-   * URL: /<slug>
-   */
-  article.topic
-    background-color #f5f7f8
+    /* Topic listing in all topics page.
+     * URL: /<slug>/all
+     */
+    div.topics.cascade
+        article.topic
+            border-color #f0f0f0
 
-    > header
-      background-color #fff
-      padding 20px $gutter-width
+            &:nth-child(1n+4)
+                > header
+                    h4
+                        font-size 16px
+                        font-weight normal
+                        line-height 16px
 
-      h4
-        font-size 18px
-        font-weight bold
-        line-height 18px
-
-      ul
-        color #666
-        display block
-        font-size 14px
-        line-height 14px
-        margin-top 7px
-
-        li
-          display block
-          margin-top 3px
-
-          &.posts
-            font-weight bold
-
-          i
-            opacity 0.6
-
-    ul.tools
-      background-color #e1e4e6
-      padding $gutter-width
-
-      li
-        a.button
-          display inline-block
-          width 100%
-
-          &.all
-          &.recent
-            background-color #f5f5f5
-            border-color #d0d0d0
-            color #666
+                    ul
+                        font-size 13px
+                        line-height 13px
+                        margin-top 6px
 
             &:hover
-              background-color #fff
-              border-color #aaa
-              color #333
-
-              i
-                opacity 0.8
-
-            i
-              opacity 0.5
-
-          &.reply
-            font-weight bold
-
-            &:hover
-              i.icon-share-alt
-                image '../icons/green/share-alt.png' 12px 10px
-
-          &.visited
-            &:hover
-              background-color #fff
-              border-coor #aaa
-              color #333
-
-              i.icon-forward
-                image '../icons/black/forward.png' 11px 11px
-                opacity 0.8
-
-        + li
-          margin-top 2px
-
-    + article.topic
-      border-top 1px solid #d3d8db
-
-    @media (max-width: 639px)
-      ul.tools
-        li
-          a.button
-            i
-              width 15px
-
-    @media (min-width: 640px)
-      > header
-        ul
-          li
-            display inline-block
-            margin-right 5px
-            margin-top 0
-
-      ul.tools
-        li
-          display inline-block
+                > header
+                    background-color #f5f7f8
 
 
-  /* Topic header in topic page.
-   * URL: /<slug>/<id>
-   */
-  header.topic
-    h2
-      max-width 100%
-      overflow auto
+    /* Topic item in board page.
+     * URL: /<slug>
+     */
+    article.topic
+        background-color #f5f7f8
 
-    p
-      span
-        display block
-        margin-top 5px
-
-        strong
-          color #8e9ba1
-          font-weight bold
-
-    @media (min-width: 360px)
-      ul
-        li
-          a[href='#reply']
-            background-color #44ba03
-            color #fff
-
-            i.icon-share-alt
-              opacity 1
-
-
-  /* New topic form
-   * URL: /<slug>/new
-   */
-  form.topic
-    $form-spacing = 20px
-
-    background-color #fff
-
-    > header
-      background-color #f3f5f6
-      padding $form-spacing $gutter-width
-
-      h3
-        color $color-primary
-        font-size 22px
-        font-weight bold
-        line-height 22px
-
-      > article
-        color #444
-        margin 15px 0
-
-        ul
-          line-height 150%
-          list-style disc
-          margin-left 20px
-
-      > div
-        color #7e949f
-        font-size 14px
-        line-height 20px
-
-        a.button
-          background-color #be2541
-          border-color #931d32
-          margin-top 10px
-
-          &:hover
+        > header
             background-color #fff
-            border-color #be2541
-            color #931d32
+            padding 20px 0
 
-    > fieldset
-      padding $form-spacing $gutter-width
+            h4
+                font-size 18px
+                font-weight bold
+                line-height 18px
+
+            ul
+                color #666
+                display block
+                font-size 14px
+                line-height 14px
+                margin-top 7px
+
+                li
+                    display block
+                    margin-top 3px
+
+                    &.posts
+                        font-weight bold
+
+                    i
+                        opacity 0.6
+
+        div.tools
+            background-color #e1e4e6
+            padding $vertical-gutter-width 0
+
+            li
+                a.button
+                    display inline-block
+                    width 100%
+
+                    &.all
+                    &.recent
+                        background-color #f5f5f5
+                        border-color #d0d0d0
+                        color #666
+
+                        &:hover
+                            background-color #fff
+                            border-color #aaa
+                            color #333
+
+                            i
+                                opacity 0.8
+
+                        i
+                            opacity 0.5
+
+                    &.reply
+                        font-weight bold
+
+                        &:hover
+                            i.icon-share-alt
+                                image '../icons/green/share-alt.png' 12px 10px
+
+                    &.visited
+                        &:hover
+                            background-color #fff
+                            border-coor #aaa
+                            color #333
+
+                            i.icon-forward
+                                image '../icons/black/forward.png' 11px 11px
+                                opacity 0.8
+
+                + li
+                    margin-top 2px
+
+        + article.topic
+            border-top 1px solid #d3d8db
+
+        @media (max-width: 639px)
+            div.tools
+                li
+                    a.button
+                        i
+                            width 15px
+
+        @media (min-width: 640px)
+            > header
+                ul
+                    li
+                        display inline-block
+                        margin-right 5px
+                        margin-top 0
+
+            div.tools
+                li
+                    display inline-block
+
+
+    /* Topic header in topic page.
+     * URL: /<slug>/<id>
+     */
+    header.topic
+        h2
+            max-width 100%
+            overflow auto
+
+        p
+            span
+                display block
+                margin-top 5px
+
+                strong
+                    color #8e9ba1
+                    font-weight bold
+
+        @media (min-width: 360px)
+            ul
+                li
+                    a[href='#reply']
+                        background-color #44ba03
+                        color #fff
+
+                        i.icon-share-alt
+                            opacity 1
+
+
+    /* New topic form
+     * URL: /<slug>/new
+     */
+    form.topic
+        $form-spacing = 20px
+
+        background-color #fff
+
+        > header
+            background-color #f3f5f6
+            padding $form-spacing 0
+
+            > div.container
+                h3
+                    color $color-primary
+                    font-size 22px
+                    font-weight bold
+                    line-height 22px
+
+                > article
+                    color #444
+                    margin 15px 0
+
+                    ul
+                        line-height 150%
+                        list-style disc
+                        margin-left 20px
+
+                > div
+                    color #7e949f
+                    font-size 14px
+                    line-height 20px
+
+                    a.button
+                        background-color #be2541
+                        border-color #931d32
+                        margin-top 10px
+
+                        &:hover
+                            background-color #fff
+                            border-color #be2541
+                            color #931d32
+
+        > fieldset
+            padding $form-spacing 0

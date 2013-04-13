@@ -1,5 +1,11 @@
-0.2.0
+0.3.0
 =====
+
+- Changed from fluid layout to fixed 980px layout for widescreen responsive level.
+- Added timestamp to all assets path for cache expiration.
+
+0.2.0
+-----
 
 - Added `CSRF token <http://wtforms.simplecodes.com/docs/1.0.3/ext.html#module-wtforms.ext.csrf>`_ support in forms.
 - Added support for `Beaker <https://github.com/Pylons/pyramid_beaker/>`_ as session factory.

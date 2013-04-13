@@ -2,16 +2,18 @@
 {% extends "layout.jinja2" %}
 
 {% block leader %}
-<header class="topic">
-  <h2>{{ topic.obj.title }}</h2>
-  <p>
-    <span class="posted">Last posted {{ time_tag(topic.obj.posted_at) }}</span>
-    <span class="posts"><strong>{{ topic.obj.post_count }} posts</strong></span>
-  </p>
-  <ul>
-    <li><a href="{{ request.resource_path(board) }}"><i class="icon-left"></i> Back</a></li>
-    <li{% if request.view_name == "" %} class="active"{% endif %}><a href="{{ request.resource_path(topic) }}"><i class="icon-th-list"></i> Show topic</a></li>
-    <li><a href="#reply"><i class="icon-share-alt"></i> Reply</a></li>
-  </ul>
-</header>
+    <header class="topic">
+        <div class="container">
+            <h2>{{ topic.obj.title }}</h2>
+            <p>
+                <span class="posted">Last posted {{ time_tag(topic.obj.posted_at) }}</span>
+                <span class="posts"><strong>{{ topic.obj.post_count }} posts</strong></span>
+            </p>
+            <ul>
+                <li><a href="{{ request.resource_path(board) }}"><i class="icon-left"></i> Back</a></li>
+                <li{% if request.view_name == "" %} class="active"{% endif %}><a href="{{ request.resource_path(topic) }}"><i class="icon-th-list"></i> Show topic</a></li>
+                <li><a href="#reply"><i class="icon-share-alt"></i> Reply</a></li>
+            </ul>
+        </div>
+    </header>
 {% endblock %}
