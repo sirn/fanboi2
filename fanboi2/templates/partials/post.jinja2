@@ -1,7 +1,7 @@
 {% from "partials/helper.jinja2" import time_tag %}
 
 {% macro post_block(post) %}
-    <article id="post-{{ post.obj.id }}" class="post">
+    <article id="post-{{ post.obj.id }}" class="post post-{{ post.obj.number }}">
         <div class="container">
             <header>
                 <span class="number">{{ post.obj.number }}</span>

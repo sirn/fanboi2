@@ -68,6 +68,7 @@ def format_markdown(text):
 
 
 RE_ANCHOR = re.compile(r'%s(\d+)(\-)?(\d+)?' % html.escape('>>'))
+TP_ANCHOR = '<a data-number="%s" href="%s" class="anchor">%s</a>'
 
 
 def format_post(post):
@@ -80,7 +81,8 @@ def format_post(post):
 
     def _anchor(match):
         anchor = ''.join([m for m in match.groups() if m is not None])
-        return Markup("<a href=\"%s\" class=\"anchor\">%s</a>" % (
+        return Markup(TP_ANCHOR % (
+            anchor,
             request.resource_path(post.topic, anchor),
             html.escape(">>%s" % anchor),))
     text = RE_ANCHOR.sub(_anchor, text)

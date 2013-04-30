@@ -1121,9 +1121,11 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
         post3 = self._wrapPost(topic, body=">>1-2\nHoge")
         tests = [
             (post1, "<p>Hogehoge<br>Hogehoge</p>"),
-            (post2, "<p><a href=\"/foobar/1/1\" class=\"anchor\">" +
+            (post2, "<p><a data-number=\"1\" " +
+                    "href=\"/foobar/1/1\" class=\"anchor\">" +
                     "&gt;&gt;1</a></p>"),
-            (post3, "<p><a href=\"/foobar/1/1-2\" class=\"anchor\">" +
+            (post3, "<p><a data-number=\"1-2\" " +
+                    "href=\"/foobar/1/1-2\" class=\"anchor\">" +
                     "&gt;&gt;1-2</a><br>Hoge</p>"),
         ]
         for source, target in tests:

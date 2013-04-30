@@ -80,6 +80,25 @@ section#main
                     &:hover
                         opacity 0.8
 
+                article.popover
+                    background-color #f5f7f8
+                    border 1px solid #fff
+                    box-shadow 1px 1px 5px 0 rgba(0, 0, 0, 0.3)
+                    display inline-block
+                    max-width 70%
+                    padding 10px
+                    position absolute
+                    z-index 1
+
+                    > div.container
+                        display inline-block
+                        width auto
+
+                        > div
+                            font-size $post-font-size - 2px
+                            line-height $post-line-height - 2px
+
+
     @media (max-width: 639px)
         article.post
             position relative
@@ -94,6 +113,10 @@ section#main
                         left $gutter-width
                         margin-left 0
                         position absolute
+
+                > div
+                    article.popover
+                        display none
 
 
     /* Post form and locked status in topic show page.
