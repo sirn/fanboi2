@@ -1,6 +1,7 @@
+{% extends "boards/layout.jinja2" %}
 {% from "partials/post.jinja2" import post_block %}
 {% from "partials/helper.jinja2" import time_tag %}
-{% extends "boards/layout.jinja2" %}
+{% block title %}All topics - {{ board.obj.title }}{% endblock %}
 
 {% block content %}
 	<div class="topics cascade">
