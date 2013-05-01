@@ -51,6 +51,53 @@ section#main
                 > header
                     background-color #f5f7f8
 
+        @media (max-width: 639px)
+            article.topic
+                $chevron-width = 15px
+
+                position relative
+
+                > header
+
+                    div.container
+                        padding-right $gutter-width + $chevron-width + 15px
+
+                    h4
+                        a
+                            &:hover
+                                &:after
+                                    opacity 0.5
+
+                            &:before
+                                bottom 0
+                                content ''
+                                left 0
+                                position absolute
+                                right 0
+                                top 0
+
+                            &:after
+                                background-image url($chevron-path)
+                                content ''
+                                height $chevron-height
+                                margin-top ($chevron-height/2) * -1
+                                opacity 0.8
+                                position absolute
+                                right $gutter-width
+                                top 50%
+                                width $chevron-width
+
+        /* Can't nest media queries so image mixin doesn't work :'(
+         * https://github.com/LearnBoost/stylus/issues/931 */
+        @media (max-width: 639px) and (-webkit-min-device-pixel-ratio: 1.5),
+               (max-width: 639px) and (min--moz-device-pixel-ratio: 1.5),
+               (max-width: 639px) and (-o-device-pixel-ratio: 3/2),
+               (max-width: 639px) and (min-device-pixel-ratio: 1.5),
+               (max-width: 639px) and (min-resolution: 1.5dppx)
+            article.topic > header h4 a:after
+                background-image url($chevron-path-2x)
+                background-size $chevron-width $chevron-height
+
 
     /* Topic item in board page.
      * URL: /<slug>
