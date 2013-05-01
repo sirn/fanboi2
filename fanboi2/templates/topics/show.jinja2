@@ -1,6 +1,7 @@
+{% extends "topics/layout.jinja2" %}
 {% from "partials/form.jinja2" import form_field, form_submit %}
 {% from "partials/post.jinja2" import post_block %}
-{% extends "topics/layout.jinja2" %}
+{% block title %}{{ topic.obj.title }} - {{ board.obj.title }}{% endblock %}
 
 {% block content %}
     <article id="topic-{{ topic.obj.id }}" class="topic">

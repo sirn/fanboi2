@@ -2,9 +2,11 @@
 =====
 
 - Changed from fluid layout to fixed 980px layout for widescreen responsive level.
+- Changed all posts page to be mobile-optimized similar to board list page.
 - Added timestamp to all assets path for cache expiration.
 - Added thumbnail preview support for Imgur links.
 - Added popover for post anchor (single post only).
+- Added proper page title to all user visible pages.
 
 0.2.0
 -----

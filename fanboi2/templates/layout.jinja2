@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Fanboi Channel</title>
+    <title>{% if self.title() %}{% block title %}{% endblock %} - {% endif %}Fanboi Channel</title>
     <!--[if IE]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
     <link rel="stylesheet" href="{{ request.tagged_static_path('fanboi2:static/stylesheets/app.css') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+    {% block head %}{% endblock %}
 </head>
 <body class="preload">
     <div id="container">

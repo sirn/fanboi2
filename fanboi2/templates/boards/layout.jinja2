@@ -1,4 +1,5 @@
 {% extends "layout.jinja2" %}
+{% block head %}<meta name="description" content="{{ board.obj.description|striptags }}" />{% endblock %}
 
 {% block leader %}
     <header class="board">

@@ -1,5 +1,6 @@
-{% from "partials/form.jinja2" import form_field, form_submit %}
 {% extends "boards/layout.jinja2" %}
+{% from "partials/form.jinja2" import form_field, form_submit %}
+{% block title %}New topic - {{ board.obj.title }}{% endblock %}
 
 {% block content %}
     <form action="{{ request.resource_path(board, "new") }}" method="post" class="topic form">
