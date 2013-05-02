@@ -12,7 +12,7 @@ The Better Way
 We use `Vagrant <http://www.vagrantup.com/>`_ for development environment provisioning. You must first `install Vagrant <http://docs.vagrantup.com/v2/installation/>`_ (and `VirtualBox <https://www.virtualbox.org/>`_ or any other available `providers <http://docs.vagrantup.com/v2/providers/index.html>`_) and run the following commands::
 
     $ git submodule update --init
-    $ vagrant init precise64 http://files.vagrantup.com/precise64.box
+    $ vagrant box add precise64 http://files.vagrantup.com/precise64.box
     $ vagrant up
 
 That's it! You can now visit http://localhost:6543/ and proceed on development. After you've done, you can now run either ``vagrant destroy`` to completely remove the VM or ``vagrant halt`` to shutdown the VM. See also `Teardown <http://docs.vagrantup.com/v2/getting-started/teardown.html>`_ section of Vagrant documentation.
