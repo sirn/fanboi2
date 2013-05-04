@@ -5,7 +5,7 @@ class python3 {
   $packages = ['python3', 'python3-dev']
   package {$packages: ensure => installed}
 
-  if defined(Package['openssl']) == false {
+  if defined(Package['build-essential']) == false {
     package {'build-essential':
       ensure => installed,
     }
