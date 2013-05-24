@@ -28,6 +28,10 @@ requires = [
     'IPy',
     'nose',
     'coverage',
+
+    # Python 3.2 compatible
+    'MarkupSafe==0.15', # https://github.com/mitsuhiko/markupsafe/pull/13
+    'Jinja2==2.6',
     ]
 
 setup(name='fanboi2',
