@@ -1,5 +1,11 @@
-0.3.0
+0.4.0
 =====
+
+- Added top-right and bottom-right buttons for jumping to header and footer.
+- Added auto-link functionality.
+
+0.3.0
+-----
 
 - Changed from fluid layout to fixed 980px layout for widescreen responsive level.
 - Changed all posts page to be mobile-optimized similar to board list page.
