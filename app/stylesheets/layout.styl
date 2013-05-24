@@ -53,6 +53,20 @@ header#header
         &:hover
             color #fff
 
+        &.bottom
+            background-color #f74f2f
+            border-left 1px solid #ff5130
+            border-right 1px solid #ff5130
+            float right
+            height $container-height
+            line-height $container-height - 2px  /* Make it center-ish. */
+            padding 0 10px
+
+            span
+                color #fff
+                font-size 12px
+                font-weight bold
+
     h1
         background-repeat no-repeat
         background-position 0 ($logo-height / 2.0)
@@ -100,11 +114,17 @@ header#header
         div#toggler
             display none
 
+    @media (max-width: 979px)
+        a.bottom
+            span
+                display none
+
     @media (max-width: 639px)
         min-height $container-height
 
         h1
-            float right
+            float left
+            margin-right 10px
 
         ul
             height 0
@@ -128,7 +148,7 @@ header#header
                 padding 3px 10px
                 margin-top 8px
 
-                span.line
+                span
                     background-color #e53e1d
                     display block
                     margin 3px 0
@@ -225,7 +245,7 @@ section#main
                         i
                             opacity 1
 
-    @media (min-width: 360px)
+    @media (min-width: 380px)
         > header
             ul
                 li
@@ -249,3 +269,27 @@ footer#footer
     font-size 14px
     line-height 150%
     margin 15px 0
+
+    a.top
+        background-color #f9f9f9
+        float right
+        font-size 12px
+        font-weight bold
+        line-height 12px
+        padding 13px
+        color #666
+
+        i
+            opacity 0.7
+
+
+    @media (max-width: 979px)
+        a.top
+            span
+                display none
+
+    @media (max-width: 639px)
+        font-size 11px
+
+        a.top
+            padding 10px

@@ -14,7 +14,8 @@
         <header id="header">
             <div class="container">
                 <h1><a href="{{ request.resource_path(None) }}">Fanboi Channel</a></h1>
-                <div id="toggler"><a href="#"><span class="line"></span><span class="line"></span><span class="line"></span></a></div>
+                <a href="#footer" class="bottom"><i class="icon-chevron-down"></i> <span>Scroll to bottom</span></a>
+                <div id="toggler"><a href="#"><span></span><span></span><span></span></a></div>
                 <ul id="toggler-menu">
                     <li{% if not board %} class="active"{% endif %}><a href="{{ request.resource_path(None) }}"><i class="icon-home"></i> Boards</a></li>
                     {% for b in boards %}
@@ -29,6 +30,7 @@
         </section>
         <footer id="footer">
             <div class="container">
+                <a href="#header" class="top"><i class="icon-chevron-up inverted"></i> <span>Scroll to top</span></a>
                 <p>All contents are responsibilty of its posters.</p>
                 <p>Fanboi2 is an open-source project. <a href="http://github.com/pxfs/fanboi2">Fork me</a>.</p>
             </div>
