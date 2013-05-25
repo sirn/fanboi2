@@ -980,6 +980,25 @@ class TestFormatters(unittest.TestCase):
         registry.settings = {'app.timezone': 'Asia/Bangkok'}
         return registry
 
+    def test_url_fix(self):
+        from fanboi2.formatters import url_fix
+        tests = [
+            ('http://example.com/',
+             'http://example.com/'),
+            ('https://example.com:443/foo/bar',
+             'https://example.com:443/foo/bar'),
+            ('http://example.com/lots of space',
+             'http://example.com/lots%20of%20space'),
+            ('http://example.com/search?q=hello world',
+             'http://example.com/search?q=hello+world'),
+            ('http://example.com/ほげ',
+             'http://example.com/%E3%81%BB%E3%81%92'),
+            ('http://example.com/"><script></script>',
+             'http://example.com/%22%3E%3Cscript%3E%3C/script%3E'),
+        ]
+        for source, target in tests:
+            self.assertEqual(url_fix(source), target)
+
     def test_extract_thumbnail(self):
         from fanboi2.formatters import extract_thumbnail
         text = """
@@ -1024,6 +1043,32 @@ class TestFormatters(unittest.TestCase):
         for source, target in tests:
             self.assertEqual(format_text(source), Markup(target))
 
+    def test_format_text_autolink(self):
+        from fanboi2.formatters import format_text
+        from jinja2 import Markup
+        text = ('Hello from autolink:\n\n'
+                'Boom: http://example.com/"<script>alert("Hi")</script><a\n'
+                'http://www.example.com/ほげ\n'
+                'http://www.example.com/%E3%81%BB%E3%81%92\n'
+                'https://www.example.com/test foobar')
+        self.assertEqual(
+            format_text(text),
+            Markup('<p>Hello from autolink:</p>\n'
+                   '<p>Boom: <a href="http://example.com/%22%3Cscript'
+                        '%3Ealert%28%22Hi%22%29%3C/script%3E%3Ca" '
+                        'class="link" target="_blank" rel="nofollow">'
+                        'http://example.com/&quot;&lt;script&gt;alert(&quot;'
+                        'Hi&quot;)&lt;/script&gt;&lt;a</a><br>'
+                      '<a href="http://www.example.com/%E3%81%BB%E3%81%92" '
+                        'class="link" target="_blank" rel="nofollow">'
+                        'http://www.example.com/ほげ</a><br>'
+                      '<a href="http://www.example.com/%E3%81%BB%E3%81%92" '
+                        'class="link" target="_blank" rel="nofollow">'
+                        'http://www.example.com/ほげ</a><br>'
+                      '<a href="https://www.example.com/test" '
+                        'class="link" target="_blank" rel="nofollow">'
+                        'https://www.example.com/test</a> foobar</p>'))
+
     def test_format_text_thumbnail(self):
         from fanboi2.formatters import format_text
         from jinja2 import Markup
@@ -1033,9 +1078,15 @@ class TestFormatters(unittest.TestCase):
                 "Buy today get TWO for FREE!!1")
         self.assertEqual(
             format_text(text),
-            Markup('<p>New product! https://imgur.com/foobar1</p>\n'
-                   '<p>http://i.imgur.com/foobar2.png<br>'
-                      'http://imgur.com/foobar3.jpg<br>'
+            Markup('<p>New product! <a href="https://imgur.com/foobar1" '
+                      'class="link" target="_blank" rel="nofollow">'
+                      'https://imgur.com/foobar1</a></p>\n'
+                   '<p><a href="http://i.imgur.com/foobar2.png" '
+                      'class="link" target="_blank" rel="nofollow">'
+                      'http://i.imgur.com/foobar2.png</a><br>'
+                      '<a href="http://imgur.com/foobar3.jpg" class="link" '
+                      'target="_blank" rel="nofollow">'
+                      'http://imgur.com/foobar3.jpg</a><br>'
                       'Buy today get TWO for FREE!!1</p>\n'
                    '<p><a href="http://imgur.com/foobar1" '
                          'class="thumbnail" target="_blank">'

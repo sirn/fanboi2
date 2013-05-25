@@ -1,11 +1,11 @@
 import html
-import html.parser
 import isodate
 import misaka
 import pytz
 import re
 import urllib.parse as urlparse
 from collections import OrderedDict
+from html.parser import HTMLParser
 from jinja2 import Markup
 from pyramid.threadlocal import get_current_registry, get_current_request
 
@@ -53,11 +53,11 @@ TP_LINK = '<a href="%s" class="link" target="_blank" rel="nofollow">%s</a>'
 TP_PARAGRAPH = '<p>%s</p>'
 
 
-def _url_fix(string):
+def url_fix(string):
     """Sanitize user URL that may contains unsafe characters like ' and so on
     in similar way browsers handle data entered by the user:
 
-    >>> _url_fix('http://de.wikipedia.org/wiki/Elf (Begriffsklärung)')
+    >>> url_fix('http://de.wikipedia.org/wiki/Elf (Begriffsklärung)')
     'http://de.wikipedia.org/wiki/Elf%20%28Begriffskl%C3%A4rung%29'
 
     Ported from ``werkzeug.urls.url_fix``.
@@ -75,21 +75,21 @@ def format_text(text):
     output = []
     thumbs = []
 
+    # Auto-link
+    def _replace_link(match):
+        link = HTMLParser().unescape(urlparse.unquote(match.group(0)))
+        return Markup(TP_LINK % (
+            url_fix(link),
+            html.escape(link)))
+
     # Turns text into paragraph.
     for paragraph in RE_PARAGRAPH.split(text):
         paragraph = paragraph.rstrip("\r\n")
         if paragraph:
             paragraph = TP_PARAGRAPH % html.escape(paragraph)
+            paragraph = RE_LINK.sub(_replace_link, paragraph)
             paragraph = RE_NEWLINE.sub("<br>", paragraph)
             output.append(paragraph)
-
-    # Auto-link
-    def _replace_link(match):
-        link = html.parser.HTMLParser().unescape(match.group(0))
-        return Markup(TP_LINK % (
-            _url_fix(link),
-            html.escape(link)))
-    output = RE_LINK.sub(_replace_link, '\n'.join(output))
 
     # Display thumbnail at the end of post.
     thumbnails = extract_thumbnail(text)
@@ -98,7 +98,7 @@ def format_text(text):
             thumbs.append(TP_THUMB % (link, thumbnail))
         output.append(TP_PARAGRAPH % ''.join(thumbs))
 
-    return Markup(output)
+    return Markup('\n'.join(output))
 
 
 def format_markdown(text):
