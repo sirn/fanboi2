@@ -55,12 +55,10 @@ header#header
 
         &.bottom
             background-color #f74f2f
-            border-left 1px solid #ff5130
-            border-right 1px solid #ff5130
+            border-radius 2px
             float right
-            height $container-height
-            line-height $container-height - 2px  /* Make it center-ish. */
-            padding 0 10px
+            margin-top 7px
+            padding 5px 10px
 
             span
                 color #fff
@@ -272,12 +270,14 @@ footer#footer
 
     a.top
         background-color #f9f9f9
+        border-radius 2px
         float right
-        font-size 12px
-        font-weight bold
-        line-height 12px
-        padding 13px
-        color #666
+        padding 5px 10px
+
+        span
+            color #666
+            font-size 12px
+            font-weight bold
 
         i
             opacity 0.7
@@ -290,6 +290,3 @@ footer#footer
 
     @media (max-width: 639px)
         font-size 11px
-
-        a.top
-            padding 10px

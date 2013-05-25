@@ -99,7 +99,6 @@ i[class*=" icon-"]
     line-height 14px
     padding 10px 12px 9px
     vertical-align middle
-    box-shadow 0 1px 0 0 rgba(255, 255, 255, 0.3) inset
 
     &:hover
         background-color #f0f0f0
@@ -164,6 +163,7 @@ form.form
             textarea
                 background-color #fff  /* Firefox Desktop. */
                 background-image none  /* Firefox Mobile. */
+                appearance none        /* WebKit Mobile. */
                 border 1px solid #d0d0d0
                 border-radius 0
                 box-shadow 3px 3px 0 0 #eee
