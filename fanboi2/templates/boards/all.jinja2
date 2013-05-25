@@ -9,7 +9,7 @@
 			<article id="topic-{{ topic.obj.id }}" class="topic">
 				<header>
 					<div class="container">
-						<h4><a href="{{ request.resource_url(topic) }}">{{ topic.obj.title }}</a></h4>
+						<h4><a href="{{ request.resource_url(topic, "recent") }}">{{ topic.obj.title }}</a></h4>
 						<ul>
 							<li class="posted">Last updated {{ time_tag(topic.obj.posted_at) }}</li>
 							<li class="posts">{{ topic.obj.post_count }} posts</li>
