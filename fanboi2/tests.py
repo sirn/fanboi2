@@ -1337,9 +1337,20 @@ class TestViews(ModelMixin, unittest.TestCase):
         request.context = self._getRoot()["general"][str(topic.id)]
         response = topic_view(request)
         self.assertEqual(DBSession.query(Post).count(), 1)
-        self.assertEqual(response.location, "/general/%s/" % topic.id)
+        self.assertEqual(response.location, "/general/%s/1-" % topic.id)
         self.assertEqual(DBSession.query(Post).first().name,
                          DEFAULT_BOARD_CONFIG['name'])
+
+    def test_topic_view_post_redirect(self):
+        from fanboi2.views import topic_view
+        board = self._makeBoard(title="General", slug="general")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
+        for i in range(5):
+            self._makePost(topic=topic, body="Hello from %s" % i)
+        request = self._make_csrf(self._POST({'body': "Redirect me!"}))
+        request.context = self._getRoot()["general"][str(topic.id)]
+        response = topic_view(request)
+        self.assertEqual(response.location, "/general/%s/2-" % topic.id)
 
     def test_topic_view_post_failure(self):
         from fanboi2.views import topic_view

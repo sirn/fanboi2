@@ -51,7 +51,6 @@ def topic_view(request):
     posts = topic.objs
     form = PostForm(request.params, request=request)
     if request.method == 'POST' and form.validate():
-
         # INSERT a post will issue a SELECT subquery and may cause race
         # condition. In such case, our UNIQUE constraint on (topic, number)
         # will cause the driver to raise IntegrityError.
@@ -83,5 +82,6 @@ def topic_view(request):
                 if not max_attempts:
                     raise
             else:
-                return HTTPFound(location=request.resource_path(topic))
+                link = "%s-" % ((post.number - 4) if post.number > 4 else 1)
+                return HTTPFound(location=request.resource_path(topic, link))
     return locals()
