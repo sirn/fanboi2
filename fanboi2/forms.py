@@ -3,7 +3,34 @@ import os
 from hashlib import sha1
 from wtforms import TextField, TextAreaField, Form
 from wtforms.ext.csrf.fields import CSRFTokenField
-from wtforms.validators import Required, Length, ValidationError
+from wtforms.validators import Required, ValidationError
+from wtforms.validators import Length as _Length
+
+
+class Length(_Length):
+    """"Works just like :class:`wtforms.validators.Length` but treat DOS
+    newline as single character instead of two. This is to prevent situation
+    where field length seemed incorrectly counted.
+    """
+    def __call__(self, form, field):
+        length = field.data and len(field.data.replace('\r\n', '\n')) or 0
+        if length < self.min or self.max != -1 and length > self.max:
+            message = self.message
+            if message is None:
+                if self.max == -1:
+                    message = field.ngettext(
+                        'Field must be at least %(min)d character long.',
+                        'Field must be at least %(min)d characters long.',
+                        self.min)
+                elif self.min == -1:
+                    message = field.ngettext(
+                        'Field cannot be longer than %(max)d character.',
+                        'Field cannot be longer than %(max)d characters.',
+                        self.max)
+                else:
+                    message = field.gettext('Field must be between %(min)d '
+                                            'and %(max)d characters long.')
+            raise ValidationError(message % dict(min=self.min, max=self.max))
 
 
 class SecureForm(Form):
