@@ -86,6 +86,8 @@ We use `git-flow <https://github.com/nvie/gitflow>`_ as primary branching model.
 
 Please make sure that test coverage is 100% and everything passed. It's also a good idea to open a bug ticket for feature you want to implement before starting.
 
+We have development IRC channel at `irc.freenode.net #fanboi <irc://irc.freenode.net/#fanboi>`. Although if you want to submit patch anonymously you can also create git patch and post it to support thread in `support thread <https://fanboi.ch/lounge/1/>`_ as well.
+
 License
 -------
 
