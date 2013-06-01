@@ -1,10 +1,9 @@
 /* Navbar toggler
  *
- * The toggle button to expand or hide top left navigation menu button on
- * responsive mobile layout. See also layout.styl for CSS animation. */
+ * The toggle button to expand or hide board navigation menu. */
 
 var toggler = document.getElementById('toggler');
-var header = document.getElementById('header');
+var nav = document.getElementById('boards');
 var menu = document.getElementById('toggler-menu');
 var togglerItems = document.querySelectorAll('#toggler-menu > li');
 var classNameRe = /(\s+)?\bactive\b(\s+)?/;
@@ -16,9 +15,9 @@ var classNameRe = /(\s+)?\bactive\b(\s+)?/;
 window.addEventListener && toggler.addEventListener('click', function(e){
     e.preventDefault();
 
-    if (classNameRe.test(header.className)) {
+    if (classNameRe.test(nav.className)) {
 
-        header.className = header.className.replace(classNameRe, "");
+        nav.className = nav.className.replace(classNameRe, "");
         menu.style.height = 0;
 
     } else {
@@ -33,7 +32,7 @@ window.addEventListener && toggler.addEventListener('click', function(e){
             totalHeight += togglerItems[i].clientHeight;
         }
 
-        header.className = 'active';
+        nav.className = 'active';
         menu.style.height = totalHeight + 'px';
     }
 });

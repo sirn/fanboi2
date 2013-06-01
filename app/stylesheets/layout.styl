@@ -9,11 +9,6 @@ body
     min-width 320px
     padding 0
 
-    /* Force disable CSS animation on initial page load. */
-    &.preload *
-        transition all 0s linear !important
-        transition none
-
     a
         color $color-link
         text-decoration none
@@ -39,7 +34,6 @@ header#header
     $logo-width = 91px
     $logo-height = 18px
     $container-height = 42px
-    $nav-padding = 10px
 
     background-color $color-primary
     font-size 16px
@@ -52,18 +46,6 @@ header#header
         text-decoration none
         &:hover
             color #fff
-
-        &.bottom
-            background-color #f74f2f
-            border-radius 2px
-            float right
-            margin-top 7px
-            padding 5px 10px
-
-            span
-                color #fff
-                font-size 12px
-                font-weight bold
 
     h1
         background-repeat no-repeat
@@ -79,85 +61,55 @@ header#header
             width $logo-width
 
     ul
-        display block
-        font-size 14px
-        line-height 14px
-        padding-bottom $nav-padding
-        text-shadow 0 -1px 0 rgba(0, 0, 0, 0.2)
+        display none
 
-        a
+    @media (width)  /* Anything above IE8 */
+        ul
             display block
+            font-size 14px
             font-weight bold
-            padding 12px 15px
+            line-height 14px
+            padding-bottom $vertical-gutter-width
+            padding-bottom 0
+            text-shadow 0 -1px 0 rgba(0, 0, 0, 0.2)
 
-            i
-                opacity 0.7
-
-            &:hover
-                color #fff
-
-                i
-                    opacity 1
-
-        li.active
             a
-                background-color #cd2c0e
-                border-radius 3px
-                box-shadow 0 2px 5px 1px rgba(0, 0, 0, 0.15) inset
-                color #fff
-
-                i
-                    opacity 1
-
-        div#toggler
-            display none
-
-    @media (max-width: 979px)
-        a.bottom
-            span
-                display none
+                display block
+                font-weight bold
+                padding (($container-height - 14px) / 2.0) 0
 
     @media (max-width: 639px)
         min-height $container-height
+        position relative
 
         h1
-            float left
-            margin-right 10px
+            left 50%
+            margin-left ($logo-width / 2.0) * -1
+            position absolute
+            z-index 1
 
         ul
-            height 0
+            bottom 0
+            left 0
             overflow hidden
-            padding-bottom 0
-            transition 0.6s
-            visibility hidden
-            width 100%
+            padding 0
+            position absolute
+            right 0
+            top 0
 
-            i
-                width 15px
+            li
+                &.boards
+                    float left
 
-        div#toggler
-            max-height $container-height
+                &.bottom
+                    float right
 
             a
-                background-color #fff
-                background-image linear-gradient(top, #fff, #e8e8e8)
-                border-radius 1px
-                display inline-block
-                padding 3px 10px
-                margin-top 8px
+                padding-left $gutter-width
+                padding-right $gutter-width
 
                 span
-                    background-color #e53e1d
-                    display block
-                    margin 3px 0
-                    padding 1px
-                    width 15px
-
-        &.active
-            ul
-                display block
-                padding-bottom $nav-padding
-                visibility visible
+                    display none
 
     @media (min-width: 640px)
         height $container-height
@@ -167,30 +119,95 @@ header#header
             float left
 
         ul
-            display block
-            float left
+            float right
             height $container-height
             line-height $container-height
-            margin-left 15px
-            padding-bottom 0
+            margin-left 10px
 
             li
+                border-left 1px solid #d73213
                 display block
                 float left
 
                 a
-                    background-color inherit
+                    border-left 1px solid #ed4e2f
                     display inline-block
                     height $container-height
                     padding 0 15px
 
                 &.active
+                    border-left-color #ed4e2f
+
                     a
-                        border-radius 0
+                        background-color #cd2c0e
+                        border-left none
+                        box-shadow 0 2px 5px 1px rgba(0, 0, 0, 0.15) inset
+
+                    + li
+                        border-left-color #b62711
+
+
+nav#boards
+    $nav-padding = 13px
+
+    display none
+
+    @media (width)  /* Anything above IE8 */
+        background-color $color-dark
+        display block
+
+        ul
+            font-size 14px
+            height 0
+            line-height 14px
+            overflow hidden
+            transition 0.6s
+            visibility hidden
+            width 100%
+
+            li
+                padding $nav-padding
+                position relative
+
+                &:hover
+                    background-color #394044
+                    border-radius 2px
+
+                i
+                    float left
+
+                a
+                span
+                    display block
+                    margin-left 20px
+
+                a
+                    font-weight bold
+                    color #fff
+
+                    &:after
+                        bottom 0
+                        content: ''
+                        left 0
+                        position absolute
+                        right 0
+                        top 0
+
+                span
+                    color #738289
+                    font-size 12px
+                    line-height 16px
+                    margin-top 3px
+
+        &.active
+            ul
+                display block
+                padding $nav-padding 0
+                visibility visible
 
 
 section#main
-    box-shadow 0 0 2px 0 rgba(0, 0, 0, 0.2)
+    border-bottom 1px solid #d0d0d0
 
     > header
         background-color $color-darker
@@ -265,28 +282,26 @@ section#main
 footer#footer
     color #777
     font-size 14px
-    line-height 150%
+    line-height 140%
     margin 15px 0
 
     a.top
         background-color #f9f9f9
         border-radius 2px
+        line-height 100%
         float right
-        padding 5px 10px
+        padding 10px
 
         span
             color #666
-            font-size 12px
             font-weight bold
 
         i
             opacity 0.7
 
+    @media (max-width: 639px)
+        font-size 11px
 
-    @media (max-width: 979px)
         a.top
             span
                 display none
-
-    @media (max-width: 639px)
-        font-size 11px

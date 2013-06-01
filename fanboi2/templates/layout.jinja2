@@ -9,21 +9,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
     {% block head %}{% endblock %}
 </head>
-<body class="preload">
+<body>
     <div id="container">
         <header id="header">
             <div class="container">
                 <h1><a href="{{ request.resource_path(None) }}">Fanboi Channel</a></h1>
-                <a href="#footer" class="bottom"><i class="icon-chevron-down"></i> <span>Scroll to bottom</span></a>
-                <div id="toggler"><a href="#"><span></span><span></span><span></span></a></div>
-                <ul id="toggler-menu">
-                    <li{% if not board %} class="active"{% endif %}><a href="{{ request.resource_path(None) }}"><i class="icon-home"></i> Boards</a></li>
-                    {% for b in boards %}
-                        <li{% if board and board.obj.id == b.obj.id %} class="active"{% endif %}><a href="{{ request.resource_path(b) }}"><i class="icon-th-large"></i> {{ b.obj.title }}</a></li>
-                    {% endfor %}
+                <ul>
+                    <li class="boards"><a href="#boards" id="toggler"><i class="icon-th-large"></i> <span>Boards</span></a></li>
+                    <li class="bottom"><a href="#footer"><i class="icon-chevron-down"></i> <span>Scroll to bottom</span></a></li>
                 </ul>
             </div>
         </header>
+        <nav id="boards">
+            <div class="container">
+                <ul id="toggler-menu">
+                    {% for b in boards %}
+                        <li{% if board and board.obj.id == b.obj.id %} class="active"{% endif %}>
+                            <i class="icon-th-large"></i>
+                            <a href="{{ request.resource_path(b) }}">{{ b.obj.title }}</a>
+                            <span>{{ b.obj.description|markdown|striptags }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </nav>
         <section id="main">
             {% block leader %}{% endblock %}
             {% block content %}{% endblock %}
