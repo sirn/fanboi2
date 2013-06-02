@@ -4,6 +4,7 @@
 - Changed redirect path after reply to last 5 posts instead of full topic.
 - Changed link target for topic title to recent posts instead of full topic.
 - Changed header design to be no longer dependent to number of boards.
+- Changed popover for post anchor to support ranged posts.
 - Fixed stylings for error page when post wasn't successful.
 - Fixed character count in form is incorrectly counted due to DOS newline.
 - Added top-right and bottom-right buttons for jumping to header and footer.

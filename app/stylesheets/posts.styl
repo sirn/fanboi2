@@ -80,23 +80,29 @@ section#main
                     &:hover
                         opacity 0.8
 
-                article.popover
+                div.popover
                     background-color #f5f7f8
                     border 1px solid #fff
                     box-shadow 1px 1px 5px 0 rgba(0, 0, 0, 0.3)
-                    display inline-block
+                    display block
                     max-width 70%
-                    padding 10px
                     position absolute
+                    width auto
                     z-index 1
 
-                    > div.container
-                        display inline-block
-                        width auto
+                    article
+                        padding 10px
 
-                        > div
-                            font-size $post-font-size - 2px
-                            line-height $post-line-height - 2px
+                        + article
+                            border-top 1px solid #fff
+
+                        > div.container
+                            display inline-block
+                            width auto
+
+                            > div
+                                font-size $post-font-size - 2px
+                                line-height $post-line-height - 2px
 
 
     @media (max-width: 639px)
@@ -115,7 +121,7 @@ section#main
                         position absolute
 
                 > div
-                    article.popover
+                    div.popover
                         display none
 
 

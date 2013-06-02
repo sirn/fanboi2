@@ -5,39 +5,72 @@
  * AJAX.
  *
  * TODO:
- * - Support range query (i.e. >>1-3).
  * - Caching queried results.
  * - Add spinner.
  * - Prevent dismiss if user mouse enter the popover area.
  * */
 
 var xhr;
+var rangeQueryRe = /(\d+)\-(\d+)/;
 
 window.addEventListener && document.addEventListener('mouseover', function(e){
     if (e.target.nodeName === 'A' && e.target.className === 'anchor') {
-        var number = parseInt(e.target.getAttribute('data-number'));
+        var attr = e.target.getAttribute('data-number');
         var parent = e.target.parentNode;
         while (parent.nodeName !== 'DIV' || parent.className !== 'posts') {
             parent = parent.parentNode;
         }
 
-        /* If post do exists on the page, we simply clone and redisplay it
-         * otherwise the post is retrieved via AJAX. Since we need to support
-         * older browser, we're using DOMParser instead of simply set
-         * xhr.responseType = document. */
-        var node = parent.getElementsByClassName('post-' + number)[0];
-        if (node) {
-            _renderPopover(e.target, node.cloneNode(true));
+        /* Always build post range regardless of the quote is ranged post
+         * or not to simplify retrieving process. These number will be used
+         * in a range loop for cloning DOM. */
+        var range = rangeQueryRe.exec(attr);
+        var beginNumber, endNumber, xhrNumber;
+        if (!range) {
+            beginNumber = parseInt(attr);
+            endNumber = beginNumber;
+        } else {
+            beginNumber = parseInt(range[1]);
+            endNumber = parseInt(range[2]);
+        }
+
+        /* Build node list by cloning DOM if post do exists on the web page.
+         * In real world situation, it is very likely to have lasts of range
+         * posts exists in the page (e.g. in recent view) but since we will
+         * need to wait for XHR anyway, it is much simpler to retrieve the
+         * whole range ("the rest") from AJAX. Thus the immediate break. */
+        var nodeList = [];
+        for (var n = beginNumber; n <= endNumber; n++) {
+            var node = parent.getElementsByClassName('post-' + n)[0];
+            if (node) {
+                nodeList.push(node.cloneNode(true));
+            } else {
+                xhrNumber = n;
+                break;
+            }
+        }
+
+        /* Since XHR callback is asynchronous, _renderPopover need to be
+         * called in a callback otherwise nodeList would be incomplete.
+         * In situation we don't need XHR (all nodes exists in page DOM)
+         * we could just render it right away. */
+        if (!xhrNumber) {
+            _renderPopover(e.target, nodeList);
         } else {
             xhr = new XMLHttpRequest();
             xhr.open('GET', e.target.getAttribute('href'));
+
+            /* IE9 don't support xhr.responseType = "document" :( */
             xhr.onload = function _get_external_post() {
                 var dom = new DOMParser();
                 var doc = dom.parseFromString(xhr.responseText, 'text/html');
-                node = doc.getElementsByClassName('post-' + number)[0];
-                if (node) {
-                    _renderPopover(e.target, node);
+                for (var n = xhrNumber; n <= endNumber; n++) {
+                    var node = doc.getElementsByClassName('post-' + n)[0];
+                    if (node) {
+                        nodeList.push(node);
+                    }
                 }
+                _renderPopover(e.target, nodeList);
             };
             xhr.send(null);
         }
@@ -53,10 +86,14 @@ function _removePopover(target) {
 }
 
 /* Render popover and setup its floating styles. */
-function _renderPopover(target, node) {
+function _renderPopover(target, nodeList) {
     _removePopover(target);
-    node.className = node.className + ' popover';
-    target.parentNode.insertBefore(node, target.nextSibling);
+    var container = document.createElement('DIV');
+    container.className = 'popover';
+    for (var i = 0, len = nodeList.length; i < len; i++) {
+        container.appendChild(nodeList[i]);
+    }
+    target.parentNode.insertBefore(container, target.nextSibling);
 }
 
 /* Dismiss popover if user no longer hover the anchor link. */
