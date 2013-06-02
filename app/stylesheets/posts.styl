@@ -85,10 +85,15 @@ section#main
                     border 1px solid #fff
                     box-shadow 1px 1px 5px 0 rgba(0, 0, 0, 0.3)
                     display block
-                    max-width 70%
+                    min-width 450px
+                    max-width 80%
                     position absolute
                     width auto
                     z-index 1
+
+                    div.popover
+                        max-width none
+                        width 100%
 
                     > article
                         padding 10px
@@ -98,12 +103,20 @@ section#main
 
                         > div.container
                             display inline-block
+                            padding-left 0
+                            padding-right 0
                             width auto
 
                             > div
                                 font-size $post-font-size - 2px
                                 line-height $post-line-height - 2px
 
+    @media (min-width: 1024px)
+        article.post
+            > div.container
+                > div
+                    div.popover
+                        max-width 70%
 
     @media (max-width: 639px)
         article.post

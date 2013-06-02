@@ -17,9 +17,10 @@ var dismissTimer;
 
 /* Remove popover associated with target. */
 function _removePopover(target) {
-    var nodes = target.parentNode.getElementsByClassName('popover');
+    var node = target.parentNode || target;
+    var nodes = node.getElementsByClassName('popover');
     for (var i = nodes.length - 1; i >= 0; i--) {
-        target.parentNode.removeChild(nodes[i]);
+        nodes[i].parentNode.removeChild(nodes[i]);
     }
 }
 
@@ -107,7 +108,9 @@ eventEnabled && document.addEventListener('mouseover', function(e) {
         for (var n = beginNumber; n <= endNumber; n++) {
             var node = parent.getElementsByClassName('post-' + n)[0];
             if (node) {
-                nodeList.push(node.cloneNode(true));
+                var cloned = node.cloneNode(true);
+                _removePopover(cloned);
+                nodeList.push(cloned);
             } else {
                 xhrNumber = n;
                 break;
