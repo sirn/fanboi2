@@ -11,9 +11,37 @@
  * */
 
 var xhr;
+var eventEnabled = 'addEventListener' in document;
 var rangeQueryRe = /(\d+)\-(\d+)/;
 
-window.addEventListener && document.addEventListener('mouseover', function(e){
+
+/* Remove popover associated with target. */
+function _removePopover(target) {
+    var nodes = target.parentNode.getElementsByClassName('popover');
+    for (var i = nodes.length - 1; i >= 0; i--) {
+        target.parentNode.removeChild(nodes[i]);
+    }
+}
+
+/* Render popover and setup its floating styles. */
+function _renderPopover(target, nodeList) {
+    _removePopover(target);
+    var container = document.createElement('DIV');
+    container.className = 'popover';
+    for (var i = 0, len = nodeList.length; i < len; i++) {
+        container.appendChild(nodeList[i]);
+    }
+    target.parentNode.insertBefore(container, target.nextSibling);
+}
+
+
+/* Event delegation
+ *
+ * mouseover a.anchor    display popover
+ * mouseout  a.anchor    dismiss popover
+ */
+
+eventEnabled && document.addEventListener('mouseover', function(e) {
     if (e.target.nodeName === 'A' && e.target.className === 'anchor') {
         var attr = e.target.getAttribute('data-number');
         var parent = e.target.parentNode;
@@ -61,7 +89,7 @@ window.addEventListener && document.addEventListener('mouseover', function(e){
             xhr.open('GET', e.target.getAttribute('href'));
 
             /* IE9 don't support xhr.responseType = "document" :( */
-            xhr.onload = function _get_external_post() {
+            xhr.onload = function _getExternalPost() {
                 var dom = new DOMParser();
                 var doc = dom.parseFromString(xhr.responseText, 'text/html');
                 for (var n = xhrNumber; n <= endNumber; n++) {
@@ -77,27 +105,8 @@ window.addEventListener && document.addEventListener('mouseover', function(e){
     }
 });
 
-/* Remove popover associated with target. */
-function _removePopover(target) {
-    var nodes = target.parentNode.getElementsByClassName('popover');
-    for (var i = nodes.length - 1; i >= 0; i--) {
-        target.parentNode.removeChild(nodes[i]);
-    }
-}
-
-/* Render popover and setup its floating styles. */
-function _renderPopover(target, nodeList) {
-    _removePopover(target);
-    var container = document.createElement('DIV');
-    container.className = 'popover';
-    for (var i = 0, len = nodeList.length; i < len; i++) {
-        container.appendChild(nodeList[i]);
-    }
-    target.parentNode.insertBefore(container, target.nextSibling);
-}
-
 /* Dismiss popover if user no longer hover the anchor link. */
-window.addEventListener && document.addEventListener('mouseout', function(e){
+eventEnabled && document.addEventListener('mouseout', function(e) {
     if (e.target.nodeName === 'A' && e.target.className === 'anchor') {
         if (xhr) { xhr.abort(); }
         _removePopover(e.target);
