@@ -1,4 +1,4 @@
-import os
+import hashlib
 import pyramid_jinja2
 import redis
 from functools import lru_cache
@@ -25,22 +25,26 @@ def remote_addr(request):
 
 
 @lru_cache(maxsize=10)
-def _get_asset_mtime(path):
+def _get_asset_hash(path):
     if ':' in path:
         package, path = path.split(':')
         resolver = AssetResolver(package)
     else:
         resolver = AssetResolver()
     fullpath = resolver.resolve(path).abspath()
-    return int(os.path.getmtime(fullpath))
+    md5 = hashlib.md5()
+    with open(fullpath, 'rb') as f:
+        for chunk in iter(lambda: f.read(128 * md5.block_size), b''):
+            md5.update(chunk)
+    return md5.hexdigest()
 
 
 def tagged_static_path(request, path, **kwargs):
-    """Similar to built-in :meth:`request.static_path` but appends last
-    modified time of asset as query string ``t`` to it forcing proxy server
+    """Similar to built-in :meth:`request.static_path` but append first 8
+    characters of file hash as query string ``h`` to it forcing proxy server
     and browsers to expire cache immediately after the file is modified.
     """
-    kwargs['_query'] = {'t': _get_asset_mtime(path)}
+    kwargs['_query'] = {'h': _get_asset_hash(path)[:8]}
     return request.static_path(path, **kwargs)
 
 

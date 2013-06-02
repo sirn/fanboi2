@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import datetime
-import os
 import transaction
 import unittest
 from fanboi2 import DBSession, Base
@@ -169,11 +168,12 @@ class TestTaggedStaticUrl(unittest.TestCase):
         from fanboi2 import tagged_static_path
         return tagged_static_path
 
-    def _getModified(self, package, path):
-        import os
+    def _getHash(self, package, path):
+        import hashlib
         from pyramid.path import AssetResolver
         abspath = AssetResolver(package).resolve(path).abspath()
-        return int(os.path.getmtime(abspath))
+        with open(abspath, 'rb') as f:
+            return hashlib.md5(f.read()).hexdigest()[:8]
 
     def test_tagged_static_path(self):
         from pyramid.interfaces import IStaticURLInfo
@@ -185,14 +185,14 @@ class TestTaggedStaticUrl(unittest.TestCase):
         self.assertEqual(
             info.args, ('fanboi2:tests.py', request, {
                 '_app_url': '',
-                '_query': {'t': self._getModified('fanboi2', 'tests.py')}}))
+                '_query': {'h': self._getHash('fanboi2', 'tests.py')}}))
 
     def test_tagged_static_path_non_exists(self):
         from pyramid.interfaces import IStaticURLInfo
         info = DummyStaticURLInfo('foobar')
         request = self._makeRequest()
         request.registry.registerUtility(info, IStaticURLInfo)
-        with self.assertRaises(OSError):
+        with self.assertRaises(IOError):
             self._getFunction()(request, 'fanboi2:static/notexists')
 
     def test_tagged_static_path_non_package(self):
@@ -205,14 +205,14 @@ class TestTaggedStaticUrl(unittest.TestCase):
         self.assertEqual(
             info.args, ('fanboi2:tests.py', request, {
                 '_app_url': '',
-                '_query': {'t': self._getModified('fanboi2', 'tests.py')}}))
+                '_query': {'h': self._getHash('fanboi2', 'tests.py')}}))
 
     def test_tagged_static_path_non_package_non_exists(self):
         from pyramid.interfaces import IStaticURLInfo
         info = DummyStaticURLInfo('foobar')
         request = self._makeRequest()
         request.registry.registerUtility(info, IStaticURLInfo)
-        with self.assertRaises(OSError):
+        with self.assertRaises(IOError):
             self._getFunction()(request, 'static/notexists')
 
 
@@ -940,6 +940,7 @@ class TestSecureForm(unittest.TestCase):
 
     def test_csrf_token(self):
         import hmac
+        import os
         from hashlib import sha1
         request = self._makeRequest()
         request.session['csrf'] = sha1(os.urandom(64)).hexdigest()
@@ -1262,6 +1263,7 @@ class TestViews(ModelMixin, unittest.TestCase):
 
     def _make_csrf(self, request):
         import hmac
+        import os
         from hashlib import sha1
         request.session['csrf'] = sha1(os.urandom(64)).hexdigest()
         request.params['csrf_token'] = hmac.new(
