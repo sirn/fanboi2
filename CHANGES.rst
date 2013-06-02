@@ -5,6 +5,7 @@
 - Changed link target for topic title to recent posts instead of full topic.
 - Changed header design to be no longer dependent to number of boards.
 - Changed popover for post anchor to support ranged posts.
+- Changed popover to no longer dismiss if user try to mouse over it.
 - Changed assets path timestamp to file hash for smarter cache expiration.
 - Fixed stylings for error page when post wasn't successful.
 - Fixed character count in form is incorrectly counted due to DOS newline.

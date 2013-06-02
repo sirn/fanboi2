@@ -7,12 +7,12 @@
  * TODO:
  * - Caching queried results.
  * - Add spinner.
- * - Prevent dismiss if user mouse enter the popover area.
  * */
 
 var xhr;
 var eventEnabled = 'addEventListener' in document;
 var rangeQueryRe = /(\d+)\-(\d+)/;
+var dismissTimer;
 
 
 /* Remove popover associated with target. */
@@ -27,10 +27,36 @@ function _removePopover(target) {
 function _renderPopover(target, nodeList) {
     _removePopover(target);
     var container = document.createElement('DIV');
-    container.className = 'popover';
     for (var i = 0, len = nodeList.length; i < len; i++) {
         container.appendChild(nodeList[i]);
     }
+
+    /* If dismissTimer is still active and user move the mouse into popover
+     * a dismiss is cancelled to make popover persist and one-off event is
+     * added so that when mouse leave the popover, the popover is gone.
+     *
+     * mouseleave is not available in WebKit browsers. Sigh. */
+    container.className = 'popover';
+    container.addEventListener('mouseover', function() {
+        if (dismissTimer) {
+            clearTimeout(dismissTimer);
+            dismissTimer = undefined;
+
+            container.removeEventListener('mouseover', arguments.callee);
+            document.addEventListener('mouseover', function(e) {
+                var _n = e.target;
+                while (_n && _n !== container) { _n = _n.parentNode; }
+                if (_n !== container) {
+                    _removePopover(target);
+                    document.removeEventListener(
+                        'mouseover',
+                        arguments.callee
+                    );
+                }
+            });
+        }
+    });
+
     target.parentNode.insertBefore(container, target.nextSibling);
 }
 
@@ -40,6 +66,16 @@ function _renderPopover(target, nodeList) {
  * mouseover a.anchor    display popover
  * mouseout  a.anchor    dismiss popover
  */
+
+eventEnabled && document.addEventListener('mouseout', function(e) {
+    if (e.target.nodeName === 'A' && e.target.className === 'anchor') {
+        if (xhr) { xhr.abort(); }
+        dismissTimer = setTimeout(function(){
+            _removePopover(e.target);
+            dismissTimer = undefined;
+        }, 100);
+    }
+});
 
 eventEnabled && document.addEventListener('mouseover', function(e) {
     if (e.target.nodeName === 'A' && e.target.className === 'anchor') {
@@ -105,10 +141,3 @@ eventEnabled && document.addEventListener('mouseover', function(e) {
     }
 });
 
-/* Dismiss popover if user no longer hover the anchor link. */
-eventEnabled && document.addEventListener('mouseout', function(e) {
-    if (e.target.nodeName === 'A' && e.target.className === 'anchor') {
-        if (xhr) { xhr.abort(); }
-        _removePopover(e.target);
-    }
-});
