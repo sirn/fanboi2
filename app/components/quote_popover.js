@@ -27,38 +27,50 @@ function _removePopover(target) {
 /* Render popover and setup its floating styles. */
 function _renderPopover(target, nodeList) {
     _removePopover(target);
-    var container = document.createElement('DIV');
-    for (var i = 0, len = nodeList.length; i < len; i++) {
-        container.appendChild(nodeList[i]);
+
+    /* Reset timer so that when user switch between multiple anchor in the
+     * same post, dismissTimer won't clear the new popover. We already done
+     * cleanup with _removePopover already. */
+    if (dismissTimer) {
+        clearTimeout(dismissTimer);
+        dismissTimer = undefined;
     }
 
-    /* If dismissTimer is still active and user move the mouse into popover
-     * a dismiss is cancelled to make popover persist and one-off event is
-     * added so that when mouse leave the popover, the popover is gone.
-     *
-     * mouseleave is not available in WebKit browsers. Sigh. */
-    container.className = 'popover';
-    container.addEventListener('mouseover', function() {
-        if (dismissTimer) {
-            clearTimeout(dismissTimer);
-            dismissTimer = undefined;
-
-            container.removeEventListener('mouseover', arguments.callee);
-            document.addEventListener('mouseover', function(e) {
-                var _n = e.target;
-                while (_n && _n !== container) { _n = _n.parentNode; }
-                if (_n !== container) {
-                    _removePopover(target);
-                    document.removeEventListener(
-                        'mouseover',
-                        arguments.callee
-                    );
-                }
-            });
+    /* Only render if post actually exists. */
+    if (nodeList.length) {
+        var container = document.createElement('DIV');
+        for (var i = 0, len = nodeList.length; i < len; i++) {
+            container.appendChild(nodeList[i]);
         }
-    });
 
-    target.parentNode.insertBefore(container, target.nextSibling);
+        /* If dismissTimer is active and user move the mouse into popover
+         * dismiss is cancelled to make popover persist and one-off event is
+         * added so that when mouse leave the popover, the popover is gone.
+         *
+         * mouseleave is not available in WebKit browsers. Sigh. */
+        container.className = 'popover';
+        container.addEventListener('mouseover', function() {
+            if (dismissTimer) {
+                clearTimeout(dismissTimer);
+                dismissTimer = undefined;
+
+                container.removeEventListener('mouseover', arguments.callee);
+                document.addEventListener('mouseover', function(e) {
+                    var _n = e.target;
+                    while (_n && _n !== container) { _n = _n.parentNode; }
+                    if (_n !== container) {
+                        _removePopover(target);
+                        document.removeEventListener(
+                            'mouseover',
+                            arguments.callee
+                        );
+                    }
+                });
+            }
+        });
+
+        target.parentNode.insertBefore(container, target.nextSibling);
+    }
 }
 
 
