@@ -3,8 +3,6 @@ import re
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import undefer
 from sqlalchemy.orm.exc import NoResultFound
-from zope.interface import implementer
-from .interfaces import IBoardResource, ITopicResource, IPostResource
 from .models import DBSession, Board, Post, Topic
 
 
@@ -82,7 +80,6 @@ class RootFactory(object):
         return board
 
 
-@implementer(IBoardResource)
 class BoardContainer(BaseContainer):
     """Container for :class:`Board` object and is used in traversal."""
 
@@ -154,7 +151,6 @@ class BoardContainer(BaseContainer):
         return topic
 
 
-@implementer(ITopicResource)
 class TopicContainer(BaseContainer):
     """Container for :class:`Topic` object and is used in traversal."""
 
@@ -190,7 +186,6 @@ class TopicContainer(BaseContainer):
         return topic
 
 
-@implementer(ITopicResource)
 class ScopedTopicContainer(BaseContainer):
     """Container for :class:`Topic` similar to :class:`TopicContainer` but
     only return a list of :class:`Post` that are processed via :data:`query`
@@ -274,7 +269,6 @@ class ScopedTopicContainer(BaseContainer):
         return posts
 
 
-@implementer(IPostResource)
 class PostContainer(BaseContainer):
     """Container for :class:`Post` object and is used in traversal."""
 

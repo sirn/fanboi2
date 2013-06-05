@@ -1,5 +1,10 @@
-0.4.0
+0.5.0
 =====
+
+- Changed from traversal to URL dispatching for reduced complexity.
+
+0.4.0
+-----
 
 - Changed redirect path after reply to last 5 posts instead of full topic.
 - Changed link target for topic title to recent posts instead of full topic.

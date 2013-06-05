@@ -1,10 +1,10 @@
 {% extends "topics/layout.jinja2" %}
 {% from "partials/form.jinja2" import form_field, form_submit %}
 {% from "partials/post.jinja2" import post_block %}
-{% block title %}{{ topic.obj.title }} - {{ board.obj.title }}{% endblock %}
+{% block title %}{{ topic.title }} - {{ board.title }}{% endblock %}
 
 {% block content %}
-    <article id="topic-{{ topic.obj.id }}" class="topic">
+    <article id="topic-{{ topic.id }}" class="topic">
         <div class="posts">
             {% for post in posts %}
                 {{ post_block(post) }}
@@ -13,15 +13,15 @@
         <div class="tools">
             <div class="container">
                 <ul>
-                    <li><a href="{{ request.resource_path(topic) }}" class="button all"><i class="icon-th-list inverted"></i> All posts</a></li>
-                    <li><a href="{{ request.resource_path(topic, "recent") }}" class="button recent"><i class="icon-inbox inverted"></i> Recent posts</a></li>
-                    <li><a href="{{ request.resource_path(topic, "%s-" % topic.obj.post_count) }}" class="button visited"><i class="icon-forward"></i> New since visit</a></li>
+                    <li><a href="{{ request.route_path("topic", board=board.slug, topic=topic.id) }}" class="button all"><i class="icon-th-list inverted"></i> All posts</a></li>
+                    <li><a href="{{ request.route_path("topic_scoped", board=board.slug, topic=topic.id, query="recent") }}" class="button recent"><i class="icon-inbox inverted"></i> Recent posts</a></li>
+                    <li><a href="{{ request.route_path("topic_scoped", board=board.slug, topic=topic.id, query="%s-" % topic.post_count) }}" class="button visited"><i class="icon-forward"></i> New since visit</a></li>
                 </ul>
             </div>
         </div>
     </article>
-    {% if topic.obj.status == "open" %}
-        <form action="{{ request.resource_path(topic) }}" method="post" id="reply" class="post form">
+    {% if topic.status == "open" %}
+        <form action="{{ request.route_path("topic", board=board.slug, topic=topic.id) }}" method="post" id="reply" class="post form">
             <header>
                 <div class="container">
                     <h3>Reply</h3>
@@ -35,7 +35,7 @@
                 </div>
             </fieldset>
         </form>
-    {% elif topic.obj.status == "archived" %}
+    {% elif topic.status == "archived" %}
         <div id="reply" class="post locked">
             <header>
                 <div class="container">
@@ -44,7 +44,7 @@
                 </div>
             </header>
         </div>
-    {% elif topic.obj.status == "locked" %}
+    {% elif topic.status == "locked" %}
         <div id="reply" class="post locked">
             <header>
                 <div class="container">

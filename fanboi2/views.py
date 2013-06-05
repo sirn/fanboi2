@@ -1,36 +1,124 @@
 import transaction
+from datetime import timedelta, datetime
 from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render_to_response
-from pyramid.view import view_config
+from sqlalchemy import or_, and_
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import undefer
 from .forms import TopicForm, PostForm
-from .interfaces import IBoardResource, ITopicResource
-from .models import Topic, Post, DBSession
+from .models import Topic, Post, Board, DBSession
 
 
-@view_config(context='.resources.RootFactory', renderer='root.jinja2')
-def root_view(request):
-    boards = request.context.objs
-    return locals()
+class BaseView(object):
+
+    def __init__(self, request):
+        self.request = request
+        self.boards = DBSession.query(Board).order_by(Board.title).all()
+        self._board = None
+        self._topic = None
+
+    def __call__(self):
+        """Dispatch request into dispatcher with the same name as HTTP
+        method. For example, a HTTP GET request will be dispatched to
+        :meth:`self.GET` or HTTP POST to :meth:`self.POST`. If a dispatcher
+        does not exist then :exception:`NotImplementedError` is raise.
+        """
+        dispatcher = self.request.method
+        if hasattr(self, dispatcher):
+            return getattr(self, self.request.method)()
+        raise NotImplementedError
+
+    @property
+    def board(self):
+        if not self._board and 'board' in self.request.matchdict:
+            slug = self.request.matchdict['board']
+            self._board = DBSession.query(Board).filter_by(slug=slug).one()
+        return self._board
+
+    @property
+    def topic(self):
+        if not self._topic and 'topic' in self.request.matchdict:
+            if self.board is not None:
+                tid = self.request.matchdict['topic']
+                self._topic = self.board.topics.filter_by(id=int(tid)).one()
+        return self._topic
 
 
-@view_config(context=IBoardResource, renderer='boards/show.jinja2')
-def board_view(request):
-    board = request.context
-    boards = request.context.boards
-    topics = board.objs
-    return locals()
+class RootView(BaseView):
+    """List all boards."""
+
+    def GET(self):
+        return {'boards': self.boards}
 
 
-@view_config(context=IBoardResource, renderer='boards/all.jinja2', name='all')
-def all_board_view(request):
-    board = request.context
-    boards = request.context.boards
-    topics = board.objs_all
-    return locals()
+class BoardView(BaseView):
+    """Display board and all 10 recent posts regardless of its status."""
+
+    def GET(self):
+        topics = self.board.topics.limit(10).options(undefer('post_count'),
+                                                     undefer('posted_at'))
+        return {
+            'boards': self.boards,
+            'board': self.board,
+            'topics': topics,
+        }
 
 
-@view_config(context=IBoardResource, renderer='boards/new.jinja2', name='new')
+class BoardAllView(BaseView):
+    """Display board and all posts that are active or archived within the
+    last week.
+    """
+
+    def GET(self):
+        topics = self.board.topics.options(undefer('post_count'),
+                                           undefer('posted_at')).\
+            filter(or_(Topic.status == "open",
+                       and_(Topic.status != "open",
+                            Topic.posted_at >= datetime.now() - \
+                                               timedelta(days=7))))
+        return {
+            'boards': self.boards,
+            'board': self.board,
+            'topics': topics,
+        }
+
+
+class BoardNewView(BaseView):
+    """Display and handle creation of new topic."""
+
+    def GET(self):
+        form = TopicForm(self.request.params, request=self.request)
+        return {
+            'boards': self.boards,
+            'board': self.board,
+            'form': form,
+        }
+
+    def POST(self):
+        raise NotImplementedError
+
+
+class TopicView(BaseView):
+    """Display topic and list all posts associated with board. If query is
+    given to :attr:`self.request.matchdict` then only posts that satisfied
+    the query criteria is shown.
+    """
+
+    def GET(self):
+        posts = self.topic.posts  # TODO: Scope
+        form = PostForm(self.request.params, request=self.request)
+        return {
+            'boards': self.boards,
+            'board': self.board,
+            'topic': self.topic,
+            'posts': posts,
+            'form': form,
+        }
+
+    def POST(self):
+        raise NotImplementedError
+
+
 def new_board_view(request):
     board = request.context
     boards = request.context.boards
@@ -43,7 +131,6 @@ def new_board_view(request):
     return locals()
 
 
-@view_config(context=ITopicResource, renderer='topics/show.jinja2')
 def topic_view(request):
     topic = request.context
     board = request.context.board

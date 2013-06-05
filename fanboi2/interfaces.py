@@ -14,18 +14,3 @@ class ITopic(Interface):
 class IPost(Interface):
     """Model representing post."""
     pass
-
-
-class IBoardResource(Interface):
-    """Resource representing board."""
-    pass
-
-
-class ITopicResource(Interface):
-    """Resource representing topic."""
-    pass
-
-
-class IPostResource(Interface):
-    """Resource representing post."""
-    pass
