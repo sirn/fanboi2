@@ -102,7 +102,20 @@ class BoardNewView(BaseView):
         }
 
     def POST(self):
-        raise NotImplementedError
+        form = TopicForm(self.request.params, request=self.request)
+        if form.validate():
+            post = Post(body=form.body.data)
+            post.ip_address = self.request.remote_addr
+            post.topic = Topic(board=self.board, title=form.title.data)
+            DBSession.add(post)
+            return HTTPFound(location=self.request.route_url(
+                route_name='board',
+                board=self.board.slug))
+        return {
+            'boards': self.boards,
+            'board': self.board,
+            'form': form,
+        }
 
 
 class TopicView(BaseView):
@@ -126,59 +139,52 @@ class TopicView(BaseView):
             raise HTTPNotFound
 
     def POST(self):
-        raise NotImplementedError
+        form = PostForm(self.request.params, request=self.request)
+        if form.validate():
+            # INSERT a post will issue a SELECT subquery and may cause race
+            # condition. In such case, UNIQUE constraint on (topic, number)
+            # will cause the driver to raise IntegrityError.
+            max_attempts = 5
+            while True:
+                # Prevent posting to locked topic. It is handled here inside
+                # retry to ensure post don't get through even the topic is
+                # locked by another process while this retry is still running.
+                #
+                # Expire statement ensure status is reloaded on every retry.
+                DBSession.expire(self.topic, ['status'])
+                if self.topic.status != "open":
+                    return render_to_response('topics/error.jinja2',
+                                              locals(),
+                                              request=self.request)
 
-
-def new_board_view(request):
-    board = request.context
-    boards = request.context.boards
-    form = TopicForm(request.params, request=request)
-    if request.method == 'POST' and form.validate():
-        post = Post(body=form.body.data, ip_address=request.remote_addr)
-        post.topic = Topic(board=board.obj, title=form.title.data)
-        DBSession.add(post)
-        return HTTPFound(location=request.resource_path(board))
-    return locals()
-
-
-def topic_view(request):
-    topic = request.context
-    board = request.context.board
-    boards = request.context.boards
-    posts = topic.objs
-    form = PostForm(request.params, request=request)
-    if request.method == 'POST' and form.validate():
-        # INSERT a post will issue a SELECT subquery and may cause race
-        # condition. In such case, our UNIQUE constraint on (topic, number)
-        # will cause the driver to raise IntegrityError.
-        max_attempts = 5
-        while True:
-            # Prevent posting to locked topic. It is handled here inside
-            # retry to ensure post don't get through even the topic is locked
-            # by another process while this retry is still running.
-            #
-            # Expire statement ensure status is reloaded on every retry.
-            DBSession.expire(topic.obj, ['status'])
-            if topic.obj.status != "open":
-                return render_to_response('topics/error.jinja2',
-                                          locals(),
-                                          request=request)
-
-            # Using SAVEPOINT to handle ROLLBACK in case of constraint error
-            # so we don't have to abort transaction. zope.transaction will
-            # handle transaction COMMIT (or ABORT) at the end of request.
-            sp = transaction.savepoint()
-            try:
-                post = Post(topic=topic.obj, ip_address=request.remote_addr)
-                form.populate_obj(post)
-                DBSession.add(post)
-                DBSession.flush()
-            except IntegrityError:
-                sp.rollback()
-                max_attempts -= 1
-                if not max_attempts:
-                    raise
-            else:
-                link = "%s-" % ((post.number - 4) if post.number > 4 else 1)
-                return HTTPFound(location=request.resource_path(topic, link))
-    return locals()
+                # Using SAVEPOINT to handle ROLLBACK in case of constraint
+                # error so we don't have to abort transaction. Transaction
+                # COMMIT (or abort) is already handled at the end of request
+                # by :module:`zope.transaction`.
+                sp = transaction.savepoint()
+                try:
+                    post = Post()
+                    post.topic = self.topic
+                    post.ip_address = self.request.remote_addr
+                    form.populate_obj(post)
+                    DBSession.add(post)
+                    DBSession.flush()
+                except IntegrityError:
+                    sp.rollback()
+                    max_attempts -= 1
+                    if not max_attempts:
+                        raise
+                else:
+                    return HTTPFound(location=self.request.route_url(
+                        route_name='topic_scoped',
+                        board=self.board.slug,
+                        topic=self.topic.id,
+                        query='l5',
+                    ))
+        return {
+            'boards': self.boards,
+            'board': self.board,
+            'topic': self.topic,
+            'posts': self.topic.posts,
+            'form': form,
+       }
