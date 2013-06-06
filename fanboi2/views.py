@@ -32,10 +32,10 @@ class BaseView(object):
     @property
     def board(self):
         if not self._board and 'board' in self.request.matchdict:
-            try:
-                s = str(self.request.matchdict['board'])
-                self._board = DBSession.query(Board).filter_by(slug=s).one()
-            except NoResultFound:
+            # We already loaded all board data, no need to query it again.
+            s = str(self.request.matchdict['board'])
+            self._board = next((b for b in self.boards if b.slug == s), None)
+            if self._board is None:
                 raise HTTPNotFound
         return self._board
 
