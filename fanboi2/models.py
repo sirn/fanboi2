@@ -1,10 +1,10 @@
 import datetime
-import string
 import hashlib
 import json
 import pytz
 import random
 import re
+import string
 from pyramid.threadlocal import get_current_request
 from sqlalchemy import Column, Integer, String, DateTime, Unicode, Text,\
     Enum, ForeignKey, TypeDecorator, UniqueConstraint, func, select,\
@@ -106,6 +106,13 @@ class Topic(BaseModel, Base):
                          backref=backref('topics',
                                          lazy='dynamic',
                                          order_by='desc(Topic.posted_at)'))
+
+    def recent_posts(self, count=5):
+        """Returns recent `count` number of posts associated with this topic.
+        Defaults to 5 posts if `count` is not given. This method will load
+        :attr:`Topic.posts_count` if it is not already loaded.
+        """
+        return self.posts.filter(Post.number > (self.post_count - count))
 
 
 @implementer(IPost)

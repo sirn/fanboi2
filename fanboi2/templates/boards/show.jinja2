@@ -17,7 +17,7 @@
                     </div>
                 </header>
                 <div class="posts">
-                    {% for post in topic.posts.limit(5) %}
+                    {% for post in topic.recent_posts(5) %}
                         {{ post_block(post) }}
                     {% endfor %}
                 </div>
