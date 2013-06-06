@@ -1,6 +1,6 @@
 import transaction
 from datetime import timedelta, datetime
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
 from sqlalchemy import or_, and_
 from sqlalchemy.exc import IntegrityError
@@ -38,7 +38,7 @@ class BaseView(object):
     @property
     def topic(self):
         if not self._topic and 'topic' in self.request.matchdict:
-            if self.board is not None:
+            if self.board:
                 tid = self.request.matchdict['topic']
                 self._topic = self.board.topics.filter_by(id=int(tid)).one()
         return self._topic
@@ -105,15 +105,18 @@ class TopicView(BaseView):
     """
 
     def GET(self):
-        posts = self.topic.posts  # TODO: Scope
-        form = PostForm(self.request.params, request=self.request)
-        return {
-            'boards': self.boards,
-            'board': self.board,
-            'topic': self.topic,
-            'posts': posts,
-            'form': form,
-        }
+        posts = self.topic.scoped_posts(self.request.matchdict.get('query'))
+        if posts:
+            form = PostForm(self.request.params, request=self.request)
+            return {
+                'boards': self.boards,
+                'board': self.board,
+                'topic': self.topic,
+                'posts': posts,
+                'form': form,
+            }
+        else:
+            raise HTTPNotFound
 
     def POST(self):
         raise NotImplementedError
