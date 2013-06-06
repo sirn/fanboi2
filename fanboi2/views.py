@@ -5,6 +5,7 @@ from pyramid.renderers import render_to_response
 from sqlalchemy import or_, and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import undefer
+from sqlalchemy.orm.exc import NoResultFound
 from .forms import TopicForm, PostForm
 from .models import Topic, Post, Board, DBSession
 
@@ -31,16 +32,22 @@ class BaseView(object):
     @property
     def board(self):
         if not self._board and 'board' in self.request.matchdict:
-            slug = self.request.matchdict['board']
-            self._board = DBSession.query(Board).filter_by(slug=slug).one()
+            try:
+                s = str(self.request.matchdict['board'])
+                self._board = DBSession.query(Board).filter_by(slug=s).one()
+            except NoResultFound:
+                raise HTTPNotFound
         return self._board
 
     @property
     def topic(self):
         if not self._topic and 'topic' in self.request.matchdict:
             if self.board:
-                tid = self.request.matchdict['topic']
-                self._topic = self.board.topics.filter_by(id=int(tid)).one()
+                try:
+                    tid = int(self.request.matchdict['topic'])
+                    self._topic = self.board.topics.filter_by(id=tid).one()
+                except NoResultFound:
+                    raise HTTPNotFound
         return self._topic
 
 
