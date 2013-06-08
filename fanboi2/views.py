@@ -155,9 +155,11 @@ class TopicView(BaseView):
                 # Expire statement ensure status is reloaded on every retry.
                 DBSession.expire(self.topic, ['status'])
                 if self.topic.status != "open":
-                    return render_to_response('topics/error.jinja2',
-                                              locals(),
-                                              request=self.request)
+                    return render_to_response('topics/error.jinja2', {
+                        'boards': self.boards,
+                        'board': self.board,
+                        'topic': self.topic,
+                    }, request=self.request)
 
                 # Using SAVEPOINT to handle ROLLBACK in case of constraint
                 # error so we don't have to abort transaction. Transaction
