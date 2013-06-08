@@ -62,8 +62,9 @@ class BoardView(BaseView):
     """Display board and all 10 recent posts regardless of its status."""
 
     def GET(self):
-        topics = self.board.topics.limit(10).options(undefer('post_count'),
-                                                     undefer('posted_at'))
+        topics = self.board.topics.limit(10).\
+            options(undefer('post_count'), undefer('posted_at')).\
+            all()
         return {
             'boards': self.boards,
             'board': self.board,
@@ -82,7 +83,8 @@ class BoardAllView(BaseView):
             filter(or_(Topic.status == "open",
                        and_(Topic.status != "open",
                             Topic.posted_at >= datetime.now() - \
-                                               timedelta(days=7))))
+                                               timedelta(days=7)))).\
+            all()
         return {
             'boards': self.boards,
             'board': self.board,
@@ -108,7 +110,7 @@ class BoardNewView(BaseView):
             post.ip_address = self.request.remote_addr
             post.topic = Topic(board=self.board, title=form.title.data)
             DBSession.add(post)
-            return HTTPFound(location=self.request.route_url(
+            return HTTPFound(location=self.request.route_path(
                 route_name='board',
                 board=self.board.slug))
         return {
@@ -175,7 +177,7 @@ class TopicView(BaseView):
                     if not max_attempts:
                         raise
                 else:
-                    return HTTPFound(location=self.request.route_url(
+                    return HTTPFound(location=self.request.route_path(
                         route_name='topic_scoped',
                         board=self.board.slug,
                         topic=self.topic.id,

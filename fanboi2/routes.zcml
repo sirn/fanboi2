@@ -1,12 +1,13 @@
 <configure xmlns="http://pylonshq.com/pyramid">
     <include package="pyramid_zcml" />
+
     <route name="root" pattern="/" view=".views.RootView" renderer="root.jinja2" />
     <route name="board" pattern="/{board:\w+}/" view=".views.BoardView" renderer="boards/show.jinja2" />
     <route name="board_all" pattern="/{board:\w+}/all/" view=".views.BoardAllView" renderer="boards/all.jinja2" />
     <route name="board_new" pattern="/{board:\w+}/new/" view=".views.BoardNewView" renderer="boards/new.jinja2" />
     <route name="topic" pattern="/{board:\w+}/{topic:\d+}/" view=".views.TopicView" renderer="topics/show.jinja2" />
     <route name="topic_scoped" pattern="/{board:\w+}/{topic:\d+}/{query}/" view=".views.TopicView" renderer="topics/show.jinja2" />
-    <static name="static" path="static" cache_max_age="3600" />
 
+    <static name="static" path="static" cache_max_age="3600" />
     <view context="pyramid.exceptions.NotFound" view="pyramid.view.append_slash_notfound_view" />
 </configure>

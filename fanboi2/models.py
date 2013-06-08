@@ -135,7 +135,7 @@ class Topic(BaseModel, Base):
           is used instead.
         """
         if query is None:
-            return self.posts
+            return self.posts.all()
         else:
             for handler, matcher in self.QUERY:
                 match = matcher.match(query)
@@ -165,12 +165,13 @@ class Topic(BaseModel, Base):
             query = Post.number.between(start, end)
         return self.posts.filter(query).all()
 
-    def recent_posts(self, count=20):
+    def recent_posts(self, count=30):
         """Returns recent `count` number of posts associated with this topic.
-        Defaults to 20 posts if `count` is not given. This method will load
+        Defaults to 30 posts if `count` is not given. This method will load
         :attr:`Topic.posts_count` if it is not already loaded.
         """
-        return self.posts.filter(Post.number > (self.post_count - int(count)))
+        query = Post.number > (self.post_count - int(count))
+        return self.posts.filter(query).all()
 
 
 @implementer(IPost)
