@@ -1,5 +1,6 @@
 import hashlib
 import pyramid_jinja2
+import pyramid_zcml
 import redis
 from functools import lru_cache
 from IPy import IP
@@ -10,7 +11,6 @@ from pyramid_beaker import session_factory_from_settings
 from sqlalchemy import engine_from_config
 from .formatters import *
 from .models import DBSession, Base
-from .resources import RootFactory
 
 
 def remote_addr(request):
@@ -22,6 +22,11 @@ def remote_addr(request):
     if ipaddr.iptype() == "PRIVATE":
         return request.environ.get('HTTP_X_FORWARDED_FOR', str(ipaddr))
     return str(ipaddr)
+
+
+def route_name(request):
+    """Returns :attr:`name` of current :attr:`request.matched_route`."""
+    return request.matched_route.name
 
 
 @lru_cache(maxsize=10)
@@ -57,10 +62,12 @@ def main(global_config, **settings):  # pragma: no cover
     session_factory = session_factory_from_settings(settings)
     config = Configurator(settings=settings)
     config.set_session_factory(session_factory)
-    config.set_root_factory(RootFactory)
     config.set_request_property(remote_addr)
+    config.set_request_property(route_name)
     config.add_request_method(tagged_static_path)
+
     config.include(pyramid_jinja2)
+    config.include(pyramid_zcml)
 
     # Redis setup.
     redis_conn = redis.StrictRedis.from_url(settings['redis.url'])
@@ -77,6 +84,6 @@ def main(global_config, **settings):  # pragma: no cover
     jinja2_env.filters['markdown'] = format_markdown
     jinja2_env.filters['markup'] = format_text
 
-    config.add_static_view('static', path='static', cache_max_age=3600)
+    config.load_zcml('routes.zcml')
     config.scan()
     return config.make_wsgi_app()

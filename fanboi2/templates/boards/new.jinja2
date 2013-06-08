@@ -1,17 +1,17 @@
 {% extends "boards/layout.jinja2" %}
 {% from "partials/form.jinja2" import form_field, form_submit %}
-{% block title %}New topic - {{ board.obj.title }}{% endblock %}
+{% block title %}New topic - {{ board.title }}{% endblock %}
 
 {% block content %}
-    <form action="{{ request.resource_path(board, "new") }}" method="post" class="topic form">
+    <form action="{{ request.route_path("board_new", board=board.slug) }}" method="post" class="topic form">
         <header>
             <div class="container">
                 <h3>New topic</h3>
-                {% if board.obj.agreements %}
-                    <article>{{ board.obj.agreements|markdown }}</article>
+                {% if board.agreements %}
+                    <article>{{ board.agreements|markdown }}</article>
                     <div>
                         <p>By continuing, you're agree to the above agreement. Otherwise, you may go back now:</p>
-                        <a href="{{ request.resource_path(board) }}" class="button">Back</a>
+                        <a href="{{ request.route_path("board", board=board.slug) }}" class="button">Back</a>
                     </div>
                 {% endif %}
             </div>

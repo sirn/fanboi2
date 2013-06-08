@@ -115,15 +115,19 @@ def format_post(post):
     the same topic, i.e. a ``>>52`` anchor syntax will create a link to
     post numbered 52 in the same topic.
     """
-    text = format_text(post.obj.body)
+    text = format_text(post.body)
     request = get_current_request()
 
     def _anchor(match):
         anchor = ''.join([m for m in match.groups() if m is not None])
         return Markup(TP_ANCHOR % (
             anchor,
-            request.resource_path(post.topic, anchor),
+            request.route_path('topic_scoped',
+                               board=post.topic.board.slug,
+                               topic=post.topic.id,
+                               query=anchor),
             html.escape(">>%s" % anchor),))
+
     text = RE_ANCHOR.sub(_anchor, text)
     return Markup(text)
 

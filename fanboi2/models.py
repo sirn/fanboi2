@@ -1,10 +1,10 @@
 import datetime
-import string
 import hashlib
 import json
 import pytz
 import random
 import re
+import string
 from pyramid.threadlocal import get_current_request
 from sqlalchemy import Column, Integer, String, DateTime, Unicode, Text,\
     Enum, ForeignKey, TypeDecorator, UniqueConstraint, func, select,\
@@ -106,6 +106,72 @@ class Topic(BaseModel, Base):
                          backref=backref('topics',
                                          lazy='dynamic',
                                          order_by='desc(Topic.posted_at)'))
+
+    QUERY = (
+        ("single_post", re.compile("^(\d+)$")),
+        ("ranged_posts", re.compile("^(\d+)?\-(\d+)?$")),
+        ("recent_posts", re.compile("^l(\d+)$")),
+        ("recent_posts", re.compile("^recent$")),
+    )
+
+    def scoped_posts(self, query=None):
+        """Return single post or multiple posts according to `query`. If
+        `query` is not given, this method is an equivalent of calling
+        :attr:`posts` directly. This method always returns an iterator.
+
+        Single numeric (e.g. "253")
+          Returns a single post that matches the number. For example if
+          "253" is given, then an iterator containing post number "253" is
+          returned.
+
+        Ranged query (e.g. "100-150")
+          Returns all posts within range. If start number is missing ("-150")
+          or end number is missing ("100-") then the first post and last post
+          are automatically assumed.
+
+        Recent query (e.g. "l30", "recent")
+          Returns the n last posts where n is the number after "l" letter.
+          If named "recent" is given, then a default value of last 20 posts
+          is used instead.
+        """
+        if query is None:
+            return self.posts.all()
+        else:
+            for handler, matcher in self.QUERY:
+                match = matcher.match(query)
+                if match:
+                    func = getattr(self, handler)
+                    return func(*match.groups())
+        return []
+
+    def single_post(self, number=None):
+        """Returns an iterator that contains a single post that matches
+        `number`. If post with such number could not be found, an empty
+        iterator is returned.
+        """
+        if not number:
+            number = -1
+        return self.posts.filter_by(number=int(number)).all()
+
+    def ranged_posts(self, start=None, end=None):
+        """Returns a range of post between `start` and `end`. When `start` or
+        `end` is empty, the first and last posts are assumed respectively.
+        """
+        if start is None:
+            start = 1
+        if end is None:
+            query = Post.number >= start
+        else:
+            query = Post.number.between(start, end)
+        return self.posts.filter(query).all()
+
+    def recent_posts(self, count=30):
+        """Returns recent `count` number of posts associated with this topic.
+        Defaults to 30 posts if `count` is not given. This method will load
+        :attr:`Topic.posts_count` if it is not already loaded.
+        """
+        query = Post.number > (self.post_count - int(count))
+        return self.posts.filter(query).all()
 
 
 @implementer(IPost)

@@ -7,10 +7,10 @@
         </div>
     </div>
     {% for board in boards %}
-    <div id="board-{{ board.obj.slug }}" class="board">
+    <div id="board-{{ board.slug }}" class="board">
         <div class="container">
-            <h3><a href="{{ request.resource_path(board) }}">{{ board.obj.title }}</a></h3>
-            {% if board.obj.description %}<div class="description">{{ board.obj.description|markdown }}</div>{% endif %}
+            <h3><a href="{{ request.route_path('board', board=board.slug) }}">{{ board.title }}</a></h3>
+            {% if board.description %}<div class="description">{{ board.description|markdown }}</div>{% endif %}
         </div>
     </div>
     {% endfor %}
