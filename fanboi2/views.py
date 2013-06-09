@@ -109,7 +109,7 @@ class BoardNewView(BaseView):
 
         if form.validate():
             akismet = Akismet(self.request)
-            if not akismet.ham(form.body.data):
+            if akismet.spam(form.body.data):
                 return render_to_response('boards/spam.jinja2', {
                     'boards': self.boards,
                     'board': self.board,
@@ -156,7 +156,7 @@ class TopicView(BaseView):
 
         if form.validate():
             akismet = Akismet(self.request)
-            if not akismet.ham(form.body.data):
+            if akismet.spam(form.body.data):
                 return render_to_response('topics/spam.jinja2', {
                     'boards': self.boards,
                     'board': self.board,
