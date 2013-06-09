@@ -28,6 +28,7 @@ requires = [
     'IPy',
     'nose',
     'coverage',
+    'requests',
 
     # Python 3.2 compatible
     'MarkupSafe==0.15', # https://github.com/mitsuhiko/markupsafe/pull/13

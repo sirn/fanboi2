@@ -6,6 +6,7 @@ from sqlalchemy import or_, and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import undefer
 from sqlalchemy.orm.exc import NoResultFound
+from fanboi2.utils import Akismet
 from .forms import TopicForm, PostForm
 from .models import Topic, Post, Board, DBSession
 
@@ -105,14 +106,24 @@ class BoardNewView(BaseView):
 
     def POST(self):
         form = TopicForm(self.request.params, request=self.request)
+
         if form.validate():
+            akismet = Akismet(self.request)
+            if not akismet.ham(form.body.data):
+                return render_to_response('boards/spam.jinja2', {
+                    'boards': self.boards,
+                    'board': self.board,
+                }, request=self.request)
+
             post = Post(body=form.body.data)
             post.ip_address = self.request.remote_addr
             post.topic = Topic(board=self.board, title=form.title.data)
             DBSession.add(post)
+
             return HTTPFound(location=self.request.route_path(
                 route_name='board',
                 board=self.board.slug))
+
         return {
             'boards': self.boards,
             'board': self.board,
@@ -142,7 +153,16 @@ class TopicView(BaseView):
 
     def POST(self):
         form = PostForm(self.request.params, request=self.request)
+
         if form.validate():
+            akismet = Akismet(self.request)
+            if not akismet.ham(form.body.data):
+                return render_to_response('topics/spam.jinja2', {
+                    'boards': self.boards,
+                    'board': self.board,
+                    'topic': self.topic,
+                }, request=self.request)
+
             # INSERT a post will issue a SELECT subquery and may cause race
             # condition. In such case, UNIQUE constraint on (topic, number)
             # will cause the driver to raise IntegrityError.
