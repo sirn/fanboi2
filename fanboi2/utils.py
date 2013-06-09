@@ -1,4 +1,5 @@
 import requests
+from . import __VERSION__
 
 
 class Akismet(object):
@@ -8,10 +9,11 @@ class Akismet(object):
         self.request = request
         self.key = request.registry.settings.get('akismet.key')
 
-    def _api_post(self, name, **kwargs):
+    def _api_post(self, name, data=None):
         return requests.post(
             'https://%s.rest.akismet.com/1.1/%s' % (self.key, name),
-            **kwargs)
+            headers={'User-Agent': "Fanboi2/%s | Akismet/0.1" % __VERSION__},
+            data=data)
 
     def spam(self, message):
         """Returns :type:`True` if `message` is spam. Always returns

@@ -1,5 +1,6 @@
 import os
 from setuptools import setup, find_packages
+from fanboi2 import __VERSION__
 
 here = os.path.abspath(os.path.dirname(__file__))
 readme = open(os.path.join(here, 'README.rst')).read()
@@ -36,7 +37,7 @@ requires = [
     ]
 
 setup(name='fanboi2',
-      version='0.3.0',
+      version=__VERSION__,
       description='fanboi2',
       long_description=readme + '\n\n' + changes,
       classifiers=[

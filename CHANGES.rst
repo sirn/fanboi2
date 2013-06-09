@@ -2,6 +2,7 @@
 =====
 
 - Changed from traversal to URL dispatching for reduced complexity.
+- Added Akismet integration for SPAM detection in comments.
 
 0.4.0
 -----
