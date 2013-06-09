@@ -6,9 +6,9 @@ from sqlalchemy import or_, and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import undefer
 from sqlalchemy.orm.exc import NoResultFound
-from fanboi2.utils import Akismet
 from .forms import TopicForm, PostForm
 from .models import Topic, Post, Board, DBSession
+from .utils import Akismet
 
 
 class BaseView(object):

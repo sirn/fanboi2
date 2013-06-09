@@ -27,9 +27,12 @@ requires = [
     'redis',
     'hiredis',
     'IPy',
+    'requests',
+
+    # Tests
     'nose',
     'coverage',
-    'requests',
+    'mock',
 
     # Python 3.2 compatible
     'MarkupSafe==0.15', # https://github.com/mitsuhiko/markupsafe/pull/13
