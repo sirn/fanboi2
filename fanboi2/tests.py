@@ -701,14 +701,14 @@ class TestSecureForm(unittest.TestCase):
         request = self._makeRequest()
         form = self._makeOne({}, request)
         self.assertDictEqual(form.errors, {
-            'csrf_token': ['CSRF token missing'],
+            'csrf_token': ['CSRF token missing.'],
         })
 
     def test_csrf_token_invalid(self):
         request = self._makeRequest()
         form = self._makeOne({'csrf_token': 'invalid'}, request)
         self.assertDictEqual(form.errors, {
-            'csrf_token': ['CSRF token mismatched'],
+            'csrf_token': ['CSRF token mismatched.'],
         })
 
     def test_data(self):

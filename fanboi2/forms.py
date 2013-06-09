@@ -1,10 +1,11 @@
 import hmac
 import os
 from hashlib import sha1
+from random import randint
 from wtforms import TextField, TextAreaField, Form
 from wtforms.ext.csrf.fields import CSRFTokenField
-from wtforms.validators import Required, ValidationError
 from wtforms.validators import Length as _Length
+from wtforms.validators import Required, ValidationError
 
 
 class Length(_Length):
@@ -58,11 +59,11 @@ class SecureForm(Form):
 
     def validate_csrf_token(self, field):
         if not field.data:
-            raise ValidationError('CSRF token missing')
+            raise ValidationError('CSRF token missing.')
         hmac_compare = self._generate_hmac(field.csrf_key)
         # TODO: FIXME. Non constant-time comparison! compare_digest is 3.3.
         if not field.data == hmac_compare:
-            raise ValidationError('CSRF token mismatched')
+            raise ValidationError('CSRF token mismatched.')
 
     @property
     def data(self):
