@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import mock
 import transaction
 import unittest
 from fanboi2 import DBSession, Base
@@ -972,6 +973,73 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
             self.assertEqual(format_post(source), Markup(target))
 
 
+class TestAkismet(unittest.TestCase):
+
+    def _getTargetClass(self):
+        from fanboi2.utils import Akismet
+        return Akismet
+
+    def _makeRequest(self, api_key='hogehoge'):
+        from pyramid.registry import Registry
+        request = testing.DummyRequest()
+        request.remote_addr = '127.0.0.1'
+        request.user_agent = 'Mock 1.0'
+        request.referrer = 'http://www.example.com/'
+        registry = Registry()
+        registry.settings = {'akismet.key': api_key}
+        testing.setUp(request=request, registry=registry)
+        return request
+
+    def _makeResponse(self, content):
+        class MockResponse(object):
+            def __init__(self, content):
+                self.content = content
+        return MockResponse(content)
+
+    def test_init(self):
+        request = self._makeRequest()
+        akismet = self._getTargetClass()(request)
+        self.assertEqual(akismet.request, request)
+        self.assertEqual(akismet.key, 'hogehoge')
+
+    def test_init_no_key(self):
+        request = self._makeRequest(api_key=None)
+        akismet = self._getTargetClass()(request)
+        self.assertEqual(akismet.request, request)
+        self.assertEqual(akismet.key, None)
+
+    @mock.patch('requests.post')
+    def test_spam(self, api_call):
+        api_call.return_value = self._makeResponse(b'true')
+        request = self._makeRequest()
+        akismet = self._getTargetClass()(request)
+        self.assertEqual(akismet.spam('buy viagra'), True)
+        api_call.assert_called_with(
+            'https://hogehoge.rest.akismet.com/1.1/comment-check',
+            headers=mock.ANY,
+            data=mock.ANY,
+        )
+
+    @mock.patch('requests.post')
+    def test_spam_ham(self, api_call):
+        api_call.return_value = self._makeResponse(b'false')
+        request = self._makeRequest()
+        akismet = self._getTargetClass()(request)
+        self.assertEqual(akismet.spam('Hogehogehogehoge!'), False)
+        api_call.assert_called_with(
+            'https://hogehoge.rest.akismet.com/1.1/comment-check',
+            headers=mock.ANY,
+            data=mock.ANY,
+        )
+
+    @mock.patch('requests.post')
+    def test_spam_no_key(self, api_call):
+        request = self._makeRequest(api_key=None)
+        akismet = self._getTargetClass()(request)
+        self.assertEqual(akismet.spam('buy viagra'), False)
+        assert not api_call.called
+
+
 class TestBaseView(ViewMixin, ModelMixin, unittest.TestCase):
 
     def _getTargetClass(self):
@@ -1214,6 +1282,36 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
             'body': ['This field is required.']
         })
 
+    @mock.patch('fanboi2.utils.Akismet.spam')
+    def test_post_spam(self, spam_call):
+        from fanboi2.models import DBSession, Topic
+        self._makeBoard(title="General", slug="general")
+        request = self._make_csrf(self._POST({
+            'title': "Buy viagra",
+            'body': "Buy today at http://viagra.example.com/",
+        }))
+        request.matchdict['board'] = 'general'
+        spam_call.return_value = True
+        self.config.testing_add_renderer('boards/spam.jinja2')
+        self._getTargetClass()(request)()
+        self.assertEqual(DBSession.query(Topic).count(), 0)
+        self.assertTrue(spam_call.called)
+
+    @mock.patch('fanboi2.utils.Akismet.spam')
+    def test_post_ham(self, spam_call):
+        from fanboi2.models import DBSession, Topic
+        self._makeBoard(title="General", slug="general")
+        request = self._make_csrf(self._POST({
+            'title': "Buy viagra",
+            'body': "Not really! Just joking!",
+        }))
+        request.matchdict['board'] = 'general'
+        spam_call.return_value = False
+        self.config.add_route('board', '/{board}/')
+        self._getTargetClass()(request)()
+        self.assertEqual(DBSession.query(Topic).count(), 1)
+        self.assertTrue(spam_call.called)
+
 
 class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
 
@@ -1298,6 +1396,34 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         self.assertDictEqual(response["form"].errors, {
             'body': ['Field must be between 2 and 4000 characters long.'],
         })
+
+    @mock.patch('fanboi2.utils.Akismet.spam')
+    def test_post_spam(self, spam_call):
+        from fanboi2.models import DBSession, Post
+        board = self._makeBoard(title="General", slug="general")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
+        request = self._make_csrf(self._POST({'body': 'Buy viagra'}))
+        request.matchdict['board'] = 'general'
+        request.matchdict['topic'] = str(topic.id)
+        spam_call.return_value = True
+        self.config.testing_add_renderer('topics/spam.jinja2')
+        self._getTargetClass()(request)()
+        self.assertEqual(DBSession.query(Post).count(), 0)
+        self.assertTrue(spam_call.called)
+
+    @mock.patch('fanboi2.utils.Akismet.spam')
+    def test_post_ham(self, spam_call):
+        from fanboi2.models import DBSession, Post
+        board = self._makeBoard(title="General", slug="general")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
+        request = self._make_csrf(self._POST({'body': 'Yahoo!'}))
+        request.matchdict['board'] = 'general'
+        request.matchdict['topic'] = str(topic.id)
+        spam_call.return_value = False
+        self.config.add_route('topic_scoped', '/{board}/{topic}/{query}')
+        self._getTargetClass()(request)()
+        self.assertEqual(DBSession.query(Post).count(), 1)
+        self.assertTrue(spam_call.called)
 
     def test_post_repeatable(self):
         from fanboi2.models import DBSession, Post

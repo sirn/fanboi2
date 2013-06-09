@@ -13,6 +13,9 @@ from .formatters import *
 from .models import DBSession, Base
 
 
+__VERSION__ = '0.5.0'
+
+
 def remote_addr(request):
     """Similar to built-in ``request.remote_addr`` but will fallback to
     ``HTTP_X_FORWARDED_FOR`` if defined and ``REMOTE_ADDR`` is private or
