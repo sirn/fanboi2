@@ -262,14 +262,13 @@ def populate_post_ident(mapper, connection, target):
 
 
 Topic.post_count = column_property(
-    select([func.count(Post.id)]).where(Post.topic_id == Topic.id),
-    deferred=True,
+    select([func.coalesce(func.max(Post.number), 0)]).
+    where(Post.topic_id == Topic.id)
 )
 
 Topic.posted_at = column_property(
     select([Post.created_at]).
         where(Post.topic_id == Topic.id).
         order_by(desc(Post.created_at)).
-        limit(1),
-    deferred=True,
+        limit(1)
 )

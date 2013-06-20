@@ -408,33 +408,24 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         board = self._makeBoard(title="Foobar", slug="foo")
         topic1 = self._makeTopic(board=board, title="Lorem ipsum dolor")
         topic2 = self._makeTopic(board=board, title="Some lonely topic")
-        post1 = Post(topic=topic1, body="Lorem", ip_address="0.0.0.0")
-        post2 = Post(topic=topic1, body="Ipsum", ip_address="0.0.0.0")
-        post3 = Post(topic=topic1, body="Dolor", ip_address="0.0.0.0")
-        DBSession.add(post1)
-        DBSession.add(post2)
-        DBSession.add(post3)
-        DBSession.flush()
+        post1 = self._makePost(topic=topic1, body='Lorem')
+        post2 = self._makePost(topic=topic1, body='Ipsum')
+        post3 = self._makePost(topic=topic1, body='Dolor')
         self.assertEqual([post1, post2, post3], list(topic1.posts))
         self.assertEqual([], list(topic2.posts))
 
     def test_auto_archive(self):
-        from fanboi2.models import Post
         board = self._makeBoard(title="Foobar", slug="foo", settings={
             'max_posts': 5,
         })
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
         for i in range(4):
-            post = Post(topic=topic, body="Post %s" % i, ip_address="0.0.0.0")
-            DBSession.add(post)
-        DBSession.flush()
+            self._makePost(topic=topic, body="Post %s" % i)
         self.assertEqual(topic.status, "open")
-        DBSession.add(Post(topic=topic, body='Post 5', ip_address='0.0.0.0'))
-        DBSession.flush()
+        self._makePost(topic=topic, body="Post 5")
         self.assertEqual(topic.status, "archived")
 
     def test_auto_archive_locked(self):
-        from fanboi2.models import Post
         board = self._makeBoard(title="Foobar", slug="foo", settings={
             'max_posts': 3,
         })
@@ -442,24 +433,30 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
                                 title="Lorem ipsum dolor",
                                 status='locked')
         for i in range(3):
-            post = Post(topic=topic, body="Post %s" % i, ip_address="0.0.0.0")
-            DBSession.add(post)
-        DBSession.flush()
+            post = self._makePost(topic=topic, body="Post %s" % i)
         self.assertEqual(topic.status, "locked")
 
     def test_post_count(self):
-        from fanboi2.models import Post
         board = self._makeBoard(title="Foobar", slug="foo")
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
         self.assertEqual(topic.post_count, 0)
         for x in range(3):
-            post = Post(
-                topic=topic,
-                body="Hello, world!",
-                ip_address="0.0.0.0")
-            DBSession.add(post)
-        DBSession.flush()
+            self._makePost(topic=topic, body="Hello, world!")
         self.assertEqual(topic.post_count, 3)
+
+    def test_post_count_missing(self):
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
+        self.assertEqual(topic.post_count, 0)
+        for x in range(2):
+            self._makePost(topic=topic, body="Hello, world!")
+        post = self._makePost(topic=topic, body="Hello, world!")
+        self._makePost(topic=topic, body="Hello, world!")
+        self.assertEqual(topic.post_count, 4)
+        DBSession.delete(post)
+        DBSession.flush()
+        DBSession.expire(topic, ['post_count'])
+        self.assertEqual(topic.post_count, 4)
 
     def test_posted_at(self):
         from fanboi2.models import Post
@@ -467,15 +464,12 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
         self.assertIsNone(topic.posted_at)
         for x in range(2):
-            post = Post(topic=topic,
-                        body="Hello, world!",
-                        ip_address="0.0.0.0",
-                        created_at=datetime.datetime.now() -
-                                   datetime.timedelta(days=1))
-            DBSession.add(post)
-        post = Post(topic=topic, body="Hello, world!", ip_address="0.0.0.0")
-        DBSession.add(post)
-        DBSession.flush()
+            self._makePost(
+                topic=topic,
+                body="Hello, world!",
+                created_at=datetime.datetime.now() -
+                           datetime.timedelta(days=1))
+        post = self._makePost(topic=topic, body="Hello, world!")
         self.assertEqual(topic.created_at, post.created_at)
 
     def test_scoped_posts(self):
@@ -928,6 +922,10 @@ class TestFormatters(unittest.TestCase):
         ]
         for source, target in tests:
             self.assertEqual(format_markdown(source), Markup(target))
+
+    def test_format_markdown_empty(self):
+        from fanboi2.formatters import format_markdown
+        self.assertIsNone(format_markdown(None))
 
     def test_format_datetime(self):
         from datetime import datetime, timezone

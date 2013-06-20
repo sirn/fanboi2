@@ -103,7 +103,8 @@ def format_text(text):
 
 def format_markdown(text):
     """Format text using Markdown parser."""
-    return Markup(misaka.html(text))
+    if text is not None:
+        return Markup(misaka.html(str(text)))
 
 
 RE_ANCHOR = re.compile(r'%s(\d+)(\-)?(\d+)?' % html.escape('>>'))

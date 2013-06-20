@@ -63,9 +63,7 @@ class BoardView(BaseView):
     """Display board and all 10 recent posts regardless of its status."""
 
     def GET(self):
-        topics = self.board.topics.limit(10).\
-            options(undefer('post_count'), undefer('posted_at')).\
-            all()
+        topics = self.board.topics.limit(10).all()
         return {
             'boards': self.boards,
             'board': self.board,
