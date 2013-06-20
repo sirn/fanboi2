@@ -1,4 +1,5 @@
 import hashlib
+import pkg_resources
 import pyramid_jinja2
 import pyramid_zcml
 import redis
@@ -13,7 +14,7 @@ from .formatters import *
 from .models import DBSession, Base
 
 
-__VERSION__ = '0.5.0'
+__VERSION__ = pkg_resources.require('fanboi2')[0].version
 
 
 def remote_addr(request):

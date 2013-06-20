@@ -1,5 +1,10 @@
-0.5.0
+0.5.1
 =====
+
+- Fix installation error due to import within setup.py.
+
+0.5.0
+-----
 
 - Changed from traversal to URL dispatching for reduced complexity.
 - Added Akismet integration for SPAM detection in comments.
