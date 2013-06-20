@@ -167,11 +167,11 @@ class Topic(BaseModel, Base):
 
     def recent_posts(self, count=30):
         """Returns recent `count` number of posts associated with this topic.
-        Defaults to 30 posts if `count` is not given. This method will load
-        :attr:`Topic.posts_count` if it is not already loaded.
+        Defaults to 30 posts if `count` is not given.
         """
-        query = Post.number > (self.post_count - int(count))
-        return self.posts.filter(query).all()
+        return self.posts.order_by(False).\
+            order_by(desc(Post.number)).\
+            limit(count).all()[::-1]
 
 
 @implementer(IPost)

@@ -1,9 +1,10 @@
 0.5.1
 =====
 
-- Fixed installation error due to import within setup.py.
-- Fixed post display issue when post count is not equal to latest post number.
 - Fixed error when board description does not exists.
+- Fixed installation error due to import within setup.py.
+- Fixed post count not in sync with post number issue.
+- Fixed post display issue when post count is not equal to latest post number.
 
 0.5.0
 -----

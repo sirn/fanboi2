@@ -580,6 +580,25 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         self.assertListEqual(topic2.recent_posts(0), [])
         self.assertListEqual(topic3.recent_posts(), [])
 
+    def test_recent_query_missing(self):
+        board = self._makeBoard(title="Foobar", slug="foobar")
+        topic = self._makeTopic(board=board, title="Hello, world!")
+        post1 = self._makePost(topic=topic, body="Post 1")
+        post2 = self._makePost(topic=topic, body="Post 2")
+        post3 = self._makePost(topic=topic, body="Post 3")
+        post4 = self._makePost(topic=topic, body="Post 4")
+        post5 = self._makePost(topic=topic, body="Post 5")
+        post6 = self._makePost(topic=topic, body="Post 6")
+        self.assertListEqual(
+            [post2, post3, post4, post5, post6],
+            topic.scoped_posts("l5"))
+
+        DBSession.delete(post3)
+        DBSession.flush()
+        self.assertListEqual(
+            [post1, post2, post4, post5, post6],
+            topic.scoped_posts("l5"))
+
 
 class PostModelTest(ModelMixin, unittest.TestCase):
 
