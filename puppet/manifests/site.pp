@@ -18,6 +18,16 @@ node default {
   class {'postgresql::devel':}
   class {'python3':}
 
+  # Workaround for http://projects.puppetlabs.com/issues/4695
+  # When PostgreSQL is installed with SQL_ASCII encoding instead of UTF8.
+  # See also: http://stackoverflow.com/a/15977997
+  exec {'postgres-utf8':
+    command => 'pg_dropcluster --stop 9.1 main; pg_createcluster --start --locale en_US.UTF-8 9.1 main',
+    unless  => 'sudo -u postgres psql -t -c "\l" | grep template1 | grep -q UTF',
+    require => Class['postgresql::server'],
+    path    => ['/bin', '/sbin', '/usr/bin', '/usr/sbin'],
+  }
+
   # Setup database for development environment and test environment.
   postgresql::db {'fanboi2_dev':  user => 'fanboi2', password => 'dev'}
   postgresql::db {'fanboi2_test': user => 'fanboi2', password => 'dev'}

@@ -9,7 +9,8 @@ tmp/
 *.sqlite
 *.pyc
 *.log
-.tmp
+*.tmp
+*.dump
 
 # IDE stuff
 out/
