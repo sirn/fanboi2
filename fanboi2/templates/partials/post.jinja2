@@ -1,6 +1,6 @@
 {% from "partials/helper.jinja2" import time_tag %}
 
-{% macro post_block(post) %}
+{% macro post_block(post, shorten=False) %}
     <article id="post-{{ post.id }}" class="post post-{{ post.number }}">
         <div class="container">
             <header>
@@ -9,7 +9,7 @@
                 <span class="created">Posted {{ time_tag(post.created_at) }}</span>
                 {% if post.ident %}<span class="ident">ID:{{ post.ident }}</span>{% endif %}
             </header>
-            <div>{{ post|formatpost }}</div>
+            <div>{{ post|formatpost(shorten) }}</div>
         </div>
     </article>
 {% endmacro %}

@@ -1,5 +1,10 @@
-0.5.1
+0.6.0
 =====
+
+- Added posts abbreviation for post exceeding 500 characters in topic list page.
+
+0.5.1
+-----
 
 - Fixed error when board description does not exists.
 - Fixed installation error due to import within setup.py.

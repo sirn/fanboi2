@@ -19,10 +19,10 @@ section#main
             border-top 1px solid #fff
 
         > div.container
-            > header
-                $body-color = #8d9ca1
+            $header-color = #8d9ca1
 
-                color $body-color
+            > header
+                color $header-color
                 font-size 12px
                 line-height $header-line
                 font-weight bold
@@ -34,7 +34,7 @@ section#main
                         margin-left 5px
 
                     &.number
-                        background-color $body-color
+                        background-color $header-color
                         color #fff
                         padding 4px 6px
 
@@ -54,7 +54,16 @@ section#main
                 p + p
                     margin-top 10px
 
+                p.shortened
+                    color $header-color
+                    font-size 12px
+                    font-style italic
+
+                    a
+                        font-weight bold
+
                 a.anchor
+                p.shortened a
                     color #0088cc
 
                     &:hover
@@ -134,6 +143,9 @@ section#main
                         position absolute
 
                 > div
+                    p.shortened
+                        margin-bottom ($post-padding / 2) * -1
+
                     div.popover
                         display none
 

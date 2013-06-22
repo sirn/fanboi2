@@ -10,7 +10,6 @@ from jinja2 import Markup
 from pyramid.threadlocal import get_current_registry, get_current_request
 
 
-RE_NEWLINE = re.compile(r'(?:\r\n|\n|\r)')
 RE_PARAGRAPH = re.compile(r'(?:(?P<newline>\r\n|\n|\r)(?P=newline)+)')
 RE_THUMBNAILS = (
     (re.compile(r"https?\:\/\/(?:(?:\w+\.)?imgur\.com)\/(\w+)", re.ASCII),
@@ -29,6 +28,22 @@ RE_LINK = re.compile(r"""
    ?([^\s<*]+)         # Link, all characters except space and end tag
  )
 """, re.VERBOSE)
+
+
+class PostMarkup(Markup):
+    """Works like :class:`Markup` but allow passing in hints for post
+    formatting such as raw data length or shortened status.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(PostMarkup, self).__init__(*args, **kwargs)
+        self.length = None
+        self.shortened = False
+
+    def __len__(self):
+        if not self.length:
+            return super(PostMarkup, self).__len__()
+        return self.length
 
 
 def extract_thumbnail(text):
@@ -68,12 +83,16 @@ def url_fix(string):
     return urlparse.urlunsplit((scheme, netloc, path, qs, anchor))
 
 
-def format_text(text):
+def format_text(text, shorten=None):
     """Format lines of text into HTML. Split into paragraphs at two or more
-    consecutive newlines and adds ``<br>`` to any line with line break.
+    consecutive newlines and adds `<br>` to any line with line break. If
+    `shorten` is given, then the post will be shortened to the first
+    paragraph that exceed the given value.
     """
     output = []
     thumbs = []
+    length = 0
+    shortened = False
 
     # Auto-link
     def _replace_link(match):
@@ -83,13 +102,22 @@ def format_text(text):
             html.escape(link)))
 
     # Turns text into paragraph.
+    text = "\n".join((t.strip() for t in text.splitlines()))  # Cleanup
     for paragraph in RE_PARAGRAPH.split(text):
-        paragraph = paragraph.rstrip("\r\n")
+        paragraph = paragraph.strip()
         if paragraph:
-            paragraph = TP_PARAGRAPH % html.escape(paragraph)
+            lines = []
+            for line in paragraph.splitlines():
+                if shorten and length >= shorten:
+                    shortened = True
+                    break
+                lines.append(html.escape(line))
+                length += len(line)
+            paragraph = TP_PARAGRAPH % '<br>'.join(lines)
             paragraph = RE_LINK.sub(_replace_link, paragraph)
-            paragraph = RE_NEWLINE.sub("<br>", paragraph)
             output.append(paragraph)
+            if shortened:
+                break
 
     # Display thumbnail at the end of post.
     thumbnails = extract_thumbnail(text)
@@ -98,7 +126,10 @@ def format_text(text):
             thumbs.append(TP_THUMB % (link, thumbnail))
         output.append(TP_PARAGRAPH % ''.join(thumbs))
 
-    return Markup('\n'.join(output))
+    markup = PostMarkup('\n'.join(output))
+    markup.length = length
+    markup.shortened = shortened
+    return markup
 
 
 def format_markdown(text):
@@ -109,16 +140,34 @@ def format_markdown(text):
 
 RE_ANCHOR = re.compile(r'%s(\d+)(\-)?(\d+)?' % html.escape('>>'))
 TP_ANCHOR = '<a data-number="%s" href="%s" class="anchor">%s</a>'
+TP_SHORTENED = ''.join("""
+<p class="shortened">
+Post shortened. <a href="%s">See full post</a>.
+</p>
+""".splitlines())
 
 
-def format_post(post):
+def format_post(post, shorten=None):
     """Works similar to :func:`format_text` but also process link within
-    the same topic, i.e. a ``>>52`` anchor syntax will create a link to
-    post numbered 52 in the same topic.
+    the same topic, i.e. a `>>52` anchor syntax will create a link to
+    post numbered 52 in the same topic, as well as display "click to see
+    more" link for posts that has been shortened.
     """
-    text = format_text(post.body)
+    text = format_text(post.body, shorten)
     request = get_current_request()
 
+    # Append click to see more link if post is shortened.
+    try:
+        if text.shortened:
+            text += Markup("\n" + TP_SHORTENED % (
+                request.route_path('topic_scoped',
+                                   board=post.topic.board.slug,
+                                   topic=post.topic.id,
+                                   query="%s-" % post.number)))
+    except AttributeError:  # pragma: no cover
+        pass
+
+    # Convert post anchor (>>123) to link.
     def _anchor(match):
         anchor = ''.join([m for m in match.groups() if m is not None])
         return Markup(TP_ANCHOR % (
@@ -128,8 +177,8 @@ def format_post(post):
                                topic=post.topic.id,
                                query=anchor),
             html.escape(">>%s" % anchor),))
-
     text = RE_ANCHOR.sub(_anchor, text)
+
     return Markup(text)
 
 

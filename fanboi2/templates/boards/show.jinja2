@@ -18,7 +18,7 @@
                 </header>
                 <div class="posts">
                     {% for post in topic.recent_posts(5) %}
-                        {{ post_block(post) }}
+                        {{ post_block(post, 500) }}
                     {% endfor %}
                 </div>
                 <div class="tools">

@@ -854,16 +854,28 @@ class TestFormatters(unittest.TestCase):
             ('http://i.imgur.com/image7s.jpg', 'http://imgur.com/image7'),
         ))
 
+    def test_post_markup(self):
+        from fanboi2.formatters import PostMarkup
+        from jinja2 import Markup
+        markup = PostMarkup('<p>foo</p>')
+        markup.shortened = True
+        markup.length = 3
+        self.assertEqual(markup, Markup('<p>foo</p>'))
+        self.assertEqual(markup.shortened, True)
+        self.assertEqual(len(PostMarkup('<p>Hello</p>')), 12)
+        self.assertEqual(len(markup), 3)
+
     def test_format_text(self):
         from fanboi2.formatters import format_text
         from jinja2 import Markup
         tests = [
             ('Hello, world!', '<p>Hello, world!</p>'),
             ('H\n\n\nello\nworld', '<p>H</p>\n<p>ello<br>world</p>'),
-            ('Foo\r\n\r\n\r\n\nBar', '<p>Foo</p>\n<p><br>Bar</p>'),
+            ('Foo\r\n\r\n\r\n\nBar', '<p>Foo</p>\n<p>Bar</p>'),
             ('Newline at the end\n', '<p>Newline at the end</p>'),
             ('STRIP ME!!!1\n\n', '<p>STRIP ME!!!1</p>'),
             ('ほげ\n\nほげ', '<p>ほげ</p>\n<p>ほげ</p>'),
+            ('Foo\n \n Bar', '<p>Foo</p>\n<p>Bar</p>'),
             ('ไก่จิกเด็ก\n\nตายบนปากโอ่ง',
              '<p>ไก่จิกเด็ก</p>\n<p>ตายบนปากโอ่ง</p>'),
             ('<script></script>', '<p>&lt;script&gt;&lt;/script&gt;</p>'),
@@ -896,6 +908,23 @@ class TestFormatters(unittest.TestCase):
                       '<a href="https://www.example.com/test" '
                         'class="link" target="_blank" rel="nofollow">'
                         'https://www.example.com/test</a> foobar</p>'))
+
+    def test_format_text_shorten(self):
+        from fanboi2.formatters import format_text
+        from fanboi2.formatters import PostMarkup
+        from jinja2 import Markup
+        tests = (
+            ('Hello, world!', '<p>Hello, world!</p>', 13, False),
+            ('Hello\nworld!', '<p>Hello</p>', 5, True),
+            ('Hello, world!\nFoobar', '<p>Hello, world!</p>', 13, True),
+            ('Hello', '<p>Hello</p>', 5, False),
+        )
+        for source, target, length, shortened in tests:
+            result = format_text(source, shorten=5)
+            self.assertIsInstance(result, PostMarkup)
+            self.assertEqual(result, Markup(target))
+            self.assertEqual(result.length, length)
+            self.assertEqual(result.shortened, shortened)
 
     def test_format_text_thumbnail(self):
         from fanboi2.formatters import format_text
@@ -988,6 +1017,18 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
         ]
         for source, target in tests:
             self.assertEqual(format_post(source), Markup(target))
+
+    def test_format_post_shorten(self):
+        from fanboi2.formatters import format_post
+        from jinja2 import Markup
+        self.config.add_route('topic_scoped', '/{board}/{topic}/{query}')
+        board = self._makeBoard(title="Foobar", slug="foobar")
+        topic = self._makeTopic(board=board, title="Hogehogehogehogehoge")
+        post = self._makePost(topic=topic, body="Hello\nworld")
+        self.assertEqual(format_post(post, shorten=5),
+                         Markup("<p>Hello</p>\n<p class=\"shortened\">"
+                                "Post shortened. <a href=\"/foobar/1/1-\">"
+                                "See full post</a>.</p>"))
 
 
 class TestAkismet(unittest.TestCase):
