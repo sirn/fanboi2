@@ -1,6 +1,7 @@
 0.6.0
 =====
 
+- Changed stylings in all topic list page and reduce font size for 11th posts and on.
 - Added posts abbreviation for post exceeding 500 characters in topic list page.
 
 0.5.1
