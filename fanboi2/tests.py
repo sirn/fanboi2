@@ -17,16 +17,30 @@ class DummyRedis(object):
 
     def __init__(self):
         self._store = {}
+        self._expire = {}
 
     def get(self, key):
         return self._store.get(key, None)
 
+    def set(self, key, value):
+        try:
+            value = bytes(value.encode('utf-8'))
+        except AttributeError:
+            pass
+        self._store[key] = value
+
     def setnx(self, key, value):
         if not self.get(key):
-            self._store[key] = bytes(value.encode('utf-8'))
+            self.set(key, value)
+
+    def exists(self, key):
+        return key in self._store
 
     def expire(self, key, time):
-        pass  # Do nothing.
+        self._expire[key] = time
+
+    def ttl(self, key):
+        return self._expire.get(key, 0)
 
 
 class _ModelInstanceSetup(object):
@@ -1098,6 +1112,54 @@ class TestAkismet(unittest.TestCase):
         assert not api_call.called
 
 
+class TestRateLimiter(unittest.TestCase):
+
+    def _getTargetClass(self):
+        from fanboi2.utils import RateLimiter
+        return RateLimiter
+
+    def _getHash(self, text):
+        import hashlib
+        return hashlib.md5(text.encode('utf8')).hexdigest()
+
+    def _makeRequest(self):
+        request = testing.DummyRequest()
+        request.remote_addr = '127.0.0.1'
+        request.redis = DummyRedis()
+        testing.setUp(request=request)
+        return request
+
+    def test_init(self):
+        request = self._makeRequest()
+        ratelimit = self._getTargetClass()(request, namespace='foobar')
+        self.assertEqual(ratelimit.request, request)
+        self.assertEqual(ratelimit.key,
+                         "rate:foobar:%s" % self._getHash('127.0.0.1'))
+
+    def test_init_no_namespace(self):
+        request = self._makeRequest()
+        ratelimit = self._getTargetClass()(request)
+        self.assertEqual(ratelimit.request, request)
+        self.assertEqual(ratelimit.key,
+                         "rate:None:%s" % self._getHash('127.0.0.1'))
+
+    def test_limit(self):
+        request = self._makeRequest()
+        ratelimit = self._getTargetClass()(request, namespace='foobar')
+        self.assertFalse(ratelimit.limited())
+        self.assertEqual(ratelimit.timeleft(), 0)
+        ratelimit.limit(seconds=30)
+        self.assertTrue(ratelimit.limited())
+        self.assertEqual(ratelimit.timeleft(), 30)
+
+    def test_limit_no_seconds(self):
+        request = self._makeRequest()
+        ratelimit = self._getTargetClass()(request, namespace='foobar')
+        ratelimit.limit()
+        self.assertTrue(ratelimit.limited())
+        self.assertEqual(ratelimit.timeleft(), 10)
+
+
 class TestBaseView(ViewMixin, ModelMixin, unittest.TestCase):
 
     def _getTargetClass(self):
@@ -1312,9 +1374,10 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
         with self.assertRaises(HTTPNotFound):
             assert not self._getTargetClass()(request)()
 
-    def test_post(self):
+    @mock.patch('fanboi2.utils.RateLimiter.limit')
+    def test_post(self, limit_call):
         from fanboi2.models import DBSession, Topic
-        self._makeBoard(title="General", slug="general")
+        board = self._makeBoard(title="General", slug="general")
         request = self._make_csrf(self._POST({
             'title': "One more thing...",
             'body': "And now for something completely different...",
@@ -1324,6 +1387,7 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
         response = self._getTargetClass()(request)()
         self.assertEqual(DBSession.query(Topic).count(), 1)
         self.assertEqual(response.location, "/general/")
+        limit_call.assert_called_with(board.settings['post_delay'])
 
     def test_post_failure(self):
         from fanboi2.models import DBSession, Topic
@@ -1350,7 +1414,7 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
         }))
         request.matchdict['board'] = 'general'
         spam_call.return_value = True
-        self.config.testing_add_renderer('boards/spam.jinja2')
+        self.config.testing_add_renderer('boards/error_spam.jinja2')
         self._getTargetClass()(request)()
         self.assertEqual(DBSession.query(Topic).count(), 0)
         self.assertTrue(spam_call.called)
@@ -1369,6 +1433,24 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
         self._getTargetClass()(request)()
         self.assertEqual(DBSession.query(Topic).count(), 1)
         self.assertTrue(spam_call.called)
+
+    @mock.patch('fanboi2.utils.RateLimiter.limited')
+    @mock.patch('fanboi2.utils.RateLimiter.timeleft')
+    def test_post_limited(self, timeleft_call, limited_call):
+        from fanboi2.models import DBSession, Topic
+        self._makeBoard(title="General", slug="general")
+        request = self._make_csrf(self._POST({
+            'title': "Flooding the board!!1",
+            'body': "LOLUSUX!!11",
+        }))
+        request.matchdict['board'] = 'general'
+        limited_call.return_value = True
+        timeleft_call.return_value = 10
+        self.config.testing_add_renderer('boards/error_rate.jinja2')
+        self._getTargetClass()(request)()
+        self.assertEqual(DBSession.query(Topic).count(), 0)
+        self.assertTrue(limited_call.called)
+        self.assertTrue(timeleft_call.called)
 
 
 class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
@@ -1427,10 +1509,12 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         with self.assertRaises(HTTPNotFound):
             assert not self._getTargetClass()(request)()
 
-    def test_post(self):
-        from fanboi2.models import DBSession, Post, DEFAULT_BOARD_CONFIG
+    @mock.patch('fanboi2.utils.RateLimiter.limit')
+    def test_post(self, limit_call):
+        from fanboi2.models import DBSession, Post
         board = self._makeBoard(title="General", slug="general")
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
+        settings = board.settings
         request = self._make_csrf(self._POST({'body': "Boring post..."}))
         request.matchdict['board'] = 'general'
         request.matchdict['topic'] = str(topic.id)
@@ -1438,8 +1522,8 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         response = self._getTargetClass()(request)()
         self.assertEqual(response.location, "/general/%s/l5" % topic.id)
         self.assertEqual(DBSession.query(Post).count(), 1)
-        self.assertEqual(DBSession.query(Post).first().name,
-                         DEFAULT_BOARD_CONFIG['name'])
+        self.assertEqual(DBSession.query(Post).first().name, settings['name'])
+        limit_call.assert_called_with(settings['post_delay'])
 
     def test_post_failure(self):
         from fanboi2.models import DBSession, Post
@@ -1464,7 +1548,7 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         request.matchdict['board'] = 'general'
         request.matchdict['topic'] = str(topic.id)
         spam_call.return_value = True
-        self.config.testing_add_renderer('topics/spam.jinja2')
+        self.config.testing_add_renderer('topics/error_spam.jinja2')
         self._getTargetClass()(request)()
         self.assertEqual(DBSession.query(Post).count(), 0)
         self.assertTrue(spam_call.called)
@@ -1483,34 +1567,36 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Post).count(), 1)
         self.assertTrue(spam_call.called)
 
+    @mock.patch('fanboi2.utils.RateLimiter.limited')
+    @mock.patch('fanboi2.utils.RateLimiter.timeleft')
+    def test_post_limited(self, timeleft_call, limited_call):
+        from fanboi2.models import DBSession, Post
+        board = self._makeBoard(title="General", slug="general")
+        topic = self._makeTopic(board=board, title="Spam spam spam")
+        request = self._make_csrf(self._POST({'body': 'Blah, blah, blah!'}))
+        request.matchdict['board'] = 'general'
+        request.matchdict['topic'] = str(topic.id)
+        limited_call.return_value = True
+        timeleft_call.return_value = 10
+        self.config.testing_add_renderer('topics/error_rate.jinja2')
+        self._getTargetClass()(request)()
+        self.assertEqual(DBSession.query(Post).count(), 0)
+        self.assertTrue(limited_call.called)
+        self.assertTrue(timeleft_call.called)
+
     def test_post_repeatable(self):
         from fanboi2.models import DBSession, Post
         from sqlalchemy.exc import IntegrityError
-        from webob.multidict import MultiDict
         board = self._makeBoard(title="General", slug="general")
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-
-        class InvalidRequest(testing.DummyRequest):
-            self.retries = False
-
-            def __init__(self, *args, **kwargs):
-                self.retries = 0
-                super(InvalidRequest, self).__init__(*args, **kwargs)
-
-            @property
-            def remote_addr(self):
-                self.retries += 1
-                raise IntegrityError("INSERT INTO %(something)",
-                                     {"something": "something"},
-                                     "duplicate key")
-
-        request = InvalidRequest(MultiDict({'body': 'xyz'}), post=True)
-        request = self._make_csrf(request)
+        request = self._make_csrf(self._POST({'body': 'Yahoo!'}))
         request.matchdict['board'] = 'general'
         request.matchdict['topic'] = str(topic.id)
-        with self.assertRaises(IntegrityError):
-            assert not self._getTargetClass()(request)()
-        self.assertEqual(request.retries, 5)
+        with mock.patch('sqlalchemy.orm.scoping.scoped_session.flush') as m:
+            m.side_effect = IntegrityError(None, None, None)
+            with self.assertRaises(IntegrityError):
+                assert not self._getTargetClass()(request)()
+            self.assertEqual(m.call_count, 5)
         self.assertEqual(DBSession.query(Post).count(), 0)
 
     def test_post_archived(self):

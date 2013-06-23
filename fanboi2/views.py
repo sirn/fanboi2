@@ -8,7 +8,7 @@ from sqlalchemy.orm import undefer
 from sqlalchemy.orm.exc import NoResultFound
 from .forms import TopicForm, PostForm
 from .models import Topic, Post, Board, DBSession
-from .utils import Akismet
+from .utils import Akismet, RateLimiter
 
 
 class BaseView(object):
@@ -108,7 +108,15 @@ class BoardNewView(BaseView):
         if form.validate():
             akismet = Akismet(self.request)
             if akismet.spam(form.body.data):
-                return render_to_response('boards/spam.jinja2', {
+                return render_to_response('boards/error_spam.jinja2', {
+                    'boards': self.boards,
+                    'board': self.board,
+                }, request=self.request)
+
+            ratelimit = RateLimiter(self.request, namespace=self.board.slug)
+            if ratelimit.limited():
+                return render_to_response('boards/error_rate.jinja2', {
+                    'seconds': ratelimit.timeleft(),
                     'boards': self.boards,
                     'board': self.board,
                 }, request=self.request)
@@ -118,6 +126,7 @@ class BoardNewView(BaseView):
             post.topic = Topic(board=self.board, title=form.title.data)
             DBSession.add(post)
 
+            ratelimit.limit(self.board.settings['post_delay'])
             return HTTPFound(location=self.request.route_path(
                 route_name='board',
                 board=self.board.slug))
@@ -155,7 +164,16 @@ class TopicView(BaseView):
         if form.validate():
             akismet = Akismet(self.request)
             if akismet.spam(form.body.data):
-                return render_to_response('topics/spam.jinja2', {
+                return render_to_response('topics/error_spam.jinja2', {
+                    'boards': self.boards,
+                    'board': self.board,
+                    'topic': self.topic,
+                }, request=self.request)
+
+            ratelimit = RateLimiter(self.request, namespace=self.board.slug)
+            if ratelimit.limited():
+                return render_to_response('topics/error_rate.jinja2', {
+                    'seconds': ratelimit.timeleft(),
                     'boards': self.boards,
                     'board': self.board,
                     'topic': self.topic,
@@ -197,6 +215,7 @@ class TopicView(BaseView):
                     if not max_attempts:
                         raise
                 else:
+                    ratelimit.limit(self.board.settings['post_delay'])
                     return HTTPFound(location=self.request.route_path(
                         route_name='topic_scoped',
                         board=self.board.slug,

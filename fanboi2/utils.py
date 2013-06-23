@@ -1,3 +1,4 @@
+import hashlib
 import requests
 from . import __VERSION__
 
@@ -30,3 +31,27 @@ class Akismet(object):
                 'comment_content': message,
             }).content == b'true'
         return False
+
+
+class RateLimiter(object):
+    """Rate limit to throttle content posting to every specific seconds."""
+
+    def __init__(self, request, namespace=None):
+        self.request = request
+        self.key = "rate:%s:%s" % (
+            namespace,
+            hashlib.md5(request.remote_addr.encode('utf8')).hexdigest(),
+        )
+
+    def limit(self, seconds=10):
+        """Mark user as rate limited for `seconds`."""
+        self.request.redis.set(self.key, 1)
+        self.request.redis.expire(self.key, seconds)
+
+    def limited(self):
+        """Returns true if content should be limited from posting."""
+        return self.request.redis.exists(self.key)
+
+    def timeleft(self):
+        """Returns seconds left until user is no longer throttled."""
+        return self.request.redis.ttl(self.key)

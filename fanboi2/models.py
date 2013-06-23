@@ -27,6 +27,7 @@ DEFAULT_BOARD_CONFIG = {
     'name': 'Nameless Fanboi',
     'use_ident': True,
     'max_posts': 1000,
+    'post_delay': 10,
 }
 
 
