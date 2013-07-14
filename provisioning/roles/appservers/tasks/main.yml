@@ -3,7 +3,11 @@
   apt: pkg=${item} state=latest
   with_items:
     - python3.2
+    - python3.2-dev
     - python3-setuptools
+    - build-essential
+    - libpq-dev
+    - git
 
 - name: install python3 requisites
   command: |
@@ -20,9 +24,29 @@
   user: name=${user} state=present
 
 - name: creates application directory
-  file: path=${app.base} state=directory
+  file: path=${app.base} owner=${user} state=directory
 
 - name: setup virtualenv for application directory
+  sudo: no
   command: |
-    virtualenv -p python3.2 ${app.virtualenv}
+    virtualenv -p python3 ${app.virtualenv}
     creates=${app.virtualenv}
+
+# Application setup
+# ---------------------------------------------------------------------
+
+# TODO: Remove me after requests 1.2.4 is released. See also:
+# https://github.com/kennethreitz/requests/issues/1416
+#
+- name: install git version of requests
+  sudo: no
+  pip:
+    name: "git+https://github.com/kennethreitz/requests#egg=requests"
+    virtualenv: ${app.virtualenv}
+
+- name: install application in development mode
+  sudo: no
+  command: |
+    env LANG=en_US.UTF-8 ${app.virtualenv}/bin/python3 setup.py develop
+    chdir=${app.root}
+    creates=${app.root}/fanboi2.egg-info
