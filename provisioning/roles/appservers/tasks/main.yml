@@ -27,7 +27,7 @@
   file: path=${app.base} owner=${user} state=directory
 
 - name: setup virtualenv for application directory
-  sudo: no
+  sudo_user: ${user}
   command: |
     virtualenv -p python3 ${app.virtualenv}
     creates=${app.virtualenv}
@@ -39,13 +39,13 @@
 # https://github.com/kennethreitz/requests/issues/1416
 #
 - name: install git version of requests
-  sudo: no
+  sudo_user: ${user}
   pip:
     name: "git+https://github.com/kennethreitz/requests#egg=requests"
     virtualenv: ${app.virtualenv}
 
 - name: install application in development mode
-  sudo: no
+  sudo_user: ${user}
   command: |
     env LANG=en_US.UTF-8 ${app.virtualenv}/bin/python3 setup.py develop
     chdir=${app.root}
