@@ -1,0 +1,28 @@
+---
+- hosts: all
+  sudo: yes
+  tasks:
+    - name: install python-software-properties for ppa support
+      apt: pkg=python-software-properties
+
+    - name: ensure all package are latest
+      apt: update_cache=yes cache_valid_time=604800
+
+    # Setup workspace.
+    # ---------------------------------------------------------------------
+
+    - name: create a working directory
+      file: path=${app.base} state=directory
+
+    - name: link vagrant path to server directory for development
+      file: src=/vagrant dest=${app.root} state=link
+      only_if: "'$development' == '1'"
+
+
+- hosts: webservers
+  sudo: yes
+  roles:
+    - role: webservers
+    - role: pgservers
+    - role: redisservers
+    - role: appservers

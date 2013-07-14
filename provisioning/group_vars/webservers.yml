@@ -1,0 +1,16 @@
+---
+app:
+    base: /srv/http/fanboi2
+    root: ${app.base}/app
+    static: ${app.root}/fanboi2/static
+    virtualenv: ${app.base}/env
+
+postgresql:
+    name: fanboi2
+    test: fanboi2_test
+    username: fanboi2
+    password: fanboi2
+
+uwsgi:
+    port: 9000
+    processes: 2

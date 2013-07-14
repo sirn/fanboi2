@@ -1,0 +1,20 @@
+---
+- name: add ppa:nginx/stable for nginx installation
+  apt_repository: repo=ppa:nginx/stable
+
+- name: update apt for new ppa
+  command: aptitude update creates=/etc/init.d/nginx
+
+- name: install nginx
+  apt: pkg=nginx state=latest
+
+# Configuring Nginx
+# --------------------------------------------------------------------------
+
+- name: setup nginx configuration
+  template: src=etc/nginx/nginx.conf.j2 dest=/etc/nginx/nginx.conf
+  notify: reload nginx
+
+- name: cleanup default nginx configuration file
+  file: dest=/etc/nginx/sites-enabled/default state=absent
+  notify: reload nginx

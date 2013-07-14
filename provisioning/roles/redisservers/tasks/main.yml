@@ -1,0 +1,9 @@
+---
+- name: add ppa:chris-lea/redis-server for redis installation
+  apt_repository: repo=ppa:chris-lea/redis-server
+
+- name: update apt for new ppa
+  command: aptitude update creates=/etc/init.d/redis-server
+
+- name: install redis
+  apt: pkg=redis-server state=latest

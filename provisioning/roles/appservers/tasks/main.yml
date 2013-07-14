@@ -1,0 +1,28 @@
+---
+- name: install python3 and related packages
+  apt: pkg=${item} state=latest
+  with_items:
+    - python3.2
+    - python3-setuptools
+
+- name: install python3 requisites
+  command: |
+    easy_install3 ${item}
+    creates=/usr/local/bin/${item}-3.2
+  with_items:
+    - pip
+    - virtualenv
+
+# Setup environment.
+# ---------------------------------------------------------------------
+
+- name: ensure that user to run the app exists
+  user: name=${user} state=present
+
+- name: creates application directory
+  file: path=${app.base} state=directory
+
+- name: setup virtualenv for application directory
+  command: |
+    virtualenv -p python3.2 ${app.virtualenv}
+    creates=${app.virtualenv}
