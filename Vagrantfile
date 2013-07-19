@@ -5,5 +5,6 @@ Vagrant.configure("2") do |config|
   config.vm.provision :ansible do |ansible|
     ansible.playbook = "provisioning/site.yml"
     ansible.inventory_file = "provisioning/development_hosts"
+    ansible.extra_vars = {development: 1, user: "vagrant"}
   end
 end
