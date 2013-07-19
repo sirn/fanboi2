@@ -32,6 +32,19 @@
     virtualenv -p python3 ${app.virtualenv}
     creates=${app.virtualenv}
 
+# uWSGI setup
+# ---------------------------------------------------------------------
+
+- name: install uwsgi to system python
+  pip: name=uwsgi
+
+- name: ensure that uwsgi configuration dir exists
+  file: path=/etc/uwsgi state=directory
+
+- name: start uwsgi with upstart
+  copy: src=etc/init/uwsgi.conf dest=/etc/init/uwsgi.conf
+  notify: restart uwsgi
+
 # Application setup
 # ---------------------------------------------------------------------
 
