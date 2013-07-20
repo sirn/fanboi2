@@ -4,6 +4,9 @@ app:
     root: ${app.base}/app
     static: ${app.root}/fanboi2/static
     virtualenv: ${app.base}/env
+    csrf_secret: changeme
+    session_secret: changeme
+    timezone: Asia/Bangkok
 
 postgresql:
     name: fanboi2
@@ -13,4 +16,5 @@ postgresql:
 
 uwsgi:
     port: 9000
-    processes: 2
+    min_workers: 2
+    max_workers: 4

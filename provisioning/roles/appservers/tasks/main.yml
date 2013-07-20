@@ -66,3 +66,25 @@
     env LANG=en_US.UTF-8 ${app.virtualenv}/bin/python3 setup.py develop
     chdir=${app.root}
     creates=${app.root}/fanboi2.egg-info
+
+# Application configuration
+# ---------------------------------------------------------------------
+
+- name: create configuration file for application
+  sudo_user: www-data
+  template: src=srv/settings.ini.j2 dest=${app.base}/settings.ini
+
+- name: create configuration file for alembic
+  sudo_user: www-data
+  template: src=srv/alembic.ini.j2 dest=${app.base}/alembic.ini
+
+- name: create uwsgi file for application
+  sudo_user: www-data
+  template: src=srv/fanboi2.wsgi.j2 dest=${app.base}/fanboi2.wsgi
+
+# Application startup
+# ---------------------------------------------------------------------
+
+- name: startup application with uwsgi
+  template: src=etc/uwsgi/fanboi2.ini.j2 dest=/etc/uwsgi/fanboi2.ini
+  notify: restart uwsgi

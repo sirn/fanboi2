@@ -1,11 +1,7 @@
-###
-# app configuration
-# http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/environment.html
-###
-
 [app:main]
 use = egg:fanboi2
 
+{% if development %}
 pyramid.reload_templates = true
 pyramid.debug_authorization = false
 pyramid.debug_notfound = false
@@ -16,30 +12,30 @@ pyramid.includes =
     pyramid_tm
 
 debugtoolbar.hosts = 0.0.0.0/0
+{% else %}
+pyramid.reload_templates = false
+pyramid.debug_authorization = false
+pyramid.debug_notfound = false
+pyramid.debug_routematch = false
+pyramid.default_locale_name = en
+pyramid.includes =
+    pyramid_tm
+{% endif %}
+
 jinja2.directories = fanboi2:templates
-sqlalchemy.url = postgresql://fanboi2:dev@localhost:5432/fanboi2_dev
-redis.url = redis://localhost:6379/0
-akismet.key =
+sqlalchemy.url = postgresql://{{ postgresql.username }}:{{ postgresql.password }}@{{ hostvars[groups['webservers'][0]].ansible_default_ipv4.address }}:5432/{{ postgresql.name }}
+redis.url = redis://{{ hostvars[groups['webservers'][0]].ansible_default_ipv4.address }}:6379/0
+akismet.key = {{ app.akismet_key }}
 
 session.type = file
 session.data_dir = %(here)s/tmp/session/data
 session.lock_dir = %(here)s/tmp/session/lock
 session.key = _session
 session.httponly = true
-session.secret = ThisIsMySecret
+session.secret = {{ app.csrf_secret }}
 
-app.timezone = Asia/Bangkok
-app.secret = CHANGEME
-
-[server:main]
-use = egg:waitress#main
-host = 0.0.0.0
-port = 6543
-
-###
-# logging configuration
-# http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/logging.html
-###
+app.timezone = {{ app.timezone }}
+app.secret = {{ app.session_secret }}
 
 [loggers]
 keys = root, fanboi2, sqlalchemy
@@ -50,6 +46,7 @@ keys = console
 [formatters]
 keys = generic
 
+{% if development %}
 [logger_root]
 level = INFO
 handlers = console
@@ -63,6 +60,21 @@ qualname = fanboi2
 level = INFO
 handlers =
 qualname = sqlalchemy.engine
+{% else %}
+[logger_root]
+level = WARN
+handlers = console
+
+[logger_fanboi2]
+level = WARN
+handlers =
+qualname = fanboi2
+
+[logger_sqlalchemy]
+level = WARN
+handlers =
+qualname = sqlalchemy.engine
+{% endif %}
 
 [handler_console]
 class = StreamHandler
