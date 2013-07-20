@@ -21,13 +21,16 @@
 # ---------------------------------------------------------------------
 
 - name: ensure that user to run the app exists
-  user: name=${user} state=present
+  user: name=www-data home=/var/www state=present
 
 - name: creates application directory
-  file: path=${app.base} owner=${user} state=directory
+  file: path=${app.base} owner=www-data state=directory
+
+- name: fix /var/www permission
+  file: path=/var/www owner=www-data group=root state=directory
 
 - name: setup virtualenv for application directory
-  sudo_user: ${user}
+  sudo_user: www-data
   command: |
     virtualenv -p python3 ${app.virtualenv}
     creates=${app.virtualenv}
@@ -50,15 +53,15 @@
 
 # TODO: Remove me after requests 1.2.4 is released. See also:
 # https://github.com/kennethreitz/requests/issues/1416
-#
+
 - name: install git version of requests
-  sudo_user: ${user}
+  sudo_user: www-data
   pip:
     name: "git+https://github.com/kennethreitz/requests#egg=requests"
     virtualenv: ${app.virtualenv}
 
 - name: install application in development mode
-  sudo_user: ${user}
+  sudo_user: www-data
   command: |
     env LANG=en_US.UTF-8 ${app.virtualenv}/bin/python3 setup.py develop
     chdir=${app.root}
