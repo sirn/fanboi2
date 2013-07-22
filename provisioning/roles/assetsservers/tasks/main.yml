@@ -1,0 +1,26 @@
+---
+- name: add ppa:chris-lea/node.js for node.js installation
+  apt_repository: repo=ppa:chris-lea/node.js
+
+- name: update apt for new ppa
+  command: aptitude update creates=/usr/bin/nodejs
+
+- name: install node.js
+  apt: pkg=nodejs state=latest
+
+# Project installation
+# --------------------------------------------------------------------------
+
+- name: install brunch for assets compilation
+  npm: name=brunch global=yes
+
+- name: install fanboi2 requirements
+  sudo_user: www-data
+  npm: path=${root}
+
+# Initial compilation
+# --------------------------------------------------------------------------
+
+- name: initial assets compilation
+  sudo_user: www-data
+  command: brunch build -o creates=${static} chdir=${root}
