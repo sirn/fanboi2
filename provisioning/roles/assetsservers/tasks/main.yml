@@ -24,3 +24,9 @@
 - name: initial assets compilation
   sudo_user: www-data
   command: brunch build -o creates=${static} chdir=${root}
+
+# Assets watching (in development)
+# --------------------------------------------------------------------------
+
+- include: watch.yml
+  only_if: "'$development' == '1'"
