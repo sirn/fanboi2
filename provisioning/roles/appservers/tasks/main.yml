@@ -24,7 +24,7 @@
   user: name=www-data home=/var/www state=present
 
 - name: creates application directory
-  file: path=${app.base} owner=www-data state=directory
+  file: path=${base} owner=www-data state=directory
 
 - name: fix /var/www permission
   file: path=/var/www owner=www-data group=root state=directory
@@ -32,8 +32,8 @@
 - name: setup virtualenv for application directory
   sudo_user: www-data
   command: |
-    virtualenv -p python3 ${app.virtualenv}
-    creates=${app.virtualenv}
+    virtualenv -p python3 ${virtualenv}
+    creates=${virtualenv}
 
 # uWSGI setup
 # ---------------------------------------------------------------------
@@ -58,29 +58,29 @@
   sudo_user: www-data
   pip:
     name: "git+https://github.com/kennethreitz/requests#egg=requests"
-    virtualenv: ${app.virtualenv}
+    virtualenv: ${virtualenv}
 
 - name: install application in development mode
   sudo_user: www-data
   command: |
-    env LANG=en_US.UTF-8 ${app.virtualenv}/bin/python3 setup.py develop
-    chdir=${app.root}
-    creates=${app.root}/fanboi2.egg-info
+    env LANG=en_US.UTF-8 ${virtualenv}/bin/python3 setup.py develop
+    chdir=${root}
+    creates=${virtualenv}/bin/fb2_create_board
 
 # Application configuration
 # ---------------------------------------------------------------------
 
 - name: create configuration file for application
   sudo_user: www-data
-  template: src=srv/settings.ini.j2 dest=${app.base}/settings.ini
+  template: src=srv/settings.ini.j2 dest=${base}/settings.ini
 
 - name: create configuration file for alembic
   sudo_user: www-data
-  template: src=srv/alembic.ini.j2 dest=${app.base}/alembic.ini
+  template: src=srv/alembic.ini.j2 dest=${base}/alembic.ini
 
 - name: create uwsgi file for application
   sudo_user: www-data
-  template: src=srv/fanboi2.wsgi.j2 dest=${app.base}/fanboi2.wsgi
+  template: src=srv/fanboi2.wsgi.j2 dest=${base}/fanboi2.wsgi
 
 # Application startup
 # ---------------------------------------------------------------------

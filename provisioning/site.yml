@@ -12,10 +12,10 @@
     # ---------------------------------------------------------------------
 
     - name: create a working directory
-      file: path=${app.base} state=directory
+      file: path=${base} state=directory
 
     - name: link vagrant path to server directory for development
-      file: src=/vagrant dest=${app.root} state=link
+      file: src=/vagrant dest=${root} state=link
       only_if: "'$development' == '1'"
 
 

@@ -38,7 +38,7 @@ http {
 
   upstream backend {
     {% for host in groups['webservers'] %}
-    server {{ hostvars[host].ansible_default_ipv4.address }}:{{ hostvars[host].uwsgi.port }};
+    server {{ hostvars[host].ansible_default_ipv4.address }}:{{ hostvars[host].app_port }};
     {% endfor %}
   }
 
@@ -47,7 +47,7 @@ http {
     access_log /var/log/nginx/access.log combined;
 
     location /static {
-      alias {{ app.static }};
+      alias {{ static }};
     }
 
     location / {

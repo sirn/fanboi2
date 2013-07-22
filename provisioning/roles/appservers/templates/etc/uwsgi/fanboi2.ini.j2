@@ -1,16 +1,16 @@
 [uwsgi]
-virtualenv = {{ app.virtualenv }}
-wsgi-file = {{ app.base }}/fanboi2.wsgi
+virtualenv = {{ virtualenv }}
+wsgi-file = {{ base }}/fanboi2.wsgi
 uid = www-data
 gid = www-data
-socket = {{ ansible_default_ipv4.address }}:{{ uwsgi.port }}
+socket = {{ ansible_default_ipv4.address }}:{{ app_port }}
 max-requests = 1000
 {% if development %}
 python-autoreload = 3
 {% else %}
-cheaper = {{ uwsgi.min_workers }}
-workers = {{ uwsgi.max_workers }}
-cheaper-initial = {{ uwsgi.min_workers }}
+cheaper = {{ min_workers }}
+workers = {{ max_workers }}
+cheaper-initial = {{ min_workers }}
 cheaper-algo = busyness
 cheaper-step = 1
 {% endif %}
