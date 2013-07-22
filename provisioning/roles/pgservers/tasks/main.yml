@@ -37,3 +37,18 @@
   with_items:
     - ${db_name}
     - ${db_test}
+
+# Configuring PostgreSQL
+# --------------------------------------------------------------------------
+
+- name: update postgresql configuration file
+  template:
+    src: etc/postgresql/9.2/main/postgresql.conf.j2
+    dest: /etc/postgresql/9.2/main/postgresql.conf
+  notify: restart postgresql
+
+- name: update pg_hba to allow appservers
+  template:
+    src: etc/postgresql/9.2/main/pg_hba.conf.j2
+    dest: /etc/postgresql/9.2/main/pg_hba.conf
+  notify: restart postgresql
