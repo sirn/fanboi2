@@ -1,6 +1,7 @@
 exports.config =
   paths:
     public: 'fanboi2/static'
+    watched: ['fanboi2/resources']
 
   files:
     javascripts:
