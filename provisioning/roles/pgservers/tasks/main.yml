@@ -1,11 +1,11 @@
 ---
+- name: add official postgresql ubuntu repository key
+  apt_key: id=ACCC4CF8 url=https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
 - name: add official postgresql ubuntu repository
   apt_repository:
     repo: deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main
-    state: present
-
-- name: add official postgresql ubuntu repository key
-  apt_key: id=ACCC4CF8 url=https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    update_cache: yes
 
 - name: update apt for new repository
   command: aptitude update creates=/etc/init.d/postgresql

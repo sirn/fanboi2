@@ -1,9 +1,6 @@
 ---
 - name: add ppa:nginx/stable for nginx installation
-  apt_repository: repo=ppa:nginx/stable
-
-- name: update apt for new ppa
-  command: aptitude update creates=/etc/init.d/nginx
+  apt_repository: repo=ppa:nginx/stable update_cache=yes
 
 - name: install nginx
   apt: pkg=nginx state=latest

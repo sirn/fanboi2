@@ -1,9 +1,6 @@
 ---
 - name: add ppa:chris-lea/node.js for node.js installation
-  apt_repository: repo=ppa:chris-lea/node.js
-
-- name: update apt for new ppa
-  command: aptitude update creates=/usr/bin/nodejs
+  apt_repository: repo=ppa:chris-lea/node.js update_cache=yes
 
 - name: install node.js
   apt: pkg=nodejs state=latest
@@ -29,4 +26,4 @@
 # --------------------------------------------------------------------------
 
 - include: watch.yml
-  only_if: "'$development' == '1'"
+  when: development == '1'

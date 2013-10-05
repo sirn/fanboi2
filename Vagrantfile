@@ -4,7 +4,6 @@ Vagrant.configure("2") do |config|
   config.vm.network :private_network, :ip => '192.168.200.100'
   config.vm.provision :ansible do |ansible|
     ansible.playbook = "provisioning/site.yml"
-    ansible.inventory_file = "provisioning/development_hosts"
-    ansible.extra_vars = {development: 1}
+    ansible.inventory_path = "provisioning/development_hosts"
   end
 end
