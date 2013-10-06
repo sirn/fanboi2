@@ -1,8 +1,8 @@
 [uwsgi]
 virtualenv = {{ virtualenv }}
 wsgi-file = {{ base }}/fanboi2.wsgi
-uid = www-data
-gid = www-data
+uid = {{ user }}
+gid = {{ user }}
 socket = {{ ansible_default_ipv4.address }}:{{ app_port }}
 max-requests = 1000
 {% if development %}

@@ -4,3 +4,7 @@ python: "3.2"
 install: "pip install . --use-mirrors"
 before_script: 'psql -c "create database fanboi2;" -U postgres'
 env: POSTGRESQL_TEST_DATABASE=postgresql://postgres@localhost:5432/fanboi2
+
+notifications:
+    email: false
+    irc: 'chat.freenode.net#fanboi'

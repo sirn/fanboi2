@@ -20,17 +20,14 @@
 # Setup environment.
 # ---------------------------------------------------------------------
 
-- name: ensure that user to run the app exists
-  user: name=www-data home=/var/www state=present
-
 - name: creates application directory
-  file: path=${base} owner=www-data state=directory
+  file: path=${base} owner=${user} state=directory
 
 - name: fix /var/www permission
-  file: path=/var/www owner=www-data group=root state=directory
+  file: path=/var/www owner=${user} group=root state=directory
 
 - name: setup virtualenv for application directory
-  sudo_user: www-data
+  sudo_user: ${user}
   command: |
     virtualenv -p python3 ${virtualenv}
     creates=${virtualenv}
@@ -51,17 +48,8 @@
 # Application setup
 # ---------------------------------------------------------------------
 
-# TODO: Remove me after requests 1.2.4 is released. See also:
-# https://github.com/kennethreitz/requests/issues/1416
-
-- name: install git version of requests
-  sudo_user: www-data
-  pip:
-    name: "git+https://github.com/kennethreitz/requests#egg=requests"
-    virtualenv: ${virtualenv}
-
 - name: install application in development mode
-  sudo_user: www-data
+  sudo_user: ${user}
   command: |
     env LANG=en_US.UTF-8 ${virtualenv}/bin/python3 setup.py develop
     chdir=${root}
@@ -71,15 +59,15 @@
 # ---------------------------------------------------------------------
 
 - name: create configuration file for application
-  sudo_user: www-data
+  sudo_user: ${user}
   template: src=srv/settings.ini.j2 dest=${base}/settings.ini
 
 - name: create configuration file for alembic
-  sudo_user: www-data
+  sudo_user: ${user}
   template: src=srv/alembic.ini.j2 dest=${base}/alembic.ini
 
 - name: create uwsgi file for application
-  sudo_user: www-data
+  sudo_user: ${user}
   template: src=srv/fanboi2.wsgi.j2 dest=${base}/fanboi2.wsgi
 
 # Application startup
