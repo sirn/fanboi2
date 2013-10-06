@@ -48,15 +48,17 @@
 # Application setup
 # ---------------------------------------------------------------------
 
+- name: check installation status for fanboi2
+  register: fanboi2_installed
+  shell: ${virtualenv}/bin/python3 -c 'import fanboi2' && echo '1' || echo '0'
+  changed_when: fanboi2_installed.stdout == '0'
+
 - name: install application in development mode
   sudo_user: ${user}
   command: |
-    env LANG=en_US.UTF-8 ${virtualenv}/bin/python3 setup.py develop
+    env LANG=en_US.UTF-8 ${virtualenv}/bin/pip-3.2 install -e . --use-mirrors
     chdir=${root}
-    creates=${virtualenv}/bin/fb2_create_board
-
-# Application configuration
-# ---------------------------------------------------------------------
+  when: fanboi2_installed.stdout == '0'
 
 - name: create configuration file for application
   sudo_user: ${user}
@@ -69,6 +71,11 @@
 - name: create uwsgi file for application
   sudo_user: ${user}
   template: src=srv/fanboi2.wsgi.j2 dest=${base}/fanboi2.wsgi
+
+- name: sync database to latest version
+  sudo_user: ${user}
+  command: ${virtualenv}/bin/alembic upgrade head chdir=${base}
+  when: fanboi2_installed.stdout == '0'
 
 # Application startup
 # ---------------------------------------------------------------------

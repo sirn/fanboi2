@@ -7,9 +7,6 @@
     repo: deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main
     update_cache: yes
 
-- name: update apt for new repository
-  command: aptitude update creates=/etc/init.d/postgresql
-
 - name: install postgresql and its related packages
   apt: pkg=${item} state=latest
   with_items:
@@ -45,10 +42,13 @@
   template:
     src: etc/postgresql/9.2/main/postgresql.conf.j2
     dest: /etc/postgresql/9.2/main/postgresql.conf
-  notify: restart postgresql
 
 - name: update pg_hba to allow appservers
   template:
     src: etc/postgresql/9.2/main/pg_hba.conf.j2
     dest: /etc/postgresql/9.2/main/pg_hba.conf
-  notify: restart postgresql
+  register: pgconfig_updated
+
+- name: restart postgresql server for new configuration
+  service: name=postgresql state=restarted
+  when: pgconfig_updated.changed

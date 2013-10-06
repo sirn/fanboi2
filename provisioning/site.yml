@@ -2,8 +2,13 @@
 - hosts: all
   sudo: yes
   tasks:
-    - name: ensure all package are latest
-      apt: update_cache=yes upgrade=safe cache_valid_time=604800
+    - name: ensure package index is latest
+      apt: update_cache=yes cache_valid_time=604800
+      register: package_updated
+
+    - name: ensure all packages are up-to-date
+      apt: upgrade=safe
+      when: package_updated.changed
 
     - name: install python-software-properties for ppa support
       apt: pkg=python-software-properties state=latest
