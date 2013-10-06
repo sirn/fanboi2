@@ -1,0 +1,22 @@
+---
+timezone: 'Asia/Bangkok'
+csrf_secret: 'changeme'
+session_secret: 'changeme'
+akismet_key: ''
+
+# Application paths
+base: '/srv/http/fanboi2'
+root: '${base}/app'
+static: '${root}/fanboi2/static'
+virtualenv: '${base}/env'
+
+# PostgreSQL
+db_name: 'fanboi2'
+db_test: 'fanboi2_test'
+db_user: 'fanboi2'
+db_pass: 'fanboi2'
+
+# Worker
+app_port: 9000
+min_workers: 2
+max_workers: 4

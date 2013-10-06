@@ -1,7 +1,0 @@
-[program:<%= @title %>]
-command = <%= @command %>
-autorestart = true
-<% if @retries %>startretries = <%= @retries %><% end %>
-<% if @user %>user = <%= @user %><% end %>
-<% if @env %>environment = <%= @env %><% end %>
-<% if @cwd %>directory = <%= @cwd %><% end %>

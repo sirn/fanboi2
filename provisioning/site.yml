@@ -1,0 +1,261 @@
+---
+- hosts: all
+  sudo: yes
+  handlers:
+    - name: restart nginx
+      service: name=nginx state=restarted
+
+    - name: restart redis
+      service: name=redis-server state=restarted
+
+    - name: restart uwsgi
+      service: name=uwsgi state=restarted
+
+    - name: restart supervisor
+      service: name=supervisor state=restarted
+
+  vars:
+    - python32: ${virtualenv}/bin/python3
+    - pip32: ${virtualenv}/bin/pip-3.2
+
+  tasks:
+    - name: ensure package index is latest
+      apt: update_cache=yes upgrade=safe cache_valid_time=604800
+      register: package_updated
+
+    - name: install python-software-properties for ppa support
+      apt: pkg=python-software-properties state=latest
+
+    # Setup workspace.
+    # ---------------------------------------------------------------------
+
+    - name: create a working directory
+      file: path=${base} state=directory
+
+    - name: link vagrant path to server directory for development
+      file: src=/vagrant dest=${root} state=link
+      when: development == '1'
+
+    # Nginx setup.
+    # ---------------------------------------------------------------------
+
+    - name: add ppa:nginx/stable for nginx installation
+      apt_repository: repo=ppa:nginx/stable update_cache=yes
+
+    - name: install nginx
+      apt: pkg=nginx state=latest
+
+    - name: setup nginx configuration
+      template: src=files/etc/nginx/nginx.conf.j2 dest=/etc/nginx/nginx.conf
+      notify: restart nginx
+
+    - name: cleanup default nginx configuration file
+      file: dest=/etc/nginx/sites-enabled/default state=absent
+      notify: restart nginx
+
+    # PostgreSQL setup.
+    # ---------------------------------------------------------------------
+
+    - name: add official postgresql ubuntu repository key
+      apt_key:
+        id: ACCC4CF8
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+    - name: add official postgresql ubuntu repository
+      apt_repository:
+        repo: deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main
+        update_cache: yes
+
+    - name: install postgresql and its related packages
+      apt: pkg=${item} state=latest
+      with_items:
+        - postgresql-9.2
+        - libpq-dev
+        - python-psycopg2
+
+    - name: update postgresql configuration file
+      template:
+        src: files/etc/postgresql/9.2/main/postgresql.conf.j2
+        dest: /etc/postgresql/9.2/main/postgresql.conf
+
+    - name: update pg_hba to allow appservers
+      template:
+        src: files/etc/postgresql/9.2/main/pg_hba.conf.j2
+        dest: /etc/postgresql/9.2/main/pg_hba.conf
+      register: pgconfig_updated
+
+    - name: restart postgresql server for new configuration
+      service: name=postgresql state=restarted
+      when: pgconfig_updated.changed
+
+    # Redis setup.
+    # ---------------------------------------------------------------------
+
+    - name: add ppa:chris-lea/redis-server for redis installation
+      apt_repository: repo=ppa:chris-lea/redis-server update_cache=yes
+
+    - name: install redis
+      apt: pkg=redis-server state=latest
+
+    - name: update redis configuration file
+      template:
+        src: files/etc/redis/redis.conf.j2
+        dest: /etc/redis/redis.conf
+      notify: restart redis
+
+    # Nodejs setup.
+    # ---------------------------------------------------------------------
+
+    - name: add ppa:chris-lea/node.js for node.js installation
+      apt_repository: repo=ppa:chris-lea/node.js update_cache=yes
+
+    - name: install node.js
+      apt: pkg=nodejs state=latest
+
+    # Python setup.
+    # ---------------------------------------------------------------------
+
+    - name: install python3 and related packages
+      apt: pkg=${item} state=latest
+      with_items:
+        - python3.2
+        - python3.2-dev
+        - python3-setuptools
+        - build-essential
+        - libpq-dev
+        - git
+
+    - name: install python3 requisites
+      command: |
+        easy_install3 ${item}
+        creates=/usr/local/bin/${item}-3.2
+      with_items:
+        - pip
+        - virtualenv
+
+    # uWSGI setup.
+    # ---------------------------------------------------------------------
+
+    - name: install uwsgi to system python
+      pip: name=uwsgi
+
+    - name: ensure that uwsgi configuration dir exists
+      file: path=/etc/uwsgi state=directory
+
+    - name: start uwsgi with upstart
+      copy: src=files/etc/init/uwsgi.conf dest=/etc/init/uwsgi.conf
+      notify: restart uwsgi
+
+    # Application setup.
+    # ---------------------------------------------------------------------
+
+    - name: creates application directory
+      file: path=${base} owner=${user} state=directory
+
+    - name: fix /var/www permission
+      file: path=/var/www owner=${user} group=root state=directory
+
+    - name: setup virtualenv for application directory
+      sudo_user: ${user}
+      command: |
+        virtualenv -p python3 ${virtualenv}
+        creates=${virtualenv}
+
+    - name: check installation status for fanboi2
+      register: fanboi2_installed
+      shell: ${python32} -c 'import fanboi2' && echo '1' || echo '0'
+      changed_when: fanboi2_installed.stdout == '0'
+
+    - name: install application in development mode
+      sudo_user: ${user}
+      command: |
+        env LANG=en_US.UTF-8 ${pip32} install -e . --use-mirrors
+        chdir=${root}
+      when: fanboi2_installed.stdout == '0'
+
+    - name: create configuration file for application
+      sudo_user: ${user}
+      template: src=files/srv/settings.ini.j2 dest=${base}/settings.ini
+
+    - name: create configuration file for alembic
+      sudo_user: ${user}
+      template: src=files/srv/alembic.ini.j2 dest=${base}/alembic.ini
+
+    - name: create uwsgi file for application
+      sudo_user: ${user}
+      template: src=files/srv/fanboi2.wsgi.j2 dest=${base}/fanboi2.wsgi
+
+    - name: create database user for application
+      sudo_user: postgres
+      postgresql_user:
+        user: ${db_user}
+        password: ${db_pass}
+
+    - name: create database for application
+      sudo_user: postgres
+      postgresql_db:
+        db: ${item}
+        owner: ${db_user}
+        encoding: 'UTF-8'
+        lc_collate: 'en_US.UTF-8'
+        lc_ctype: 'en_US.UTF-8'
+      with_items:
+        - ${db_name}
+        - ${db_test}
+
+    - name: sync database to latest version
+      sudo_user: ${user}
+      command: ${virtualenv}/bin/alembic upgrade head chdir=${base}
+      when: fanboi2_installed.stdout == '0'
+
+    - name: startup application with uwsgi
+      template: src=files/etc/uwsgi/fanboi2.ini.j2 dest=/etc/uwsgi/fanboi2.ini
+      notify: restart uwsgi
+
+    # Assets compilation.
+    # ---------------------------------------------------------------------
+
+    - name: install brunch for assets compilation
+      npm: name=brunch global=yes
+
+    - name: install fanboi2 requirements
+      sudo_user: ${user}
+      npm: path=${root}
+
+    - name: initial assets compilation
+      sudo_user: ${user}
+      command: brunch build -o creates=${static} chdir=${root}
+
+    - name: install supervisor for process management
+      apt: pkg=supervisor state=latest
+      when: development == '1'
+
+    - name: enable brunch watch for fanboi2
+      template:
+        src: files/etc/supervisor/conf.d/brunch.conf.j2
+        dest: /etc/supervisor/conf.d/brunch.conf
+      notify: restart supervisor
+      when: development == '1'
+
+    # Firewall configuration.
+    # ---------------------------------------------------------------------
+
+    - name: install ufw
+      apt: pkg=ufw state=latest
+
+    - name: check installation status for ufw
+      register: ufw_setup
+      shell: grep ENABLED=yes /etc/ufw/ufw.conf && echo '1' || echo '0'
+      changed_when: ufw_setup.stdout == '0'
+
+    - name: allow ssh via ufw
+      command: ufw allow 22/tcp
+      when: ufw_setup.stdout == '0'
+
+    - name: allow http via ufw
+      command: ufw allow 80/tcp
+      when: ufw_setup.stdout == '0'
+
+    - name: enable ufw
+      shell: echo 'y' | ufw enable
+      when: ufw_setup.stdout == '0'

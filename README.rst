@@ -1,7 +1,9 @@
-Fanboi2
-=======
+Fanboi2 |ci|
+============
 
 Board engine behind `Fanboi Channel <http://fanboi.ch/>`_ written in Python.
+
+.. |ci| image:: https://api.travis-ci.org/pxfs/fanboi2.png?branch=develop
 
 Getting Started
 ---------------
@@ -9,34 +11,34 @@ Getting Started
 The Better Way
 ~~~~~~~~~~~~~~
 
-We use `Vagrant <http://www.vagrantup.com/>`_ for development environment provisioning. You must first `install Vagrant <http://docs.vagrantup.com/v2/installation/>`_ (and `VirtualBox <https://www.virtualbox.org/>`_ or any other available `providers <http://docs.vagrantup.com/v2/providers/index.html>`_) and run the following commands::
+We use `Vagrant <http://www.vagrantup.com/>`_ for development environment provisioning. You must first `install Vagrant <http://docs.vagrantup.com/v2/installation/>`_ (and `VirtualBox <https://www.virtualbox.org/>`_ or any other available `providers <http://docs.vagrantup.com/v2/providers/index.html>`_) and `Ansible <http://www.ansibleworks.com/docs/gettingstarted.html#via-pip>`_ (for Windows users, please use `Cygwin <http://www.cygwin.com/>`_)::
 
-    $ git submodule update --init
-    $ vagrant box add precise64 http://files.vagrantup.com/precise64.box
+    $ pip install ansible
     $ vagrant up
 
-That's it! You can now visit http://localhost:6543/ and proceed on development. After you've done, you can now run either ``vagrant destroy`` to completely remove the VM or ``vagrant halt`` to shutdown the VM. See also `Teardown <http://docs.vagrantup.com/v2/getting-started/teardown.html>`_ section of Vagrant documentation.
+That's it! You can now visit http://localhost:8080/ and proceed on development. To clean up the VM, you can run either ``vagrant destroy`` to completely remove the VM or ``vagrant halt`` to shutdown the VM. See also `Teardown <http://docs.vagrantup.com/v2/getting-started/teardown.html>`_ section of Vagrant documentation. After you've confirmed the app is running, please see **Management Scripts** section below.
 
 The Adventurous Way
 ~~~~~~~~~~~~~~~~~~~
 
-If you don't want to use Vagrant (oh you sadistic), you can manually install everything, including:
+If you don't want to use Vagrant, you can manually install everything. Start with dependencies:
 
 - `Python 3.2 <http://www.python.org/>`_
 - `PostgreSQL 9.1 <http://www.postgresql.org/>`_
 - `Redis <http://redis.io>`_
 - `node.js <http://nodejs.org>`_ with `brunch <http://brunch.io/>`_
 
-After all prerequisites are installed, you can now create the database, run setup and seed the database::
+After all prerequisites are installed, you can now create the database and run setup::
 
-    $ createuser -P fanboi2  # Set "dev" as password.
-    $ createdb -O fanboi2 fanboi2_dev
-    $ python setup.py develop
-    $ alembic upgrade head
+    $ createuser -P fanboi2                # Create fanboi2 user. Please set "fanboi2" as password.
+    $ createdb -O fanboi2 fanboi2          # Create main database.
+    $ createdb -O fanboi2 fanboi2_test     # Create test database (required for testing).
+    $ python3 setup.py develop             # Setup app in develop mode.
+    $ python3 provisioning/genconfig.py    # Generate settings.ini and alembic.ini.
+    $ alembic upgrade head                 # Migrate database.
 
-It is recommended to run tests and see if all tests passed. Before doing so, you must first create the ``fanboi2_test`` database::
+It is recommended to run tests and see if all tests passed::
 
-    $ createdb -O fanboi2 fanboi2_test
     $ pip install nose
     $ nosetests
 
@@ -50,6 +52,8 @@ You may also found ``brunch watch`` useful for automatic assets compilation::
 
     $ brunch watch
 
+You should now be able to visit http://localhost:6543/ and proceed on development. After you've confirmed the app is running, please see **Management Scripts** section below.
+
 Management Scripts
 ------------------
 
@@ -57,7 +61,7 @@ We currently uses CLI to manage board settings. If you use Vagrant, you will nee
 
     $ vagrant ssh
     $ cd /vagrant
-    $ source /usr/local/venv/fanboi2/bin/activate
+    $ source /srv/http/fanboi2/env/bin/activate
 
 After you've setup the environment, the first thing you want to do is to create a new board::
 
@@ -70,15 +74,10 @@ Above commands will create a board named "Lounge" and "Demo" at ``/lounge`` and 
 
 Slug is used here to identify which board to edit. All database fields in board are editable this way. Some field, such as ``settings`` must be a **valid JSON**. Both commands also accepts ``--help`` which will display some available options.
 
-Troubleshooting
----------------
-
-For Vagrant user, if for some reason the URL isn't accessible, you can try visiting http://localhost:9001/ to visit Supervisor web interface and restart all processes.
-
 Contributing
 ------------
 
-We use `git-flow <https://github.com/nvie/gitflow>`_ as primary branching model. All developments are done in the **develop** branch; **master** branch is the most stable and will be deployed immediately to the live site. You can install ``git-flow`` by following `git-flow installation instructions <https://github.com/nvie/gitflow/wiki/Installation>`_ (use the default values). To contribute, you must:
+We use `git-flow <https://github.com/nvie/gitflow>`_ as primary branching model. All developments are done in the **develop** branch; **master** branch is the most stable and will be deployed immediately to the live site. You can install ``git-flow`` by following `git-flow installation instructions <https://github.com/nvie/gitflow/wiki/Installation>`_ (use the default values). Although using `git-flow` is not a requirement for pull request, it is recommended to do so:
 
 1. Fork this repo.
 2. Start a new feature with ``git flow feature start feature-name``.
@@ -86,7 +85,7 @@ We use `git-flow <https://github.com/nvie/gitflow>`_ as primary branching model.
 
 Please make sure that test coverage is 100% and everything passed. It's also a good idea to open a bug ticket for feature you want to implement before starting.
 
-We have development IRC channel at `irc.freenode.net #fanboi <irc://irc.freenode.net/#fanboi>`_. Although if you want to submit patch anonymously you can also create git patch and post it to `support thread <https://fanboi.ch/lounge/1/>`_ as well.
+We have development IRC channel at `irc.freenode.net#fanboi <irc://irc.freenode.net/#fanboi>`_. Although if you want to submit patch anonymously you can also create git patch and post it to `support thread <https://fanboi.ch/lounge/1/>`_ as well.
 
 License
 -------

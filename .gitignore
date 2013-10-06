@@ -30,3 +30,7 @@ logs/
 # Vagrant stuff
 .vagrant
 *.gz
+
+# User settings
+settings.ini
+alembic.ini

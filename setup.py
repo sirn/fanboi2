@@ -18,7 +18,6 @@ requires = [
     'zope.sqlalchemy',
     'waitress',
     'alembic',
-    'wtforms',
     'webtest',
     'isodate',
     'pytz',
@@ -35,6 +34,7 @@ requires = [
 
     # Python 3.2 compatible
     'MarkupSafe==0.15', # https://github.com/mitsuhiko/markupsafe/pull/13
+    'wtforms==1.0.3', # https://bitbucket.org/simplecodes/wtforms/issue/153/
     'Jinja2==2.6',
     ]
 

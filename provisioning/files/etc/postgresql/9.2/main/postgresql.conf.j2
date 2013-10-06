@@ -1,0 +1,53 @@
+data_directory = '/var/lib/postgresql/9.2/main'
+hba_file = '/etc/postgresql/9.2/main/pg_hba.conf'
+ident_file = '/etc/postgresql/9.2/main/pg_ident.conf'
+external_pid_file = '/var/run/postgresql/9.2-main.pid'
+
+
+#------------------------------------------------------------------------------
+# CONNECTIONS AND AUTHENTICATION
+#------------------------------------------------------------------------------
+
+# - Connection Settings -
+
+listen_addresses = 'localhost,{{ ansible_default_ipv4.address }}'
+max_connections = 100
+unix_socket_directory = '/var/run/postgresql'
+port = 5432
+
+# - Security and Authentication -
+ssl = true
+ssl_cert_file = '/etc/ssl/certs/ssl-cert-snakeoil.pem'
+ssl_key_file = '/etc/ssl/private/ssl-cert-snakeoil.key'
+
+
+#------------------------------------------------------------------------------
+# RESOURCE USAGE (except WAL)
+#------------------------------------------------------------------------------
+
+# - Memory -
+shared_buffers = 24MB
+
+
+#------------------------------------------------------------------------------
+# ERROR REPORTING AND LOGGING
+#------------------------------------------------------------------------------
+
+# - What to Log -
+log_line_prefix = '%t '
+log_timezone = 'localtime'
+
+
+#------------------------------------------------------------------------------
+# CLIENT CONNECTION DEFAULTS
+#------------------------------------------------------------------------------
+
+# - Locale and Formatting -
+datestyle = 'iso, mdy'
+timezone = 'localtime'
+client_encoding = 'utf8'
+lc_messages = 'en_US.UTF-8'
+lc_monetary = 'en_US.UTF-8'
+lc_numeric = 'en_US.UTF-8'
+lc_time = 'en_US.UTF-8'
+default_text_search_config = 'pg_catalog.english'
