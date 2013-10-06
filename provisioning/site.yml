@@ -5,6 +5,9 @@
     - name: restart nginx
       service: name=nginx state=restarted
 
+    - name: restart redis
+      service: name=redis-server state=restarted
+
     - name: restart uwsgi
       service: name=uwsgi state=restarted
 
@@ -17,12 +20,8 @@
 
   tasks:
     - name: ensure package index is latest
-      apt: update_cache=yes cache_valid_time=604800
+      apt: update_cache=yes upgrade=safe cache_valid_time=604800
       register: package_updated
-
-    - name: ensure all packages are up-to-date
-      apt: upgrade=safe
-      when: package_updated.changed
 
     - name: install python-software-properties for ppa support
       apt: pkg=python-software-properties state=latest
@@ -97,6 +96,12 @@
 
     - name: install redis
       apt: pkg=redis-server state=latest
+
+    - name: update redis configuration file
+      template:
+        src: files/etc/redis/redis.conf.j2
+        dest: /etc/redis/redis.conf
+      notify: restart redis
 
     # Nodejs setup.
     # ---------------------------------------------------------------------
