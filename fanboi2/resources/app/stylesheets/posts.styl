@@ -55,6 +55,7 @@ section#main
                     margin-top 10px
 
                 p.shortened
+                    clear both
                     color $header-color
                     font-size 12px
                     font-style italic
@@ -69,6 +70,10 @@ section#main
                     &:hover
                         color #005580
                         text-decoration underline
+
+                p.thumbnails
+                    clear both
+                    overflow hidden
 
                 a.thumbnail
                     $max-width = 90px
@@ -144,7 +149,7 @@ section#main
 
                 > div
                     p.shortened
-                        margin-bottom ($post-padding / 2) * -1
+                        margin-bottom ($post-padding * -1) + 5px
 
                     div.popover
                         display none

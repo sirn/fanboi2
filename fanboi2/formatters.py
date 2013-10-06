@@ -66,6 +66,7 @@ def extract_thumbnail(text):
 TP_THUMB = '<a href="%s" class="thumbnail" target="_blank"><img src="%s"></a>'
 TP_LINK = '<a href="%s" class="link" target="_blank" rel="nofollow">%s</a>'
 TP_PARAGRAPH = '<p>%s</p>'
+TP_THUMB_PARAGRAPH = '<p class="thumbnails">%s</p>'
 
 
 def url_fix(string):
@@ -124,7 +125,7 @@ def format_text(text, shorten=None):
     if thumbnails:
         for thumbnail, link in extract_thumbnail(text):
             thumbs.append(TP_THUMB % (link, thumbnail))
-        output.append(TP_PARAGRAPH % ''.join(thumbs))
+        output.append(TP_THUMB_PARAGRAPH % ''.join(thumbs))
 
     markup = PostMarkup('\n'.join(output))
     markup.length = length

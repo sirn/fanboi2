@@ -962,7 +962,7 @@ class TestFormatters(unittest.TestCase):
                       'target="_blank" rel="nofollow">'
                       'http://imgur.com/foobar3.jpg</a><br>'
                       'Buy today get TWO for FREE!!1</p>\n'
-                   '<p><a href="http://imgur.com/foobar1" '
+                   '<p class="thumbnails"><a href="http://imgur.com/foobar1" '
                          'class="thumbnail" target="_blank">'
                          '<img src="http://i.imgur.com/foobar1s.jpg">'
                          '</a>'
