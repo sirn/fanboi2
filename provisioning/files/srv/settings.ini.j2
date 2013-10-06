@@ -23,8 +23,8 @@ pyramid.includes =
 {% endif %}
 
 jinja2.directories = fanboi2:templates
-sqlalchemy.url = postgresql://{{ db_user }}:{{ db_pass }}@{{ hostvars[groups['webservers'][0]].ansible_default_ipv4.address }}:5432/{{ db_name }}
-redis.url = redis://{{ hostvars[groups['webservers'][0]].ansible_default_ipv4.address }}:6379/0
+sqlalchemy.url = postgresql://{{ db_user }}:{{ db_pass }}@{{ ansible_default_ipv4.address }}:5432/{{ db_name }}
+redis.url = redis://{{ ansible_default_ipv4.address }}:6379/0
 akismet.key = {{ akismet_key }}
 
 session.type = file

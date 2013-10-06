@@ -4,6 +4,4 @@ host    all             all             127.0.0.1/32            md5
 host    all             all             ::1/128                 md5
 
 # Allow connection to fanboi2 databases for app servers.
-{% for host in groups['webservers'] %}
-host {{ db_name }} {{ db_user }} {{ hostvars[host].ansible_default_ipv4.address }}/32 md5
-{% endfor %}
+host {{ db_name }} {{ db_user }} {{ ansible_default_ipv4.address }}/32 md5

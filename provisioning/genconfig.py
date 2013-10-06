@@ -19,8 +19,7 @@ default_config = {
     'root': os.path.join(basedir, 'app'),
 
     # Ansible stubs.
-    'groups': {'webservers': ['main']},
-    'hostvars': {'main': {'ansible_default_ipv4': {'address': '127.0.0.1'}}},
+    'ansible_default_ipv4': {'address': '127.0.0.1'},
 }
 
 
@@ -33,5 +32,5 @@ def gen(source, dest):
 
 
 if __name__ == '__main__':
-    gen('roles/appservers/templates/srv/settings.ini.j2', 'settings.ini')
-    gen('roles/appservers/templates/srv/alembic.ini.j2', 'alembic.ini')
+    gen('files/srv/settings.ini.j2', 'settings.ini')
+    gen('files/srv/alembic.ini.j2', 'alembic.ini')

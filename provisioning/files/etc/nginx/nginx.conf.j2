@@ -37,9 +37,7 @@ http {
   {% endif %}
 
   upstream backend {
-    {% for host in groups['webservers'] %}
-    server {{ hostvars[host].ansible_default_ipv4.address }}:{{ hostvars[host].app_port }};
-    {% endfor %}
+    server {{ ansible_default_ipv4.address }}:{{ app_port }};
   }
 
   server {
