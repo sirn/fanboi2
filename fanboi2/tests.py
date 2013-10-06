@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import mock
+import os
 import transaction
 import unittest
 from fanboi2 import DBSession, Base
@@ -10,8 +11,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from zope.interface.verify import verifyObject
 
 
-# TODO: Stop hard-coding database URI.
-DATABASE_URI = 'postgresql://fanboi2:fanboi2@localhost:5432/fanboi2_test'
+DATABASE_URI = os.environ.get(
+    'POSTGRESQL_TEST_DATABASE',
+    'postgresql://fanboi2:fanboi2@localhost:5432/fanboi2_test')
 
 
 class DummyRedis(object):

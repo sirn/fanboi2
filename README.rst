@@ -1,7 +1,9 @@
-Fanboi2
-=======
+Fanboi2 |ci|
+============
 
 Board engine behind `Fanboi Channel <http://fanboi.ch/>`_ written in Python.
+
+.. |ci| image:: https://api.travis-ci.org/pxfs/fanboi2.png?branch=develop
 
 Getting Started
 ---------------
