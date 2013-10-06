@@ -236,3 +236,26 @@
         dest: /etc/supervisor/conf.d/brunch.conf
       notify: restart supervisor
       when: development == '1'
+
+    # Firewall configuration.
+    # ---------------------------------------------------------------------
+
+    - name: install ufw
+      apt: pkg=ufw state=latest
+
+    - name: check installation status for ufw
+      register: ufw_setup
+      shell: grep ENABLED=yes /etc/ufw/ufw.conf && echo '1' || echo '0'
+      changed_when: ufw_setup.stdout == '0'
+
+    - name: allow ssh via ufw
+      command: ufw allow 22/tcp
+      when: ufw_setup.stdout == '0'
+
+    - name: allow http via ufw
+      command: ufw allow 80/tcp
+      when: ufw_setup.stdout == '0'
+
+    - name: enable ufw
+      shell: echo 'y' | ufw enable
+      when: ufw_setup.stdout == '0'
