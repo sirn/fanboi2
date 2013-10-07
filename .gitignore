@@ -34,3 +34,7 @@ logs/
 # User settings
 settings.ini
 alembic.ini
+
+# Provisioning
+provisioning/production_hosts
+provisioning/host_vars

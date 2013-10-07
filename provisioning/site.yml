@@ -21,20 +21,12 @@
   tasks:
     - name: ensure package index is latest
       apt: update_cache=yes upgrade=safe cache_valid_time=604800
-      register: package_updated
 
-    - name: install python-software-properties for ppa support
-      apt: pkg=python-software-properties state=latest
-
-    # Setup workspace.
-    # ---------------------------------------------------------------------
-
-    - name: create a working directory
-      file: path=${base} state=directory
-
-    - name: link vagrant path to server directory for development
-      file: src=/vagrant dest=${root} state=link
-      when: development == '1'
+    - name: install prerequisites packages
+      apt: pkg=${item} state=latest
+      with_items:
+        - python-software-properties
+        - git-core
 
     # Nginx setup.
     # ---------------------------------------------------------------------
@@ -146,14 +138,29 @@
       copy: src=files/etc/init/uwsgi.conf dest=/etc/init/uwsgi.conf
       notify: restart uwsgi
 
-    # Application setup.
+    # Workspace setup.
     # ---------------------------------------------------------------------
 
-    - name: creates application directory
+    - name: ensure that user to run the app exists
+      user: name=${user} state=present
+
+    - name: create a working directory
       file: path=${base} owner=${user} state=directory
 
-    - name: fix /var/www permission
-      file: path=/var/www owner=${user} group=root state=directory
+    - name: link vagrant path to server directory for development
+      sudo_user: ${user}
+      file: src=/vagrant dest=${root} state=link
+      when: development == '1'
+
+    - name: clone application to root directory
+      sudo_user: ${user}
+      when: development != '1'
+      git:
+        repo: https://github.com/pxfs/fanboi2.git
+        dest: ${root}
+
+    # Application setup.
+    # ---------------------------------------------------------------------
 
     - name: setup virtualenv for application directory
       sudo_user: ${user}

@@ -1,4 +1,7 @@
 ---
+development: 0
+
+# Application config
 timezone: 'Asia/Bangkok'
 csrf_secret: 'changeme'
 session_secret: 'changeme'
