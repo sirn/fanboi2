@@ -144,6 +144,10 @@
     - name: ensure that user to run the app exists
       user: name=${user} state=present
 
+    # In case we use www-data as ${user}, /var/www isn't properly chown'ed.
+    - name: fix /var/www permission
+      file: path=/var/www owner=${user} group=root state=directory
+
     - name: create a working directory
       file: path=${base} owner=${user} state=directory
 
