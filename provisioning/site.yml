@@ -248,6 +248,15 @@
       notify: restart supervisor
       when: development == '1'
 
+    # Mosh setup
+    # ---------------------------------------------------------------------
+
+    - name: add ppa:keithw/mosh for mosh installation
+      apt_repository: repo=ppa:keithw/mosh update_cache=yes
+
+    - name: install mosh
+      apt: pkg=mosh state=latest
+
     # Firewall configuration.
     # ---------------------------------------------------------------------
 
@@ -265,6 +274,10 @@
 
     - name: allow http via ufw
       command: ufw allow 80/tcp
+      when: ufw_setup.stdout == '0'
+
+    - name: allow mosh via ufw
+      command: ufw allow 60000:60010/udp
       when: ufw_setup.stdout == '0'
 
     - name: enable ufw
