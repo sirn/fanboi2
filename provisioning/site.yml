@@ -236,7 +236,7 @@
 
     - name: compile fanboi2 assets
       sudo_user: ${user}
-      command: brunch build -o chdir=${root}
+      command: brunch build --production chdir=${root}
       when: fanboi2_linked.changed or fanboi2_cloned.changed
 
     - name: install supervisor for process management
