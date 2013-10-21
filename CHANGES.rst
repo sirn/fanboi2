@@ -1,5 +1,11 @@
-0.6.0
+0.6.1
 =====
+
+- Changed from Puppet provisioning to Ansible provisioning.
+- Fixed display error when thumbnail and read more posts are displayed together.
+
+0.6.0
+-----
 
 - Changed stylings in all topic list page and reduce font size for 11th posts and on.
 - Added posts abbreviation for post exceeding 500 characters in topic list page.

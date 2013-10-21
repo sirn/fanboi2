@@ -11,6 +11,6 @@ python-autoreload = 3
 cheaper = {{ min_workers }}
 workers = {{ max_workers }}
 cheaper-initial = {{ min_workers }}
-cheaper-algo = busyness
-cheaper-step = 1
+cheaper-algo = backlog
+cheaper-overload = 2
 {% endif %}
