@@ -153,7 +153,6 @@
 
     - name: link vagrant path to server directory for development
       sudo_user: ${user}
-      register: fanboi2_linked
       file: src=/vagrant dest=${root} state=link
       when: development == '1'
 
@@ -179,7 +178,7 @@
       command: |
         env LANG=en_US.UTF-8 ${pip32} install -e . --use-mirrors
         chdir=${root}
-      when: fanboi2_linked.changed or fanboi2_cloned.changed
+      when: development == '1' or fanboi2_cloned.changed
 
     - name: create configuration file for application
       sudo_user: ${user}
@@ -214,7 +213,7 @@
     - name: sync database to latest version
       sudo_user: ${user}
       command: ${virtualenv}/bin/alembic upgrade head chdir=${base}
-      when: fanboi2_linked.changed or fanboi2_cloned.changed
+      when: development == '1' or fanboi2_cloned.changed
 
     - name: startup application with uwsgi
       template: src=files/etc/uwsgi/fanboi2.ini.j2 dest=/etc/uwsgi/fanboi2.ini
@@ -222,7 +221,7 @@
 
     - name: reload application with uwsgi
       command: touch /etc/uwsgi/fanboi2.ini
-      when: fanboi2_linked.changed or fanboi2_cloned.changed
+      when: development == '1' or fanboi2_cloned.changed
 
     # Assets compilation.
     # ---------------------------------------------------------------------
@@ -230,14 +229,14 @@
     - name: install brunch for assets compilation
       npm: name=brunch global=yes
 
-    - name: install fanboi2 requirements
+    - name: install fanboi2 brunch requirements
       sudo_user: ${user}
       npm: path=${root}
 
     - name: compile fanboi2 assets
       sudo_user: ${user}
       command: brunch build --production chdir=${root}
-      when: fanboi2_linked.changed or fanboi2_cloned.changed
+      when: development == '1' or fanboi2_cloned.changed
 
     - name: install supervisor for process management
       apt: pkg=supervisor state=latest

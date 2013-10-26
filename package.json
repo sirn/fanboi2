@@ -4,10 +4,10 @@
   "description":         "Assets for Fanboi2 board app",
   "version":             "0.0.1",
   "dependencies": {
-    "javascript-brunch":    ">= 1.0 < 1.6",
-    "css-brunch":           ">= 1.0 < 1.6",
-    "stylus-brunch":        ">= 1.0 < 1.6",
-    "uglify-js-brunch":     ">= 1.0 < 1.6",
-    "clean-css-brunch":     ">= 1.0 < 1.6"
+    "javascript-brunch":    ">= 1.7 < 1.8",
+    "css-brunch":           ">= 1.7 < 1.8",
+    "stylus-brunch":        ">= 1.7 < 1.8",
+    "uglify-js-brunch":     ">= 1.7 < 1.8",
+    "clean-css-brunch":     ">= 1.7 < 1.8"
   }
 }
