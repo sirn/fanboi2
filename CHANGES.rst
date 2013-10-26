@@ -2,6 +2,7 @@
 =====
 
 - Changed from Puppet provisioning to Ansible provisioning.
+- Fixed slow navigation bar animation in iOS 7 and Mavericks.
 - Fixed display error when thumbnail and read more posts are displayed together.
 
 0.6.0
