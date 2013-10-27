@@ -14,6 +14,9 @@
     - name: restart supervisor
       service: name=supervisor state=restarted
 
+    - name: restart memcached
+      service: name=memcached state=restarted
+
   vars:
     - python32: ${virtualenv}/bin/python3
     - pip32: ${virtualenv}/bin/pip-3.2
@@ -94,6 +97,18 @@
         src: files/etc/redis/redis.conf.j2
         dest: /etc/redis/redis.conf
       notify: restart redis
+
+    # Memcached setup.
+    # ---------------------------------------------------------------------
+
+    - name: install memcached
+      apt: pkg=memcached state=latest
+
+    - name: update memcached configuration file
+      template:
+        src: files/etc/memcached.conf.j2
+        dest: /etc/memcached.conf
+      notify: restart memcached
 
     # Nodejs setup.
     # ---------------------------------------------------------------------

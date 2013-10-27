@@ -12,6 +12,7 @@ from pyramid_beaker import session_factory_from_settings
 from sqlalchemy import engine_from_config
 from .formatters import *
 from .models import DBSession, Base
+from .cache import cache_region
 
 
 __VERSION__ = pkg_resources.require('fanboi2')[0].version
@@ -65,6 +66,8 @@ def main(global_config, **settings):  # pragma: no cover
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
     session_factory = session_factory_from_settings(settings)
+    cache_region.configure_from_config(settings, 'dogpile.')
+
     config = Configurator(settings=settings)
     config.set_session_factory(session_factory)
     config.set_request_property(remote_addr)

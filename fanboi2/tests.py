@@ -1629,3 +1629,16 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         self.config.testing_add_renderer('topics/error.jinja2')
         self._getTargetClass()(request)()
         self.assertEqual(DBSession.query(Post).count(), 0)
+
+
+class TestCache(unittest.TestCase):
+
+    def _getRegion(self, store=None):
+        from fanboi2.cache import cache_region
+        cache_region.configure('dogpile.cache.memory', arguments={
+            'cache_dict': store or {},
+        })
+        return cache_region
+
+    def test_region(self):
+        self._getRegion()  # TODO
