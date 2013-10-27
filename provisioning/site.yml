@@ -219,10 +219,6 @@
       template: src=files/etc/uwsgi/fanboi2.ini.j2 dest=/etc/uwsgi/fanboi2.ini
       notify: restart uwsgi
 
-    - name: reload application with uwsgi
-      command: touch /etc/uwsgi/fanboi2.ini
-      when: development == '1' or fanboi2_cloned.changed
-
     # Assets compilation.
     # ---------------------------------------------------------------------
 
@@ -248,6 +244,13 @@
         dest: /etc/supervisor/conf.d/brunch.conf
       notify: restart supervisor
       when: development == '1'
+
+    # Assets compilation.
+    # ---------------------------------------------------------------------
+
+    - name: reload application with uwsgi
+      command: touch /etc/uwsgi/fanboi2.ini
+      when: development == '1' or fanboi2_cloned.changed
 
     # Mosh setup
     # ---------------------------------------------------------------------
