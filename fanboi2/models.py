@@ -16,9 +16,6 @@ from zope.interface import implementer
 from zope.sqlalchemy import ZopeTransactionExtension
 from .interfaces import IBoard, ITopic, IPost
 
-DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
-Base = declarative_base()
-
 
 RE_FIRST_CAP = re.compile('(.)([A-Z][a-z]+)')
 RE_ALL_CAP = re.compile('([a-z0-9])([A-Z])')
@@ -64,8 +61,12 @@ class BaseModel(object):
             setattr(self, key, value)
 
 
+DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
+Base = declarative_base(cls=BaseModel)
+
+
 @implementer(IBoard)
-class Board(BaseModel, Base):
+class Board(Base):
     """Model class for board. This model serve as a category to topic and
     also holds settings regarding how posts are created and displayed. It
     should always be accessed using :attr:`slug`.
@@ -92,7 +93,7 @@ class Board(BaseModel, Base):
 
 
 @implementer(ITopic)
-class Topic(BaseModel, Base):
+class Topic(Base):
     """Model class for topic. This model only holds topic metadata such as
     title or its associated board. The actual content of a topic belongs
     to :class:`Post`.
@@ -176,7 +177,7 @@ class Topic(BaseModel, Base):
 
 
 @implementer(IPost)
-class Post(BaseModel, Base):
+class Post(Base):
     """Model class for posts. Each content in a :class:`Topic` and metadata
     regarding its poster are stored here. It has :attr:`number` which is a
     sequential number specifying its position within :class:`Topic`.
