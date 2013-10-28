@@ -28,7 +28,7 @@ redis.url = redis://{{ ansible_default_ipv4.address }}:6379/0
 akismet.key = {{ akismet_key }}
 
 dogpile.backend = dogpile.cache.memcached
-dogpile.arguments.url = {{ ansible_default_ipv4.address }}:11211;
+dogpile.arguments.url = {{ ansible_default_ipv4.address }}:11211
 dogpile.arguments.distributed_lock = true
 
 session.type = file

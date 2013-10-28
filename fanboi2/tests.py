@@ -1636,9 +1636,11 @@ class TestCache(unittest.TestCase):
     def _getRegion(self, store=None):
         from fanboi2.cache import cache_region
         cache_region.configure('dogpile.cache.memory', arguments={
-            'cache_dict': store or {},
+            'cache_dict': store if store is not None else {},
         })
         return cache_region
 
-    def test_region(self):
-        self._getRegion()  # TODO
+    def test_key_mangler(self):
+        store = {}
+        self._getRegion(store).set("Foobar", 1)
+        self.assertIn("89d5739baabbbe65be35cbe61c88e06d", store)
