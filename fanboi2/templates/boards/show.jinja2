@@ -6,31 +6,33 @@
 {% block content %}
     <div class="topics">
         {% for topic in topics %}
-            <article id="topic-{{ topic.id }}" class="topic">
-                <header>
-                    <div class="container">
-                        <h4><a href="{{ request.route_path("topic_scoped", board=board.slug, topic=topic.id, query="recent") }}">{{ topic.title }}</a></h4>
-                        <ul>
-                            <li class="posted"><i class="icon-info-sign inverted"></i> Last posted {{ time_tag(topic.posted_at) }}</li>
-                            <li class="posts"><i class="icon-info-sign inverted"></i> <strong>{{ topic.post_count }} posts</strong></li>
-                        </ul>
+            {% cache "topic", topic.id, topic.posted_at %}
+                <article id="topic-{{ topic.id }}" class="topic">
+                    <header>
+                        <div class="container">
+                            <h4><a href="{{ request.route_path("topic_scoped", board=board.slug, topic=topic.id, query="recent") }}">{{ topic.title }}</a></h4>
+                            <ul>
+                                <li class="posted"><i class="icon-info-sign inverted"></i> Last posted {{ time_tag(topic.posted_at) }}</li>
+                                <li class="posts"><i class="icon-info-sign inverted"></i> <strong>{{ topic.post_count }} posts</strong></li>
+                            </ul>
+                        </div>
+                    </header>
+                    <div class="posts">
+                        {% for post in topic.recent_posts(5) %}
+                            {{ post_block(post, 500) }}
+                        {% endfor %}
                     </div>
-                </header>
-                <div class="posts">
-                    {% for post in topic.recent_posts(5) %}
-                        {{ post_block(post, 500) }}
-                    {% endfor %}
-                </div>
-                <div class="tools">
-                    <div class="container">
-                        <ul>
-                            <li><a href="{{ request.route_path("topic", board=board.slug, topic=topic.id) }}" class="button all"><i class="icon-th-list inverted"></i> All posts</a></li>
-                            <li><a href="{{ request.route_path("topic_scoped", board=board.slug, topic=topic.id, query="recent") }}" class="button recent"><i class="icon-inbox inverted"></i> Recent posts</a></li>
-                            <li><a href="{{ request.route_path("topic_scoped", board=board.slug, topic=topic.id, query="recent") }}#reply" class="button reply action"><i class="icon-share-alt"></i> Reply</a></li>
-                        </ul>
+                    <div class="tools">
+                        <div class="container">
+                            <ul>
+                                <li><a href="{{ request.route_path("topic", board=board.slug, topic=topic.id) }}" class="button all"><i class="icon-th-list inverted"></i> All posts</a></li>
+                                <li><a href="{{ request.route_path("topic_scoped", board=board.slug, topic=topic.id, query="recent") }}" class="button recent"><i class="icon-inbox inverted"></i> Recent posts</a></li>
+                                <li><a href="{{ request.route_path("topic_scoped", board=board.slug, topic=topic.id, query="recent") }}#reply" class="button reply action"><i class="icon-share-alt"></i> Reply</a></li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
-            </article>
+                </article>
+            {% endcache %}
         {% else %}
             <div class="empty">
                 <div class="container">

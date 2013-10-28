@@ -5,11 +5,13 @@
 
 {% block content %}
     <article id="topic-{{ topic.id }}" class="topic">
-        <div class="posts">
-            {% for post in posts %}
-                {{ post_block(post) }}
-            {% endfor %}
-        </div>
+        {% cache "topic", topic.id, topic.posted_at, request.matchdict.get('query') %}
+            <div class="posts">
+                {% for post in posts %}
+                    {{ post_block(post) }}
+                {% endfor %}
+            </div>
+        {% endcache %}
         <div class="tools">
             <div class="container">
                 <ul>
