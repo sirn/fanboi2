@@ -67,6 +67,7 @@ def main(global_config, **settings):  # pragma: no cover
     Base.metadata.bind = engine
     session_factory = session_factory_from_settings(settings)
     cache_region.configure_from_config(settings, 'dogpile.')
+    cache_region.invalidate()
 
     config = Configurator(settings=settings)
     config.set_session_factory(session_factory)
@@ -77,7 +78,6 @@ def main(global_config, **settings):  # pragma: no cover
     config.include(pyramid_jinja2)
     config.include(pyramid_zcml)
 
-    # Redis setup.
     redis_conn = redis.StrictRedis.from_url(settings['redis.url'])
     config.registry.settings['redis_conn'] = redis_conn
     def _add_redis(event):
@@ -85,11 +85,11 @@ def main(global_config, **settings):  # pragma: no cover
         event.request.redis = settings['redis_conn']
     config.add_subscriber(_add_redis, NewRequest)
 
-    # Jinja2 setup.
     config.add_jinja2_extension(Jinja2CacheExtension)
     jinja2_env = config.get_jinja2_environment()
     jinja2_env.cache_region = cache_region
     jinja2_env.cache_expire = 3600
+
     jinja2_env.filters['datetime'] = format_datetime
     jinja2_env.filters['formatpost'] = format_post
     jinja2_env.filters['isotime'] = format_isotime
