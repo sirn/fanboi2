@@ -24,7 +24,7 @@ class Jinja2CacheExtension(Extension):
 
     def __init__(self, environment):
         super(Jinja2CacheExtension, self).__init__(environment)
-        environment.extend(cache_region=None, cache_expire=None)
+        environment.extend(cache_region=None)
 
     def parse(self, parser):
         lineno = next(parser.stream).lineno
@@ -42,6 +42,5 @@ class Jinja2CacheExtension(Extension):
         if self.environment.cache_region is not None:
             key = "jinja2:%s" % ':'.join([str(a) for a in args])
             log.info("Template cache: %s" % key)
-            return cache_region.get_or_create(key, caller,
-                                              self.environment.cache_expire)
+            return self.environment.cache_region.get_or_create(key, caller)
         return caller()

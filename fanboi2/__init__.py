@@ -88,7 +88,6 @@ def main(global_config, **settings):  # pragma: no cover
     config.add_jinja2_extension(Jinja2CacheExtension)
     jinja2_env = config.get_jinja2_environment()
     jinja2_env.cache_region = cache_region
-    jinja2_env.cache_expire = 3600
 
     jinja2_env.filters['datetime'] = format_datetime
     jinja2_env.filters['formatpost'] = format_post
