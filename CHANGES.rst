@@ -1,5 +1,11 @@
-0.6.1
+0.6.2
 =====
+
+- Added dogpile.cache support for caching.
+- Added template caching for posts.
+
+0.6.1
+-----
 
 - Changed from Puppet provisioning to Ansible provisioning.
 - Fixed slow navigation bar animation in iOS 7 and Mavericks.

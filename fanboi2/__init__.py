@@ -12,6 +12,7 @@ from pyramid_beaker import session_factory_from_settings
 from sqlalchemy import engine_from_config
 from .formatters import *
 from .models import DBSession, Base
+from .cache import cache_region, Jinja2CacheExtension
 
 
 __VERSION__ = pkg_resources.require('fanboi2')[0].version
@@ -65,6 +66,9 @@ def main(global_config, **settings):  # pragma: no cover
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
     session_factory = session_factory_from_settings(settings)
+    cache_region.configure_from_config(settings, 'dogpile.')
+    cache_region.invalidate()
+
     config = Configurator(settings=settings)
     config.set_session_factory(session_factory)
     config.set_request_property(remote_addr)
@@ -74,7 +78,6 @@ def main(global_config, **settings):  # pragma: no cover
     config.include(pyramid_jinja2)
     config.include(pyramid_zcml)
 
-    # Redis setup.
     redis_conn = redis.StrictRedis.from_url(settings['redis.url'])
     config.registry.settings['redis_conn'] = redis_conn
     def _add_redis(event):
@@ -82,7 +85,10 @@ def main(global_config, **settings):  # pragma: no cover
         event.request.redis = settings['redis_conn']
     config.add_subscriber(_add_redis, NewRequest)
 
+    config.add_jinja2_extension(Jinja2CacheExtension)
     jinja2_env = config.get_jinja2_environment()
+    jinja2_env.cache_region = cache_region
+
     jinja2_env.filters['datetime'] = format_datetime
     jinja2_env.filters['formatpost'] = format_post
     jinja2_env.filters['isotime'] = format_isotime

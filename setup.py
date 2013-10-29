@@ -16,6 +16,8 @@ requires = [
     'pyramid_jinja2',
     'pyramid_beaker',
     'zope.sqlalchemy',
+    'dogpile.cache',
+    'python3-memcached',
     'waitress',
     'alembic',
     'webtest',
