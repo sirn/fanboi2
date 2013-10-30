@@ -169,12 +169,12 @@
     - name: link vagrant path to server directory for development
       sudo_user: ${user}
       file: src=/vagrant dest=${root} state=link
-      when: development == '1'
+      when: development|int == 1
 
     - name: clone application to root directory
       sudo_user: ${user}
       register: fanboi2_cloned
-      when: development != '1'
+      when: development|int == 0
       git:
         repo: https://github.com/pxfs/fanboi2.git
         dest: ${root}
@@ -193,7 +193,7 @@
       command: |
         env LANG=en_US.UTF-8 ${pip32} install -e . --use-mirrors
         chdir=${root}
-      when: development == '1' or fanboi2_cloned.changed
+      when: development|int == 1 or fanboi2_cloned.changed
 
     - name: create configuration file for application
       sudo_user: ${user}
@@ -228,7 +228,7 @@
     - name: sync database to latest version
       sudo_user: ${user}
       command: ${virtualenv}/bin/alembic upgrade head chdir=${base}
-      when: development == '1' or fanboi2_cloned.changed
+      when: development|int == 1 or fanboi2_cloned.changed
 
     - name: startup application with uwsgi
       template: src=files/etc/uwsgi/fanboi2.ini.j2 dest=/etc/uwsgi/fanboi2.ini
@@ -247,25 +247,25 @@
     - name: compile fanboi2 assets
       sudo_user: ${user}
       command: brunch build --production chdir=${root}
-      when: development == '1' or fanboi2_cloned.changed
+      when: development|int == 1 or fanboi2_cloned.changed
 
     - name: install supervisor for process management
       apt: pkg=supervisor state=latest
-      when: development == '1'
+      when: development|int == 1
 
     - name: enable brunch watch for fanboi2
       template:
         src: files/etc/supervisor/conf.d/brunch.conf.j2
         dest: /etc/supervisor/conf.d/brunch.conf
       notify: restart supervisor
-      when: development == '1'
+      when: development|int == 1
 
     # Assets compilation.
     # ---------------------------------------------------------------------
 
     - name: reload application with uwsgi
       command: touch /etc/uwsgi/fanboi2.ini
-      when: development == '1' or fanboi2_cloned.changed
+      when: development|int == 1 or fanboi2_cloned.changed
 
     # Mosh setup
     # ---------------------------------------------------------------------
