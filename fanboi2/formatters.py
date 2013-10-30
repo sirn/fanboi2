@@ -14,8 +14,8 @@ from .cache import cache_region
 RE_PARAGRAPH = re.compile(r'(?:(?P<newline>\r\n|\n|\r)(?P=newline)+)')
 RE_THUMBNAILS = (
     (re.compile(r"https?\:\/\/(?:(?:\w+\.)?imgur\.com)\/(\w+)", re.ASCII),
-     'http://i.imgur.com/{}s.jpg',
-     'http://imgur.com/{}'),
+     '//i.imgur.com/{}s.jpg',
+     '//imgur.com/{}'),
 )
 
 RE_LINK = re.compile(r"""

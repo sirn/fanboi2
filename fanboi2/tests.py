@@ -863,12 +863,12 @@ class TestFormatters(unittest.TestCase):
         https://i.imgur.com/image7.jpg
         """
         self.assertTupleEqual(tuple(extract_thumbnail(text)), (
-            ('http://i.imgur.com/image1s.jpg', 'http://imgur.com/image1'),
-            ('http://i.imgur.com/image2s.jpg', 'http://imgur.com/image2'),
-            ('http://i.imgur.com/image3s.jpg', 'http://imgur.com/image3'),
-            ('http://i.imgur.com/image4s.jpg', 'http://imgur.com/image4'),
-            ('http://i.imgur.com/image5s.jpg', 'http://imgur.com/image5'),
-            ('http://i.imgur.com/image7s.jpg', 'http://imgur.com/image7'),
+            ('//i.imgur.com/image1s.jpg', '//imgur.com/image1'),
+            ('//i.imgur.com/image2s.jpg', '//imgur.com/image2'),
+            ('//i.imgur.com/image3s.jpg', '//imgur.com/image3'),
+            ('//i.imgur.com/image4s.jpg', '//imgur.com/image4'),
+            ('//i.imgur.com/image5s.jpg', '//imgur.com/image5'),
+            ('//i.imgur.com/image7s.jpg', '//imgur.com/image7'),
         ))
 
     def test_post_markup(self):
@@ -962,17 +962,17 @@ class TestFormatters(unittest.TestCase):
                       'target="_blank" rel="nofollow">'
                       'http://imgur.com/foobar3.jpg</a><br>'
                       'Buy today get TWO for FREE!!1</p>\n'
-                   '<p class="thumbnails"><a href="http://imgur.com/foobar1" '
+                   '<p class="thumbnails"><a href="//imgur.com/foobar1" '
                          'class="thumbnail" target="_blank">'
-                         '<img src="http://i.imgur.com/foobar1s.jpg">'
+                         '<img src="//i.imgur.com/foobar1s.jpg">'
                          '</a>'
-                       '<a href="http://imgur.com/foobar2" '
+                       '<a href="//imgur.com/foobar2" '
                          'class="thumbnail" target="_blank">'
-                         '<img src="http://i.imgur.com/foobar2s.jpg">'
+                         '<img src="//i.imgur.com/foobar2s.jpg">'
                          '</a>'
-                       '<a href="http://imgur.com/foobar3" '
+                       '<a href="//imgur.com/foobar3" '
                          'class="thumbnail" target="_blank">'
-                         '<img src="http://i.imgur.com/foobar3s.jpg">'
+                         '<img src="//i.imgur.com/foobar3s.jpg">'
                          '</a>'
                        '</p>'))
 
