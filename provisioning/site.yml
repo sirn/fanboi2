@@ -44,6 +44,10 @@
       template: src=files/etc/nginx/nginx.conf.j2 dest=/etc/nginx/nginx.conf
       notify: restart nginx
 
+    - name: create nginx certs directory
+      file: path=/etc/nginx/certs owner=root group=root state=directory
+      when: ssl|int == 1
+
     - name: cleanup default nginx configuration file
       file: dest=/etc/nginx/sites-enabled/default state=absent
       notify: restart nginx
@@ -293,6 +297,10 @@
 
     - name: allow http via ufw
       command: ufw allow 80/tcp
+      when: ufw_setup.stdout == '0'
+
+    - name: allow https via ufw
+      command: ufw allow 443/tcp
       when: ufw_setup.stdout == '0'
 
     - name: allow mosh via ufw

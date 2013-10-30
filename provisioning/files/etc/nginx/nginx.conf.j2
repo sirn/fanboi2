@@ -12,7 +12,7 @@ http {
   default_type application/octet-stream;
   server_names_hash_bucket_size 64;
   types_hash_max_size 2048;
-  keepalive_timeout 60;
+  keepalive_timeout 120;
   tcp_nodelay on;
   tcp_nopush on;
   sendfile on;
@@ -43,6 +43,12 @@ http {
   server {
     listen 80;
     access_log /var/log/nginx/access.log combined;
+
+    {% if ssl %}
+    listen 443 ssl;
+    ssl_certificate /etc/nginx/certs/cert.crt;
+    ssl_certificate_key /etc/nginx/certs/cert.key;
+    {% endif %}
 
     location /static {
       alias {{ static }};

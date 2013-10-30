@@ -1,5 +1,6 @@
 ---
 development: 0
+ssl: 0
 
 # Application config
 timezone: 'Asia/Bangkok'
