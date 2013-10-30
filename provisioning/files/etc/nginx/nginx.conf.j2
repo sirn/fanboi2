@@ -46,6 +46,9 @@ http {
 
     location /static {
       alias {{ static }};
+      {% if not development %}
+      expires max;
+      {% endif %}
     }
 
     location / {
