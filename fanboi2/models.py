@@ -6,7 +6,6 @@ import random
 import re
 import redis
 import string
-from pyramid.threadlocal import get_current_request
 from sqlalchemy import Column, Integer, String, DateTime, Unicode, Text,\
     Enum, ForeignKey, TypeDecorator, UniqueConstraint, func, select,\
     desc, event
@@ -39,6 +38,47 @@ class RedisProxy(object):
 
 
 redis_conn = RedisProxy()
+
+
+class Identity(object):
+    """Generates a unique user identity for each user based on IP address."""
+    STRINGS = string.ascii_letters + string.digits + "+/."
+
+    def __init__(self):
+        self.timezone = pytz.utc
+
+    def configure_tz(self, timezone):
+        """Configure timezone to use for key generation."""
+        self.timezone = pytz.timezone(timezone)
+
+    def _key(self, ip_address, namespace="default"):
+        """Generate a unique key for each :attr:`ip_address` under namespace
+        :attr:`namespace`. Generated key will contain the current date in
+        the configured timezone to ensure key is unique to each day.
+        """
+        today = datetime.datetime.now(self.timezone).strftime("%Y%m%d")
+        return "ident:%s:%s:%s" % (today,
+                                   namespace,
+                                   hashlib.md5(ip_address.encode('utf8')).\
+                                           hexdigest())
+
+    def get(self, *args, **kwargs):
+        """Retrieve user ident from Redis or generate a new one if it does
+        not already exists. Ident is generated from a random string and
+        expired every 24 hours.
+        """
+        key = self._key(*args, **kwargs)
+        ident = redis_conn.get(key)
+        if ident is None:
+            ident = ''.join(random.choice(self.STRINGS) for x in range(9))
+            redis_conn.setnx(key, ident)
+            redis_conn.expire(key, 86400)
+        else:
+            ident = ident.decode('utf-8')
+        return ident
+
+
+identity = Identity()
 
 
 RE_FIRST_CAP = re.compile('(.)([A-Z][a-z]+)')
@@ -251,40 +291,11 @@ def populate_post_name(mapper, connection, target):
         target.name = target.topic.board.settings['name']
 
 
-def _generate_ident(ip_address, namespace="default"):
-    """Retrieve user ident from Redis or generate a new one if it does not
-    already exists. Date is used as an ident key to ensure a new key is
-    generated every day.
-    """
-    request = get_current_request()
-
-    # Use timezone to generate date for ident key so it is reset at the same
-    # time as displayed in the board.
-    timezone = pytz.timezone(request.registry.settings['app.timezone'])
-    today = datetime.datetime.now(timezone).strftime("%Y%m%d")
-    key = "ident:%s:%s:%s" % (today,
-                              namespace,
-                              hashlib.md5(ip_address.encode('utf8')).\
-                                      hexdigest())
-
-    # Generate ident if not exists and store it. Use SETNX to ensure we don't
-    # overwrite the key if it somehow gets stored while code is running.
-    ident = redis_conn.get(key)
-    if ident is None:
-        strings = string.ascii_letters + string.digits + "+/."
-        ident = ''.join(random.choice(strings) for x in range(9))
-        redis_conn.setnx(key, ident)
-        redis_conn.expire(key, 86400)
-    else:
-        ident = ident.decode('utf-8')
-    return ident
-
-
 @event.listens_for(Post.__mapper__, 'before_insert')
 def populate_post_ident(mapper, connection, target):
     board = target.topic.board
     if board.settings['use_ident']:
-        target.ident = _generate_ident(target.ip_address, board.slug)
+        target.ident = identity.get(target.ip_address, board.slug)
 
 
 Topic.post_count = column_property(
