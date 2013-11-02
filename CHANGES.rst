@@ -1,6 +1,7 @@
 0.6.2
 =====
 
+- Changed the way Redis is initialized.
 - Added dogpile.cache support for caching.
 - Added template caching for posts.
 

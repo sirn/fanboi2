@@ -4,6 +4,7 @@ import json
 import pytz
 import random
 import re
+import redis
 import string
 from pyramid.threadlocal import get_current_request
 from sqlalchemy import Column, Integer, String, DateTime, Unicode, Text,\
@@ -15,6 +16,29 @@ from sqlalchemy.orm import scoped_session, sessionmaker, relationship,\
 from zope.interface import implementer
 from zope.sqlalchemy import ZopeTransactionExtension
 from .interfaces import IBoard, ITopic, IPost
+
+
+class RedisProxy(object):
+    """Wrapper around :class:`redis.StrictRedis` to allow late binding of
+    Redis object. This wrapper will proxy all method calls to Redis object
+    if initialized.
+    """
+
+    def __init__(self, cls=redis.StrictRedis):
+        self._cls = cls
+        self._redis = None
+
+    def from_url(self, *args, **kwargs):
+        self._redis = self._cls.from_url(*args, **kwargs)
+
+    def __getattr__(self, name):
+        if self._redis is not None:
+            return self._redis.__getattribute__(name)
+        raise RuntimeError("{} is not initialized".\
+                format(repr(self._cls.__name__)))
+
+
+redis_conn = RedisProxy()
 
 
 RE_FIRST_CAP = re.compile('(.)([A-Z][a-z]+)')
@@ -245,12 +269,12 @@ def _generate_ident(ip_address, namespace="default"):
 
     # Generate ident if not exists and store it. Use SETNX to ensure we don't
     # overwrite the key if it somehow gets stored while code is running.
-    ident = request.redis.get(key)
+    ident = redis_conn.get(key)
     if ident is None:
         strings = string.ascii_letters + string.digits + "+/."
         ident = ''.join(random.choice(strings) for x in range(9))
-        request.redis.setnx(key, ident)
-        request.redis.expire(key, 86400)
+        redis_conn.setnx(key, ident)
+        redis_conn.expire(key, 86400)
     else:
         ident = ident.decode('utf-8')
     return ident
