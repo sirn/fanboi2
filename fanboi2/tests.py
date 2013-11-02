@@ -4,7 +4,7 @@ import mock
 import os
 import transaction
 import unittest
-from fanboi2 import DBSession, Base
+from fanboi2 import DBSession, Base, redis_conn
 from pyramid import testing
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -17,6 +17,10 @@ DATABASE_URI = os.environ.get(
 
 
 class DummyRedis(object):
+
+    @classmethod
+    def from_url(cls, *args, **kwargs):
+        return cls()
 
     def __init__(self):
         self._store = {}
@@ -45,41 +49,11 @@ class DummyRedis(object):
     def ttl(self, key):
         return self._expire.get(key, 0)
 
+    def ping(self):
+        return True
+
 
 class _ModelInstanceSetup(object):
-
-    @classmethod
-    def tearDownClass(cls):
-        Base.metadata.bind = None
-        DBSession.remove()
-
-    def setUp(self):
-        Base.metadata.drop_all()
-        Base.metadata.create_all()
-        transaction.begin()
-        self.request = self._makeRequest()
-        self.registry = self._makeRegistry()
-        self.config = testing.setUp(
-            request=self.request,
-            registry=self.registry)
-
-    def tearDown(self):
-        testing.tearDown()
-        transaction.abort()
-
-    def _makeRequest(self):
-        request = testing.DummyRequest()
-        request.redis = DummyRedis()
-        return request
-
-    def _makeRegistry(self):
-        from pyramid.registry import Registry
-        registry = Registry()
-        registry.settings = {
-            'app.timezone': 'Asia/Bangkok',
-            'app.secret': 'Silently test in secret',
-        }
-        return registry
 
     def _makeBoard(self, **kwargs):
         from fanboi2.models import Board
@@ -108,10 +82,44 @@ class _ModelInstanceSetup(object):
 class ModelMixin(_ModelInstanceSetup):
 
     @classmethod
+    def tearDownClass(cls):
+        Base.metadata.bind = None
+        DBSession.remove()
+
+    @classmethod
     def setUpClass(cls):
         engine = create_engine(DATABASE_URI)
         DBSession.configure(bind=engine)
         Base.metadata.bind = engine
+
+    def setUp(self):
+        redis_conn._redis = DummyRedis()
+        Base.metadata.drop_all()
+        Base.metadata.create_all()
+        transaction.begin()
+        self.request = self._makeRequest()
+        self.registry = self._makeRegistry()
+        self.config = testing.setUp(
+            request=self.request,
+            registry=self.registry)
+
+    def tearDown(self):
+        redis_conn._redis = None
+        testing.tearDown()
+        transaction.abort()
+
+    def _makeRequest(self):
+        request = testing.DummyRequest()
+        return request
+
+    def _makeRegistry(self):
+        from pyramid.registry import Registry
+        registry = Registry()
+        registry.settings = {
+            'app.timezone': 'Asia/Bangkok',
+            'app.secret': 'Silently test in secret',
+        }
+        return registry
 
 
 class ViewMixin(object):
@@ -283,6 +291,33 @@ class TestTaggedStaticUrl(unittest.TestCase):
         request.registry.registerUtility(info, IStaticURLInfo)
         with self.assertRaises(IOError):
             self._getFunction()(request, 'static/notexists')
+
+
+class TestRedisProxy(unittest.TestCase):
+
+    def _getTargetClass(self):
+        from fanboi2.models import RedisProxy
+        return RedisProxy
+
+    def test_init(self):
+        conn = self._getTargetClass()(cls=DummyRedis)
+        self.assertEqual(conn._cls, DummyRedis)
+        self.assertEqual(conn._redis, None)
+
+    def test_from_url(self):
+        conn = self._getTargetClass()(cls=DummyRedis)
+        conn.from_url("redis:///")
+        self.assertIsInstance(conn._redis, DummyRedis)
+
+    def test_geattr(self):
+        conn = self._getTargetClass()(cls=DummyRedis)
+        conn.from_url("redis:///")
+        self.assertTrue(conn.ping())
+
+    def test_getattr_not_initialized(self):
+        conn = self._getTargetClass()(cls=DummyRedis)
+        with self.assertRaises(RuntimeError):
+            conn.ping()
 
 
 class TestJsonType(unittest.TestCase):
@@ -1117,6 +1152,12 @@ class TestAkismet(unittest.TestCase):
 
 class TestRateLimiter(unittest.TestCase):
 
+    def setUp(self):
+        redis_conn._redis = DummyRedis()
+
+    def tearDown(self):
+        redis_conn._redis = None
+
     def _getTargetClass(self):
         from fanboi2.utils import RateLimiter
         return RateLimiter
@@ -1128,21 +1169,18 @@ class TestRateLimiter(unittest.TestCase):
     def _makeRequest(self):
         request = testing.DummyRequest()
         request.remote_addr = '127.0.0.1'
-        request.redis = DummyRedis()
         testing.setUp(request=request)
         return request
 
     def test_init(self):
         request = self._makeRequest()
         ratelimit = self._getTargetClass()(request, namespace='foobar')
-        self.assertEqual(ratelimit.request, request)
         self.assertEqual(ratelimit.key,
                          "rate:foobar:%s" % self._getHash('127.0.0.1'))
 
     def test_init_no_namespace(self):
         request = self._makeRequest()
         ratelimit = self._getTargetClass()(request)
-        self.assertEqual(ratelimit.request, request)
         self.assertEqual(ratelimit.key,
                          "rate:None:%s" % self._getHash('127.0.0.1'))
 
