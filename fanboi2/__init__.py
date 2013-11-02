@@ -2,16 +2,14 @@ import hashlib
 import pkg_resources
 import pyramid_jinja2
 import pyramid_zcml
-import redis
 from functools import lru_cache
 from IPy import IP
 from pyramid.config import Configurator
-from pyramid.events import NewRequest
 from pyramid.path import AssetResolver
 from pyramid_beaker import session_factory_from_settings
 from sqlalchemy import engine_from_config
 from .formatters import *
-from .models import DBSession, Base
+from .models import DBSession, Base, redis_conn
 from .cache import cache_region, Jinja2CacheExtension
 
 
@@ -66,6 +64,7 @@ def main(global_config, **settings):  # pragma: no cover
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
     session_factory = session_factory_from_settings(settings)
+    redis_conn.from_url(settings['redis.url'])
     cache_region.configure_from_config(settings, 'dogpile.')
     cache_region.invalidate()
 
@@ -77,13 +76,6 @@ def main(global_config, **settings):  # pragma: no cover
 
     config.include(pyramid_jinja2)
     config.include(pyramid_zcml)
-
-    redis_conn = redis.StrictRedis.from_url(settings['redis.url'])
-    config.registry.settings['redis_conn'] = redis_conn
-    def _add_redis(event):
-        settings = event.request.registry.settings
-        event.request.redis = settings['redis_conn']
-    config.add_subscriber(_add_redis, NewRequest)
 
     config.add_jinja2_extension(Jinja2CacheExtension)
     jinja2_env = config.get_jinja2_environment()

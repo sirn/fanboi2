@@ -41,7 +41,7 @@ requires = [
     ]
 
 setup(name='fanboi2',
-      version='0.6.0',
+      version='0.6.2',
       description='fanboi2',
       long_description=readme + '\n\n' + changes,
       classifiers=[
