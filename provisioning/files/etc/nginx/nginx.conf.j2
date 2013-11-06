@@ -50,6 +50,8 @@ http {
     ssl_certificate_key /etc/nginx/certs/cert.key;
     {% endif %}
 
+    include /etc/nginx/site.d/*.conf;
+
     location /static {
       alias {{ static }};
       {% if not development %}
@@ -61,6 +63,8 @@ http {
       include uwsgi_params;
       uwsgi_pass backend;
       expires 0;
+
+      include /etc/nginx/location.d/*.conf;
     }
   }
 

@@ -44,6 +44,12 @@
       template: src=files/etc/nginx/nginx.conf.j2 dest=/etc/nginx/nginx.conf
       notify: restart nginx
 
+    - name: create site configuration directory
+      file: path=/etc/nginx/site.d owner=root group=root state=directory
+
+    - name: create location configuration directory
+      file: path=/etc/nginx/location.d owner=root group=root state=directory
+
     - name: create nginx certs directory
       file: path=/etc/nginx/certs owner=root group=root state=directory
       when: ssl|int == 1
