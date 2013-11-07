@@ -50,8 +50,6 @@ http {
     ssl_certificate_key /etc/nginx/certs/cert.key;
     {% endif %}
 
-    include /etc/nginx/site.d/*.conf;
-
     location /static {
       alias {{ static }};
       {% if not development %}
@@ -65,6 +63,16 @@ http {
       expires 0;
 
       include /etc/nginx/location.d/*.conf;
+    }
+  }
+
+  server {
+    listen 127.0.0.1:80;
+    server_name 127.0.0.1;
+    location /nginx_status {
+      stub_status on;
+      allow 127.0.0.1;
+      deny all;
     }
   }
 
