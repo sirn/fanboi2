@@ -9,7 +9,7 @@ from pyramid.path import AssetResolver
 from pyramid_beaker import session_factory_from_settings
 from sqlalchemy import engine_from_config
 from .formatters import *
-from .models import DBSession, Base, redis_conn
+from .models import DBSession, Base, redis_conn, identity
 from .cache import cache_region, Jinja2CacheExtension
 
 
@@ -65,6 +65,7 @@ def main(global_config, **settings):  # pragma: no cover
     Base.metadata.bind = engine
     session_factory = session_factory_from_settings(settings)
     redis_conn.from_url(settings['redis.url'])
+    identity.configure_tz(settings['app.timezone'])
     cache_region.configure_from_config(settings, 'dogpile.')
     cache_region.invalidate()
 

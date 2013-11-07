@@ -320,6 +320,46 @@ class TestRedisProxy(unittest.TestCase):
             conn.ping()
 
 
+class TestIdentity(unittest.TestCase):
+
+    def _getTargetClass(self):
+        from fanboi2.models import Identity
+        return Identity
+
+    def _makeOne(self):
+        identity = self._getTargetClass()(redis=DummyRedis())
+        return identity
+
+    def test_key(self):
+        from pytz import utc
+        from datetime import datetime
+        identity = self._makeOne()
+        self.assertTrue(
+            identity._key("127.0.0.1", namespace="foobar"),
+            "ident:{}:foobar:f528764d624db129b32c21fbca0cb8d6".format(
+                datetime.now(utc).strftime("%Y%m%d")))
+
+    def test_key_timezone(self):
+        from pytz import timezone
+        from datetime import datetime
+        identity = self._makeOne()
+        identity.configure_tz("Asia/Bangkok")
+        self.assertTrue(
+            identity._key("127.0.0.1", namespace="foobar"),
+            "ident:{}:foobar:f528764d624db129b32c21fbca0cb8d6".format(
+                datetime.now(timezone("Asia/Bangkok")).strftime("%Y%m%d")))
+
+    def test_get(self):
+        identity = self._makeOne()
+        ident1 = identity.get("127.0.0.1")
+        ident2 = identity.get("127.0.0.1", "foobar")
+        ident3 = identity.get("192.168.1.1", "foobar")
+        self.assertNotEqual(ident1, ident2)
+        self.assertNotEqual(ident1, ident3)
+        self.assertNotEqual(ident2, ident3)
+        self.assertEqual(identity.get("127.0.0.1"), ident1)
+
+
 class TestJsonType(unittest.TestCase):
 
     def _getTargetClass(self):

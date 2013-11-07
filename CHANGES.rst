@@ -1,14 +1,15 @@
 0.6.2
 =====
 
-- Changed the way Redis is initialized.
-- Added dogpile.cache support for caching.
-- Added template caching for posts.
+- Changed the way `Redis-py <https://redis-py.readthedocs.org>`_ is initialized by using late binding.
+- Changed implementation of user ident generator and avoid accessing `Pyramid registry <http://docs.pylonsproject.org/projects/pyramid/en/latest/glossary.html#term-application-registry>`_.
+- Added `dogpile.cache <http://dogpilecache.readthedocs.org>`_ support for caching.
+- Added template caching for posts using `Memcached <http://memcached.org>`_.
 
 0.6.1
 -----
 
-- Changed from Puppet provisioning to Ansible provisioning.
+- Changed from `Puppet <http://puppetlabs.com>`_ provisioning to `Ansible <http://www.ansibleworks.com>`_ provisioning.
 - Fixed slow navigation bar animation in iOS 7 and Mavericks.
 - Fixed display error when thumbnail and read more posts are displayed together.
 
@@ -31,8 +32,8 @@
 0.5.0
 -----
 
-- Changed from traversal to URL dispatching for reduced complexity.
-- Added Akismet integration for SPAM detection in comments.
+- Changed from `traversal <http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/traversal.html>`_ to URL dispatching for reduced complexity.
+- Added `Akismet <http://akismet.com>`_ integration for SPAM detection in comments.
 
 0.4.0
 -----
@@ -54,7 +55,7 @@
 - Changed from fluid layout to fixed 980px layout for widescreen responsive level.
 - Changed all posts page to be mobile-optimized similar to board list page.
 - Added timestamp to all assets path for cache expiration.
-- Added thumbnail preview support for Imgur links.
+- Added thumbnail preview support for `Imgur <https://imgur.com>`_ links.
 - Added popover for post anchor (single post only).
 - Added proper page title to all user visible pages.
 
