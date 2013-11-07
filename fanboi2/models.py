@@ -44,8 +44,9 @@ class Identity(object):
     """Generates a unique user identity for each user based on IP address."""
     STRINGS = string.ascii_letters + string.digits + "+/."
 
-    def __init__(self):
+    def __init__(self, redis=None):
         self.timezone = pytz.utc
+        self.redis = redis
 
     def configure_tz(self, timezone):
         """Configure timezone to use for key generation."""
@@ -68,17 +69,17 @@ class Identity(object):
         expired every 24 hours.
         """
         key = self._key(*args, **kwargs)
-        ident = redis_conn.get(key)
+        ident = self.redis.get(key)
         if ident is None:
             ident = ''.join(random.choice(self.STRINGS) for x in range(9))
-            redis_conn.setnx(key, ident)
-            redis_conn.expire(key, 86400)
+            self.redis.setnx(key, ident)
+            self.redis.expire(key, 86400)
         else:
             ident = ident.decode('utf-8')
         return ident
 
 
-identity = Identity()
+identity = Identity(redis=redis_conn)
 
 
 RE_FIRST_CAP = re.compile('(.)([A-Z][a-z]+)')
