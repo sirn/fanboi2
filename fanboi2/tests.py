@@ -8,7 +8,6 @@ from fanboi2 import DBSession, Base, redis_conn
 from pyramid import testing
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from zope.interface.verify import verifyObject
 
 
 DATABASE_URI = os.environ.get(
@@ -419,11 +418,6 @@ class BaseModelTest(ModelMixin, unittest.TestCase):
 
 class BoardModelTest(ModelMixin, unittest.TestCase):
 
-    def test_interface(self):
-        from fanboi2.interfaces import IBoard
-        board = self._makeBoard(title="Foobar", slug="foo")
-        self.assertTrue(verifyObject(IBoard, board))
-
     def test_relations(self):
         board = self._makeBoard(title="Foobar", slug="foo")
         self.assertEqual([], list(board.topics))
@@ -481,12 +475,6 @@ class BoardModelTest(ModelMixin, unittest.TestCase):
 
 
 class TopicModelTest(ModelMixin, unittest.TestCase):
-
-    def test_interface(self):
-        from fanboi2.interfaces import ITopic
-        board = self._makeBoard(title="Foobar", slug="foo")
-        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
-        self.assertTrue(verifyObject(ITopic, topic))
 
     def test_relations(self):
         board = self._makeBoard(title="Foobar", slug="foo")
@@ -693,13 +681,6 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
 
 
 class PostModelTest(ModelMixin, unittest.TestCase):
-
-    def test_interface(self):
-        from fanboi2.interfaces import IPost
-        board = self._makeBoard(title="Foobar", slug="foo")
-        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
-        post = self._makePost(topic=topic, body="Hello, world")
-        self.assertTrue(verifyObject(IPost, post))
 
     def test_relations(self):
         board = self._makeBoard(title="Foobar", slug="foo")
