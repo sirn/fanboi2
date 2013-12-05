@@ -1,8 +1,9 @@
-Unreleased
+0.7.0
 ==========
 
 - Added reply number autofill when clicking on post number in reply page.
 - Added inline reply when clicking on post number in listing page.
+- Added a flag to bump or not bump post when replying.
 
 0.6.2
 -----
