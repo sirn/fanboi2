@@ -3,7 +3,9 @@
  * Fill reply box with anchor from content in span.number.
  *
  * TODO:
- * - Cross page reply filling (e.g. index -> show page).
+ * - Cache user input and append number instead of clearing.
+ * - Allow moving of reply popover.
+ * - Performance improvements.
  */
 
 
@@ -22,9 +24,17 @@ function _removePopover() {
 
 function _renderPopover(target, node, text) {
     _removePopover();
-    node.className = "popover " + node.className;
     target.parentNode.insertBefore(node, target.nextSibling);
+    node.className = "popover " + node.className;
 
+    /* Add explicit close button to popover form. */
+    var closeButton = document.createElement('SPAN');
+    closeButton.className = 'close';
+    closeButton.textContent = "×";
+    closeButton.addEventListener('click', _removePopover);
+    node.appendChild(closeButton);
+
+    /* Pre-fill reply box with text. */
     var replyBox = node.getElementsByTagName('textarea')[0];
     replyBox.value = text;
     replyBox.selectionStart = text.length;

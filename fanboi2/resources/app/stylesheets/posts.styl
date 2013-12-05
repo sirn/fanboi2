@@ -64,6 +64,20 @@ section#main
                     width 100%
                     z-index 1
 
+                    span.close
+                        background-color $header-color
+                        border 1px solid $header-color
+                        color #fff
+                        cursor pointer
+                        padding 0 4px 1px
+                        position absolute
+                        right ($post-padding / 2)
+                        top ($post-padding / 2)
+
+                        &:hover
+                            background-color #fff
+                            color $header-color
+
                     h3
                     textarea
                         font-size 14px
