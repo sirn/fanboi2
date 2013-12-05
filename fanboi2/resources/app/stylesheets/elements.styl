@@ -161,9 +161,9 @@ form.form
 
             input
             textarea
+                appearance none        /* WebKit Mobile. */
                 background-color #fff  /* Firefox Desktop. */
                 background-image none  /* Firefox Mobile. */
-                appearance none        /* WebKit Mobile. */
                 border 1px solid #d0d0d0
                 border-radius 0
                 box-shadow 3px 3px 0 0 #eee
@@ -171,11 +171,12 @@ form.form
                 margin 0
                 max-width 100%
                 min-width 100%
+                outline none
                 width 100%
 
                 &:focus
-                    border-color #eb3916
-                    box-shadow 3px 3px 0 0 #fdede9
+                    border-color $color-highlight
+                    box-shadow 3px 3px 0 0 $color-focus
 
             input
                 font-size 20px
@@ -193,16 +194,16 @@ form.form
                 padding 5px
 
             button.button
-                $outer-shadow = 3px 3px 0 0 #eee
-                $inner-shadow = 0 1px 0 0 rgba(255, 255, 255, 0.1) inset
-
-                background-image linear-gradient(top, #29566f, #22485c)
-                border-color #171e22
+                background-color $color-highlight
+                border-color $color-highlight
                 border-radius 0
-                box-shadow $inner-shadow, $outer-shadow
+                box-shadow 3px 3px 0 0 #eee
+                outline none
 
                 &:hover
+                &:focus
                     background-color #fff
                     background-image none
-                    border-color #22485c
+                    border-color $color-highlight
+                    box-shadow 3px 3px 0 0 $color-focus
                     color #29566f

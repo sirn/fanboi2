@@ -8,7 +8,7 @@
         {% cache "topic", topic.id, topic.posted_at, request.matchdict.get('query') %}
             <div class="posts">
                 {% for post in posts %}
-                    {{ post_block(post) }}
+                    {{ post_block(request, post) }}
                 {% endfor %}
             </div>
         {% endcache %}
