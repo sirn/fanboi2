@@ -1,5 +1,5 @@
 0.7.0
-==========
+=====
 
 - Added reply number autofill when clicking on post number in reply page.
 - Added inline reply when clicking on post number in listing page.
