@@ -7,7 +7,7 @@ import re
 import redis
 import string
 from sqlalchemy import Column, Integer, String, DateTime, Unicode, Text,\
-    Enum, ForeignKey, TypeDecorator, UniqueConstraint, func, select,\
+    Boolean, Enum, ForeignKey, TypeDecorator, UniqueConstraint, func, select,\
     desc, event
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship,\
@@ -168,7 +168,9 @@ class Topic(Base):
     board = relationship('Board',
                          backref=backref('topics',
                                          lazy='dynamic',
-                                         order_by='desc(Topic.posted_at)'))
+                                         order_by="desc(func.coalesce("
+                                                  "Topic.bumped_at,"
+                                                  "Topic.created_at))"))
 
     QUERY = (
         ("single_post", re.compile("^(\d+)$")),
@@ -251,6 +253,7 @@ class Post(Base):
     number = Column(Integer, nullable=False)
     name = Column(String, nullable=False)
     body = Column(Text, nullable=False)
+    bumped = Column(Boolean, nullable=False, index=True, default=True)
     topic = relationship('Topic',
                          backref=backref('posts',
                                          lazy='dynamic',
@@ -304,4 +307,13 @@ Topic.posted_at = column_property(
         where(Post.topic_id == Topic.id).
         order_by(desc(Post.created_at)).
         limit(1)
+)
+
+Topic.bumped_at = column_property(
+    select([Post.created_at]).
+        where(Post.topic_id == Topic.id).
+        where(Post.bumped == True).
+        order_by(desc(Post.created_at)).
+        limit(1),
+    deferred=True
 )

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import datetime
 import mock
 import os
 import transaction
@@ -451,27 +450,37 @@ class BoardModelTest(ModelMixin, unittest.TestCase):
         from datetime import datetime, timedelta
         from fanboi2.models import Topic, Post
         board = self._makeBoard(title="Foobar", slug="foobar")
-        topic1 = Topic(board=board, title="First!!!111")
-        topic2 = Topic(board=board, title="11111111111!!!!!!!!!")
-        topic3 = Topic(board=board, title="Third!!!11")
+        topic1 = Topic(board=board, title="First")
+        topic2 = Topic(board=board, title="Second")
+        topic3 = Topic(board=board, title="Third")
+        topic4 = Topic(board=board, title="Fourth")
+        topic5 = Topic(
+            board=board,
+            title="Fifth",
+            created_at=datetime.now() + timedelta(seconds=10))
         DBSession.add(topic1)
         DBSession.add(topic2)
         DBSession.add(topic3)
         DBSession.flush()
-        DBSession.add(Post(topic=topic1, body="!!1", ip_address="1.1.1.1"))
+        DBSession.add(Post(topic=topic1, ip_address="1.1.1.1", body="!!1"))
+        DBSession.add(Post(topic=topic4, ip_address="1.1.1.1", body="Baz"))
+        mappings = ((topic3, 3, True), (topic2, 5, True), (topic4, 8, False))
+        for obj, offset, bump in mappings:
+            DBSession.add(Post(
+                topic=obj,
+                ip_address="1.1.1.1",
+                body="Foo",
+                created_at=datetime.now() + timedelta(seconds=offset),
+                bumped=bump))
         DBSession.add(Post(
-            topic=topic3,
-            body="333",
-            ip_address="3.3.3.3",
-            created_at=datetime.now() + timedelta(seconds=3)))
-        DBSession.add(Post(
-            topic=topic2,
-            body="LOOK HOW I'M TOTALLY THE FIRST POST!!",
+            topic=topic5,
             ip_address="1.1.1.1",
-            created_at=datetime.now() + timedelta(seconds=5)))
+            body="Hax",
+            bumped=False))
         DBSession.flush()
         DBSession.refresh(board)
-        self.assertEqual([topic2, topic3, topic1], list(board.topics))
+        self.assertEqual([topic5, topic2, topic3, topic1, topic4],
+                         list(board.topics))
 
 
 class TopicModelTest(ModelMixin, unittest.TestCase):
@@ -484,7 +493,6 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         self.assertEqual([topic], list(board.topics))
 
     def test_posts(self):
-        from fanboi2.models import Post
         board = self._makeBoard(title="Foobar", slug="foo")
         topic1 = self._makeTopic(board=board, title="Lorem ipsum dolor")
         topic2 = self._makeTopic(board=board, title="Some lonely topic")
@@ -539,7 +547,7 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         self.assertEqual(topic.post_count, 4)
 
     def test_posted_at(self):
-        from fanboi2.models import Post
+        from datetime import datetime, timezone
         board = self._makeBoard(title="Foobar", slug="foo")
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
         self.assertIsNone(topic.posted_at)
@@ -547,10 +555,22 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
             self._makePost(
                 topic=topic,
                 body="Hello, world!",
-                created_at=datetime.datetime.now() -
-                           datetime.timedelta(days=1))
+                created_at=datetime(2013, 1, 2, 0, 4, 1, 0, timezone.utc))
         post = self._makePost(topic=topic, body="Hello, world!")
         self.assertEqual(topic.created_at, post.created_at)
+
+    def test_bumped_at(self):
+        from datetime import datetime, timezone
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
+        self.assertIsNone(topic.bumped_at)
+        post1 = self._makePost(
+            topic=topic,
+            body="Hello, world",
+            created_at=datetime(2013, 1, 2, 0, 4, 1, 0, timezone.utc))
+        post2 = self._makePost(topic=topic, body="Spam!", bumped=False)
+        self.assertEqual(topic.bumped_at, post1.created_at)
+        self.assertNotEqual(topic.bumped_at, post2.created_at)
 
     def test_scoped_posts(self):
         board = self._makeBoard(title="Foobar", slug="foobar")
@@ -1533,6 +1553,7 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         self.assertListEqual(response["boards"], [board])
         self.assertEqual(response["board"], board)
         self.assertEqual(response["topic"], topic)
+        self.assertEqual(response["form"].bumped.data, True)
         self.assertDictEqual(response["form"].errors, {})
         self.assertListEqual(response["posts"], [post1, post2])
 
@@ -1585,6 +1606,7 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(response.location, "/general/%s/l5" % topic.id)
         self.assertEqual(DBSession.query(Post).count(), 1)
         self.assertEqual(DBSession.query(Post).first().name, settings['name'])
+        self.assertEqual(DBSession.query(Post).first().bumped, False)
         limit_call.assert_called_with(settings['post_delay'])
 
     def test_post_failure(self):
