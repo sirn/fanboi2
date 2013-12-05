@@ -33,7 +33,10 @@
                 <div class="container">
                     {{ form.csrf_token }}
                     {{ form_field(form.body) }}
-                    {{ form_submit("Post Reply") }}
+                    <div>
+                        <button type="submit" class="button">Post Reply</button>
+                        {{ form_field(form.bumped) }}
+                    </div>
                 </div>
             </fieldset>
         </form>

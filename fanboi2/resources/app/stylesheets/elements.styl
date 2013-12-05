@@ -131,6 +131,9 @@ form.form
                 + div
                     margin-top 10px
 
+                div.inline
+                    display inline
+
                 label
                     color #666
                     font-size 12px
@@ -144,7 +147,7 @@ form.form
                         margin-top 3px
 
                 &.errors
-                    input
+                    [type=text]
                     textarea
                     span.error
                         box-shadow 3px 3px 0 0 #f2bdc7
@@ -159,7 +162,7 @@ form.form
                         margin-top -1px
                         padding 5px 10px
 
-            input
+            [type=text]
             textarea
                 appearance none        /* WebKit Mobile. */
                 background-color #fff  /* Firefox Desktop. */
@@ -178,7 +181,7 @@ form.form
                     border-color $color-highlight
                     box-shadow 3px 3px 0 0 $color-focus
 
-            input
+            [type=text]
                 font-size 20px
                 font-weight bold
                 height 43px

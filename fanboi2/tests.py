@@ -1553,6 +1553,7 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         self.assertListEqual(response["boards"], [board])
         self.assertEqual(response["board"], board)
         self.assertEqual(response["topic"], topic)
+        self.assertEqual(response["form"].bumped.data, True)
         self.assertDictEqual(response["form"].errors, {})
         self.assertListEqual(response["posts"], [post1, post2])
 
@@ -1605,6 +1606,7 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(response.location, "/general/%s/l5" % topic.id)
         self.assertEqual(DBSession.query(Post).count(), 1)
         self.assertEqual(DBSession.query(Post).first().name, settings['name'])
+        self.assertEqual(DBSession.query(Post).first().bumped, False)
         limit_call.assert_called_with(settings['post_delay'])
 
     def test_post_failure(self):

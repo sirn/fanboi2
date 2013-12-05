@@ -2,7 +2,7 @@ import hmac
 import os
 from hashlib import sha1
 from random import randint
-from wtforms import TextField, TextAreaField, Form
+from wtforms import TextField, TextAreaField, Form, BooleanField
 from wtforms.ext.csrf.fields import CSRFTokenField
 from wtforms.validators import Length as _Length
 from wtforms.validators import Required, ValidationError
@@ -86,3 +86,4 @@ class PostForm(SecureForm):
     be populated to :class:`Post`.
     """
     body = TextAreaField('Body', validators=[Required(), Length(2, 4000)])
+    bumped = BooleanField('Bump this topic')

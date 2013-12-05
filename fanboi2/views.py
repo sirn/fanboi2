@@ -147,7 +147,9 @@ class TopicView(BaseView):
     def GET(self):
         posts = self.topic.scoped_posts(self.request.matchdict.get('query'))
         if posts:
-            form = PostForm(self.request.params, request=self.request)
+            form = PostForm(self.request.params,
+                            obj=Post(bumped=True),
+                            request=self.request)
             return {
                 'boards': self.boards,
                 'board': self.board,
