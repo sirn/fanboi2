@@ -1,5 +1,10 @@
+Unreleased
+==========
+
+- Added reply number autofill when clicking on post number in reply page.
+
 0.6.2
-=====
+-----
 
 - Changed the way `Redis-py <https://redis-py.readthedocs.org>`_ is initialized by using late binding.
 - Changed implementation of user ident generator and avoid accessing `Pyramid registry <http://docs.pylonsproject.org/projects/pyramid/en/latest/glossary.html#term-application-registry>`_.
