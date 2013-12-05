@@ -2,6 +2,7 @@ Unreleased
 ==========
 
 - Added reply number autofill when clicking on post number in reply page.
+- Added inline reply when clicking on post number in listing page.
 
 0.6.2
 -----

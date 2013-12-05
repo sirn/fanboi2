@@ -33,6 +33,16 @@ section#main
                     + span
                         margin-left 5px
 
+                    &.name
+                        background-color #fff
+                        padding 4px 6px
+
+                    &.ident
+                        color #aabbc4
+
+                a
+                    display inline
+
                     &.number
                         background-color $header-color
                         color #fff
@@ -42,12 +52,31 @@ section#main
                         &:hover
                             background-color darken($header-color, 25%)
 
-                    &.name
-                        background-color #fff
-                        padding 4px 6px
+                > form.popover
+                    background-color #f5f7f8
+                    border 1px solid #fff
+                    box-shadow 1px 1px 5px 0 rgba(0, 0, 0, 0.3)
+                    display block
+                    margin-top 5px
+                    max-width 450px
+                    padding ($post-padding / 2)
+                    position absolute
+                    width 100%
+                    z-index 1
 
-                    &.ident
-                        color #aabbc4
+                    h3
+                    textarea
+                        font-size 14px
+
+                    button
+                        font-size 12px
+                        padding 6px 8px
+
+                    div.container
+                        width auto
+
+                        > div + div
+                            margin-top 3px
 
             > div
                 color #333
@@ -150,6 +179,9 @@ section#main
                         left $gutter-width
                         margin-left 0
                         position absolute
+
+                    > form.popover
+                        display none
 
                 > div
                     p.shortened

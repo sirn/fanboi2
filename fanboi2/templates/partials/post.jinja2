@@ -1,10 +1,10 @@
 {% from "partials/helper.jinja2" import time_tag %}
 
-{% macro post_block(post, shorten=False) %}
+{% macro post_block(request, post, shorten=False) %}
     <article id="post-{{ post.id }}" class="post post-{{ post.number }}">
         <div class="container">
             <header>
-                <span class="number">{{ post.number }}</span>
+                <a href="{{ request.route_path('topic_scoped', board=post.topic.board.slug, topic=post.topic.id, query=post.number) }}" class="number">{{ post.number }}</a>
                 <span class="name">{{ post.name }}</span>
                 <span class="created">Posted {{ time_tag(post.created_at) }}</span>
                 {% if post.ident %}<span class="ident">ID:{{ post.ident }}</span>{% endif %}
