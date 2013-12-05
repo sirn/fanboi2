@@ -450,27 +450,37 @@ class BoardModelTest(ModelMixin, unittest.TestCase):
         from datetime import datetime, timedelta
         from fanboi2.models import Topic, Post
         board = self._makeBoard(title="Foobar", slug="foobar")
-        topic1 = Topic(board=board, title="First!!!111")
-        topic2 = Topic(board=board, title="11111111111!!!!!!!!!")
-        topic3 = Topic(board=board, title="Third!!!11")
+        topic1 = Topic(board=board, title="First")
+        topic2 = Topic(board=board, title="Second")
+        topic3 = Topic(board=board, title="Third")
+        topic4 = Topic(board=board, title="Fourth")
+        topic5 = Topic(
+            board=board,
+            title="Fifth",
+            created_at=datetime.now() + timedelta(seconds=10))
         DBSession.add(topic1)
         DBSession.add(topic2)
         DBSession.add(topic3)
         DBSession.flush()
-        DBSession.add(Post(topic=topic1, body="!!1", ip_address="1.1.1.1"))
+        DBSession.add(Post(topic=topic1, ip_address="1.1.1.1", body="!!1"))
+        DBSession.add(Post(topic=topic4, ip_address="1.1.1.1", body="Baz"))
+        mappings = ((topic3, 3, True), (topic2, 5, True), (topic4, 8, False))
+        for obj, offset, bump in mappings:
+            DBSession.add(Post(
+                topic=obj,
+                ip_address="1.1.1.1",
+                body="Foo",
+                created_at=datetime.now() + timedelta(seconds=offset),
+                bumped=bump))
         DBSession.add(Post(
-            topic=topic3,
-            body="333",
-            ip_address="3.3.3.3",
-            created_at=datetime.now() + timedelta(seconds=3)))
-        DBSession.add(Post(
-            topic=topic2,
-            body="LOOK HOW I'M TOTALLY THE FIRST POST!!",
+            topic=topic5,
             ip_address="1.1.1.1",
-            created_at=datetime.now() + timedelta(seconds=5)))
+            body="Hax",
+            bumped=False))
         DBSession.flush()
         DBSession.refresh(board)
-        self.assertEqual([topic2, topic3, topic1], list(board.topics))
+        self.assertEqual([topic5, topic2, topic3, topic1, topic4],
+                         list(board.topics))
 
 
 class TopicModelTest(ModelMixin, unittest.TestCase):
@@ -483,7 +493,6 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         self.assertEqual([topic], list(board.topics))
 
     def test_posts(self):
-        from fanboi2.models import Post
         board = self._makeBoard(title="Foobar", slug="foo")
         topic1 = self._makeTopic(board=board, title="Lorem ipsum dolor")
         topic2 = self._makeTopic(board=board, title="Some lonely topic")

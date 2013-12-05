@@ -168,7 +168,9 @@ class Topic(Base):
     board = relationship('Board',
                          backref=backref('topics',
                                          lazy='dynamic',
-                                         order_by='desc(Topic.posted_at)'))
+                                         order_by="desc(func.coalesce("
+                                                  "Topic.bumped_at,"
+                                                  "Topic.created_at))"))
 
     QUERY = (
         ("single_post", re.compile("^(\d+)$")),
@@ -312,5 +314,6 @@ Topic.bumped_at = column_property(
         where(Post.topic_id == Topic.id).
         where(Post.bumped == True).
         order_by(desc(Post.created_at)).
-        limit(1)
+        limit(1),
+    deferred=True
 )
