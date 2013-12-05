@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import datetime
 import mock
 import os
 import transaction
@@ -539,7 +538,7 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
         self.assertEqual(topic.post_count, 4)
 
     def test_posted_at(self):
-        from fanboi2.models import Post
+        from datetime import datetime, timezone
         board = self._makeBoard(title="Foobar", slug="foo")
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
         self.assertIsNone(topic.posted_at)
@@ -547,10 +546,22 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
             self._makePost(
                 topic=topic,
                 body="Hello, world!",
-                created_at=datetime.datetime.now() -
-                           datetime.timedelta(days=1))
+                created_at=datetime(2013, 1, 2, 0, 4, 1, 0, timezone.utc))
         post = self._makePost(topic=topic, body="Hello, world!")
         self.assertEqual(topic.created_at, post.created_at)
+
+    def test_bumped_at(self):
+        from datetime import datetime, timezone
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
+        self.assertIsNone(topic.bumped_at)
+        post1 = self._makePost(
+            topic=topic,
+            body="Hello, world",
+            created_at=datetime(2013, 1, 2, 0, 4, 1, 0, timezone.utc))
+        post2 = self._makePost(topic=topic, body="Spam!", bumped=False)
+        self.assertEqual(topic.bumped_at, post1.created_at)
+        self.assertNotEqual(topic.bumped_at, post2.created_at)
 
     def test_scoped_posts(self):
         board = self._makeBoard(title="Foobar", slug="foobar")
