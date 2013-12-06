@@ -5,6 +5,7 @@
   "version":             "0.0.1",
   "dependencies": {
     "javascript-brunch":    ">= 1.7 < 1.8",
+    "coffee-script-brunch": ">= 1.7 < 1.8",
     "css-brunch":           ">= 1.7 < 1.8",
     "stylus-brunch":        ">= 1.7 < 1.8",
     "uglify-js-brunch":     ">= 1.7 < 1.8",
