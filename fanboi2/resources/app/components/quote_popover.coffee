@@ -19,7 +19,7 @@ removeQuotePopover = ($elem) ->
     $elem.find('div.popover').remove()
 
 
-renderQuotePopover = ($elem, nodeList) ->
+renderQuotePopover = ($elem, $nodeList) ->
     removeQuotePopover $elem
 
     # Reset timer so that when user switch between multiple anchor in the
@@ -30,7 +30,7 @@ renderQuotePopover = ($elem, nodeList) ->
         dismissTimer = undefined
 
     $container = $('<div class="popover"></div>')
-    $container.append $(nodeList)
+    $container.append $nodeList
     $container.on 'mouseleave', () -> removeQuotePopover $elem
     $container.on 'mouseover', () ->
         if dismissTimer
@@ -77,7 +77,7 @@ $(document).on 'mouseover', '[data-number]', (e) ->
     # situation we don't need XHR (all nodes exists in page DOM) we could
     # just render it right away.
     unless xhrNumber
-        renderQuotePopover $anchor, nodeList
+        renderQuotePopover $anchor, $(nodeList)
     else
         xhr = $.get $anchor.prop('href')
         xhr.then (data) ->
@@ -85,7 +85,7 @@ $(document).on 'mouseover', '[data-number]', (e) ->
             for n in [xhrNumber..endNumber]
                 node = $dom.find(".post-#{n}")[0]
                 nodeList.push node if node
-            renderQuotePopover $anchor, nodeList if nodeList.length
+            renderQuotePopover $anchor, $(nodeList) if nodeList.length
 
 
 $(document).on 'mouseleave', '[data-number]', (e) ->
