@@ -1,5 +1,10 @@
-0.7.0
+0.7.1
 =====
+
+- Convert existing pure-JavaScript to `jQuery <http://jquery.com>`_ and `CoffeeScript <http://coffeescript.org>`_.
+
+0.7.0
+-----
 
 - Added reply number autofill when clicking on post number in reply page.
 - Added inline reply when clicking on post number in listing page.
