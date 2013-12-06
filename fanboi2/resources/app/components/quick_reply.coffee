@@ -27,6 +27,10 @@ renderReplyPopover = ($elem, $node, text) ->
     $elem.after $node
     $node.addClass 'popover'
     postHelper.updateBumpState $node
+    postHelper.enableAjaxPosting $node
+
+    # AJAX posting is success.
+    $node.on 'success', removeReplyPopover
 
     # Pre-fill reply box with text.
     $textarea = $node.find('textarea#body')

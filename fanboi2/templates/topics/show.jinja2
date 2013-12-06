@@ -17,7 +17,7 @@
                 <ul>
                     <li><a href="{{ request.route_path("topic", board=board.slug, topic=topic.id) }}" class="button all"><i class="icon-th-list inverted"></i> All posts</a></li>
                     <li><a href="{{ request.route_path("topic_scoped", board=board.slug, topic=topic.id, query="recent") }}" class="button recent"><i class="icon-inbox inverted"></i> Recent posts</a></li>
-                    <li><a href="{{ request.route_path("topic_scoped", board=board.slug, topic=topic.id, query="%s-" % topic.post_count) }}" class="button visited"><i class="icon-forward"></i> New since visit</a></li>
+                    <li><a href="{{ request.route_path("topic_scoped", board=board.slug, topic=topic.id, query="%s-" % topic.post_count) }}" class="button reload" data-loading="Reloading..."><i class="icon-forward"></i> Reload posts</a></li>
                 </ul>
             </div>
         </div>
@@ -34,7 +34,7 @@
                     {{ form.csrf_token }}
                     {{ form_field(form.body) }}
                     <div>
-                        <button type="submit" class="button">Post Reply</button>
+                        <button type="submit" class="button" data-loading="Posting...">Post Reply</button>
                         {{ form_field(form.bumped) }}
                     </div>
                 </div>
