@@ -1,7 +1,7 @@
 {% from "partials/helper.jinja2" import time_tag %}
 
 {% macro post_block(request, post, shorten=False) %}
-    <article id="post-{{ post.id }}" class="post post-{{ post.number }}">
+    <article id="post-{{ post.id }}" class="post post-{{ post.number }}{% if post.bumped %} post-bumped{% endif %}">
         <div class="container">
             <header>
                 <a href="{{ request.route_path('topic_scoped', board=post.topic.board.slug, topic=post.topic.id, query=post.number) }}" class="number">{{ post.number }}</a>

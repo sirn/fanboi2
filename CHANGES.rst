@@ -1,7 +1,8 @@
 0.7.1
 =====
 
-- Convert existing pure-JavaScript to `jQuery <http://jquery.com>`_ and `CoffeeScript <http://coffeescript.org>`_.
+- Changed existing pure-JavaScript to `jQuery <http://jquery.com>`_ and `CoffeeScript <http://coffeescript.org>`_.
+- Changed styling for post number to indicate bump status.
 
 0.7.0
 -----

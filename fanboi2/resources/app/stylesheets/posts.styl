@@ -10,6 +10,8 @@ section#main
      * URL: /<slug>, /<slug>/<id>
      */
     article.post
+        $header-color = #8d9ca1
+
         display block
         max-width 100%
         overflow-x auto
@@ -19,8 +21,6 @@ section#main
             border-top 1px solid #fff
 
         > div.container
-            $header-color = #8d9ca1
-
             > header
                 color $header-color
                 font-size 12px
@@ -44,13 +44,16 @@ section#main
                     display inline
 
                     &.number
-                        background-color $header-color
-                        color #fff
+                        background-color #fff
+                        border 1px solid $header-color
+                        color $header-color
                         cursor pointer
-                        padding 4px 6px
+                        padding 3px 5px
 
                         &:hover
                             background-color darken($header-color, 25%)
+                            border-color darken($header-color, 25%)
+                            color #fff
 
                 > form.popover
                     background-color #f5f7f8
@@ -171,6 +174,17 @@ section#main
                             > div
                                 font-size $post-font-size - 2px
                                 line-height $post-line-height - 2px
+
+        &.post-bumped
+            > div.container
+                > header
+                    a.number
+                        background-color $header-color
+                        color #fff
+
+                        &:hover
+                            background-color darken($header-color, 25%)
+                            border-color darken($header-color, 25%)
 
     @media (min-width: 1024px)
         article.post
