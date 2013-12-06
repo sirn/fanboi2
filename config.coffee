@@ -9,15 +9,16 @@ exports.config =
         'javascripts/app.js': /\/app/
         'javascripts/vendor.js': /\/vendor/
       order:
-        before: []
+        before: [
+          'fanboi2/resources/vendor/javascripts/jquery.js']
 
     stylesheets:
       joinTo:
         'stylesheets/app.css': /\/(app|vendor)/
       order:
         before: [
-          'app/stylesheets/elements.styl',
-          'app/stylesheets/layout.styl']
+          'fanboi2/resources/app/stylesheets/elements.styl',
+          'fanboi2/resources/app/stylesheets/layout.styl']
         after: []
 
   modules:

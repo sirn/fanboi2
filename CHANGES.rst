@@ -3,6 +3,7 @@
 
 - Changed existing pure-JavaScript to `jQuery <http://jquery.com>`_ and `CoffeeScript <http://coffeescript.org>`_.
 - Changed styling for post number to indicate bump status.
+- Added bump status remembering per topic.
 
 0.7.0
 -----

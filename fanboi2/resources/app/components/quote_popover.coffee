@@ -1,5 +1,4 @@
 # Quote Popover
-#
 # Inline popover for linked quote. If such element exists in the same
 # page, it is simply cloned and displayed. Otherwise it is loaded from
 # AJAX.

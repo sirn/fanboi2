@@ -23,7 +23,7 @@
         </div>
     </article>
     {% if topic.status == "open" %}
-        <form action="{{ request.route_path("topic", board=board.slug, topic=topic.id) }}" method="post" id="reply" class="post form">
+        <form action="{{ request.route_path("topic", board=board.slug, topic=topic.id) }}" method="post" id="reply" class="post form" data-topic="{{ topic.id }}">
             <header>
                 <div class="container">
                     <h3>Reply</h3>

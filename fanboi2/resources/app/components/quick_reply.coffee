@@ -1,11 +1,12 @@
 # Quick Reply
-#
 # Fill reply box with anchor from content in span.number.
 #
 # TODO:
 # - Cache user input and append number instead of clearing.
 # - Allow moving of reply popover.
 # - Performance improvements.
+
+postHelper = require 'helpers/post'
 
 
 removeReplyPopover = () ->
@@ -25,6 +26,7 @@ renderReplyPopover = ($elem, $node, text) ->
     # Insert the element to DOM.
     $elem.after $node
     $node.addClass 'popover'
+    postHelper.updateBumpState $node
 
     # Pre-fill reply box with text.
     $textarea = $node.find('textarea#body')

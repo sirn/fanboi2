@@ -244,8 +244,10 @@
     # Assets compilation.
     # ---------------------------------------------------------------------
 
+    # Minification broken in 1.7.12:
+    # https://github.com/brunch/brunch/issues/750
     - name: install brunch for assets compilation
-      npm: name=brunch global=yes
+      npm: name=brunch@1.7.10 global=yes
 
     - name: install fanboi2 brunch requirements
       sudo_user: ${user}
