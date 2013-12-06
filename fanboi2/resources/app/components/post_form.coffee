@@ -7,3 +7,4 @@ postHelper = require 'helpers/post'
 $form = $('form#reply')
 if $form.length
     postHelper.updateBumpState $form
+    postHelper.enableAjaxPosting $form

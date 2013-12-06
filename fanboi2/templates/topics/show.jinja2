@@ -34,7 +34,7 @@
                     {{ form.csrf_token }}
                     {{ form_field(form.body) }}
                     <div>
-                        <button type="submit" class="button">Post Reply</button>
+                        <button type="submit" class="button" data-loading="Posting...">Post Reply</button>
                         {{ form_field(form.bumped) }}
                     </div>
                 </div>
