@@ -7,9 +7,11 @@
                 {% if topic.status == "archived" %}
                     <h3>Post limit exceeded</h3>
                     <p>Please start a new topic.</p>
+                    <p class="fineprint">Topic has already reached maximum posts.</p>
                 {% elif topic.status == "locked" %}
                     <h3>Topic locked</h3>
                     <p>Topic has been locked by moderator.</p>
+                    <p class="fineprint">Topic has been locked by moderator due to requests.</p>
                 {% endif %}
             </div>
         </header>

@@ -56,6 +56,11 @@ exports.enableAjaxPosting = ($form) ->
             if $dom.find('form#reply div.errors').length
                 formHelper.cloneFormErrors $form, $dom.find 'form#reply'
 
+            # Form has non-form errors (e.g. topic locked.)
+            else if $dom.find('div#reply.locked').length
+                lockMessage = $dom.find('div#reply.locked p.fineprint').text()
+                formHelper.addFormErrors $form, 'body', lockMessage
+
             # Form is success. We clone the new post into DOM.
             else
                 $form.find('textarea#body').val ''

@@ -8,19 +8,25 @@ exports.clearFormErrors = ($form) ->
     $form.find('span.error').remove()
 
 
+# Add form error to specific form field.
+exports.addFormErrors = ($form, fieldName, message) ->
+    $errorMessage = $('<span class="error"></span>')
+    $fieldWrapper = $form.find "div.field-#{fieldName}"
+    $fieldWrapper.addClass 'errors'
+    $fieldWrapper.find('div').append $errorMessage.text message
+
+
 # Clone form errors from $sourceForm into $form. Intended to be used with
 # errors from AJAX pages.
 exports.cloneFormErrors = ($form, $sourceForm) ->
     $formErrors = $sourceForm.find('div.errors')
     for error in $formErrors
         $error = $(error)
-        $errorMessage = $error.find('span.error').clone()
+        message = $error.find('span.error').text()
 
-        if $errorMessage.length
+        if message
             fieldName = $error.find('label').prop('for')
-            $fieldWrapper = $form.find("div.field-#{fieldName}")
-            $fieldWrapper.addClass('errors')
-            $fieldWrapper.find('div').append($errorMessage)
+            exports.addFormErrors $form, fieldName, message
 
 
 # Transition effect when form is submitting.
