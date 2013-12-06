@@ -1,5 +1,11 @@
-0.7.1
+0.7.2
 =====
+
+- Added posting via AJAX in both quick reply and normal reply.
+- Changed "New since visit" button to "Reload posts" via AJAX.
+
+0.7.1
+-----
 
 - Changed existing pure-JavaScript to `jQuery <http://jquery.com>`_ and `CoffeeScript <http://coffeescript.org>`_.
 - Changed styling for post number to indicate bump status.
