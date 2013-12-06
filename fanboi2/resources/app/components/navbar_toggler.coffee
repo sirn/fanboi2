@@ -1,4 +1,5 @@
 # Navbar toggler
+#
 # The toggle button to expand or hide board navigation menu.
 
 $toggler = $('#toggler')
