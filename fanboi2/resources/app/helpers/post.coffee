@@ -26,17 +26,15 @@ exports.updateBumpState = ($form) ->
         localStorage.setItem storageKey, $bumpInput.prop('checked')
 
 
-# Clone new posts from $dom and append to specific topic ID.
-exports.appendNewPosts = ($dom, topicId) ->
-    $wrapper = $ "article#topic-" + topicId
+# Clone new posts from $domWrapper and append them to $wrapper.
+exports.appendNewPosts = ($domWrapper, $wrapper) ->
     $postContainer = $wrapper.find 'div.posts'
     lastPost = extractPostId $wrapper.find 'article.post:last'
-
-    $domWrapper = $dom.find "article#topic-" + topicId
     $postContainer.append $domWrapper.find('article.post').filter ->
         lastPost < extractPostId $(this)
 
 
+# Setup form events for posting via AJAX and dynamic post update.
 exports.enableAjaxPosting = ($form) ->
     $form = getForm $form
     topicId = $form.data 'topic'
@@ -65,4 +63,6 @@ exports.enableAjaxPosting = ($form) ->
             else
                 $form.find('textarea#body').val ''
                 $form.trigger 'success'
-                exports.appendNewPosts $dom, topicId
+                exports.appendNewPosts \
+                        $dom.find("article#topic-" + topicId),
+                        $("article#topic-" + topicId)
