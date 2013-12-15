@@ -1,6 +1,6 @@
-from sqlalchemy.exc import IntegrityError
 import transaction
 from celery import Celery
+from sqlalchemy.exc import IntegrityError
 from .models import DBSession, Post, Topic, Board
 from .utils import akismet
 
@@ -26,13 +26,14 @@ class AddTopicException(TaskException):
 def add_topic(request, board_id, title, body):
     """Insert a topic to the database."""
     if akismet.spam(request, body):
-        raise AddTopicException('spam', ('board', board_id))
+        raise AddTopicException('spam')
 
     with transaction.manager:
         board = DBSession.query(Board).get(board_id)
         post = Post(body=body, ip_address=request['remote_addr'])
         post.topic = Topic(board=board, title=title)
         DBSession.add(post)
+        DBSession.flush()
         return 'topic', post.topic_id
 
 
@@ -44,7 +45,7 @@ class AddPostException(TaskException):
 def add_post(self, request, topic_id, body):
     """Insert a post to a topic."""
     if akismet.spam(request, body):
-        raise AddPostException('spam', ('topic', topic_id))
+        raise AddPostException('spam')
 
     with transaction.manager:
         topic = DBSession.query(Topic).get(topic_id)
@@ -53,7 +54,7 @@ def add_post(self, request, topic_id, body):
         post.ip_address = request['remote_addr']
 
         if topic.status != "open":
-            raise AddPostException(topic.status, ('topic', topic.id))
+            raise AddPostException(topic.status)
 
         try:
             DBSession.add(post)

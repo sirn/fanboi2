@@ -1,4 +1,4 @@
-{% extends "topics/layout.jinja2" %}
+{% extends "boards/layout.jinja2" %}
 
 {% block head %}
     {% if error == "waiting" %}
@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-    <div id="reply" class="post locked">
+    <div id="new" class="post locked">
         <header>
             <div class="container">
                 {% if error == "waiting" %}
@@ -19,16 +19,7 @@
                         <h3>I'm sorry, Dave. I'm afraid I can't do that.</h3>
                         <p>This mission is too important for me to allow you to jeopardize it.</p>
                         <p class="fineprint">Your message has been identified as spam and therefore rejected.</p>
-                    {% elif error == "archived" %}
-                        <h3>Post limit exceeded</h3>
-                        <p>Please start a new topic.</p>
-                        <p class="fineprint">Topic has already reached maximum posts.</p>
-                    {% elif error == "locked" %}
-                        <h3>Topic locked</h3>
-                        <p>Topic has been locked by moderator.</p>
-                        <p class="fineprint">Topic has been locked by moderator due to requests.</p>
                     {% endif %}
-                    <a href="{{ request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='l5') }}" class="button error">Back</a>
                 {% endif %}
             </div>
         </header>

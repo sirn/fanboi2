@@ -2,6 +2,7 @@ from celery import states
 from datetime import timedelta, datetime
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
+from pyramid.response import Response
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import undefer
 from sqlalchemy.orm.exc import NoResultFound
@@ -52,6 +53,55 @@ class BaseView(object):
         return self._topic
 
 
+class BaseTaskView(object):
+    """Second-level dispatcher. If ``task`` is present in params, it will try
+    to retrieve the specific task ID from :class:`celery.AsyncResult` then
+    determine if the task is success and calls :meth:`GET_success`,
+    :meth:`GET_failure` or :meth:`GET_running` accordingly.
+    """
+
+    def _serialize(self, objtuple):
+        key, value = objtuple
+        return DBSession.query({
+            'post': Post,
+            'topic': Topic,
+            'board': Board,
+            }[key]).get(value)
+
+    # noinspection PyUnresolvedReferences
+    def GET(self):
+        if 'task' in self.request.params:
+            task = celery.AsyncResult(self.request.params['task'])
+
+            if task.state == states.SUCCESS:
+                obj = self._serialize(task.get())
+                return self.GET_success(obj)
+
+            elif task.state == states.FAILURE:
+                try:
+                    task.get()
+                except TaskException as exc:
+                    return self.GET_failure(exc.args[0])
+
+            else:
+                return self.GET_waiting()
+
+        else:
+            return self.GET_initial()
+
+    def GET_initial(self):
+        raise NotImplementedError
+
+    def GET_waiting(self):
+        return self.GET_failure('waiting')
+
+    def GET_success(self, obj):
+        raise NotImplementedError
+
+    def GET_failure(self, error):
+        raise NotImplementedError
+
+
 class RootView(BaseView):
     """List all boards."""
 
@@ -91,16 +141,30 @@ class BoardAllView(BaseView):
         }
 
 
-class BoardNewView(BaseView):
+class BoardNewView(BaseTaskView, BaseView):
     """Display and handle creation of new topic."""
 
-    def GET(self):
+    def GET_initial(self):
         form = TopicForm(self.request.params, request=self.request)
         return {
             'boards': self.boards,
             'board': self.board,
             'form': form,
         }
+
+    def GET_success(self, topic):
+        return HTTPFound(location=self.request.route_path(
+            route_name='topic_scoped',
+            board=topic.board.slug,
+            topic=topic.id,
+            query='l5'))
+
+    def GET_failure(self, error):
+        return render_to_response('boards/error.jinja2', {
+            'error': error,
+            'boards': self.boards,
+            'board': self.board,
+        }, request=self.request)
 
     def POST(self):
         form = TopicForm(self.request.params, request=self.request)
@@ -114,7 +178,7 @@ class BoardNewView(BaseView):
                     'board': self.board,
                 }, request=self.request)
 
-            add_topic.delay(
+            task = add_topic.delay(
                 request=serialize_request(self.request),
                 board_id=self.board.id,
                 title=form.title.data,
@@ -122,8 +186,9 @@ class BoardNewView(BaseView):
 
             ratelimit.limit(self.board.settings['post_delay'])
             return HTTPFound(location=self.request.route_path(
-                route_name='board',
-                board=self.board.slug))
+                route_name='board_new',
+                board=self.board.slug,
+                _query={'task': task.id}))
 
         return {
             'boards': self.boards,
@@ -132,13 +197,13 @@ class BoardNewView(BaseView):
         }
 
 
-class TopicView(BaseView):
+class TopicView(BaseTaskView, BaseView):
     """Display topic and list all posts associated with board. If query is
     given to :attr:`self.request.matchdict` then only posts that satisfied
     the query criteria is shown.
     """
 
-    def GET(self):
+    def GET_initial(self):
         posts = self.topic.scoped_posts(self.request.matchdict.get('query'))
         if posts:
             form = PostForm(self.request.params,
@@ -153,6 +218,21 @@ class TopicView(BaseView):
             }
         else:
             raise HTTPNotFound
+
+    def GET_success(self, post):
+        return HTTPFound(location=self.request.route_path(
+            route_name='topic_scoped',
+            board=self.topic.board.slug,
+            topic=self.topic.id,
+            query='l5'))
+
+    def GET_failure(self, error):
+        return render_to_response('topics/error.jinja2', {
+            'error': error,
+            'boards': self.boards,
+            'board': self.board,
+            'topic': self.topic,
+        }, request=self.request)
 
     def POST(self):
         form = PostForm(self.request.params, request=self.request)
@@ -174,8 +254,10 @@ class TopicView(BaseView):
 
             ratelimit.limit(self.board.settings['post_delay'])
             return HTTPFound(location=self.request.route_path(
-                route_name='task',
-                id=task.id))
+                route_name='topic',
+                board=self.topic.board.slug,
+                topic=self.topic.id,
+                _query={'task': task.id}))
 
         return {
             'boards': self.boards,
@@ -184,57 +266,3 @@ class TopicView(BaseView):
             'posts': self.topic.posts,
             'form': form,
        }
-
-
-class TaskView(BaseView):
-    """Display a posting status for task queue."""
-
-    def GET(self):
-        result = celery.AsyncResult(self.request.matchdict['id'])
-
-        if result.state == states.SUCCESS:
-            return HTTPFound(location=self._return_path(result.get()))
-
-        elif result.state == states.FAILURE:
-            try:
-                result.get()
-            except TaskException as e:
-                error, objtuple = e.args
-                return {
-                    'error': error,
-                    'uuid': self.request.matchdict['id'],
-                    'path': self._return_path(objtuple),
-                }
-
-        else:
-            return {'error': 'queue'}
-
-    def _serialize(self, objtuple):
-        key, value = objtuple
-        return DBSession.query({
-            'post': Post,
-            'topic': Topic,
-            'board': Board,
-        }[key]).get(value)
-
-    def _return_path(self, objtuple):
-        obj = self._serialize(objtuple)
-
-        if isinstance(obj, Board):
-            return self.request.route_path(
-                route_name='board',
-                slug=obj.slug)
-
-        elif isinstance(obj, Topic):
-            return self.request.route_path(
-                route_name='topic_scoped',
-                board=obj.board.slug,
-                topic=obj.id,
-                query='l5')
-
-        elif isinstance(obj, Post):
-            return self.request.route_path(
-                route_name='topic_scoped',
-                board=obj.topic.board.slug,
-                topic=obj.topic_id,
-                query='l5')
