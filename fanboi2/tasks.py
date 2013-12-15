@@ -42,15 +42,14 @@ class AddPostException(TaskException):
 
 
 @celery.task(bind=True, throws=(AddPostException,))
-def add_post(self, request, topic_id, body):
+def add_post(self, request, topic_id, body, bumped):
     """Insert a post to a topic."""
     if akismet.spam(request, body):
         raise AddPostException('spam')
 
     with transaction.manager:
         topic = DBSession.query(Topic).get(topic_id)
-        post = Post(body=body)
-        post.topic = topic
+        post = Post(topic=topic, body=body, bumped=bumped)
         post.ip_address = request['remote_addr']
 
         if topic.status != "open":

@@ -250,7 +250,8 @@ class TopicView(BaseTaskView, BaseView):
             task = add_post.delay(
                 request=serialize_request(self.request),
                 topic_id=self.topic.id,
-                body=form.body.data)
+                body=form.body.data,
+                bumped=form.bumped.data)
 
             ratelimit.limit(self.board.settings['post_delay'])
             return HTTPFound(location=self.request.route_path(
