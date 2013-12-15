@@ -1716,7 +1716,7 @@ class CacheMixin(object):
 
     def _getRegion(self, store=None):
         from dogpile.cache import make_region
-        return make_region().configure_key('dogpile.cache.memory', arguments={
+        return make_region().configure('dogpile.cache.memory', arguments={
             'cache_dict': store if store is not None else {},
         })
 

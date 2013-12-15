@@ -1,7 +1,6 @@
 import hmac
 import os
 from hashlib import sha1
-from random import randint
 from wtforms import TextField, TextAreaField, Form, BooleanField
 from wtforms.ext.csrf.fields import CSRFTokenField
 from wtforms.validators import Length as _Length

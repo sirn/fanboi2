@@ -1,16 +1,13 @@
-import transaction
-
 from datetime import timedelta, datetime
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
 from sqlalchemy import or_, and_
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import undefer
 from sqlalchemy.orm.exc import NoResultFound
 from .forms import TopicForm, PostForm
 from .models import Topic, Post, Board, DBSession
 from .tasks import add_topic, add_post
-from .utils import RateLimiter, akismet, serialize_request
+from .utils import RateLimiter, serialize_request
 
 
 class BaseView(object):
