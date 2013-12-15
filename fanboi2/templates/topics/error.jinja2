@@ -1,16 +1,16 @@
 {% extends "topics/layout.jinja2" %}
 
 {% block head %}
-    {% if error == "waiting" %}
-        <meta http-equiv="refresh" content="1; url={{ request.url }}">
+    {% if error == "task" %}
+        <meta http-equiv="refresh" content="1; url={{ request.path_qs }}">
     {% endif %}
 {% endblock %}
 
 {% block content %}
-    <div id="reply" class="post locked">
+    <div id="reply" class="post locked"{% if error == "task" %} data-task="{{ request.path_qs }}"{% endif %}>
         <header>
             <div class="container">
-                {% if error == "waiting" %}
+                {% if error == "task" %}
                     <h3>Posting...</h3>
                     <p>Your post is processing. Please wait...</p>
                     <p class="fineprint">Your post is in our posting queue and will be processed soon.</p>

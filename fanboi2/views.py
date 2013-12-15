@@ -84,7 +84,7 @@ class BaseTaskView(object):
                     return self.GET_failure(exc.args[0])
 
             else:
-                return self.GET_waiting()
+                return self.GET_task()
 
         else:
             return self.GET_initial()
@@ -92,8 +92,8 @@ class BaseTaskView(object):
     def GET_initial(self):
         raise NotImplementedError
 
-    def GET_waiting(self):
-        return self.GET_failure('waiting')
+    def GET_task(self):
+        return self.GET_failure('task')
 
     def GET_success(self, obj):
         raise NotImplementedError

@@ -2,6 +2,19 @@
 # Miscellaneous helpers for generic form.
 
 
+# Handles periodic fetching of task status and return if task is success.
+exports.fetchStatus = (xhr, callback) ->
+    xhr.done (data, status, jqXHR) ->
+        $dom = $ $.parseHTML(data)
+        $task = $dom.find('[data-task]')
+        if $task.length
+            statusUrl = $task.data 'task'
+            retryFunc = -> exports.fetchStatus $.get(statusUrl), callback
+            setTimeout retryFunc, 300
+        else
+            callback data, status, jqXHR
+
+
 # Remove form errors from specific $form element.
 exports.clearFormErrors = ($form) ->
     $form.find('div.errors').removeClass('errors')
