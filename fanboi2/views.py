@@ -1,4 +1,5 @@
 import transaction
+
 from datetime import timedelta, datetime
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
@@ -8,7 +9,8 @@ from sqlalchemy.orm import undefer
 from sqlalchemy.orm.exc import NoResultFound
 from .forms import TopicForm, PostForm
 from .models import Topic, Post, Board, DBSession
-from .utils import Akismet, RateLimiter
+from .tasks import add_topic, add_post
+from .utils import RateLimiter, akismet, serialize_request
 
 
 class BaseView(object):
@@ -106,25 +108,19 @@ class BoardNewView(BaseView):
         form = TopicForm(self.request.params, request=self.request)
 
         if form.validate():
-            akismet = Akismet(self.request)
-            if akismet.spam(form.body.data):
-                return render_to_response('boards/error_spam.jinja2', {
-                    'boards': self.boards,
-                    'board': self.board,
-                }, request=self.request)
-
             ratelimit = RateLimiter(self.request, namespace=self.board.slug)
             if ratelimit.limited():
                 return render_to_response('boards/error_rate.jinja2', {
                     'seconds': ratelimit.timeleft(),
                     'boards': self.boards,
                     'board': self.board,
-                }, request=self.request)
+                    }, request=self.request)
 
-            post = Post(body=form.body.data)
-            post.ip_address = self.request.remote_addr
-            post.topic = Topic(board=self.board, title=form.title.data)
-            DBSession.add(post)
+            add_topic.delay(
+                request=serialize_request(self.request),
+                board=self.board,
+                title=form.title.data,
+                body=form.body.data)
 
             ratelimit.limit(self.board.settings['post_delay'])
             return HTTPFound(location=self.request.route_path(
@@ -164,14 +160,6 @@ class TopicView(BaseView):
         form = PostForm(self.request.params, request=self.request)
 
         if form.validate():
-            akismet = Akismet(self.request)
-            if akismet.spam(form.body.data):
-                return render_to_response('topics/error_spam.jinja2', {
-                    'boards': self.boards,
-                    'board': self.board,
-                    'topic': self.topic,
-                }, request=self.request)
-
             ratelimit = RateLimiter(self.request, namespace=self.board.slug)
             if ratelimit.limited():
                 return render_to_response('topics/error_rate.jinja2', {
@@ -181,49 +169,18 @@ class TopicView(BaseView):
                     'topic': self.topic,
                 }, request=self.request)
 
-            # INSERT a post will issue a SELECT subquery and may cause race
-            # condition. In such case, UNIQUE constraint on (topic, number)
-            # will cause the driver to raise IntegrityError.
-            max_attempts = 5
-            while True:
-                # Prevent posting to locked topic. It is handled here inside
-                # retry to ensure post don't get through even the topic is
-                # locked by another process while this retry is still running.
-                #
-                # Expire statement ensure status is reloaded on every retry.
-                DBSession.expire(self.topic, ['status'])
-                if self.topic.status != "open":
-                    return render_to_response('topics/error.jinja2', {
-                        'boards': self.boards,
-                        'board': self.board,
-                        'topic': self.topic,
-                    }, request=self.request)
+            add_post.delay(
+                request=serialize_request(self.request),
+                topic=self.topic,
+                body=form.body.data)
 
-                # Using SAVEPOINT to handle ROLLBACK in case of constraint
-                # error so we don't have to abort transaction. Transaction
-                # COMMIT (or abort) is already handled at the end of request
-                # by :module:`zope.transaction`.
-                sp = transaction.savepoint()
-                try:
-                    post = Post()
-                    post.topic = self.topic
-                    post.ip_address = self.request.remote_addr
-                    form.populate_obj(post)
-                    DBSession.add(post)
-                    DBSession.flush()
-                except IntegrityError:
-                    sp.rollback()
-                    max_attempts -= 1
-                    if not max_attempts:
-                        raise
-                else:
-                    ratelimit.limit(self.board.settings['post_delay'])
-                    return HTTPFound(location=self.request.route_path(
-                        route_name='topic_scoped',
-                        board=self.board.slug,
-                        topic=self.topic.id,
-                        query='l5',
-                    ))
+            ratelimit.limit(self.board.settings['post_delay'])
+            return HTTPFound(location=self.request.route_path(
+                route_name='topic_scoped',
+                board=self.board.slug,
+                topic=self.topic.id,
+                query='l5'))
+
         return {
             'boards': self.boards,
             'board': self.board,
