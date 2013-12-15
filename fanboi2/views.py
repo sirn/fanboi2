@@ -1,3 +1,4 @@
+from celery import states
 from datetime import timedelta, datetime
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
@@ -6,7 +7,7 @@ from sqlalchemy.orm import undefer
 from sqlalchemy.orm.exc import NoResultFound
 from .forms import TopicForm, PostForm
 from .models import Topic, Post, Board, DBSession
-from .tasks import add_topic, add_post
+from .tasks import celery, add_topic, add_post, TaskException
 from .utils import RateLimiter, serialize_request
 
 
@@ -111,11 +112,11 @@ class BoardNewView(BaseView):
                     'seconds': ratelimit.timeleft(),
                     'boards': self.boards,
                     'board': self.board,
-                    }, request=self.request)
+                }, request=self.request)
 
             add_topic.delay(
                 request=serialize_request(self.request),
-                board=self.board,
+                board_id=self.board.id,
                 title=form.title.data,
                 body=form.body.data)
 
@@ -166,17 +167,15 @@ class TopicView(BaseView):
                     'topic': self.topic,
                 }, request=self.request)
 
-            add_post.delay(
+            task = add_post.delay(
                 request=serialize_request(self.request),
-                topic=self.topic,
+                topic_id=self.topic.id,
                 body=form.body.data)
 
             ratelimit.limit(self.board.settings['post_delay'])
             return HTTPFound(location=self.request.route_path(
-                route_name='topic_scoped',
-                board=self.board.slug,
-                topic=self.topic.id,
-                query='l5'))
+                route_name='task',
+                id=task.id))
 
         return {
             'boards': self.boards,
@@ -185,3 +184,57 @@ class TopicView(BaseView):
             'posts': self.topic.posts,
             'form': form,
        }
+
+
+class TaskView(BaseView):
+    """Display a posting status for task queue."""
+
+    def GET(self):
+        result = celery.AsyncResult(self.request.matchdict['id'])
+
+        if result.state == states.SUCCESS:
+            return HTTPFound(location=self._return_path(result.get()))
+
+        elif result.state == states.FAILURE:
+            try:
+                result.get()
+            except TaskException as e:
+                error, objtuple = e.args
+                return {
+                    'error': error,
+                    'uuid': self.request.matchdict['id'],
+                    'path': self._return_path(objtuple),
+                }
+
+        else:
+            return {'error': 'queue'}
+
+    def _serialize(self, objtuple):
+        key, value = objtuple
+        return DBSession.query({
+            'post': Post,
+            'topic': Topic,
+            'board': Board,
+        }[key]).get(value)
+
+    def _return_path(self, objtuple):
+        obj = self._serialize(objtuple)
+
+        if isinstance(obj, Board):
+            return self.request.route_path(
+                route_name='board',
+                slug=obj.slug)
+
+        elif isinstance(obj, Topic):
+            return self.request.route_path(
+                route_name='topic_scoped',
+                board=obj.board.slug,
+                topic=obj.id,
+                query='l5')
+
+        elif isinstance(obj, Post):
+            return self.request.route_path(
+                route_name='topic_scoped',
+                board=obj.topic.board.slug,
+                topic=obj.topic_id,
+                query='l5')

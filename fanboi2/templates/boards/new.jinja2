@@ -11,7 +11,7 @@
                     <article>{{ board.agreements|markdown }}</article>
                     <div>
                         <p>By continuing, you're agree to the above agreement. Otherwise, you may go back now:</p>
-                        <a href="{{ request.route_path("board", board=board.slug) }}" class="button">Back</a>
+                        <a href="{{ request.route_path("board", board=board.slug) }}" class="button error">Back</a>
                     </div>
                 {% endif %}
             </div>
