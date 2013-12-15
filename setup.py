@@ -28,6 +28,7 @@ requires = [
     'hiredis',
     'IPy',
     'requests',
+    'celery',
 
     # Tests
     'nose',
@@ -66,5 +67,6 @@ setup(name='fanboi2',
       [console_scripts]
       fb2_create_board = fanboi2.scripts.create_board:main
       fb2_update_board = fanboi2.scripts.update_board:main
+      fb2_celery = fanboi2.scripts.celery:main
       """,
       )

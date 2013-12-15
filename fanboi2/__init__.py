@@ -11,6 +11,7 @@ from sqlalchemy import engine_from_config
 from .formatters import *
 from .models import DBSession, Base, redis_conn, identity
 from .cache import cache_region, Jinja2CacheExtension
+from .tasks import celery, configure_celery
 
 
 __VERSION__ = pkg_resources.require('fanboi2')[0].version
@@ -66,6 +67,7 @@ def main(global_config, **settings):  # pragma: no cover
     session_factory = session_factory_from_settings(settings)
     redis_conn.from_url(settings['redis.url'])
     identity.configure_tz(settings['app.timezone'])
+    configure_celery(celery, settings)
     cache_region.configure_from_config(settings, 'dogpile.')
     cache_region.invalidate()
 
