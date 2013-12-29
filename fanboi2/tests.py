@@ -108,6 +108,8 @@ class ModelMixin(_ModelInstanceSetup):
 
     def _makeRequest(self):
         request = testing.DummyRequest()
+        request.user_agent = 'Mock/1.0'
+        request.referrer = None
         return request
 
     def _makeRegistry(self):
@@ -1124,21 +1126,48 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
                                 "See full post</a>.</p>"))
 
 
+class TestRequestSerializer(unittest.TestCase):
+
+    def _getTargetFunction(self):
+        from fanboi2.utils import serialize_request
+        return serialize_request
+
+    def test_serialize(self):
+        request = testing.DummyRequest()
+        request.application_url = 'http://www.example.com/'
+        request.referrer = 'http://www.example.com/'
+        request.remote_addr = '127.0.0.1'
+        request.url = 'http://www.example.com/foobar'
+        request.user_agent = 'Mock/1.0'
+        self.assertEqual(
+            self._getTargetFunction()(request),
+            {
+                'application_url': 'http://www.example.com/',
+                'referrer': 'http://www.example.com/',
+                'remote_addr': '127.0.0.1',
+                'url': 'http://www.example.com/foobar',
+                'user_agent': 'Mock/1.0',
+            }
+        )
+
+    def test_serialize_dict(self):
+        request = {'foo': 1}
+        self.assertEqual(self._getTargetFunction()(request), request)
+
+
 class TestAkismet(unittest.TestCase):
 
-    def _getTargetClass(self):
-        from fanboi2.utils import Akismet
-        return Akismet
+    def _makeOne(self, key='hogehoge'):
+        from fanboi2.utils import akismet
+        akismet.configure_key(key)
+        return akismet
 
-    def _makeRequest(self, api_key='hogehoge'):
-        from pyramid.registry import Registry
+    def _makeRequest(self):
         request = testing.DummyRequest()
         request.remote_addr = '127.0.0.1'
-        request.user_agent = 'Mock 1.0'
+        request.user_agent = 'Mock/1.0'
         request.referrer = 'http://www.example.com/'
-        registry = Registry()
-        registry.settings = {'akismet.key': api_key}
-        testing.setUp(request=request, registry=registry)
+        testing.setUp(request=request)
         return request
 
     def _makeResponse(self, content):
@@ -1148,23 +1177,20 @@ class TestAkismet(unittest.TestCase):
         return MockResponse(content)
 
     def test_init(self):
-        request = self._makeRequest()
-        akismet = self._getTargetClass()(request)
-        self.assertEqual(akismet.request, request)
+        akismet = self._makeOne()
         self.assertEqual(akismet.key, 'hogehoge')
 
+    # noinspection PyTypeChecker
     def test_init_no_key(self):
-        request = self._makeRequest(api_key=None)
-        akismet = self._getTargetClass()(request)
-        self.assertEqual(akismet.request, request)
+        akismet = self._makeOne(key=None)
         self.assertEqual(akismet.key, None)
 
     @mock.patch('requests.post')
     def test_spam(self, api_call):
         api_call.return_value = self._makeResponse(b'true')
         request = self._makeRequest()
-        akismet = self._getTargetClass()(request)
-        self.assertEqual(akismet.spam('buy viagra'), True)
+        akismet = self._makeOne()
+        self.assertEqual(akismet.spam(request, 'buy viagra'), True)
         api_call.assert_called_with(
             'https://hogehoge.rest.akismet.com/1.1/comment-check',
             headers=mock.ANY,
@@ -1175,19 +1201,20 @@ class TestAkismet(unittest.TestCase):
     def test_spam_ham(self, api_call):
         api_call.return_value = self._makeResponse(b'false')
         request = self._makeRequest()
-        akismet = self._getTargetClass()(request)
-        self.assertEqual(akismet.spam('Hogehogehogehoge!'), False)
+        akismet = self._makeOne()
+        self.assertEqual(akismet.spam(request, 'Hogehogehogehoge!'), False)
         api_call.assert_called_with(
             'https://hogehoge.rest.akismet.com/1.1/comment-check',
             headers=mock.ANY,
             data=mock.ANY,
         )
 
+    # noinspection PyTypeChecker
     @mock.patch('requests.post')
     def test_spam_no_key(self, api_call):
-        request = self._makeRequest(api_key=None)
-        akismet = self._getTargetClass()(request)
-        self.assertEqual(akismet.spam('buy viagra'), False)
+        request = self._makeRequest()
+        akismet = self._makeOne(key=None)
+        self.assertEqual(akismet.spam(request, 'buy viagra'), False)
         assert not api_call.called
 
 
@@ -1210,6 +1237,8 @@ class TestRateLimiter(unittest.TestCase):
     def _makeRequest(self):
         request = testing.DummyRequest()
         request.remote_addr = '127.0.0.1'
+        request.user_agent = 'TestBrowser/1.0'
+        request.referrer = 'http://www.example.com/foo'
         testing.setUp(request=request)
         return request
 
@@ -1240,6 +1269,12 @@ class TestRateLimiter(unittest.TestCase):
         ratelimit.limit()
         self.assertTrue(ratelimit.limited())
         self.assertEqual(ratelimit.timeleft(), 10)
+
+
+class DummyDelayedTask(object):
+
+    def __init__(self, _id=None):
+        self.id = _id
 
 
 class TestBaseView(ViewMixin, ModelMixin, unittest.TestCase):
@@ -1457,19 +1492,25 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
             assert not self._getTargetClass()(request)()
 
     @mock.patch('fanboi2.utils.RateLimiter.limit')
-    def test_post(self, limit_call):
-        from fanboi2.models import DBSession, Topic
+    @mock.patch('fanboi2.tasks.add_topic.delay')
+    def test_post(self, add_topic, limit_call):
         board = self._makeBoard(title="General", slug="general")
         request = self._make_csrf(self._POST({
             'title': "One more thing...",
             'body': "And now for something completely different...",
         }))
         request.matchdict['board'] = 'general'
-        self.config.add_route('board', '/{board}/')
+        self.config.add_route('board_new', '/{board}/new')
+        add_topic.return_value = DummyDelayedTask('123')
         response = self._getTargetClass()(request)()
-        self.assertEqual(DBSession.query(Topic).count(), 1)
-        self.assertEqual(response.location, "/general/")
+        self.assertEqual(response.location, "/general/new?task=123")
         limit_call.assert_called_with(board.settings['post_delay'])
+        add_topic.assert_called_with(
+            request=mock.ANY,
+            board_id=board.id,
+            title='One more thing...',
+            body='And now for something completely different...',
+        )
 
     def test_post_failure(self):
         from fanboi2.models import DBSession, Topic
@@ -1480,41 +1521,12 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
         }))
         request.matchdict['board'] = 'general'
         response = self._getTargetClass()(request)()
+
         self.assertEqual(DBSession.query(Topic).count(), 0)
         self.assertEqual(response["form"].title.data, 'One more thing...')
         self.assertDictEqual(response["form"].errors, {
             'body': ['This field is required.']
         })
-
-    @mock.patch('fanboi2.utils.Akismet.spam')
-    def test_post_spam(self, spam_call):
-        from fanboi2.models import DBSession, Topic
-        self._makeBoard(title="General", slug="general")
-        request = self._make_csrf(self._POST({
-            'title': "Buy viagra",
-            'body': "Buy today at http://viagra.example.com/",
-        }))
-        request.matchdict['board'] = 'general'
-        spam_call.return_value = True
-        self.config.testing_add_renderer('boards/error_spam.jinja2')
-        self._getTargetClass()(request)()
-        self.assertEqual(DBSession.query(Topic).count(), 0)
-        self.assertTrue(spam_call.called)
-
-    @mock.patch('fanboi2.utils.Akismet.spam')
-    def test_post_ham(self, spam_call):
-        from fanboi2.models import DBSession, Topic
-        self._makeBoard(title="General", slug="general")
-        request = self._make_csrf(self._POST({
-            'title': "Buy viagra",
-            'body': "Not really! Just joking!",
-        }))
-        request.matchdict['board'] = 'general'
-        spam_call.return_value = False
-        self.config.add_route('board', '/{board}/')
-        self._getTargetClass()(request)()
-        self.assertEqual(DBSession.query(Topic).count(), 1)
-        self.assertTrue(spam_call.called)
 
     @mock.patch('fanboi2.utils.RateLimiter.limited')
     @mock.patch('fanboi2.utils.RateLimiter.timeleft')
@@ -1593,21 +1605,24 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
             assert not self._getTargetClass()(request)()
 
     @mock.patch('fanboi2.utils.RateLimiter.limit')
-    def test_post(self, limit_call):
-        from fanboi2.models import DBSession, Post
+    @mock.patch('fanboi2.tasks.add_post.delay')
+    def test_post(self, add_post, limit_call):
         board = self._makeBoard(title="General", slug="general")
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-        settings = board.settings
         request = self._make_csrf(self._POST({'body': "Boring post..."}))
         request.matchdict['board'] = 'general'
         request.matchdict['topic'] = str(topic.id)
-        self.config.add_route('topic_scoped', '/{board}/{topic}/{query}')
+        self.config.add_route('topic', '/{board}/{topic}')
+        add_post.return_value = DummyDelayedTask('3124')
         response = self._getTargetClass()(request)()
-        self.assertEqual(response.location, "/general/%s/l5" % topic.id)
-        self.assertEqual(DBSession.query(Post).count(), 1)
-        self.assertEqual(DBSession.query(Post).first().name, settings['name'])
-        self.assertEqual(DBSession.query(Post).first().bumped, False)
-        limit_call.assert_called_with(settings['post_delay'])
+        self.assertEqual(response.location, "/general/%s?task=3124" % topic.id)
+        limit_call.assert_called_with(board.settings['post_delay'])
+        add_post.assert_called_with(
+            request=mock.ANY,
+            topic_id=topic.id,
+            body='Boring post...',
+            bumped=False,
+        )
 
     def test_post_failure(self):
         from fanboi2.models import DBSession, Post
@@ -1622,34 +1637,6 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         self.assertDictEqual(response["form"].errors, {
             'body': ['Field must be between 2 and 4000 characters long.'],
         })
-
-    @mock.patch('fanboi2.utils.Akismet.spam')
-    def test_post_spam(self, spam_call):
-        from fanboi2.models import DBSession, Post
-        board = self._makeBoard(title="General", slug="general")
-        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-        request = self._make_csrf(self._POST({'body': 'Buy viagra'}))
-        request.matchdict['board'] = 'general'
-        request.matchdict['topic'] = str(topic.id)
-        spam_call.return_value = True
-        self.config.testing_add_renderer('topics/error_spam.jinja2')
-        self._getTargetClass()(request)()
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        self.assertTrue(spam_call.called)
-
-    @mock.patch('fanboi2.utils.Akismet.spam')
-    def test_post_ham(self, spam_call):
-        from fanboi2.models import DBSession, Post
-        board = self._makeBoard(title="General", slug="general")
-        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-        request = self._make_csrf(self._POST({'body': 'Yahoo!'}))
-        request.matchdict['board'] = 'general'
-        request.matchdict['topic'] = str(topic.id)
-        spam_call.return_value = False
-        self.config.add_route('topic_scoped', '/{board}/{topic}/{query}')
-        self._getTargetClass()(request)()
-        self.assertEqual(DBSession.query(Post).count(), 1)
-        self.assertTrue(spam_call.called)
 
     @mock.patch('fanboi2.utils.RateLimiter.limited')
     @mock.patch('fanboi2.utils.RateLimiter.timeleft')
@@ -1667,49 +1654,6 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Post).count(), 0)
         self.assertTrue(limited_call.called)
         self.assertTrue(timeleft_call.called)
-
-    def test_post_repeatable(self):
-        from fanboi2.models import DBSession, Post
-        from sqlalchemy.exc import IntegrityError
-        board = self._makeBoard(title="General", slug="general")
-        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-        request = self._make_csrf(self._POST({'body': 'Yahoo!'}))
-        request.matchdict['board'] = 'general'
-        request.matchdict['topic'] = str(topic.id)
-        with mock.patch('sqlalchemy.orm.scoping.scoped_session.flush') as m:
-            m.side_effect = IntegrityError(None, None, None)
-            with self.assertRaises(IntegrityError):
-                assert not self._getTargetClass()(request)()
-            self.assertEqual(m.call_count, 5)
-        self.assertEqual(DBSession.query(Post).count(), 0)
-
-    def test_post_archived(self):
-        from fanboi2.models import DBSession, Post
-        board = self._makeBoard(title="Foo", slug="foo")
-        topic = self._makeTopic(board=board, title="Hoge", status='archived')
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        request = self._make_csrf(self._POST({
-            'body': "Topic is archived and post shouldn't get through."
-        }))
-        request.matchdict['board'] = 'foo'
-        request.matchdict['topic'] = str(topic.id)
-        self.config.testing_add_renderer('topics/error.jinja2')
-        self._getTargetClass()(request)()
-        self.assertEqual(DBSession.query(Post).count(), 0)
-
-    def test_post_locked(self):
-        from fanboi2.models import DBSession, Post
-        board = self._makeBoard(title="Foo", slug="foo")
-        topic = self._makeTopic(board=board, title="Hoge", status='locked')
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        request = self._make_csrf(self._POST({
-            'body': "Topic is locked and post shouldn't get through."
-        }))
-        request.matchdict['board'] = 'foo'
-        request.matchdict['topic'] = str(topic.id)
-        self.config.testing_add_renderer('topics/error.jinja2')
-        self._getTargetClass()(request)()
-        self.assertEqual(DBSession.query(Post).count(), 0)
 
 
 class CacheMixin(object):
