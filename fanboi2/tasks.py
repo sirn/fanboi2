@@ -6,7 +6,7 @@ from .utils import akismet
 
 celery = Celery()
 
-def configure_celery(_celery, settings):
+def configure_celery(_celery, settings):  # pragma: no cover
     _celery.conf.update(
         BROKER_URL=settings['celery.broker'],
         CELERY_RESULT_BACKEND=settings['celery.broker'],
@@ -41,7 +41,7 @@ class AddPostException(TaskException):
     pass
 
 
-@celery.task(bind=True, throws=(AddPostException,))
+@celery.task(bind=True, throws=(AddPostException,), max_retries=4) # 5 total.
 def add_post(self, request, topic_id, body, bumped):
     """Insert a post to a topic."""
     if akismet.spam(request, body):

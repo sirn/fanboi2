@@ -57,7 +57,7 @@ class BaseTaskView(object):
     """Second-level dispatcher. If ``task`` is present in params, it will try
     to retrieve the specific task ID from :class:`celery.AsyncResult` then
     determine if the task is success and calls :meth:`GET_success`,
-    :meth:`GET_failure` or :meth:`GET_running` accordingly.
+    :meth:`GET_failure` or :meth:`GET_task` accordingly.
     """
 
     def _serialize(self, objtuple):
@@ -89,16 +89,16 @@ class BaseTaskView(object):
         else:
             return self.GET_initial()
 
-    def GET_initial(self):
+    def GET_initial(self):  # pragma: no cover
         raise NotImplementedError
 
-    def GET_task(self):
+    def GET_task(self):  # pragma: no cover
         return self.GET_failure('task')
 
-    def GET_success(self, obj):
+    def GET_success(self, obj):  # pragma: no cover
         raise NotImplementedError
 
-    def GET_failure(self, error):
+    def GET_failure(self, error):  # pragma: no cover
         raise NotImplementedError
 
 
