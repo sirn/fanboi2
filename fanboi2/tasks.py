@@ -10,6 +10,10 @@ def configure_celery(_celery, settings):  # pragma: no cover
     _celery.conf.update(
         BROKER_URL=settings['celery.broker'],
         CELERY_RESULT_BACKEND=settings['celery.broker'],
+        CELERY_ACCEPT_CONTENT=['json'],
+        CELERY_TASK_SERIALIZER='json',
+        CELERY_RESULT_SERIALIZER='json',
+        CELERY_EVENT_SERIALIZER='json',
         CELERY_TIMEZONE=settings['app.timezone'])
     return _celery
 
