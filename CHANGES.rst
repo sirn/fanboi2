@@ -1,5 +1,10 @@
-0.7.2
+0.8.0
 =====
+
+- Switch to use `Celery <http://www.celeryproject.org>`_ for processing posts.
+
+0.7.2
+-----
 
 - Added posting via AJAX in both quick reply and normal reply.
 - Changed "New since visit" button to "Reload posts" via AJAX.
