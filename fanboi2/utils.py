@@ -1,15 +1,32 @@
 import hashlib
 import requests
-from . import __VERSION__
 from .models import redis_conn
+from .version import __VERSION__
+
+
+def serialize_request(request):
+    """Serialize :class:`pyramid.util.Request` into a :type:`dict`."""
+
+    if isinstance(request, dict):
+        return request
+
+    return {
+        'application_url': request.application_url,
+        'remote_addr': request.remote_addr,
+        'user_agent': request.user_agent,
+        'referrer': request.referrer,
+        'url': request.url,
+    }
 
 
 class Akismet(object):
     """Basic integration between Pyramid and Akismet."""
 
-    def __init__(self, request):
-        self.request = request
-        self.key = request.registry.settings.get('akismet.key')
+    def __init__(self):
+        self.key = None
+
+    def configure_key(self, key):
+        self.key = key
 
     def _api_post(self, name, data=None):
         return requests.post(
@@ -17,17 +34,18 @@ class Akismet(object):
             headers={'User-Agent': "Fanboi2/%s | Akismet/0.1" % __VERSION__},
             data=data)
 
-    def spam(self, message):
+    def spam(self, request, message):
         """Returns :type:`True` if `message` is spam. Always returns
         :type:`False` if Akismet key is not set.
         """
         if self.key:
+            request = serialize_request(request)
             return self._api_post('comment-check', data={
-                'blog': self.request.application_url,
-                'user_ip': self.request.remote_addr,
-                'user_agent': self.request.user_agent,
-                'referrer': self.request.referrer,
-                'permalink': self.request.url,
+                'blog': request['application_url'],
+                'user_ip': request['remote_addr'],
+                'user_agent': request['user_agent'],
+                'referrer': request['referrer'],
+                'permalink': request['url'],
                 'comment_type': 'comment',
                 'comment_content': message,
             }).content == b'true'
@@ -38,9 +56,10 @@ class RateLimiter(object):
     """Rate limit to throttle content posting to every specific seconds."""
 
     def __init__(self, request, namespace=None):
+        request = serialize_request(request)
         self.key = "rate:%s:%s" % (
             namespace,
-            hashlib.md5(request.remote_addr.encode('utf8')).hexdigest(),
+            hashlib.md5(request['remote_addr'].encode('utf8')).hexdigest(),
         )
 
     def limit(self, seconds=10):
@@ -55,3 +74,6 @@ class RateLimiter(object):
     def timeleft(self):
         """Returns seconds left until user is no longer throttled."""
         return redis_conn.ttl(self.key)
+
+
+akismet = Akismet()

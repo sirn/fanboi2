@@ -1,5 +1,4 @@
 import hashlib
-import pkg_resources
 import pyramid_jinja2
 import pyramid_zcml
 from functools import lru_cache
@@ -9,11 +8,10 @@ from pyramid.path import AssetResolver
 from pyramid_beaker import session_factory_from_settings
 from sqlalchemy import engine_from_config
 from .formatters import *
-from .models import DBSession, Base, redis_conn, identity
 from .cache import cache_region, Jinja2CacheExtension
-
-
-__VERSION__ = pkg_resources.require('fanboi2')[0].version
+from .models import DBSession, Base, redis_conn, identity
+from .tasks import celery, configure_celery
+from .utils import akismet
 
 
 def remote_addr(request):
@@ -66,6 +64,8 @@ def main(global_config, **settings):  # pragma: no cover
     session_factory = session_factory_from_settings(settings)
     redis_conn.from_url(settings['redis.url'])
     identity.configure_tz(settings['app.timezone'])
+    configure_celery(celery, settings)
+    akismet.configure_key(settings['akismet.key'])
     cache_region.configure_from_config(settings, 'dogpile.')
     cache_region.invalidate()
 

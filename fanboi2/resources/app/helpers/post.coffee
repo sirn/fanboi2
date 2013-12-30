@@ -46,7 +46,7 @@ exports.enableAjaxPosting = ($form) ->
         formHelper.waitForForm $form
 
         xhr = $.post $form.prop('action'), $form.serialize()
-        xhr.done (data, status, jqXHR) ->
+        formHelper.fetchStatus xhr, (data, status, jqXHR) ->
             $dom = $ $.parseHTML(data)
             formHelper.unwaitForForm $form
 

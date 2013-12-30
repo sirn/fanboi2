@@ -8,7 +8,6 @@ from collections import OrderedDict
 from html.parser import HTMLParser
 from jinja2 import Markup
 from pyramid.threadlocal import get_current_registry, get_current_request
-from .cache import cache_region
 
 
 RE_PARAGRAPH = re.compile(r'(?:(?P<newline>\r\n|\n|\r)(?P=newline)+)')

@@ -108,6 +108,8 @@ class ModelMixin(_ModelInstanceSetup):
 
     def _makeRequest(self):
         request = testing.DummyRequest()
+        request.user_agent = 'Mock/1.0'
+        request.referrer = None
         return request
 
     def _makeRegistry(self):
@@ -118,6 +120,21 @@ class ModelMixin(_ModelInstanceSetup):
             'app.secret': 'Silently test in secret',
         }
         return registry
+
+
+class TaskMixin(object):
+
+    @classmethod
+    def setUpClass(cls):
+        from fanboi2.tasks import celery
+        celery.config_from_object({'CELERY_ALWAYS_EAGER': True})
+        super(TaskMixin, cls).setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        from fanboi2.tasks import celery
+        celery.config_from_object({'CELERY_ALWAYS_EAGER': False})
+        super(TaskMixin, cls).tearDownClass()
 
 
 class ViewMixin(object):
@@ -1124,21 +1141,48 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
                                 "See full post</a>.</p>"))
 
 
+class TestRequestSerializer(unittest.TestCase):
+
+    def _getTargetFunction(self):
+        from fanboi2.utils import serialize_request
+        return serialize_request
+
+    def test_serialize(self):
+        request = testing.DummyRequest()
+        request.application_url = 'http://www.example.com/'
+        request.referrer = 'http://www.example.com/'
+        request.remote_addr = '127.0.0.1'
+        request.url = 'http://www.example.com/foobar'
+        request.user_agent = 'Mock/1.0'
+        self.assertEqual(
+            self._getTargetFunction()(request),
+            {
+                'application_url': 'http://www.example.com/',
+                'referrer': 'http://www.example.com/',
+                'remote_addr': '127.0.0.1',
+                'url': 'http://www.example.com/foobar',
+                'user_agent': 'Mock/1.0',
+            }
+        )
+
+    def test_serialize_dict(self):
+        request = {'foo': 1}
+        self.assertEqual(self._getTargetFunction()(request), request)
+
+
 class TestAkismet(unittest.TestCase):
 
-    def _getTargetClass(self):
-        from fanboi2.utils import Akismet
-        return Akismet
+    def _makeOne(self, key='hogehoge'):
+        from fanboi2.utils import akismet
+        akismet.configure_key(key)
+        return akismet
 
-    def _makeRequest(self, api_key='hogehoge'):
-        from pyramid.registry import Registry
+    def _makeRequest(self):
         request = testing.DummyRequest()
         request.remote_addr = '127.0.0.1'
-        request.user_agent = 'Mock 1.0'
+        request.user_agent = 'Mock/1.0'
         request.referrer = 'http://www.example.com/'
-        registry = Registry()
-        registry.settings = {'akismet.key': api_key}
-        testing.setUp(request=request, registry=registry)
+        testing.setUp(request=request)
         return request
 
     def _makeResponse(self, content):
@@ -1148,23 +1192,20 @@ class TestAkismet(unittest.TestCase):
         return MockResponse(content)
 
     def test_init(self):
-        request = self._makeRequest()
-        akismet = self._getTargetClass()(request)
-        self.assertEqual(akismet.request, request)
+        akismet = self._makeOne()
         self.assertEqual(akismet.key, 'hogehoge')
 
+    # noinspection PyTypeChecker
     def test_init_no_key(self):
-        request = self._makeRequest(api_key=None)
-        akismet = self._getTargetClass()(request)
-        self.assertEqual(akismet.request, request)
+        akismet = self._makeOne(key=None)
         self.assertEqual(akismet.key, None)
 
     @mock.patch('requests.post')
     def test_spam(self, api_call):
         api_call.return_value = self._makeResponse(b'true')
         request = self._makeRequest()
-        akismet = self._getTargetClass()(request)
-        self.assertEqual(akismet.spam('buy viagra'), True)
+        akismet = self._makeOne()
+        self.assertEqual(akismet.spam(request, 'buy viagra'), True)
         api_call.assert_called_with(
             'https://hogehoge.rest.akismet.com/1.1/comment-check',
             headers=mock.ANY,
@@ -1175,19 +1216,20 @@ class TestAkismet(unittest.TestCase):
     def test_spam_ham(self, api_call):
         api_call.return_value = self._makeResponse(b'false')
         request = self._makeRequest()
-        akismet = self._getTargetClass()(request)
-        self.assertEqual(akismet.spam('Hogehogehogehoge!'), False)
+        akismet = self._makeOne()
+        self.assertEqual(akismet.spam(request, 'Hogehogehogehoge!'), False)
         api_call.assert_called_with(
             'https://hogehoge.rest.akismet.com/1.1/comment-check',
             headers=mock.ANY,
             data=mock.ANY,
         )
 
+    # noinspection PyTypeChecker
     @mock.patch('requests.post')
     def test_spam_no_key(self, api_call):
-        request = self._makeRequest(api_key=None)
-        akismet = self._getTargetClass()(request)
-        self.assertEqual(akismet.spam('buy viagra'), False)
+        request = self._makeRequest()
+        akismet = self._makeOne(key=None)
+        self.assertEqual(akismet.spam(request, 'buy viagra'), False)
         assert not api_call.called
 
 
@@ -1210,6 +1252,8 @@ class TestRateLimiter(unittest.TestCase):
     def _makeRequest(self):
         request = testing.DummyRequest()
         request.remote_addr = '127.0.0.1'
+        request.user_agent = 'TestBrowser/1.0'
+        request.referrer = 'http://www.example.com/foo'
         testing.setUp(request=request)
         return request
 
@@ -1242,16 +1286,143 @@ class TestRateLimiter(unittest.TestCase):
         self.assertEqual(ratelimit.timeleft(), 10)
 
 
+class DummyAsyncResult(object):
+
+    def __init__(self, state, _data=None, _raise=None):
+        self.state = state
+        self._data = _data
+        self._raise = _raise
+
+    def get(self):
+        if self._raise is not None:
+            raise self._raise
+        return self._data
+
+
+class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
+
+    def _makeOne(self, *args, **kwargs):
+        from fanboi2.tasks import add_topic
+        return add_topic.delay(*args, **kwargs)
+
+    def test_add_topic(self):
+        import transaction
+        from fanboi2.models import Topic
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        topic = DBSession.query(Topic).first()
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 1)
+        self.assertEqual(DBSession.query(Topic).get(result.get()[1]), topic)
+        self.assertEqual(topic.title, 'Foobar')
+        self.assertEqual(topic.posts[0].body, 'Hello, world!')
+
+    @mock.patch('fanboi2.utils.Akismet.spam')
+    def test_add_topic_spam(self, akismet):
+        from fanboi2.tasks import AddTopicException
+        from fanboi2.models import Topic
+        akismet.return_value = True
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        self.assertFalse(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 0)
+        with self.assertRaises(AddTopicException) as e:
+            assert not result.get()
+        self.assertEqual(e.exception.args, ('spam',))
+
+
+class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
+
+    def _makeOne(self, *args, **kwargs):
+        from fanboi2.tasks import add_post
+        return add_post.delay(*args, **kwargs)
+
+    def test_add_post(self):
+        import transaction
+        from fanboi2.models import Post
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            topic = self._makeTopic(board=board, title='Hello, world!')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        result = self._makeOne(request, topic_id, 'Hi!', True)
+        post = DBSession.query(Post).first()
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Post).count(), 1)
+        self.assertEqual(DBSession.query(Post).get(result.get()[1]), post)
+        self.assertEqual(post.body, 'Hi!')
+        self.assertEqual(post.bumped, True)
+
+    @mock.patch('fanboi2.utils.Akismet.spam')
+    def test_add_post_spam(self, akismet):
+        import transaction
+        from fanboi2.tasks import AddPostException
+        from fanboi2.models import Post
+        akismet.return_value = True
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            topic = self._makeTopic(board=board, title='Hello, world!')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        result = self._makeOne(request, topic_id, 'Hi!', True)
+        self.assertFalse(result.successful())
+        self.assertEqual(DBSession.query(Post).count(), 0)
+        with self.assertRaises(AddPostException) as e:
+            assert not result.get()
+        self.assertEqual(e.exception.args, ('spam',))
+
+    def test_add_post_locked(self):
+        import transaction
+        from fanboi2.tasks import AddPostException
+        from fanboi2.models import Post
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            topic = self._makeTopic(
+                board=board,
+                title='Hello, world!',
+                status='locked')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        result = self._makeOne(request, topic_id, 'Hi!', True)
+        self.assertFalse(result.successful())
+        self.assertEqual(DBSession.query(Post).count(), 0)
+        with self.assertRaises(AddPostException) as e:
+            assert not result.get()
+        self.assertEqual(e.exception.args, ('locked',))
+
+    def test_add_post_retry(self):
+        import transaction
+        from sqlalchemy.exc import IntegrityError
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            topic = self._makeTopic(board=board, title='Hello, world!')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        with mock.patch('fanboi2.models.DBSession.flush') as dbs:
+            dbs.side_effect = IntegrityError(None, None, None)
+            result = self._makeOne(request, topic_id, 'Hi!', True)
+        self.assertEqual(dbs.call_count, 5)
+        self.assertFalse(result.successful())
+
+
 class TestBaseView(ViewMixin, ModelMixin, unittest.TestCase):
 
-    def _getTargetClass(self):
+    def _makeOne(self):
         from fanboi2.views import BaseView
-        return BaseView
+        class _MockView(BaseView):
+            pass
+        return _MockView
 
     def test_init(self):
         board1 = self._makeBoard(title="General", slug="general")
         board2 = self._makeBoard(title="Foobar", slug="foo")
-        view = self._getTargetClass()(self.request)
+        view = self._makeOne()(self.request)
         self.assertEqual(view.request, self.request)
         self.assertEqual(view.board, None)
         self.assertEqual(view.topic, None)
@@ -1262,14 +1433,14 @@ class TestBaseView(ViewMixin, ModelMixin, unittest.TestCase):
         board2 = self._makeBoard(title="Foobar", slug="foo")
         request = self._GET()
         request.matchdict['board'] = 'foo'
-        view = self._getTargetClass()(request)
+        view = self._makeOne()(request)
         self.assertEqual(view.board, board2)
 
     def test_board_not_found(self):
         from pyramid.httpexceptions import HTTPNotFound
         request = self._GET()
         request.matchdict['board'] = 'foo'
-        view = self._getTargetClass()(request)
+        view = self._makeOne()(request)
         with self.assertRaises(HTTPNotFound):
             assert not view.board
 
@@ -1280,7 +1451,7 @@ class TestBaseView(ViewMixin, ModelMixin, unittest.TestCase):
         request = self._GET()
         request.matchdict['board'] = 'general'
         request.matchdict['topic'] = str(topic2.id)
-        view = self._getTargetClass()(request)
+        view = self._makeOne()(request)
         self.assertEqual(view.board, board)
         self.assertEqual(view.topic, topic2)
 
@@ -1290,7 +1461,7 @@ class TestBaseView(ViewMixin, ModelMixin, unittest.TestCase):
         request = self._GET()
         request.matchdict['board'] = 'general'
         request.matchdict['topic'] = '2943'
-        view = self._getTargetClass()(request)
+        view = self._makeOne()(request)
         with self.assertRaises(HTTPNotFound):
             assert not view.topic
 
@@ -1303,22 +1474,70 @@ class TestBaseView(ViewMixin, ModelMixin, unittest.TestCase):
         request = self._GET()
         request.matchdict['board'] = 'general'
         request.matchdict['topic'] = str(topic2.id)
-        view = self._getTargetClass()(request)
+        view = self._makeOne()(request)
         with self.assertRaises(HTTPNotFound):
             assert not view.topic
 
     def test_topic_no_board(self):
         request = self._GET()
         request.matchdict['topic'] = '2943'
-        view = self._getTargetClass()(request)
+        view = self._makeOne()(request)
         self.assertEqual(view.board, None)
         self.assertEqual(view.topic, None)
 
     def test_call_unimplemented(self):
         request = self._GET()
-        view = self._getTargetClass()(request)
+        view = self._makeOne()(request)
         with self.assertRaises(NotImplementedError):
             assert not view()
+
+
+class TestBaseTaskView(ViewMixin, ModelMixin, unittest.TestCase):
+
+    def _makeOne(self):
+        from fanboi2.views import BaseView, BaseTaskView
+        class _MockView(BaseTaskView, BaseView):
+            pass
+        return _MockView
+
+    def test_get_dispatch_initial(self):
+        request = self._GET()
+        view = self._makeOne()(request)
+        with mock.patch.object(view, 'GET_initial') as get_call:
+            get_call.assert_called_once()
+
+    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_get_dispatch_success(self, async):
+        from celery.states import SUCCESS
+        request = self._GET({'task': '1234'})
+        board = self._makeBoard(title='Foobar', slug='foobar')
+        async.return_value = DummyAsyncResult(SUCCESS, ('board', board.id))
+        view = self._makeOne()(request)
+        with mock.patch.object(view, 'GET_success') as get_call:
+            assert view()
+            get_call.assert_called_once_with(board)
+
+    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_get_dispatch_task(self, async):
+        from celery.states import PENDING
+        async.return_value = DummyAsyncResult(PENDING)
+        request = self._GET({'task': '1234'})
+        view = self._makeOne()(request)
+        with mock.patch.object(view, 'GET_task') as get_call:
+            assert view()
+            get_call.assert_called_once_with()
+
+    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_get_dispatch_failure(self, async):
+        from celery.states import FAILURE
+        from fanboi2.tasks import TaskException
+        exception = TaskException('foobar')
+        async.return_value = DummyAsyncResult(FAILURE, None, exception)
+        request = self._GET({'task': '1234'})
+        view = self._makeOne()(request)
+        with mock.patch.object(view, 'GET_failure') as get_call:
+            assert view()
+            get_call.assert_called_once_with('foobar')
 
 
 class TestRootView(ViewMixin, ModelMixin, unittest.TestCase):
@@ -1449,6 +1668,29 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
         self.assertDictEqual(response["form"].errors, {})
         self.assertEqual(response["board"], board)
 
+    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_get_success(self, async):
+        from celery.states import SUCCESS
+        board = self._makeBoard(title='General', slug='general')
+        topic = self._makeTopic(board=board, title='Hello, world!')
+        request = self._GET({'task': 1234})
+        request.matchdict['board'] = 'general'
+        async.return_value = DummyAsyncResult(SUCCESS, ('topic', topic.id))
+        self.config.add_route('topic_scoped', '/{board}/{topic}/{query}')
+        response = self._getTargetClass()(request)()
+        self.assertEqual(response.location, "/general/%s/l5" % topic.id)
+
+    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_get_failure(self, async):
+        from celery.states import FAILURE
+        from fanboi2.tasks import TaskException
+        exception = TaskException('foobar')
+        async.return_value = DummyAsyncResult(FAILURE, None, exception)
+        self.config.testing_add_renderer('boards/error.jinja2')
+        request = self._GET({'task': '1234'})
+        response = self._getTargetClass()(request)()
+        self.assertEqual(response.status_int, 200)
+
     def test_get_not_found(self):
         from pyramid.httpexceptions import HTTPNotFound
         request = self._GET()
@@ -1457,19 +1699,25 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
             assert not self._getTargetClass()(request)()
 
     @mock.patch('fanboi2.utils.RateLimiter.limit')
-    def test_post(self, limit_call):
-        from fanboi2.models import DBSession, Topic
+    @mock.patch('fanboi2.tasks.add_topic.delay')
+    def test_post(self, add_topic, limit_call):
         board = self._makeBoard(title="General", slug="general")
         request = self._make_csrf(self._POST({
             'title': "One more thing...",
             'body': "And now for something completely different...",
         }))
         request.matchdict['board'] = 'general'
-        self.config.add_route('board', '/{board}/')
+        self.config.add_route('board_new', '/{board}/new')
+        add_topic.return_value = mock.Mock(id=123)
         response = self._getTargetClass()(request)()
-        self.assertEqual(DBSession.query(Topic).count(), 1)
-        self.assertEqual(response.location, "/general/")
+        self.assertEqual(response.location, "/general/new?task=123")
         limit_call.assert_called_with(board.settings['post_delay'])
+        add_topic.assert_called_with(
+            request=mock.ANY,
+            board_id=board.id,
+            title='One more thing...',
+            body='And now for something completely different...',
+        )
 
     def test_post_failure(self):
         from fanboi2.models import DBSession, Topic
@@ -1480,41 +1728,12 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
         }))
         request.matchdict['board'] = 'general'
         response = self._getTargetClass()(request)()
+
         self.assertEqual(DBSession.query(Topic).count(), 0)
         self.assertEqual(response["form"].title.data, 'One more thing...')
         self.assertDictEqual(response["form"].errors, {
             'body': ['This field is required.']
         })
-
-    @mock.patch('fanboi2.utils.Akismet.spam')
-    def test_post_spam(self, spam_call):
-        from fanboi2.models import DBSession, Topic
-        self._makeBoard(title="General", slug="general")
-        request = self._make_csrf(self._POST({
-            'title': "Buy viagra",
-            'body': "Buy today at http://viagra.example.com/",
-        }))
-        request.matchdict['board'] = 'general'
-        spam_call.return_value = True
-        self.config.testing_add_renderer('boards/error_spam.jinja2')
-        self._getTargetClass()(request)()
-        self.assertEqual(DBSession.query(Topic).count(), 0)
-        self.assertTrue(spam_call.called)
-
-    @mock.patch('fanboi2.utils.Akismet.spam')
-    def test_post_ham(self, spam_call):
-        from fanboi2.models import DBSession, Topic
-        self._makeBoard(title="General", slug="general")
-        request = self._make_csrf(self._POST({
-            'title': "Buy viagra",
-            'body': "Not really! Just joking!",
-        }))
-        request.matchdict['board'] = 'general'
-        spam_call.return_value = False
-        self.config.add_route('board', '/{board}/')
-        self._getTargetClass()(request)()
-        self.assertEqual(DBSession.query(Topic).count(), 1)
-        self.assertTrue(spam_call.called)
 
     @mock.patch('fanboi2.utils.RateLimiter.limited')
     @mock.patch('fanboi2.utils.RateLimiter.timeleft')
@@ -1592,22 +1811,50 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         with self.assertRaises(HTTPNotFound):
             assert not self._getTargetClass()(request)()
 
-    @mock.patch('fanboi2.utils.RateLimiter.limit')
-    def test_post(self, limit_call):
-        from fanboi2.models import DBSession, Post
-        board = self._makeBoard(title="General", slug="general")
-        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-        settings = board.settings
-        request = self._make_csrf(self._POST({'body': "Boring post..."}))
+    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_get_success(self, async):
+        from celery.states import SUCCESS
+        board = self._makeBoard(title='General', slug='general')
+        topic = self._makeTopic(board=board, title='Hello, world!')
+        post = self._makePost(topic=topic, body='Foobar!')
+        request = self._GET({'task': 1234})
         request.matchdict['board'] = 'general'
         request.matchdict['topic'] = str(topic.id)
+        async.return_value = DummyAsyncResult(SUCCESS, ('post', post.id))
         self.config.add_route('topic_scoped', '/{board}/{topic}/{query}')
         response = self._getTargetClass()(request)()
         self.assertEqual(response.location, "/general/%s/l5" % topic.id)
-        self.assertEqual(DBSession.query(Post).count(), 1)
-        self.assertEqual(DBSession.query(Post).first().name, settings['name'])
-        self.assertEqual(DBSession.query(Post).first().bumped, False)
-        limit_call.assert_called_with(settings['post_delay'])
+
+    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_get_failure(self, async):
+        from celery.states import FAILURE
+        from fanboi2.tasks import TaskException
+        exception = TaskException('foobar')
+        async.return_value = DummyAsyncResult(FAILURE, None, exception)
+        self.config.testing_add_renderer('topics/error.jinja2')
+        request = self._GET({'task': '1234'})
+        response = self._getTargetClass()(request)()
+        self.assertEqual(response.status_int, 200)
+
+    @mock.patch('fanboi2.utils.RateLimiter.limit')
+    @mock.patch('fanboi2.tasks.add_post.delay')
+    def test_post(self, add_post, limit_call):
+        board = self._makeBoard(title="General", slug="general")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
+        request = self._make_csrf(self._POST({'body': "Boring post..."}))
+        request.matchdict['board'] = 'general'
+        request.matchdict['topic'] = str(topic.id)
+        self.config.add_route('topic', '/{board}/{topic}')
+        add_post.return_value = mock.Mock(id=3124)
+        response = self._getTargetClass()(request)()
+        self.assertEqual(response.location, "/general/%s?task=3124" % topic.id)
+        limit_call.assert_called_with(board.settings['post_delay'])
+        add_post.assert_called_with(
+            request=mock.ANY,
+            topic_id=topic.id,
+            body='Boring post...',
+            bumped=False,
+        )
 
     def test_post_failure(self):
         from fanboi2.models import DBSession, Post
@@ -1622,34 +1869,6 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         self.assertDictEqual(response["form"].errors, {
             'body': ['Field must be between 2 and 4000 characters long.'],
         })
-
-    @mock.patch('fanboi2.utils.Akismet.spam')
-    def test_post_spam(self, spam_call):
-        from fanboi2.models import DBSession, Post
-        board = self._makeBoard(title="General", slug="general")
-        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-        request = self._make_csrf(self._POST({'body': 'Buy viagra'}))
-        request.matchdict['board'] = 'general'
-        request.matchdict['topic'] = str(topic.id)
-        spam_call.return_value = True
-        self.config.testing_add_renderer('topics/error_spam.jinja2')
-        self._getTargetClass()(request)()
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        self.assertTrue(spam_call.called)
-
-    @mock.patch('fanboi2.utils.Akismet.spam')
-    def test_post_ham(self, spam_call):
-        from fanboi2.models import DBSession, Post
-        board = self._makeBoard(title="General", slug="general")
-        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-        request = self._make_csrf(self._POST({'body': 'Yahoo!'}))
-        request.matchdict['board'] = 'general'
-        request.matchdict['topic'] = str(topic.id)
-        spam_call.return_value = False
-        self.config.add_route('topic_scoped', '/{board}/{topic}/{query}')
-        self._getTargetClass()(request)()
-        self.assertEqual(DBSession.query(Post).count(), 1)
-        self.assertTrue(spam_call.called)
 
     @mock.patch('fanboi2.utils.RateLimiter.limited')
     @mock.patch('fanboi2.utils.RateLimiter.timeleft')
@@ -1667,49 +1886,6 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Post).count(), 0)
         self.assertTrue(limited_call.called)
         self.assertTrue(timeleft_call.called)
-
-    def test_post_repeatable(self):
-        from fanboi2.models import DBSession, Post
-        from sqlalchemy.exc import IntegrityError
-        board = self._makeBoard(title="General", slug="general")
-        topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
-        request = self._make_csrf(self._POST({'body': 'Yahoo!'}))
-        request.matchdict['board'] = 'general'
-        request.matchdict['topic'] = str(topic.id)
-        with mock.patch('sqlalchemy.orm.scoping.scoped_session.flush') as m:
-            m.side_effect = IntegrityError(None, None, None)
-            with self.assertRaises(IntegrityError):
-                assert not self._getTargetClass()(request)()
-            self.assertEqual(m.call_count, 5)
-        self.assertEqual(DBSession.query(Post).count(), 0)
-
-    def test_post_archived(self):
-        from fanboi2.models import DBSession, Post
-        board = self._makeBoard(title="Foo", slug="foo")
-        topic = self._makeTopic(board=board, title="Hoge", status='archived')
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        request = self._make_csrf(self._POST({
-            'body': "Topic is archived and post shouldn't get through."
-        }))
-        request.matchdict['board'] = 'foo'
-        request.matchdict['topic'] = str(topic.id)
-        self.config.testing_add_renderer('topics/error.jinja2')
-        self._getTargetClass()(request)()
-        self.assertEqual(DBSession.query(Post).count(), 0)
-
-    def test_post_locked(self):
-        from fanboi2.models import DBSession, Post
-        board = self._makeBoard(title="Foo", slug="foo")
-        topic = self._makeTopic(board=board, title="Hoge", status='locked')
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        request = self._make_csrf(self._POST({
-            'body': "Topic is locked and post shouldn't get through."
-        }))
-        request.matchdict['board'] = 'foo'
-        request.matchdict['topic'] = str(topic.id)
-        self.config.testing_add_renderer('topics/error.jinja2')
-        self._getTargetClass()(request)()
-        self.assertEqual(DBSession.query(Post).count(), 0)
 
 
 class CacheMixin(object):
