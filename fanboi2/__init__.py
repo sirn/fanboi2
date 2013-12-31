@@ -55,20 +55,24 @@ def tagged_static_path(request, path, **kwargs):
     return request.static_path(path, **kwargs)
 
 
-def main(global_config, **settings):  # pragma: no cover
-    """ This function returns a Pyramid WSGI application.
-    """
+def configure_components(settings):  # pragma: no cover
+    """Configure the application components e.g. database connection."""
     engine = engine_from_config(settings, 'sqlalchemy.',
                                 client_encoding='utf8')
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
-    session_factory = session_factory_from_settings(settings)
     redis_conn.from_url(settings['redis.url'])
+    celery.config_from_object(configure_celery(settings))
     identity.configure_tz(settings['app.timezone'])
-    configure_celery(celery, settings)
     akismet.configure_key(settings['akismet.key'])
     cache_region.configure_from_config(settings, 'dogpile.')
     cache_region.invalidate()
+
+
+def main(global_config, **settings):  # pragma: no cover
+    """This function returns a Pyramid WSGI application."""
+    configure_components(settings)
+    session_factory = session_factory_from_settings(settings)
 
     config = Configurator(settings=settings)
     config.set_session_factory(session_factory)
