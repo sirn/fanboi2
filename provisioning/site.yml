@@ -258,6 +258,9 @@
       command: brunch build --production chdir=${root}
       when: development|int == 1 or fanboi2_cloned.changed
 
+    # Processes.
+    # ---------------------------------------------------------------------
+
     - name: install supervisor for process management
       apt: pkg=supervisor state=latest
 
@@ -273,6 +276,9 @@
         src: files/etc/supervisor/conf.d/celery.conf.j2
         dest: /etc/supervisor/conf.d/celery.conf
       notify: restart supervisor
+
+    - name: restart celery on changes
+      command: supervisorctl restart celery
 
     # Assets compilation.
     # ---------------------------------------------------------------------

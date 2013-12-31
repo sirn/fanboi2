@@ -6,29 +6,33 @@ readme = open(os.path.join(here, 'README.rst')).read()
 changes = open(os.path.join(here, 'CHANGES.rst')).read()
 
 requires = [
-    'pyramid',
-    'sqlalchemy',
-    'transaction',
-    'psycopg2',
+
+    # Pyramid
+    'pyramid >=1.4.5, <1.5',
     'pyramid_tm',
     'pyramid_debugtoolbar',
-    'pyramid_zcml',
     'pyramid_jinja2',
     'pyramid_beaker',
-    'zope.sqlalchemy',
-    'dogpile.cache',
-    'python3-memcached',
     'waitress',
-    'alembic',
-    'webtest',
-    'isodate',
-    'pytz',
-    'misaka',
+
+    # Backend
+    'sqlalchemy >=0.9, <0.10',
+    'alembic >=0.6.2, <0.7',
+    'celery >=3.1, <3.2',
+    'transaction',
+    'psycopg2',
+    'zope.sqlalchemy',
     'redis',
     'hiredis',
+    'dogpile.cache',
+    'python3-memcached',
+    'pytz',
     'IPy',
     'requests',
-    'celery',
+
+    # Frontend
+    'isodate',
+    'misaka',
 
     # Tests
     'nose',
@@ -39,6 +43,7 @@ requires = [
     'MarkupSafe==0.15', # https://github.com/mitsuhiko/markupsafe/pull/13
     'wtforms==1.0.3', # https://bitbucket.org/simplecodes/wtforms/issue/153/
     'Jinja2==2.6',
+
     ]
 
 setup(name='fanboi2',
