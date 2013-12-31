@@ -1,7 +1,14 @@
-0.8.0
+0.8.1
 =====
 
-- Switch to use `Celery <http://www.celeryproject.org>`_ for processing posts.
+- Fixed broken debug toolbar in development mode due to Python 3.2.3 bug.
+- Removed pyramid_zcml and webtest from application requirements.
+- Changed Celery process runner to no longer load Pyramid environment.
+
+0.8.0
+-----
+
+- Changed post processing to use `Celery <http://www.celeryproject.org>`_ instead.
 
 0.7.2
 -----
