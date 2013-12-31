@@ -2,7 +2,7 @@ from celery import states
 from datetime import timedelta, datetime
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
-from pyramid.response import Response
+from pyramid.view import view_config
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import undefer
 from sqlalchemy.orm.exc import NoResultFound
@@ -102,6 +102,7 @@ class BaseTaskView(object):
         raise NotImplementedError
 
 
+@view_config(route_name='root', renderer='root.jinja2')
 class RootView(BaseView):
     """List all boards."""
 
@@ -109,6 +110,7 @@ class RootView(BaseView):
         return {'boards': self.boards}
 
 
+@view_config(route_name='board', renderer='boards/show.jinja2')
 class BoardView(BaseView):
     """Display board and all 10 recent posts regardless of its status."""
 
@@ -121,6 +123,7 @@ class BoardView(BaseView):
         }
 
 
+@view_config(route_name='board_all', renderer='boards/all.jinja2')
 class BoardAllView(BaseView):
     """Display board and all posts that are active or archived within the
     last week.
@@ -141,6 +144,7 @@ class BoardAllView(BaseView):
         }
 
 
+@view_config(route_name='board_new', renderer='boards/new.jinja2')
 class BoardNewView(BaseTaskView, BaseView):
     """Display and handle creation of new topic."""
 
@@ -197,6 +201,8 @@ class BoardNewView(BaseTaskView, BaseView):
         }
 
 
+@view_config(route_name='topic', renderer='topics/show.jinja2')
+@view_config(route_name='topic_scoped', renderer='topics/show.jinja2')
 class TopicView(BaseTaskView, BaseView):
     """Display topic and list all posts associated with board. If query is
     given to :attr:`self.request.matchdict` then only posts that satisfied

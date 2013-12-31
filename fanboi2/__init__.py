@@ -1,14 +1,15 @@
 import hashlib
 import pyramid_jinja2
-import pyramid_zcml
 from functools import lru_cache
 from IPy import IP
 from pyramid.config import Configurator
+from pyramid.exceptions import NotFound
 from pyramid.path import AssetResolver
+from pyramid.view import append_slash_notfound_view
 from pyramid_beaker import session_factory_from_settings
 from sqlalchemy import engine_from_config
-from .formatters import *
 from .cache import cache_region, Jinja2CacheExtension
+from .formatters import *
 from .models import DBSession, Base, redis_conn, identity
 from .tasks import celery, configure_celery
 from .utils import akismet
@@ -75,9 +76,16 @@ def main(global_config, **settings):  # pragma: no cover
     config.set_request_property(route_name)
     config.add_request_method(tagged_static_path)
 
-    config.include(pyramid_jinja2)
-    config.include(pyramid_zcml)
+    config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_route('root', '/')
+    config.add_route('board', '/{board:\w+}/')
+    config.add_route('board_all', '/{board:\w+}/all/')
+    config.add_route('board_new', '/{board:\w+}/new/')
+    config.add_route('topic', '/{board:\w+}/{topic:\d+}/')
+    config.add_route('topic_scoped', '/{board:\w+}/{topic:\d+}/{query}/')
+    config.add_view(append_slash_notfound_view, context=NotFound)
 
+    config.include(pyramid_jinja2)
     config.add_jinja2_extension(Jinja2CacheExtension)
     jinja2_env = config.get_jinja2_environment()
     jinja2_env.cache_region = cache_region
@@ -87,7 +95,6 @@ def main(global_config, **settings):  # pragma: no cover
     jinja2_env.filters['isotime'] = format_isotime
     jinja2_env.filters['markdown'] = format_markdown
     jinja2_env.filters['markup'] = format_text
-
-    config.load_zcml('routes.zcml')
     config.scan()
+
     return config.make_wsgi_app()

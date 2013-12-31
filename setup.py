@@ -11,7 +11,6 @@ requires = [
     'pyramid >=1.4.5, <1.5',
     'pyramid_tm',
     'pyramid_debugtoolbar',
-    'pyramid_zcml',
     'pyramid_jinja2',
     'pyramid_beaker',
     'waitress',
@@ -38,7 +37,6 @@ requires = [
     # Tests
     'nose',
     'coverage',
-    'webtest',
     'mock',
 
     # Python 3.2 compatible
