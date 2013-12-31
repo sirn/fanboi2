@@ -11,7 +11,6 @@ from sqlalchemy import engine_from_config
 from .cache import cache_region, Jinja2CacheExtension
 from .formatters import *
 from .models import DBSession, Base, redis_conn, identity
-from .tasks import celery, configure_celery
 from .utils import akismet
 
 
@@ -55,26 +54,32 @@ def tagged_static_path(request, path, **kwargs):
     return request.static_path(path, **kwargs)
 
 
-def configure_components(settings):  # pragma: no cover
+def configure_components(cfg):  # pragma: no cover
     """Configure the application components e.g. database connection."""
-    engine = engine_from_config(settings, 'sqlalchemy.',
-                                client_encoding='utf8')
+    # BUG: configure_components should be called after pyramid.Configurator
+    # in order to prevent an importlib bug to cause pkg_resources to fail.
+    # Tasks are imported here because of the same reason (Celery uses
+    # importlib internally.)
+    #
+    # This bug only applies to Python 3.2.3 only.
+    from .tasks import celery, configure_celery
+    engine = engine_from_config(cfg, 'sqlalchemy.', client_encoding='utf8')
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
-    redis_conn.from_url(settings['redis.url'])
-    celery.config_from_object(configure_celery(settings))
-    identity.configure_tz(settings['app.timezone'])
-    akismet.configure_key(settings['akismet.key'])
-    cache_region.configure_from_config(settings, 'dogpile.')
+    redis_conn.from_url(cfg['redis.url'])
+    celery.config_from_object(configure_celery(cfg))
+    identity.configure_tz(cfg['app.timezone'])
+    akismet.configure_key(cfg['akismet.key'])
+    cache_region.configure_from_config(cfg, 'dogpile.')
     cache_region.invalidate()
 
 
 def main(global_config, **settings):  # pragma: no cover
     """This function returns a Pyramid WSGI application."""
-    configure_components(settings)
     session_factory = session_factory_from_settings(settings)
-
     config = Configurator(settings=settings)
+    configure_components(settings)
+
     config.set_session_factory(session_factory)
     config.set_request_property(remote_addr)
     config.set_request_property(route_name)
