@@ -31,8 +31,8 @@ class RedisProxy(object):
     def __getattr__(self, name):
         if self._redis is not None:
             return self._redis.__getattribute__(name)
-        raise RuntimeError("{} is not initialized".\
-                format(repr(self._cls.__name__)))
+        raise RuntimeError("{} is not initialized".
+                           format(repr(self._cls.__name__)))
 
 
 redis_conn = RedisProxy()
@@ -58,8 +58,8 @@ class Identity(object):
         today = datetime.datetime.now(self.timezone).strftime("%Y%m%d")
         return "ident:%s:%s:%s" % (today,
                                    namespace,
-                                   hashlib.md5(ip_address.encode('utf8')).\
-                                           hexdigest())
+                                   hashlib.md5(ip_address.encode('utf8')).
+                                       hexdigest())
 
     def get(self, *args, **kwargs):
         """Retrieve user ident from Redis or generate a new one if it does
@@ -278,7 +278,7 @@ def populate_post_number(mapper, connection, target):
     # condition problem. Our UNIQUE CONSTRAINT will detect that, so the
     # calling code should retry accordingly.
     target.number = select([func.coalesce(func.max(Post.number), 0) + 1]).\
-                    where(Post.topic_id == target.topic_id)
+        where(Post.topic_id == target.topic_id)
 
 
 @event.listens_for(Post.__mapper__, 'before_insert')
@@ -312,7 +312,7 @@ Topic.posted_at = column_property(
 Topic.bumped_at = column_property(
     select([Post.created_at]).
         where(Post.topic_id == Topic.id).
-        where(Post.bumped == True).
+        where(Post.bumped).
         order_by(desc(Post.created_at)).
         limit(1),
     deferred=True

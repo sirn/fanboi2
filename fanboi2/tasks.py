@@ -6,6 +6,7 @@ from .utils import akismet
 
 celery = Celery()
 
+
 def configure_celery(settings):  # pragma: no cover
     """Returns a Celery configuration object."""
     return {
@@ -46,7 +47,7 @@ class AddPostException(TaskException):
     pass
 
 
-@celery.task(bind=True, throws=(AddPostException,), max_retries=4) # 5 total.
+@celery.task(bind=True, throws=(AddPostException,), max_retries=4)  # 5 total.
 def add_post(self, request, topic_id, body, bumped):
     """Insert a post to a topic."""
     if akismet.spam(request, body):

@@ -20,7 +20,7 @@ cache_region = make_region(key_mangler=_key_mangler)
 class Jinja2CacheExtension(Extension):
     """A Jinja2 :class:`Extension` that implements ``cache`` tag for template
     fragment caching using :module:`dogpile.cache`."""
-    tags = set(['cache'])
+    tags = {'cache'}
 
     def __init__(self, environment):
         super(Jinja2CacheExtension, self).__init__(environment)
