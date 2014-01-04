@@ -26,7 +26,7 @@ class TestRequestSerializer(unittest.TestCase):
                 'remote_addr': '127.0.0.1',
                 'url': 'http://www.example.com/foobar',
                 'user_agent': 'Mock/1.0',
-                }
+            }
         )
 
     def test_serialize_dict(self):
@@ -51,8 +51,10 @@ class TestAkismet(unittest.TestCase):
 
     def _makeResponse(self, content):
         class MockResponse(object):
+
             def __init__(self, content):
                 self.content = content
+
         return MockResponse(content)
 
     def test_init(self):
@@ -74,7 +76,7 @@ class TestAkismet(unittest.TestCase):
             'https://hogehoge.rest.akismet.com/1.1/comment-check',
             headers=mock.ANY,
             data=mock.ANY,
-            )
+        )
 
     @mock.patch('requests.post')
     def test_spam_ham(self, api_call):
@@ -86,7 +88,7 @@ class TestAkismet(unittest.TestCase):
             'https://hogehoge.rest.akismet.com/1.1/comment-check',
             headers=mock.ANY,
             data=mock.ANY,
-            )
+        )
 
     # noinspection PyTypeChecker
     @mock.patch('requests.post')
@@ -148,4 +150,3 @@ class TestRateLimiter(unittest.TestCase):
         ratelimit.limit()
         self.assertTrue(ratelimit.limited())
         self.assertEqual(ratelimit.timeleft(), 10)
-

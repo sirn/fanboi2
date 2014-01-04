@@ -26,7 +26,7 @@ class TestFormatters(unittest.TestCase):
              'http://example.com/%E3%81%BB%E3%81%92'),
             ('http://example.com/"><script></script>',
              'http://example.com/%22%3E%3Cscript%3E%3C/script%3E'),
-            ]
+        ]
         for source, target in tests:
             self.assertEqual(url_fix(source), target)
 
@@ -82,7 +82,7 @@ class TestFormatters(unittest.TestCase):
             ('ไก่จิกเด็ก\n\nตายบนปากโอ่ง',
              '<p>ไก่จิกเด็ก</p>\n<p>ตายบนปากโอ่ง</p>'),
             ('<script></script>', '<p>&lt;script&gt;&lt;/script&gt;</p>'),
-            ]
+        ]
         for source, target in tests:
             self.assertEqual(format_text(source), Markup(target))
 
@@ -170,7 +170,7 @@ class TestFormatters(unittest.TestCase):
             ('<b>Foobar</b>', '<p><b>Foobar</b></p>\n'),
             ('Split\n\nParagraph', '<p>Split</p>\n\n<p>Paragraph</p>\n'),
             ('Split\nlines', '<p>Split\nlines</p>\n'),
-            ]
+        ]
         for source, target in tests:
             self.assertEqual(format_markdown(source), Markup(target))
 
@@ -217,7 +217,7 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
             (post3, "<p><a data-number=\"1-2\" " +
                     "href=\"/foobar/1/1-2\" class=\"anchor\">" +
                     "&gt;&gt;1-2</a><br>Hoge</p>"),
-            ]
+        ]
         for source, target in tests:
             self.assertEqual(format_post(source), Markup(target))
 

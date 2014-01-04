@@ -66,7 +66,7 @@ class BaseTaskView(object):
             'post': Post,
             'topic': Topic,
             'board': Board,
-            }[key]).get(value)
+        }[key]).get(value)
 
     # noinspection PyUnresolvedReferences
     def GET(self):
@@ -134,8 +134,8 @@ class BoardAllView(BaseView):
                                            undefer('posted_at')).\
             filter(or_(Topic.status == "open",
                        and_(Topic.status != "open",
-                            Topic.posted_at >= datetime.now() - \
-                                               timedelta(days=7)))).\
+                            Topic.posted_at >= datetime.now() -
+                            timedelta(days=7)))).\
             all()
         return {
             'boards': self.boards,
@@ -272,4 +272,4 @@ class TopicView(BaseTaskView, BaseView):
             'topic': self.topic,
             'posts': self.topic.posts,
             'form': form,
-       }
+        }

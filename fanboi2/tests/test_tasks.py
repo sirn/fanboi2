@@ -115,4 +115,3 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
             result = self._makeOne(request, topic_id, 'Hi!', True)
         self.assertEqual(dbs.call_count, 5)
         self.assertFalse(result.successful())
-

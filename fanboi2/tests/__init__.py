@@ -114,7 +114,7 @@ class ModelMixin(_ModelInstanceSetup):
         registry.settings = {
             'app.timezone': 'Asia/Bangkok',
             'app.secret': 'Silently test in secret',
-            }
+        }
         return registry
 
 
@@ -144,7 +144,7 @@ class ViewMixin(object):
             bytes(request.registry.settings['app.secret'].encode('utf8')),
             bytes(request.session['csrf'].encode('utf8')),
             digestmod=sha1,
-            ).hexdigest()
+        ).hexdigest()
         return request
 
     def _POST(self, data=None):
@@ -171,4 +171,4 @@ class CacheMixin(object):
         from dogpile.cache import make_region
         return make_region().configure('dogpile.cache.memory', arguments={
             'cache_dict': store if store is not None else {},
-            })
+        })

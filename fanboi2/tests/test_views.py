@@ -16,13 +16,14 @@ class DummyAsyncResult(object):
         return self._data
 
 
-
 class TestBaseView(ViewMixin, ModelMixin, unittest.TestCase):
 
     def _makeOne(self):
         from fanboi2.views import BaseView
+
         class _MockView(BaseView):
             pass
+
         return _MockView
 
     def test_init(self):
@@ -102,8 +103,10 @@ class TestBaseTaskView(ViewMixin, ModelMixin, unittest.TestCase):
 
     def _makeOne(self):
         from fanboi2.views import BaseView, BaseTaskView
+
         class _MockView(BaseTaskView, BaseView):
             pass
+
         return _MockView
 
     def test_get_dispatch_initial(self):
@@ -205,7 +208,7 @@ class TestBoardView(ViewMixin, ModelMixin, unittest.TestCase):
                 topic8,
                 topic9,
                 topic10,
-                ]
+            ]
         )
 
     def test_get_not_found(self):
@@ -248,7 +251,7 @@ class TestBoardAllView(ViewMixin, ModelMixin, unittest.TestCase):
                 topic1,
                 topic2,
                 topic3,
-                ]
+            ]
         )
 
     def test_get_not_found(self):
@@ -311,7 +314,7 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
         request = self._make_csrf(self._POST({
             'title': "One more thing...",
             'body': "And now for something completely different...",
-            }))
+        }))
         request.matchdict['board'] = 'general'
         self.config.add_route('board_new', '/{board}/new')
         add_topic.return_value = mock.Mock(id=123)
@@ -323,7 +326,7 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
             board_id=board.id,
             title='One more thing...',
             body='And now for something completely different...',
-            )
+        )
 
     def test_post_failure(self):
         from fanboi2.models import DBSession, Topic
@@ -331,7 +334,7 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
         request = self._make_csrf(self._POST({
             'title': "One more thing...",
             'body': "",
-            }))
+        }))
         request.matchdict['board'] = 'general'
         response = self._getTargetClass()(request)()
 
@@ -349,7 +352,7 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
         request = self._make_csrf(self._POST({
             'title': "Flooding the board!!1",
             'body': "LOLUSUX!!11",
-            }))
+        }))
         request.matchdict['board'] = 'general'
         limited_call.return_value = True
         timeleft_call.return_value = 10
@@ -460,7 +463,7 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
             topic_id=topic.id,
             body='Boring post...',
             bumped=False,
-            )
+        )
 
     def test_post_failure(self):
         from fanboi2.models import DBSession, Post
@@ -474,7 +477,7 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(response["form"].body.data, 'x')
         self.assertDictEqual(response["form"].errors, {
             'body': ['Field must be between 2 and 4000 characters long.'],
-            })
+        })
 
     @mock.patch('fanboi2.utils.RateLimiter.limited')
     @mock.patch('fanboi2.utils.RateLimiter.timeleft')

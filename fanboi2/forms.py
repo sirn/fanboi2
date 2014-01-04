@@ -12,6 +12,7 @@ class Length(_Length):
     newline as single character instead of two. This is to prevent situation
     where field length seemed incorrectly counted.
     """
+
     def __call__(self, form, field):
         length = field.data and len(field.data.replace('\r\n', '\n')) or 0
         if length < self.min or self.max != -1 and length > self.max:

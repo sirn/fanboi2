@@ -29,7 +29,7 @@ class TestSecureForm(unittest.TestCase):
             bytes(request.registry.settings['app.secret'].encode('utf8')),
             bytes(request.session['csrf'].encode('utf8')),
             digestmod=sha1,
-            ).hexdigest()
+        ).hexdigest()
         form = self._makeOne({'csrf_token': token}, request)
         self.assertTrue(form.validate())
         self.assertEqual(form.errors, {})
@@ -39,14 +39,14 @@ class TestSecureForm(unittest.TestCase):
         form = self._makeOne({}, request)
         self.assertDictEqual(form.errors, {
             'csrf_token': ['CSRF token missing.'],
-            })
+        })
 
     def test_csrf_token_invalid(self):
         request = self._makeRequest()
         form = self._makeOne({'csrf_token': 'invalid'}, request)
         self.assertDictEqual(form.errors, {
             'csrf_token': ['CSRF token mismatched.'],
-            })
+        })
 
     def test_data(self):
         request = self._makeRequest()
@@ -55,6 +55,7 @@ class TestSecureForm(unittest.TestCase):
 
 
 class DummyTranslations(object):
+
     def gettext(self, string):
         return string
 
@@ -121,4 +122,3 @@ class TestForm(unittest.TestCase):
         self.assertEqual(Length(max=1)(form, DummyField('\r\n')), None)
         self.assertEqual(Length(max=1)(form, DummyField('\n')), None)
         self.assertEqual(Length(max=1)(form, DummyField('\r')), None)
-

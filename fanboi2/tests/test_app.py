@@ -48,9 +48,12 @@ class TestRouteName(unittest.TestCase):
 
     def _makeRequest(self, name):
         request = testing.DummyRequest()
+
         class MockMatchedRoute(object):
+
             def __init__(self, name):
                 self.name = name
+
         request.matched_route = MockMatchedRoute(name)
         return request
 
@@ -79,12 +82,15 @@ class TestTaggedStaticUrl(unittest.TestCase):
 
     def _makeRequest(self):
         from pyramid.url import URLMethodsMixin
+
         class Request(URLMethodsMixin):
             application_url = 'http://example.com:5432'
             script_name = ''
+
             def __init__(self, environ):
                 self.environ = environ
                 self.registry = None
+
         request = Request({})
         request.registry = self.config.registry
         return request
@@ -110,8 +116,8 @@ class TestTaggedStaticUrl(unittest.TestCase):
         self.assertEqual(
             info.args, ('fanboi2:tests/test_app.py', request, {
                 '_app_url': '',
-                '_query': {'h': self._getHash('fanboi2', 'tests/test_app.py'),
-                }}))
+                '_query': {'h': self._getHash('fanboi2', 'tests/test_app.py')}
+            }))
 
     def test_tagged_static_path_non_exists(self):
         from pyramid.interfaces import IStaticURLInfo
@@ -131,8 +137,8 @@ class TestTaggedStaticUrl(unittest.TestCase):
         self.assertEqual(
             info.args, ('fanboi2:tests/test_app.py', request, {
                 '_app_url': '',
-                '_query': {'h': self._getHash('fanboi2', 'tests/test_app.py'),
-                }}))
+                '_query': {'h': self._getHash('fanboi2', 'tests/test_app.py')}
+            }))
 
     def test_tagged_static_path_non_package_non_exists(self):
         from pyramid.interfaces import IStaticURLInfo
@@ -141,4 +147,3 @@ class TestTaggedStaticUrl(unittest.TestCase):
         request.registry.registerUtility(info, IStaticURLInfo)
         with self.assertRaises(IOError):
             self._getFunction()(request, 'static/notexists')
-

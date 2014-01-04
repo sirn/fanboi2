@@ -86,7 +86,7 @@ class TestJsonType(unittest.TestCase):
             'foo', metadata,
             Column('baz', Integer),
             Column('bar', JsonType),
-            )
+        )
         metadata.drop_all()
         metadata.create_all()
         return table
@@ -218,7 +218,7 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
     def test_auto_archive(self):
         board = self._makeBoard(title="Foobar", slug="foo", settings={
             'max_posts': 5,
-            })
+        })
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
         for i in range(4):
             self._makePost(topic=topic, body="Post %s" % i)
@@ -229,7 +229,7 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
     def test_auto_archive_locked(self):
         board = self._makeBoard(title="Foobar", slug="foo", settings={
             'max_posts': 3,
-            })
+        })
         topic = self._makeTopic(board=board,
                                 title="Lorem ipsum dolor",
                                 status='locked')
@@ -444,7 +444,7 @@ class PostModelTest(ModelMixin, unittest.TestCase):
     def test_name(self):
         board = self._makeBoard(title="Foobar", slug="foo", settings={
             'name': 'Nobody Nowhere',
-            })
+        })
         topic = self._makeTopic(board=board, title="No name!")
         post1 = self._makePost(topic=topic, body="I'm nameless")
         post2 = self._makePost(topic=topic, body="I have a name", name="John")
@@ -468,7 +468,7 @@ class PostModelTest(ModelMixin, unittest.TestCase):
     def test_ident_disabled(self):
         board = self._makeBoard(title="Testbed", slug="test", settings={
             'use_ident': False,
-            })
+        })
         topic = self._makeTopic(board=board, title="Lorem ipsum dolor sit")
         post1 = self._makePost(topic=topic, body="Hi", ip_address="127.0.0.1")
         post2 = self._makePost(topic=topic, body="Yo", ip_address="10.0.2.8")
