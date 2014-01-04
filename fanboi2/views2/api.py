@@ -28,9 +28,7 @@ def board_get(request):
 def board_topics_get(request):
     """Retrieve recent topics within a single board."""
     return board_get(request).topics. \
-        options(undefer('post_count'),
-                undefer('posted_at'),
-                undefer('bumped_at')).\
+        options(undefer('bumped_at')).\
         limit(25).all()
 
 
@@ -44,9 +42,7 @@ def board_topics_post(request):
 def board_topics_all_get(request):
     """Retrieve all non-archived topics by its bumped date."""
     return board_get(request).topics.\
-        options(undefer('post_count'),
-                undefer('posted_at'),
-                undefer('bumped_at')).\
+        options(undefer('bumped_at')).\
         filter(or_(Topic.status == "open",
                    and_(Topic.status != "open",
                         Topic.posted_at >= datetime.datetime.now() -
