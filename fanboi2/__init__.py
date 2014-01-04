@@ -8,10 +8,11 @@ from pyramid.path import AssetResolver
 from pyramid.view import append_slash_notfound_view
 from pyramid_beaker import session_factory_from_settings
 from sqlalchemy import engine_from_config
+from sqlalchemy.orm.exc import NoResultFound
 from .cache import cache_region, Jinja2CacheExtension
 from .formatters import *
 from .models import DBSession, Base, redis_conn, identity
-from .utils import akismet
+from .utils import akismet, json_renderer
 
 
 def remote_addr(request):
@@ -74,6 +75,34 @@ def configure_components(cfg):  # pragma: no cover
     cache_region.invalidate()
 
 
+def configure_views(config):  # pragma: no cover
+    """Add views and routes to Pyramid configuration."""
+    config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_route('root', '/')
+    config.add_route('board', '/{board:\w+}/')
+    config.add_route('board_all', '/{board:\w+}/all/')
+    config.add_route('board_new', '/{board:\w+}/new/')
+    config.add_route('topic', '/{board:\w+}/{topic:\d+}/')
+    config.add_route('topic_scoped', '/{board:\w+}/{topic:\d+}/{query}/')
+
+    # views2.api boards
+    config.add_route('api_boards', '/api/boards/')
+    config.add_route('api_board', '/api/boards/{board:\w+}/')
+    config.add_route('api_board_topics', '/api/boards/{board:\w+}/topics/')
+    config.add_route('api_board_topics_all',
+                     '/api/boards/{board:\w+}/topics/all/')
+
+    # views2.api topics
+    config.add_route('api_topic', '/api/topics/{topic:\d+}/')
+    config.add_route('api_topic_posts', '/api/topics/{topic:\d+}/posts/')
+    config.add_route('api_topic_posts_scoped',
+                     '/api/topics/{topic:\d+}/posts/{query}/')
+
+    # Fallback
+    config.add_view(append_slash_notfound_view, context=NotFound)
+    config.scan()
+
+
 def main(global_config, **settings):  # pragma: no cover
     """This function returns a Pyramid WSGI application."""
     session_factory = session_factory_from_settings(settings)
@@ -85,14 +114,8 @@ def main(global_config, **settings):  # pragma: no cover
     config.set_request_property(route_name)
     config.add_request_method(tagged_static_path)
 
-    config.add_static_view('static', 'static', cache_max_age=3600)
-    config.add_route('root', '/')
-    config.add_route('board', '/{board:\w+}/')
-    config.add_route('board_all', '/{board:\w+}/all/')
-    config.add_route('board_new', '/{board:\w+}/new/')
-    config.add_route('topic', '/{board:\w+}/{topic:\d+}/')
-    config.add_route('topic_scoped', '/{board:\w+}/{topic:\d+}/{query}/')
-    config.add_view(append_slash_notfound_view, context=NotFound)
+    config.add_renderer('json', json_renderer)
+    configure_views(config)
 
     config.include(pyramid_jinja2)
     config.add_jinja2_extension(Jinja2CacheExtension)
@@ -104,6 +127,5 @@ def main(global_config, **settings):  # pragma: no cover
     jinja2_env.filters['isotime'] = format_isotime
     jinja2_env.filters['markdown'] = format_markdown
     jinja2_env.filters['markup'] = format_text
-    config.scan()
 
     return config.make_wsgi_app()

@@ -134,6 +134,11 @@ class Board(Base):
     should always be accessed using :attr:`slug`.
     """
 
+    __serializeable__ = {
+        'default': ['id', 'title', 'description', 'slug'],
+        'api_board': ['settings', 'agreements', 'description'],
+        }
+
     slug = Column(String(64), unique=True, nullable=False)
     title = Column(Unicode(255), nullable=False)
     _settings = Column('settings', JsonType, nullable=False, default={})
@@ -159,6 +164,15 @@ class Topic(Base):
     title or its associated board. The actual content of a topic belongs
     to :class:`Post`.
     """
+
+    __serializeable__ = [
+        'board_id',
+        'title',
+        'status',
+        'post_count',
+        'posted_at',
+        'bumped_at',
+        ]
 
     board_id = Column(Integer, ForeignKey('board.id'), nullable=False)
     title = Column(Unicode(255), nullable=False)
@@ -246,6 +260,14 @@ class Post(Base):
     """
 
     __table_args__ = (UniqueConstraint('topic_id', 'number'),)
+    __serializeable__ = [
+        'topic_id',
+        'ident',
+        'number',
+        'name',
+        'body',
+        'bumped',
+        ]
 
     topic_id = Column(Integer, ForeignKey('topic.id'), nullable=False)
     ip_address = Column(String, nullable=False)
