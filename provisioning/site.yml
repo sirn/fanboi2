@@ -139,13 +139,14 @@
         - libpq-dev
         - git
 
+    # pip 1.5 and virtualenv 1.11 is incompatible with system setuptools.
     - name: install python3 requisites
       command: |
         easy_install3 ${item}
         creates=/usr/local/bin/${item}-3.2
       with_items:
-        - pip
-        - virtualenv
+        - pip==1.4.1
+        - virtualenv==1.10.1
 
     # uWSGI setup.
     # ---------------------------------------------------------------------
