@@ -1,6 +1,5 @@
 import datetime
 from pyramid.view import view_config as _view_config
-from sqlalchemy.orm import undefer
 from sqlalchemy.sql import or_, and_
 from ..models import DBSession, Board, Topic
 
@@ -26,27 +25,18 @@ def board_get(request):
 
 @json_view(request_method='GET', route_name='api_board_topics')
 def board_topics_get(request):
-    """Retrieve recent topics within a single board."""
+    """Retrieve all available topics within a single board."""
     return board_get(request).topics. \
-        options(undefer('bumped_at')).\
-        limit(25).all()
+        filter(or_(Topic.status == "open",
+                   and_(Topic.status != "open",
+                        Topic.posted_at >= datetime.datetime.now() -
+                        datetime.timedelta(days=7)))).all()
 
 
 @json_view(request_method='POST', route_name='api_board_topics')
 def board_topics_post(request):
     """Create a new topic."""
     pass
-
-
-@json_view(request_method='GET', route_name='api_board_topics_all')
-def board_topics_all_get(request):
-    """Retrieve all non-archived topics by its bumped date."""
-    return board_get(request).topics.\
-        options(undefer('bumped_at')).\
-        filter(or_(Topic.status == "open",
-                   and_(Topic.status != "open",
-                        Topic.posted_at >= datetime.datetime.now() -
-                        datetime.timedelta(days=7)))).all()
 
 
 @json_view(request_method='GET', route_name='api_topic')

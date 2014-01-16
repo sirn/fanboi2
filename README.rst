@@ -35,6 +35,7 @@ After all prerequisites are installed, you can now create the database and run s
     $ createdb -O fanboi2 fanboi2          # Create main database.
     $ createdb -O fanboi2 fanboi2_test     # Create test database (required for testing).
     $ python3 setup.py develop             # Setup app in develop mode.
+    $ pip install jinja2                   # Install Jinja2 for Genconfig.
     $ python3 provisioning/genconfig.py    # Generate settings.ini and alembic.ini.
     $ alembic upgrade head                 # Migrate database.
 
@@ -47,6 +48,13 @@ If all tests passed, you can now run the application. You must first setup asset
 
     $ npm install
     $ brunch build
+
+Then you have to make sure Celery is running::
+
+    $ fb2_celery development.ini worker
+
+And now you can run the application::
+
     $ pserve development.ini --reload
 
 You may also found ``brunch watch`` useful for automatic assets compilation::

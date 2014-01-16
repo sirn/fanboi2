@@ -59,7 +59,7 @@ class TestFormatters(unittest.TestCase):
 
     def test_post_markup(self):
         from fanboi2.formatters import PostMarkup
-        from jinja2 import Markup
+        from markupsafe import Markup
         markup = PostMarkup('<p>foo</p>')
         markup.shortened = True
         markup.length = 3
@@ -70,7 +70,7 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_text(self):
         from fanboi2.formatters import format_text
-        from jinja2 import Markup
+        from markupsafe import Markup
         tests = [
             ('Hello, world!', '<p>Hello, world!</p>'),
             ('H\n\n\nello\nworld', '<p>H</p>\n<p>ello<br>world</p>'),
@@ -88,7 +88,7 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_text_autolink(self):
         from fanboi2.formatters import format_text
-        from jinja2 import Markup
+        from markupsafe import Markup
         text = ('Hello from autolink:\n\n'
                 'Boom: http://example.com/"<script>alert("Hi")</script><a\n'
                 'http://www.example.com/ほげ\n'
@@ -115,7 +115,7 @@ class TestFormatters(unittest.TestCase):
     def test_format_text_shorten(self):
         from fanboi2.formatters import format_text
         from fanboi2.formatters import PostMarkup
-        from jinja2 import Markup
+        from markupsafe import Markup
         tests = (
             ('Hello, world!', '<p>Hello, world!</p>', 13, False),
             ('Hello\nworld!', '<p>Hello</p>', 5, True),
@@ -131,7 +131,7 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_text_thumbnail(self):
         from fanboi2.formatters import format_text
-        from jinja2 import Markup
+        from markupsafe import Markup
         text = ("New product! https://imgur.com/foobar1\n\n"
                 "http://i.imgur.com/foobar2.png\n"
                 "http://imgur.com/foobar3.jpg\n"
@@ -164,7 +164,7 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_markdown(self):
         from fanboi2.formatters import format_markdown
-        from jinja2 import Markup
+        from markupsafe import Markup
         tests = [
             ('**Hello, world!**', '<p><strong>Hello, world!</strong></p>\n'),
             ('<b>Foobar</b>', '<p><b>Foobar</b></p>\n'),
@@ -202,7 +202,7 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
 
     def test_format_post(self):
         from fanboi2.formatters import format_post
-        from jinja2 import Markup
+        from markupsafe import Markup
         self.config.add_route('topic_scoped', '/{board}/{topic}/{query}')
         board = self._makeBoard(title="Foobar", slug="foobar")
         topic = self._makeTopic(board=board, title="Hogehogehogehogehoge")
@@ -223,7 +223,7 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
 
     def test_format_post_shorten(self):
         from fanboi2.formatters import format_post
-        from jinja2 import Markup
+        from markupsafe import Markup
         self.config.add_route('topic_scoped', '/{board}/{topic}/{query}')
         board = self._makeBoard(title="Foobar", slug="foobar")
         topic = self._makeTopic(board=board, title="Hogehogehogehogehoge")

@@ -95,12 +95,7 @@ def _datetime_adapter(obj, request):
 def _model_adapter(obj, request):
     """Serialize :type:`fanboi2.models.Base` objects into a dict."""
     results = {}
-
     serializeable = getattr(obj, '__serializeable__', ['id'])
-    if isinstance(serializeable, dict):
-        serializeable = serializeable.get('default', []) +\
-                        serializeable.get(request.route_name, [])
-
     for name in serializeable:
         retval = getattr(obj, name)
         if callable(retval):

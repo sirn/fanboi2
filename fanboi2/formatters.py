@@ -6,7 +6,7 @@ import re
 import urllib.parse as urlparse
 from collections import OrderedDict
 from html.parser import HTMLParser
-from jinja2 import Markup
+from markupsafe import Markup
 from pyramid.threadlocal import get_current_registry, get_current_request
 
 

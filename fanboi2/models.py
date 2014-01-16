@@ -134,10 +134,15 @@ class Board(Base):
     should always be accessed using :attr:`slug`.
     """
 
-    __serializeable__ = {
-        'default': ['id', 'title', 'description', 'slug'],
-        'api_board': ['settings', 'agreements', 'description'],
-        }
+    __serializeable__ = [
+        'id',
+        'title',
+        'description',
+        'slug',
+        'settings',
+        'agreements',
+        'description',
+    ]
 
     slug = Column(String(64), unique=True, nullable=False)
     title = Column(Unicode(255), nullable=False)
@@ -166,13 +171,15 @@ class Topic(Base):
     """
 
     __serializeable__ = [
+        'id',
         'board_id',
         'title',
         'status',
         'post_count',
+        'created_at',
         'posted_at',
         'bumped_at',
-        ]
+    ]
 
     board_id = Column(Integer, ForeignKey('board.id'), nullable=False)
     title = Column(Unicode(255), nullable=False)
@@ -261,13 +268,15 @@ class Post(Base):
 
     __table_args__ = (UniqueConstraint('topic_id', 'number'),)
     __serializeable__ = [
+        'id',
         'topic_id',
         'ident',
         'number',
         'name',
         'body',
         'bumped',
-        ]
+        'created_at',
+    ]
 
     topic_id = Column(Integer, ForeignKey('topic.id'), nullable=False)
     ip_address = Column(String, nullable=False)
@@ -336,6 +345,5 @@ Topic.bumped_at = column_property(
         where(Post.topic_id == Topic.id).
         where(Post.bumped).
         order_by(desc(Post.created_at)).
-        limit(1),
-    deferred=True
+        limit(1)
 )

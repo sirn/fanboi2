@@ -1,14 +1,14 @@
 {
-  "author":              "Kridsada Thanabulpong",
-  "name":                "fanboi2",
-  "description":         "Assets for Fanboi2 board app",
-  "version":             "0.0.1",
-  "dependencies": {
-    "javascript-brunch":    ">= 1.7 < 1.8",
-    "coffee-script-brunch": ">= 1.7 < 1.8",
-    "css-brunch":           ">= 1.7 < 1.8",
-    "stylus-brunch":        ">= 1.7 < 1.8",
-    "uglify-js-brunch":     ">= 1.7 < 1.8",
-    "clean-css-brunch":     ">= 1.7 < 1.8"
-  }
+    "author": "Kridsada Thanabulpong",
+    "name": "fanboi2",
+    "description": "Assets for Fanboi2 board app",
+    "version": "0.2.0",
+    "dependencies": {
+        "javascript-brunch":    ">= 1.7 < 1.8",
+        "css-brunch":           ">= 1.7 < 1.8",
+        "sass-brunch":          ">= 1.7 < 1.8",
+        "uglify-js-brunch":     ">= 1.7 < 1.8",
+        "autoprefixer-brunch":  ">= 1.7 < 1.8",
+        "clean-css-brunch":     ">= 1.7 < 1.8"
+    }
 }
