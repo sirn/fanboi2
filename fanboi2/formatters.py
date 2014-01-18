@@ -7,7 +7,6 @@ import urllib.parse as urlparse
 from collections import OrderedDict
 from html.parser import HTMLParser
 from markupsafe import Markup
-from pyramid.threadlocal import get_current_registry, get_current_request
 
 
 RE_PARAGRAPH = re.compile(r'(?:(?P<newline>\r\n|\n|\r)(?P=newline)+)')
@@ -133,7 +132,7 @@ def format_text(text, shorten=None):
     return markup
 
 
-def format_markdown(text):
+def format_markdown(context, request, text):
     """Format text using Markdown parser."""
     if text is not None:
         return Markup(misaka.html(str(text)))
@@ -148,14 +147,13 @@ Post shortened. <a href="%s">See full post</a>.
 """.splitlines())
 
 
-def format_post(post, shorten=None):
+def format_post(context, request, post, shorten=None):
     """Works similar to :func:`format_text` but also process link within
     the same topic, i.e. a `>>52` anchor syntax will create a link to
     post numbered 52 in the same topic, as well as display "click to see
     more" link for posts that has been shortened.
     """
     text = format_text(post.body, shorten)
-    request = get_current_request()
 
     # Append click to see more link if post is shortened.
     try:
@@ -183,13 +181,12 @@ def format_post(post, shorten=None):
     return Markup(text)
 
 
-def format_datetime(dt):
+def format_datetime(context, request, dt):
     """Format datetime into a human-readable format."""
-    registry = get_current_registry()
-    timezone = pytz.timezone(registry.settings['app.timezone'])
+    timezone = pytz.timezone(request.registry.settings['app.timezone'])
     return dt.astimezone(timezone).strftime('%b %d, %Y at %H:%M:%S')
 
 
-def format_isotime(dt):
+def format_isotime(context, request, dt):
     """Format datetime into a machine-readable format."""
     return isodate.datetime_isoformat(dt.astimezone(pytz.utc))

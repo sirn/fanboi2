@@ -1,0 +1,299 @@
+@import "nib"
+
+/* Reset */
+global-reset()
+reset-html5()
+
+
+/* Site colors */
+$color-primary = #eb3a17
+$color-secondary = #f5f7f8
+$color-gray = #5e6b71;
+$color-dark = darken($color-gray, 40%)
+$color-darker = darken($color-gray, 60%)
+$color-light = lighten($color-gray, 30%)
+$color-lighter = lighten($color-gray, 50%)
+
+
+/* Metrics */
+$header-logo-height = 15px
+$header-logo-width = 80px
+$header-padding = 10px
+$header-stripe = 2px
+$header-height = $header-logo-height + $header-padding + $header-stripe
+$vertical-spacing = 20px
+$horizontal-spacing = 15px
+$line-height = 140%
+
+
+/* Body */
+body
+    background-color #e9e9e9
+    font-family sans-serif
+    font-size 16px
+    height 100%
+
+
+/* Page header */
+#header
+    background-color $color-darker
+    border-top $header-stripe solid $color-primary
+    max-height $header-height
+    overflow hidden
+    padding $header-padding 0 0
+
+    .brand
+        background-image url(../logo.svg)
+        background-repeat no-repeat
+        background-size $header-logo-width
+        height $header-logo-height
+        width $header-logo-width
+
+        a
+            float left
+            height $header-logo
+            text-indent -1000em
+            width $header-logo-width
+
+
+/* Links */
+a
+    color $color-primary
+    text-decoration none
+
+    &:hover
+        color #999
+        text-decoration none
+
+
+/* Page footer */
+#footer
+    color #777
+    font-size 14px
+    line-height $line-height
+    padding $vertical-spacing 0
+
+
+/* Generic container for wrapping pages. */
+.container
+    max-width 979px
+    margin auto
+
+
+/* Generic class for turning a block into inline-block. */
+.inline-text
+    display inline-block
+
+
+/* Generic class for button-style links. */
+.button
+    border none
+    color $color-light
+    display inline-block
+    font-family sans-serif
+    font-size 14px
+    line-height normal
+    outline none
+    padding 8px 12px
+    text-decoration none
+    cursor pointer
+
+    &:hover
+        color #fff
+
+
+
+/* Generic class headers. */
+.header
+    background-color $color-darker
+    padding 3px 0 $header-padding
+    line-height $line-height
+
+
+/* Root page header (e.g. root view) */
+.header-boards
+    color #fff
+    font-size small
+
+
+/* Container for board listing (e.g. root view) */
+.item-board
+    background-color #f6f6f4
+    border-bottom 1px solid #ddd
+    line-height $line-height
+    padding $vertical-spacing 0
+
+    &:hover
+        background-color #fff
+
+    + .item-board
+        margin-top -1px
+        border-top 1px solid #eee
+
+    .title
+        color #666
+        font-size 20px
+        font-weight bold
+        text-decoration none
+
+    .description
+        color $color-gray
+        font-size 14px
+
+
+/* Board header (e.g. board view, topic view) */
+.header-board
+    padding-bottom $vertical-spacing
+
+    .title
+        color #fff
+        font-size 22px
+        font-weight 800
+        text-decoration none
+
+    .description
+        color $color-light
+        font-size small
+
+    .button
+        margin-top ($vertical-spacing/2)
+
+    .button-current
+        background-color $color-primary
+        color #fff
+
+
+/* Topic header (e.g. board view, topic view) */
+.header-topic
+    background-color #fff
+    padding $vertical-spacing 0
+
+    .title
+        font-size 18px
+        font-weight bold
+        text-decoration none
+
+    .description
+        color $color-light
+        font-size small
+        margin-top 6px
+
+        strong
+            font-weight bold
+
+
+/* Container for post listing (e.g. board view, topic view) */
+.item-post
+    $post-spacing = 15px
+
+    background-color $color-secondary
+    border-top 1px solid #fff
+    max-width 100%
+    overflow-x auto
+    padding $post-spacing 0
+
+    .item-post-meta
+        color $color-light
+        font-size 12px
+        font-weight bold
+
+    .item-post-number
+        background-color #fff
+        border 1px solid $color-light
+        color $color-light
+        padding 3px 5px
+
+        &.item-post-bumped
+            background-color $color-light
+            border 1px solid $color-light
+            color #fff
+
+        &:hover
+            background-color $color-gray
+            border 1px solid $color-gray
+            color #fff
+
+    .item-post-name
+        background-color #fff
+        padding 5px 6px
+
+    .item-post-ident
+        color #aabbc4
+        padding 5px 3px
+
+    .item-post-body
+        margin-top $post-spacing
+
+        p.thumbnails
+            margin-top ($post-spacing/2)px
+
+
+/* Container for post body (e.g. board view, topic view) */
+.item-post-body
+    color #333
+    line-height $line-height
+    margin-top -10px
+
+    p
+        margin-top 10px
+
+    p.thumbnails
+        margin-top -3px
+
+    a
+        color #0088cc
+
+        &:hover
+            color #005580
+            text-decoration underline
+
+    a.link
+        @extend a
+
+    a.thumbnail
+        img
+            margin-top 3px
+            margin-right 3px
+
+        &:hover
+            img
+                opacity 0.8
+
+
+/* Topic footer (e.g. board view, topic view) */
+.footer-topic
+    background-color darken($color-secondary, 5%)
+    border-bottom 1px solid darken($color-secondary, 10%)
+    padding ($vertical-spacing*0.8) 0
+
+    .button
+        background-color #fff
+        border 1px solid #fff
+        color $color-gray
+
+        &:hover
+            background-color $color-gray
+            border-color $color-gray
+            color #fff
+
+    .button-reply
+        background-color #4ab91f
+        border-color #4ab91f
+        color #fff
+        font-weight bold
+
+        &:hover
+            background-color #fff
+            border-color #4ab91f
+            color #4ab91f
+
+    .button-reload
+        background-color $color-primary
+        border-color $color-primary
+        color #fff
+        font-weigeht bold
+
+        &:hover
+            background-color #fff
+            border-color $color-primary
+            color $color-primary
