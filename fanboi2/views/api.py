@@ -18,17 +18,15 @@ def boards_get(request):
 @json_view(request_method='GET', route_name='api_board')
 def board_get(request):
     """Retrieve a full info of a single board."""
-    return DBSession.query(Board).filter_by(
-        slug=request.matchdict['board']
-    ).one()
+    return DBSession.query(Board).\
+        filter_by(slug=request.matchdict['board']).\
+        one()
 
 
 @json_view(request_method='GET', route_name='api_board_topics')
-def board_topics_get(request, board=None):
+def board_topics_get(request):
     """Retrieve all available topics within a single board."""
-    if board is None:
-        board = board_get(request)
-    return board.topics. \
+    return board_get(request).topics. \
         filter(or_(Topic.status == "open",
                    and_(Topic.status != "open",
                         Topic.posted_at >= datetime.datetime.now() -
@@ -48,18 +46,16 @@ def topic_get(request):
 
 
 @json_view(request_method='GET', route_name='api_topic_posts')
+@json_view(request_method='GET', route_name='api_topic_posts_scoped')
 def topic_posts_get(request):
-    """Retrieve all posts in a single topic."""
-    return topic_get(request).posts
+    """Retrieve all posts in a single topic or by or by search criteria."""
+    topic = topic_get(request)
+    if 'query' in request.matchdict:
+        return topic.scoped_posts(request.matchdict['query'])
+    return topic.posts
 
 
 @json_view(request_method='POST', route_name='api_topic_posts')
 def topic_posts_post(request):
     """Create a new post within topic."""
     pass
-
-
-@json_view(request_method='GET', route_name='api_topic_posts_scoped')
-def topic_posts_scoped_get(request):
-    """Retrieve all posts in a single topic matching criteria."""
-    return topic_get(request).scoped_posts(request.matchdict['query'])

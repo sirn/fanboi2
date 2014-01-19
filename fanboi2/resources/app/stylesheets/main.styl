@@ -13,7 +13,7 @@ $color-dark = darken($color-gray, 40%)
 $color-darker = darken($color-gray, 60%)
 $color-light = lighten($color-gray, 30%)
 $color-lighter = lighten($color-gray, 50%)
-
+$color-reply = #4ab91f
 
 /* Metrics */
 $header-logo-height = 15px
@@ -89,18 +89,47 @@ a
 .button
     border none
     color $color-light
+    cursor pointer
     display inline-block
     font-family sans-serif
     font-size 14px
     line-height normal
+    margin 0
     outline none
     padding 8px 12px
     text-decoration none
-    cursor pointer
 
     &:hover
         color #fff
 
+
+/* Generic class for forms. */
+.form
+    label
+        color $color-primary
+        font-size 12px
+        font-weight bold
+        text-transform uppercase
+
+    textarea
+        appearance none        /* WebKit Mobile. */
+        background-color #fff  /* Firefox Desktop. */
+        background-image none  /* Firefox Mobile. */
+        border 1px solid #d0d0d0
+        border-radius 0
+        box-sizing border-box
+        color #333
+        font-family sans-serif
+        font-size 16px
+        line-height $line-height
+        max-width 100%
+        min-height 120px
+        outline none
+        padding 5px
+        width 100%
+
+        &:focus
+            border-color $color-gray
 
 
 /* Generic class headers. */
@@ -163,8 +192,21 @@ a
         color #fff
 
 
-/* Topic header (e.g. board view, topic view) */
+/* Topic header (e.g. topic view) */
 .header-topic
+    @extend .header-board
+
+    .button-reply
+        background-color $color-reply
+        color #fff
+
+    .description
+        strong
+            font-weight bold
+
+
+/* Posts header a.k.a. "topic" header (e.g. board view) */
+.header-posts
     background-color #fff
     padding $vertical-spacing 0
 
@@ -216,6 +258,7 @@ a
     .item-post-name
         background-color #fff
         padding 5px 6px
+        margin-right 3px
 
     .item-post-ident
         color #aabbc4
@@ -260,8 +303,8 @@ a
                 opacity 0.8
 
 
-/* Topic footer (e.g. board view, topic view) */
-.footer-topic
+/* Posts footer a.k.a. "topic" footer (e.g. board view, topic view) */
+.footer-posts
     background-color darken($color-secondary, 5%)
     border-bottom 1px solid darken($color-secondary, 10%)
     padding ($vertical-spacing*0.8) 0
@@ -277,15 +320,15 @@ a
             color #fff
 
     .button-reply
-        background-color #4ab91f
-        border-color #4ab91f
+        background-color $color-reply
+        border-color $color-reply
         color #fff
         font-weight bold
 
         &:hover
             background-color #fff
-            border-color #4ab91f
-            color #4ab91f
+            border-color $color-reply
+            color $color-reply
 
     .button-reload
         background-color $color-primary
@@ -297,3 +340,26 @@ a
             background-color #fff
             border-color $color-primary
             color $color-primary
+
+
+/* Container for reply section. */
+.reply-topic
+    border-bottom 1px solid #ddd
+    background-color #fff
+    padding ($vertical-spacing*0.8) 0
+
+    .reply-topic-bump
+        color $color-light
+        text-transform none
+
+    .button-reply
+        background-color $color-gray
+        border 1px solid $color-gray
+        color #fff
+        font-weight bold
+
+        &:hover
+        &:focus
+            background-color #fff
+            border-color $color-gray
+            color $color-gray
