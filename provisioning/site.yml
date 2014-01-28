@@ -280,6 +280,7 @@
 
     - name: restart celery on changes
       command: supervisorctl restart celery
+      when: development|int == 1 or fanboi2_cloned.changed
 
     # Assets compilation.
     # ---------------------------------------------------------------------
@@ -287,15 +288,6 @@
     - name: reload application with uwsgi
       command: touch /etc/uwsgi/fanboi2.ini
       when: development|int == 1 or fanboi2_cloned.changed
-
-    # Mosh setup
-    # ---------------------------------------------------------------------
-
-    - name: add ppa:keithw/mosh for mosh installation
-      apt_repository: repo=ppa:keithw/mosh update_cache=yes
-
-    - name: install mosh
-      apt: pkg=mosh state=latest
 
     # Firewall configuration.
     # ---------------------------------------------------------------------
@@ -318,10 +310,6 @@
 
     - name: allow https via ufw
       command: ufw allow 443/tcp
-      when: ufw_setup.stdout == '0'
-
-    - name: allow mosh via ufw
-      command: ufw allow 60000:60010/udp
       when: ufw_setup.stdout == '0'
 
     - name: enable ufw
