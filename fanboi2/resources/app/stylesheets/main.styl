@@ -8,6 +8,7 @@ reset-html5()
 /* Site colors */
 $color-primary = #eb3a17
 $color-secondary = #f5f7f8
+$color-danger = $color-primary
 $color-gray = #5e6b71;
 $color-dark = darken($color-gray, 40%)
 $color-darker = darken($color-gray, 60%)
@@ -87,7 +88,7 @@ a
 
 /* Generic class for button-style links. */
 .button
-    border none
+    border 1px solid #fff
     color $color-light
     cursor pointer
     display inline-block
@@ -106,30 +107,54 @@ a
 /* Generic class for forms. */
 .form
     label
-        color $color-primary
+        color $color-light
         font-size 12px
         font-weight bold
-        text-transform uppercase
 
-    textarea
-        appearance none        /* WebKit Mobile. */
-        background-color #fff  /* Firefox Desktop. */
-        background-image none  /* Firefox Mobile. */
-        border 1px solid #d0d0d0
-        border-radius 0
-        box-sizing border-box
-        color #333
-        font-family sans-serif
-        font-size 16px
-        line-height $line-height
-        max-width 100%
-        min-height 120px
-        outline none
-        padding 5px
-        width 100%
+    .form-field
+        input
+        textarea
+            appearance none        /* WebKit Mobile. */
+            background-color #fff  /* Firefox Desktop. */
+            background-image none  /* Firefox Mobile. */
+            border 1px solid #d0d0d0
+            border-radius 0
+            box-sizing border-box
+            color #333
+            display block
+            font-family sans-serif
+            font-size 16px
+            line-height $line-height
+            margin 5px 0
+            max-width 100%
+            outline none
+            padding 5px
+            width 100%
+            &:focus
+                border-color $color-gray
 
-        &:focus
-            border-color $color-gray
+        textarea
+            min-height 130px
+
+    .form-error
+        label
+            color $color-danger
+
+        input[type=text],
+        textarea
+            border-color $color-danger
+            &:focus
+                border-color $color-danger
+
+        .error-message
+            background-color $color-danger
+            color #fff
+            display block
+            font-size 12px
+            line-height $line-height
+            margin-top -5px
+            margin-bottom 5px
+            padding 5px
 
 
 /* Generic class headers. */
@@ -137,6 +162,10 @@ a
     background-color $color-darker
     padding 3px 0 $header-padding
     line-height $line-height
+
+    .button
+        border none
+        margin-top ($vertical-spacing/2)
 
 
 /* Root page header (e.g. root view) */
@@ -184,12 +213,94 @@ a
         color $color-light
         font-size small
 
-    .button
-        margin-top ($vertical-spacing/2)
-
     .button-current
         background-color $color-primary
         color #fff
+
+
+/* Board header (e.g. board view, topic view) */
+.subheader-board
+    padding $vertical-spacing
+    background-color $color-secondary
+
+    .title
+        @extend .header-board .title
+        color $color-primary
+        margin-bottom 15px
+
+    ul, ol, p
+        line-height $line-height
+        margin-top 10px
+
+    ul
+        list-style disc
+        margin-left 20px
+
+    ol
+        list-style number
+        margin-left 20px
+
+    .description
+        color $color-light
+        font-size 14px
+        margin-top 15px
+
+    .button-back
+        background-color $color-danger
+        border-color $color-danger
+        color #fff
+        margin-top 10px
+
+        &:hover
+            background-color #fff
+            border-color $color-danger
+            color $color-danger
+
+
+/* Topic item (e.g. board view) */
+.item-topic
+    background-color #f6f6f4
+    border-bottom 1px solid #ddd
+    line-height $line-height
+    padding $vertical-spacing 0
+
+    &:hover
+        background-color #fff
+
+    + .item-topic
+        margin-top -1px
+        border-top 1px solid #eee
+
+    .description
+        color $color-gray
+        font-size 14px
+
+        strong
+            font-weight bold
+
+
+/* Container for reply section. */
+.new-topic
+    border-bottom 1px solid #ddd
+    background-color #fff
+    padding ($vertical-spacing*0.8) 0
+
+    input#title
+        font-size 20px
+        font-weight bold
+        line-height $line-height
+
+    .button-post
+        background-color $color-gray
+        border-color $color-gray
+        color #fff
+        font-weight bold
+
+        &:hover
+        &:focus
+            background-color #fff
+            border-color $color-gray
+            color $color-gray
 
 
 /* Topic header (e.g. topic view) */
@@ -311,7 +422,7 @@ a
 
     .button
         background-color #fff
-        border 1px solid #fff
+        border-color #fff
         color $color-gray
 
         &:hover
@@ -334,7 +445,7 @@ a
         background-color $color-primary
         border-color $color-primary
         color #fff
-        font-weigeht bold
+        font-weight bold
 
         &:hover
             background-color #fff
@@ -344,22 +455,7 @@ a
 
 /* Container for reply section. */
 .reply-topic
-    border-bottom 1px solid #ddd
-    background-color #fff
-    padding ($vertical-spacing*0.8) 0
+    @extend .new-topic
 
-    .reply-topic-bump
-        color $color-light
-        text-transform none
-
-    .button-reply
-        background-color $color-gray
-        border 1px solid $color-gray
-        color #fff
-        font-weight bold
-
-        &:hover
-        &:focus
-            background-color #fff
-            border-color $color-gray
-            color $color-gray
+    input#bumped
+        margin-left 7px
