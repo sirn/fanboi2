@@ -1,9 +1,11 @@
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound
+from pyramid.renderers import render_to_response
 from pyramid.view import view_config as _view_config
 from fanboi2.forms import PostForm, TopicForm
-from fanboi2.views.api import boards_get, board_get, board_topics_get, \
+from fanboi2.tasks import add_topic, add_post
+from fanboi2.utils import RateLimiter, serialize_request
+from fanboi2.views.api import boards_get, board_get, board_topics_get,\
     topic_get, topic_posts_get
-
 
 def get_view(**kwargs):
     kwargs['request_method'] = 'GET'
@@ -51,7 +53,24 @@ def board_new_post(request):
     """Handle form posting for creating new topic in a board."""
     board = board_get(request)
     form = TopicForm(request.params, request=request)
-    form.validate()
+
+    if form.validate():
+        ratelimit = RateLimiter(request, namespace=board.slug)
+        if ratelimit.limited():
+            return render_to_response('boards/error.mako', locals())
+
+        task = add_topic.delay(
+            request=serialize_request(request),
+            board_id=board.id,
+            title=form.title.data,
+            body=form.body.data)
+
+        ratelimit.limit(board.settings['post_delay'])
+        return HTTPFound(location=request.route_path(
+            route_name='board_new',
+            board=board.slug,
+            _query={'task': task.id}))
+
     return locals()
 
 
@@ -76,5 +95,23 @@ def topic_show_post(request):
     if not topic.board_id == board.id:
         raise HTTPNotFound
     form = PostForm(request.params, request=request)
-    form.validate()
+
+    if form.validate():
+        ratelimit = RateLimiter(request, namespace=board.slug)
+        if ratelimit.limited():
+            return render_to_response('topics/error.mako', locals())
+
+        task = add_post.delay(
+            request=serialize_request(request),
+            topic_id=topic.id,
+            body=form.body.data,
+            bumped=form.bumped.data)
+
+        ratelimit.limit(board.settings['post_delay'])
+        return HTTPFound(location=request.route_path(
+            route_name='topic',
+            board=topic.board.slug,
+            topic=topic.id,
+            _query={'task': task.id}))
+
     return locals()
