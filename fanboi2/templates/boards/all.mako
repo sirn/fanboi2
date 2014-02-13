@@ -1,6 +1,7 @@
 <%namespace name="formatters" module="fanboi2.formatters" />
 <%inherit file="../partials/_layout.mako" />
 <%include file="_header.mako" />
+<%def name="title()">All topics - ${board.title}</%def>
 % for topic in topics:
     <div class="item-topic" id="topic-${topic.id}">
         <div class="container">

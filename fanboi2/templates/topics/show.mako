@@ -1,6 +1,7 @@
 <%namespace name="posts_" file="../partials/_posts.mako" />
 <%inherit file="../partials/_layout.mako" />
 <%include file="_header.mako" />
+<%def name="title()">${topic.title} - ${board.title}</%def>
 % if posts:
     ${posts_.render_posts(topic, posts)}
     <footer class="footer-posts">

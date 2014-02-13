@@ -2,6 +2,7 @@
 <%namespace name="posts" file="../partials/_posts.mako" />
 <%inherit file="../partials/_layout.mako" />
 <%include file="_header.mako" />
+<%def name="title()">${board.title}</%def>
 % for topic in topics:
     <div id="topic-${topic.id}">
         <header class="header-posts">

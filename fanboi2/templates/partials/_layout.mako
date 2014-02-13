@@ -7,7 +7,7 @@
     <!--[if IE]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
     <link rel="stylesheet" href="${request.tagged_static_path('fanboi2:static/stylesheets/app.css')}">
     <link rel="shortcut icon" href="${request.tagged_static_path('fanboi2:static/favicon.ico')}">
-    <title>Fanboi Channel</title>
+    <title>${self.title() + ' - ' if hasattr(self, 'title') else ''}Fanboi Channel</title>
 </head>
 <body id="${request.route_name}">
     <header id="header">

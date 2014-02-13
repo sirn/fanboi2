@@ -1,6 +1,7 @@
 <%namespace name="formatters" module="fanboi2.formatters" />
 <%inherit file="../partials/_layout.mako" />
 <%include file="_header.mako" />
+<%def name="title()">New topic - ${board.title}</%def>
 <header class="subheader-board">
     <div class="container">
         <h3 class="title">New topic</h3>
