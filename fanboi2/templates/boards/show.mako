@@ -7,7 +7,10 @@
         <header class="header-posts">
             <div class="container">
                 <a class="title" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='recent')}">${topic.title}</a>
-                <p class="description">Last posted ${formatters.format_datetime(request, topic.posted_at)}, total of <strong>${topic.post_count} posts</strong>.</p>
+                <ul class="details">
+                    <li>Last posted ${formatters.format_datetime(request, topic.posted_at)}</li>
+                    <li>Total of <strong>${topic.post_count} posts</strong></li>
+                </ul>
             </div>
         </header>
         ${posts.render_posts(topic, topic.recent_posts(5), shorten=500)}

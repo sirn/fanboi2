@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+    <!--[if IE]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
     <link rel="stylesheet" href="${request.tagged_static_path('fanboi2:static/stylesheets/app.css')}">
     <link rel="shortcut icon" href="${request.tagged_static_path('fanboi2:static/favicon.ico')}">
     <title>Fanboi Channel</title>

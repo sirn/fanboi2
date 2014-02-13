@@ -19,20 +19,23 @@ $color-reply = #4ab91f
 /* Metrics */
 $header-logo-height = 15px
 $header-logo-width = 80px
-$header-padding = 10px
+$header-padding = 11px
 $header-stripe = 2px
 $header-height = $header-logo-height + $header-padding + $header-stripe
 $vertical-spacing = 20px
+$vertical-spacing-small = $vertical-spacing * 0.8
 $horizontal-spacing = 15px
+$horizontal-gutter = 20px
 $line-height = 140%
 
 
 /* Body */
 body
     background-color #e9e9e9
-    font-family sans-serif
+    font-family "Helvetica", "Arial", sans-serif
     font-size 16px
     height 100%
+    min-width: 320px
 
 
 /* Page header */
@@ -43,18 +46,25 @@ body
     overflow hidden
     padding $header-padding 0 0
 
-    .brand
-        background-image url(../logo.svg)
-        background-repeat no-repeat
-        background-size $header-logo-width
-        height $header-logo-height
-        width $header-logo-width
-
-        a
-            float left
-            height $header-logo
-            text-indent -1000em
+    @media (min-width: 0)
+        .brand
+            background-image url(../logo.svg)
+            background-repeat no-repeat
+            background-size $header-logo-width
+            height $header-logo-height
             width $header-logo-width
+
+            a
+                float left
+                height $header-logo
+                text-indent -1000em
+                width $header-logo-width
+
+    @media (max-width: 639px)
+        text-align: center
+
+        .brand
+            margin auto
 
 
 /* Links */
@@ -77,8 +87,9 @@ a
 
 /* Generic container for wrapping pages. */
 .container
-    max-width 979px
     margin auto
+    max-width 979px
+    padding 0 $horizontal-gutter
 
 
 /* Generic class for turning a block into inline-block. */
@@ -160,12 +171,18 @@ a
 /* Generic class headers. */
 .header
     background-color $color-darker
-    padding 3px 0 $header-padding
     line-height $line-height
+    padding $header-padding 0
 
     .button
         border none
-        margin-top ($vertical-spacing/2)
+        margin-top ($vertical-spacing / 2)
+
+    @media (max-width: 639px)
+        text-align center
+
+        .button
+            padding 7px 8px
 
 
 /* Generic error block class. */
@@ -192,6 +209,8 @@ a
 .header-boards
     color #fff
     font-size small
+    line-height $line-height
+    padding-top 3px
 
 
 /* Container for board listing (e.g. root view) */
@@ -199,7 +218,7 @@ a
     background-color #f6f6f4
     border-bottom 1px solid #ddd
     line-height $line-height
-    padding $vertical-spacing 0
+    padding $vertical-spacing-small 0
 
     &:hover
         background-color #fff
@@ -210,13 +229,50 @@ a
 
     .title
         color #666
-        font-size 20px
+        font-size 18px
         font-weight bold
+        line-height $line-height
         text-decoration none
 
     .description
         color $color-gray
-        font-size 14px
+        font-size small
+        line-height $line-height
+
+    @media (max-width: 639px)
+        position relative
+        padding-right 24px
+
+        .title
+            font-size 16px
+            line-height $line-height
+
+        a
+            &:before
+                bottom 0
+                content ''
+                left 0
+                position absolute
+                right 0
+                top 0
+                z-index 1
+
+            &:after
+                background-image url(../chevron.svg)
+                background-repeat no-repeat
+                background-size 14px
+                content ''
+                height 20px
+                margin-top -10px
+                opacity 0.5
+                position absolute
+                right $horizontal-gutter
+                top 50%
+                width 14px
+
+            &:hover
+                &:after
+                    opacity 0.3
 
 
 /* Board header (e.g. board view, topic view) */
@@ -232,6 +288,7 @@ a
     .description
         color $color-light
         font-size small
+        line-height $line-height
 
     .button-current
         background-color $color-primary
@@ -240,7 +297,7 @@ a
 
 /* Board header (e.g. board view, topic view) */
 .subheader-board
-    padding $vertical-spacing
+    padding $vertical-spacing 0
     background-color $color-secondary
 
     .title
@@ -282,7 +339,7 @@ a
     background-color #f6f6f4
     border-bottom 1px solid #ddd
     line-height $line-height
-    padding $vertical-spacing 0
+    padding $vertical-spacing-small 0
 
     &:hover
         background-color #fff
@@ -291,19 +348,52 @@ a
         margin-top -1px
         border-top 1px solid #eee
 
-    .description
-        color $color-gray
-        font-size 14px
+    .details
+        color $color-light
+        font-size small
+        line-height $line-height
 
         strong
             font-weight bold
+
+    @media (max-width: 639px)
+        position relative
+
+        a
+            padding-right 24px
+
+            &:before
+                bottom 0
+                content ''
+                left 0
+                position absolute
+                right 0
+                top 0
+                z-index 1
+
+            &:after
+                background-image url(../chevron.svg)
+                background-repeat no-repeat
+                background-size 14px
+                content ''
+                height 20px
+                margin-top -10px
+                opacity 0.5
+                position absolute
+                right $horizontal-gutter
+                top 50%
+                width 14px
+
+            &:hover
+                &:after
+                    opacity 0.3
 
 
 /* Container for reply section. */
 .new-topic
     border-bottom 1px solid #ddd
     background-color #fff
-    padding ($vertical-spacing*0.8) 0
+    padding $vertical-spacing-small 0
 
     input#title
         font-size 20px
@@ -331,25 +421,22 @@ a
         background-color $color-reply
         color #fff
 
-    .description
-        strong
-            font-weight bold
-
 
 /* Posts header a.k.a. "topic" header (e.g. board view) */
 .header-posts
     background-color #fff
-    padding $vertical-spacing 0
+    padding $vertical-spacing-small 0
 
     .title
         font-size 18px
         font-weight bold
         text-decoration none
+        line-height $line-height
 
-    .description
+    .details
         color $color-light
         font-size small
-        margin-top 6px
+        line-height $line-height
 
         strong
             font-weight bold
@@ -357,13 +444,13 @@ a
 
 /* Container for post listing (e.g. board view, topic view) */
 .item-post
-    $post-spacing = 15px
+    $post-spacing = $vertical-spacing-small
 
     background-color $color-secondary
     border-top 1px solid #fff
     max-width 100%
     overflow-x auto
-    padding $post-spacing 0
+    padding ($post-spacing + 5px) 0 $post-spacing
 
     .item-post-meta
         color $color-light
@@ -399,7 +486,18 @@ a
         margin-top $post-spacing
 
         p.thumbnails
-            margin-top ($post-spacing/2)px
+            margin-top ($post-spacing / 2)px
+
+    @media (max-width: 639px)
+        position relative
+        padding-bottom ($post-spacing * 2.5)
+
+        .item-post-date
+            bottom $post-spacing
+            font-style italic
+            font-weight normal
+            left $horizontal-gutter
+            position absolute
 
 
 /* Container for post body (e.g. board view, topic view) */
@@ -413,6 +511,14 @@ a
 
     p.thumbnails
         margin-top -3px
+
+    p.shortened
+        font-size small
+        font-style italic
+        color $color-light
+
+        a
+            font-weight bold
 
     a
         color #0088cc
@@ -433,16 +539,20 @@ a
             img
                 opacity 0.8
 
+    @media (max-width: 639px)
+        p.shortened
+            margin-bottom -10px
+
 
 /* Posts footer a.k.a. "topic" footer (e.g. board view, topic view) */
 .footer-posts
     background-color darken($color-secondary, 5%)
     border-bottom 1px solid darken($color-secondary, 10%)
-    padding ($vertical-spacing*0.8) 0
+    padding $vertical-spacing-small 0
 
     .button
         background-color #fff
-        border-color #fff
+        border-color rgba($color-lighter, .4)
         color $color-gray
 
         &:hover
@@ -452,7 +562,7 @@ a
 
     .button-reply
         background-color $color-reply
-        border-color $color-reply
+        border-color darken($color-reply, 10%)
         color #fff
         font-weight bold
 
@@ -471,6 +581,12 @@ a
             background-color #fff
             border-color $color-primary
             color $color-primary
+
+    @media (max-width: 639px)
+        .button
+            display block
+            + .button
+                margin-top 3px
 
 
 /* Container for reply section. */
