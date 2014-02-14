@@ -8,8 +8,8 @@ from pyramid.view import append_slash_notfound_view
 from pyramid_beaker import session_factory_from_settings
 from sqlalchemy import engine_from_config
 from .cache import cache_region
-from .formatters import *
 from .models import DBSession, Base, redis_conn, identity
+from .serializers import add_serializer_adapters
 from .utils import akismet, json_renderer
 
 
@@ -110,6 +110,7 @@ def main(global_config, **settings):  # pragma: no cover
     config.set_request_property(route_name)
     config.add_request_method(tagged_static_path)
 
+    add_serializer_adapters(json_renderer)
     config.add_renderer('json', json_renderer)
     configure_views(config)
 

@@ -7,6 +7,7 @@ from fanboi2.utils import RateLimiter, serialize_request
 from fanboi2.views.api import boards_get, board_get, board_topics_get,\
     topic_get, topic_posts_get
 
+
 def get_view(**kwargs):
     kwargs['request_method'] = 'GET'
     return _view_config(**kwargs)

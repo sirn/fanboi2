@@ -1,10 +1,10 @@
 import datetime
 import hashlib
-from itertools import chain
 import requests
 from pyramid.renderers import JSON
 from sqlalchemy.orm import Query
-from sqlalchemy.sql.schema import Column
+from zope.interface.registry import Components
+from zope.interface import Interface, providedBy
 from .models import redis_conn, Base
 from .version import __VERSION__
 
@@ -92,23 +92,10 @@ def _datetime_adapter(obj, request):
     return obj.isoformat()
 
 
-def _model_adapter(obj, request):
-    """Serialize :type:`fanboi2.models.Base` objects into a dict."""
-    results = {}
-    serializeable = getattr(obj, '__serializeable__', ['id'])
-    for name in serializeable:
-        retval = getattr(obj, name)
-        if callable(retval):
-            retval = retval()
-        results[name] = retval
-    return results
-
-
 def _sqlalchemy_query_adapter(obj, request):
     """Serialize SQLAlchemy query into a list."""
     return [item for item in obj]
 
 
 json_renderer.add_adapter(datetime.datetime, _datetime_adapter)
-json_renderer.add_adapter(Base, _model_adapter)
 json_renderer.add_adapter(Query, _sqlalchemy_query_adapter)
