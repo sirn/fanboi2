@@ -61,6 +61,9 @@ body
                 width $header-logo-width
 
     @media (max-width: 639px)
+        background-color $color-primary
+        border-top 0
+        padding-bottom $header-padding + 1px  /* Visually center */
         text-align: center
 
         .brand
@@ -180,6 +183,7 @@ a
 
     @media (max-width: 639px)
         text-align center
+        padding-top $header-padding * 2
 
         .button
             padding 7px 8px
@@ -211,6 +215,11 @@ a
     font-size small
     line-height $line-height
     padding-top 3px
+
+    @media (max-width: 639px)
+        background-color $color-primary
+        margin-top ($header-padding * -1)
+        padding-top 0
 
 
 /* Container for board listing (e.g. root view) */
