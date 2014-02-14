@@ -14,9 +14,14 @@ from .utils import akismet, json_renderer
 
 
 def remote_addr(request):
-    """Similar to built-in ``request.remote_addr`` but will fallback to
-    ``HTTP_X_FORWARDED_FOR`` if defined and ``REMOTE_ADDR`` is private or
-    loopback address.
+    """Similar to Pyramid's :attr:`request.remote_addr` but will fallback
+    to ``HTTP_X_FORWARDED_FOR`` when ``REMOTE_ADDR`` is either a private
+    address or a loopback address.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: str
     """
     ipaddr = IP(request.environ.get('REMOTE_ADDR', '255.255.255.255'))
     if ipaddr.iptype() == "PRIVATE":
@@ -25,12 +30,25 @@ def remote_addr(request):
 
 
 def route_name(request):
-    """Returns :attr:`name` of current :attr:`request.matched_route`."""
+    """Returns :attr:`name` of current :attr:`request.matched_route`.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: str
+    """
     return request.matched_route.name
 
 
 @lru_cache(maxsize=10)
 def _get_asset_hash(path):
+    """Returns an MD5 hash of the given assets path.
+
+    :param path: An asset specification to the asset file.
+
+    :type param: str
+    :rtype: str
+    """
     if ':' in path:
         package, path = path.split(':')
         resolver = AssetResolver(package)
@@ -45,16 +63,31 @@ def _get_asset_hash(path):
 
 
 def tagged_static_path(request, path, **kwargs):
-    """Similar to built-in :meth:`request.static_path` but append first 8
+    """Similar to Pyramid's :meth:`request.static_path` but append first 8
     characters of file hash as query string ``h`` to it forcing proxy server
     and browsers to expire cache immediately after the file is modified.
+
+    :param request: A :class:`pyramid.request.Request` object.
+    :param path: An asset specification to the asset file.
+    :param kwargs: Arguments to pass to :meth:`request.static_path`.
+
+    :type request: pyramid.request.Request
+    :type path: str
+    :type kwargs: dict
+    :rtype: str
     """
     kwargs['_query'] = {'h': _get_asset_hash(path)[:8]}
     return request.static_path(path, **kwargs)
 
 
 def configure_components(cfg):  # pragma: no cover
-    """Configure the application components e.g. database connection."""
+    """Configure the application components e.g. database connection.
+
+    :param cfg: A configuration :type:`dict`.
+
+    :type cfg: dict
+    :rtype: None
+    """
     # BUG: configure_components should be called after pyramid.Configurator
     # in order to prevent an importlib bug to cause pkg_resources to fail.
     # Tasks are imported here because of the same reason (Celery uses
@@ -74,7 +107,13 @@ def configure_components(cfg):  # pragma: no cover
 
 
 def configure_views(config):  # pragma: no cover
-    """Add views and routes to Pyramid configuration."""
+    """Add views and routes to Pyramid configuration.
+
+    :param config: A configuration :class:`pyramid.config.Configurator`.
+
+    :type config: pyramid.config.Configurator
+    :rtype: None
+    """
     config.add_static_view('static', 'static', cache_max_age=3600)
 
     # views.pages
@@ -100,7 +139,15 @@ def configure_views(config):  # pragma: no cover
 
 
 def main(global_config, **settings):  # pragma: no cover
-    """This function returns a Pyramid WSGI application."""
+    """This function returns a Pyramid WSGI application.
+
+    :param global_config: A :type:`dict` containing global config.
+    :param settings: A :type:`dict` containing values from INI.
+
+    :type global_config: dict
+    :type settings: dict
+    :rtype: pyramid.router.Router
+    """
     session_factory = session_factory_from_settings(settings)
     config = Configurator(settings=settings)
     configure_components(settings)

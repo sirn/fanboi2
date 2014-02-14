@@ -46,9 +46,14 @@ class PostMarkup(Markup):
 
 
 def extract_thumbnail(text):
-    """Extract thumbnailable URLs from text and create a list of 2-tuples
+    """Extract an image URLs from text and create a list of 2-tuples
     containing ``(thumbnail_url, link_url)`` for use in clickable thumbnail
     links creation.
+
+    :param text: A :type:`str` to extract URL from.
+
+    :type text: str
+    :rtype: list
     """
     thumbnails = OrderedDict()
     for re, thumb, url in RE_THUMBNAILS:
@@ -76,6 +81,11 @@ def url_fix(string):
     'http://de.wikipedia.org/wiki/Elf%20%28Begriffskl%C3%A4rung%29'
 
     Ported from ``werkzeug.urls.url_fix``.
+
+    :param string: A :type:`str` containing URL to fix.
+
+    :type string: str
+    :rtype: str
     """
     scheme, netloc, path, qs, anchor = urlparse.urlsplit(string)
     path = urlparse.quote(path, '/%')
@@ -88,6 +98,15 @@ def format_text(text, shorten=None):
     consecutive newlines and adds `<br>` to any line with line break. If
     `shorten` is given, then the post will be shortened to the first
     paragraph that exceed the given value.
+
+    :param text: A :type:`str` containing post text.
+    :param shorten: An :type:`int` that specifies approximate length of text
+                    to be displayed. The full post will be shown if
+                    :type:`None` is given.
+
+    :type text: str
+    :type shorten: int or None
+    :rtype: PostMarkup
     """
     output = []
     thumbs = []
@@ -133,7 +152,17 @@ def format_text(text, shorten=None):
 
 
 def format_markdown(context, request, text):
-    """Format text using Markdown parser."""
+    """Format text using Markdown parser.
+
+    :param context: A :class:`mako.runtime.Context` object.
+    :param request: A :class:`pyramid.request.Request` object.
+    :param text: A :type:`str` containing unformatted Markdown text.
+
+    :type context: mako.runtime.Context or None
+    :type request: pyramid.request.Request
+    :type text: str
+    :rtype: Markup
+    """
     if text is not None:
         return Markup(misaka.html(str(text)))
 
@@ -152,6 +181,18 @@ def format_post(context, request, post, shorten=None):
     the same topic, i.e. a `>>52` anchor syntax will create a link to
     post numbered 52 in the same topic, as well as display "click to see
     more" link for posts that has been shortened.
+
+    :param context: A :class:`mako.runtime.Context` object.
+    :param request: A :class:`pyramid.request.Request` object.
+    :param post: A :class:`fanboi2.models.Post` object.
+    :param shorten: An :type:`int` or :type:`None` that gets passed to
+                    :func:`format_text`.
+
+    :type context: mako.runtime.Context or None
+    :type request: pyramid.request.Request
+    :type post: fanboi2.models.Post
+    :type shorten: int or None
+    :rtype: Markup
     """
     text = format_text(post.body, shorten)
 
@@ -182,11 +223,33 @@ def format_post(context, request, post, shorten=None):
 
 
 def format_datetime(context, request, dt):
-    """Format datetime into a human-readable format."""
-    timezone = pytz.timezone(request.registry.settings['app.timezone'])
+    """Format datetime into a human-readable format.
+
+    :param context: A :class:`mako.runtime.Context` object.
+    :param request: A :class:`pyramid.request.Request` object.
+    :param dt: A :class:`datetime.datetime` object.
+
+    :type context: mako.runtime.Context or None
+    :type request: pyramid.request.Request
+    :type dt: datetime.datetime
+    :rtype: str
+    """
+    settings = request.registry.settings
+    assert isinstance(settings, dict)
+    timezone = pytz.timezone(settings['app.timezone'])
     return dt.astimezone(timezone).strftime('%b %d, %Y at %H:%M:%S')
 
 
 def format_isotime(context, request, dt):
-    """Format datetime into a machine-readable format."""
+    """Format datetime into a machine-readable format.
+
+    :param context: A :class:`mako.runtime.Context` object.
+    :param request: A :class:`pyramid.request.Request` object.
+    :param dt: A :class:`datetime.datetime` object.
+
+    :type context: mako.runtime.Context or None
+    :type request: pyramid.request.Request
+    :type dt: datetime.datetime
+    :rtype: str
+    """
     return isodate.datetime_isoformat(dt.astimezone(pytz.utc))

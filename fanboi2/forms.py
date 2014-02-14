@@ -35,7 +35,7 @@ class Length(_Length):
 
 
 class SecureForm(Form):
-    """Generate CRSF token based based on randomly generated string token."""
+    """Generate CSRF token based based on randomly generated string token."""
     csrf_token = CSRFTokenField()
 
     def __init__(self, formdata=None, obj=None, prefix='', request=None):

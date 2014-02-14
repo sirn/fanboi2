@@ -20,14 +20,26 @@ def post_view(**kwargs):
 
 @get_view(route_name='root', renderer='root.mako')
 def root(request):
-    """Display a list of all boards."""
+    """Display a list of all boards.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: dict
+    """
     boards = boards_get(request)
     return locals()
 
 
 @get_view(route_name='board', renderer='boards/show.mako')
 def board_show(request):
-    """Display a single board with its related topics."""
+    """Display a single board with its related topics.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: dict
+    """
     board = board_get(request)
     topics = board_topics_get(request).limit(10)
     return locals()
@@ -35,7 +47,13 @@ def board_show(request):
 
 @get_view(route_name='board_all', renderer='boards/all.mako')
 def board_all(request):
-    """Display a single board with a list of all its topic."""
+    """Display a single board with a list of all its topic.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: dict
+    """
     board = board_get(request)
     topics = board_topics_get(request).all()
     return locals()
@@ -43,7 +61,13 @@ def board_all(request):
 
 @get_view(route_name='board_new', renderer='boards/new.mako')
 def board_new_get(request):
-    """Display a form for creating new topic in a board."""
+    """Display a form for creating new topic in a board.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: dict
+    """
     board = board_get(request)
     form = TopicForm(request=request)
     return locals()
@@ -51,7 +75,13 @@ def board_new_get(request):
 
 @post_view(route_name='board_new', renderer='boards/new.mako')
 def board_new_post(request):
-    """Handle form posting for creating new topic in a board."""
+    """Handle form posting for creating new topic in a board.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: dict
+    """
     board = board_get(request)
     form = TopicForm(request.params, request=request)
 
@@ -78,7 +108,13 @@ def board_new_post(request):
 @get_view(route_name='topic', renderer='topics/show.mako')
 @get_view(route_name='topic_scoped', renderer='topics/show.mako')
 def topic_show_get(request):
-    """Display a single topic with its related posts."""
+    """Display a single topic with its related posts.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: dict
+    """
     board = board_get(request)
     topic = topic_get(request)
     if not topic.board_id == board.id:
@@ -90,7 +126,13 @@ def topic_show_get(request):
 
 @post_view(route_name='topic', renderer='topics/show.mako')
 def topic_show_post(request):
-    """Handle form posting for replying to a topic."""
+    """Handle form posting for replying to a topic.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: dict
+    """
     board = board_get(request)
     topic = topic_get(request)
     if not topic.board_id == board.id:

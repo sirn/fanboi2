@@ -10,7 +10,13 @@ from .version import __VERSION__
 
 
 def serialize_request(request):
-    """Serialize :class:`pyramid.util.Request` into a :type:`dict`."""
+    """Serialize :class:`pyramid.request.Request` into a :type:`dict`.
+
+    :param request: A :class:`pyramid.request.Request` object to serialize.
+
+    :type request: pyramid.response.Request or dict
+    :rtype: dict
+    """
 
     if isinstance(request, dict):
         return request
@@ -31,9 +37,25 @@ class Akismet(object):
         self.key = None
 
     def configure_key(self, key):
+        """Configure this :class:`Akismet` instance with the provided key.
+
+        :param key: A :type:`str` Akismet API key.
+
+        :type key: str
+        :rtype: None
+        """
         self.key = key
 
     def _api_post(self, name, data=None):
+        """Make a request to Akismet API and return the response.
+
+        :param name: A :type:`str` of API method name to request.
+        :param data: A :type:`dict` payload.
+
+        :type name: str
+        :type data: dict
+        :rtype: requests.models.Response
+        """
         return requests.post(
             'https://%s.rest.akismet.com/1.1/%s' % (self.key, name),
             headers={'User-Agent': "Fanboi2/%s | Akismet/0.1" % __VERSION__},
@@ -42,6 +64,13 @@ class Akismet(object):
     def spam(self, request, message):
         """Returns :type:`True` if `message` is spam. Always returns
         :type:`False` if Akismet key is not set.
+
+        :param request: A :class:`pyramid.request.Request` object.
+        :param message: A :type:`str` to identify.
+
+        :type request: pyramid.request.Request or dict
+        :type message: str
+        :rtype: bool
         """
         if self.key:
             request = serialize_request(request)
@@ -71,16 +100,26 @@ class RateLimiter(object):
         )
 
     def limit(self, seconds=10):
-        """Mark user as rate limited for `seconds`."""
+        """Mark user as rate limited for `seconds`.
+
+        :param seconds: A number of seconds :type:`int` to rate limited for.
+
+        :type seconds: int
+        :rtype: None
+        """
         redis_conn.set(self.key, 1)
         redis_conn.expire(self.key, seconds)
 
     def limited(self):
-        """Returns true if content should be limited from posting."""
+        """Returns true if content should be limited from posting.
+        :rtype: bool
+        """
         return redis_conn.exists(self.key)
 
     def timeleft(self):
-        """Returns seconds left until user is no longer throttled."""
+        """Returns seconds left until user is no longer throttled.
+        :rtype: int
+        """
         return redis_conn.ttl(self.key)
 
 
@@ -88,12 +127,26 @@ json_renderer = JSON()
 
 
 def _datetime_adapter(obj, request):
-    """Serialize :type:`datetime.datetime` object into a string."""
+    """Serialize :type:`datetime.datetime` object into a string.
+
+    :param obj: A :class:`datetime.datetime` object.
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type obj: datetime.datetime
+    :type request: pyramid.request.Request
+    """
     return obj.isoformat()
 
 
 def _sqlalchemy_query_adapter(obj, request):
-    """Serialize SQLAlchemy query into a list."""
+    """Serialize SQLAlchemy query into a list.
+
+    :param obj: An iterable SQLAlchemy's :class:`sqlalchemy.orm.Query` object.
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type obj: sqlalchemy.orm.Query
+    :type request: pyramid.request.Request
+    """
     return [item for item in obj]
 
 

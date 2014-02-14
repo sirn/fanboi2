@@ -8,7 +8,13 @@ celery = Celery()
 
 
 def configure_celery(settings):  # pragma: no cover
-    """Returns a Celery configuration object."""
+    """Returns a Celery configuration object.
+
+    :param settings: A settings :type:`dict`.
+
+    :type settings: dict
+    :rtype: dict
+    """
     return {
         'BROKER_URL': settings['celery.broker'],
         'CELERY_RESULT_BACKEND': settings['celery.broker'],
@@ -30,7 +36,20 @@ class AddTopicException(TaskException):
 
 @celery.task(throws=(AddTopicException,))
 def add_topic(request, board_id, title, body):
-    """Insert a topic to the database."""
+    """Insert a topic to the database.
+
+    :param request: A serialized request :type:`dict` returned from
+                    :meth:`fanboi2.utils.serialize_request`.
+    :param board_id: An :type:`int` referencing board ID.
+    :param title: A :type:`str` topic title.
+    :param body: A :type:`str` topic body.
+
+    :type request: dict
+    :type board_id: int
+    :type title: str
+    :type body: str
+    :rtype: tuple
+    """
     if akismet.spam(request, body):
         raise AddTopicException('spam')
 
@@ -49,7 +68,22 @@ class AddPostException(TaskException):
 
 @celery.task(bind=True, throws=(AddPostException,), max_retries=4)  # 5 total.
 def add_post(self, request, topic_id, body, bumped):
-    """Insert a post to a topic."""
+    """Insert a post to a topic.
+
+    :param self: A :class:`celery.Task` object.
+    :param request: A serialized request :type:`dict` returned from
+                    :meth:`fanboi2.utils.serialize_request`.
+    :param topic_id: An :type:`int` referencing topic ID.
+    :param body: A :type:`str` post body.
+    :param bumped: A :type:`bool` specifying bump status.
+
+    :type self: celery.Task
+    :type request: dict
+    :type topic_id: int
+    :type body: str
+    :type bumped: bool
+    :rtype: tuple
+    """
     if akismet.spam(request, body):
         raise AddPostException('spam')
 
