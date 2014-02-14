@@ -24,5 +24,11 @@
             Fanboi2 is an open-source project. <a href="http://github.com/pxfs/fanboi2">Fork me</a>.
         </div>
     </footer>
+
+    <script type="text/javascript" src="${request.tagged_static_path('fanboi2:static/javascripts/vendor.js')}"></script>
+    <script type="text/javascript" src="${request.tagged_static_path('fanboi2:static/javascripts/app.js')}"></script>
+    <script type="text/javascript">
+        require('main');
+    </script>
 </body>
 </html>

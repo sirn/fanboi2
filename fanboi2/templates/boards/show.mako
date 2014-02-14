@@ -4,7 +4,7 @@
 <%include file="_header.mako" />
 <%def name="title()">${board.title}</%def>
 % for topic in topics:
-    <div id="topic-${topic.id}">
+    <div id="topic-${topic.id}" class="container-topic">
         <header class="header-posts">
             <div class="container">
                 <a class="title" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='recent')}">${topic.title}</a>
