@@ -8,7 +8,8 @@ changes = open(os.path.join(here, 'CHANGES.rst')).read()
 requires = [
 
     # Pyramid
-    'pyramid >=1.4.5, <1.5',
+    'pyramid >=1.5, <1.6',
+    'pyramid_mako',
     'pyramid_tm',
     'pyramid_debugtoolbar',
     'pyramid_beaker',

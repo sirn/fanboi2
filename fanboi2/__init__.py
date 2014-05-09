@@ -150,6 +150,7 @@ def main(global_config, **settings):  # pragma: no cover
     """
     session_factory = session_factory_from_settings(settings)
     config = Configurator(settings=settings)
+    config.include('pyramid_mako')
     configure_components(settings)
 
     config.set_session_factory(session_factory)
