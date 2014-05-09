@@ -18,15 +18,15 @@
       service: name=memcached state=restarted
 
   vars:
-    - python32: ${virtualenv}/bin/python3
-    - pip32: ${virtualenv}/bin/pip-3.2
+    - python32: "{{virtualenv}}/bin/python3"
+    - pip32: "{{virtualenv}}/bin/pip-3.2"
 
   tasks:
     - name: ensure package index is latest
       apt: update_cache=yes upgrade=safe cache_valid_time=604800
 
     - name: install prerequisites packages
-      apt: pkg=${item} state=latest
+      apt: "pkg={{item}} state=latest"
       with_items:
         - python-software-properties
         - git-core
@@ -69,7 +69,7 @@
         update_cache: yes
 
     - name: install postgresql and its related packages
-      apt: pkg=${item} state=latest
+      apt: "pkg={{item}} state=latest"
       with_items:
         - postgresql-9.2
         - libpq-dev
@@ -130,7 +130,7 @@
     # ---------------------------------------------------------------------
 
     - name: install python3 and related packages
-      apt: pkg=${item} state=latest
+      apt: "pkg={{item}} state=latest"
       with_items:
         - python3.2
         - python3.2-dev
@@ -142,8 +142,8 @@
     # pip 1.5 and virtualenv 1.11 is incompatible with system setuptools.
     - name: install python3 requisites
       command: |
-        easy_install3 ${item}
-        creates=/usr/local/bin/${item}-3.2
+        easy_install3 {{item}}
+        creates=/usr/local/bin/{{item}}-3.2
       with_items:
         - pip==1.4.1
         - virtualenv==1.10.1
@@ -165,77 +165,77 @@
     # ---------------------------------------------------------------------
 
     - name: ensure that user to run the app exists
-      user: name=${user} state=present
+      user: "name={{user}} state=present"
 
-    # In case we use www-data as ${user}, /var/www isn't properly chown'ed.
+    # In case we use www-data as {{user}}, /var/www isn't properly chown'ed.
     - name: fix /var/www permission
-      file: path=/var/www owner=${user} group=root state=directory
+      file: "path=/var/www owner={{user}} group=root state=directory"
 
     - name: create a working directory
-      file: path=${base} owner=${user} state=directory
+      file: "path={{base}} owner={{user}} state=directory"
 
     - name: link vagrant path to server directory for development
-      sudo_user: ${user}
-      file: src=/vagrant dest=${root} state=link
+      sudo_user: "{{user}}"
+      file: "src=/vagrant dest={{root}} state=link"
       when: development|int == 1
 
     - name: clone application to root directory
-      sudo_user: ${user}
+      sudo_user: "{{user}}"
       register: fanboi2_cloned
       when: development|int == 0
       git:
         repo: https://github.com/pxfs/fanboi2.git
-        dest: ${root}
+        dest: "{{root}}"
 
     # Application setup.
     # ---------------------------------------------------------------------
 
     - name: setup virtualenv for application directory
-      sudo_user: ${user}
+      sudo_user: "{{user}}"
       command: |
-        virtualenv -p python3 ${virtualenv}
-        creates=${virtualenv}
+        virtualenv -p python3 {{virtualenv}}
+        creates={{virtualenv}}
 
     - name: install application in development mode
-      sudo_user: ${user}
+      sudo_user: "{{user}}"
       command: |
-        env LANG=en_US.UTF-8 ${pip32} install -e . --use-mirrors
-        chdir=${root}
+        env LANG=en_US.UTF-8 {{pip32}} install -e . --use-mirrors
+        chdir={{root}}
       when: development|int == 1 or fanboi2_cloned.changed
 
     - name: create configuration file for application
-      sudo_user: ${user}
-      template: src=files/srv/settings.ini.j2 dest=${base}/settings.ini
+      sudo_user: "{{user}}"
+      template: "src=files/srv/settings.ini.j2 dest={{base}}/settings.ini"
 
     - name: create configuration file for alembic
-      sudo_user: ${user}
-      template: src=files/srv/alembic.ini.j2 dest=${base}/alembic.ini
+      sudo_user: "{{user}}"
+      template: "src=files/srv/alembic.ini.j2 dest={{base}}/alembic.ini"
 
     - name: create uwsgi file for application
-      sudo_user: ${user}
-      template: src=files/srv/fanboi2.wsgi.j2 dest=${base}/fanboi2.wsgi
+      sudo_user: "{{user}}"
+      template: "src=files/srv/fanboi2.wsgi.j2 dest={{base}}/fanboi2.wsgi"
 
     - name: create database user for application
       sudo_user: postgres
       postgresql_user:
-        user: ${db_user}
-        password: ${db_pass}
+        user: "{{db_user}}"
+        password: "{{db_pass}}"
 
     - name: create database for application
       sudo_user: postgres
       postgresql_db:
-        db: ${item}
-        owner: ${db_user}
+        db: "{{item}}"
+        owner: "{{db_user}}"
         encoding: 'UTF-8'
         lc_collate: 'en_US.UTF-8'
         lc_ctype: 'en_US.UTF-8'
       with_items:
-        - ${db_name}
-        - ${db_test}
+        - "{{db_name}}"
+        - "{{db_test}}"
 
     - name: sync database to latest version
-      sudo_user: ${user}
-      command: ${virtualenv}/bin/alembic upgrade head chdir=${base}
+      sudo_user: "{{user}}"
+      command: "{{virtualenv}}/bin/alembic upgrade head chdir={{base}}"
       when: development|int == 1 or fanboi2_cloned.changed
 
     - name: startup application with uwsgi
@@ -251,12 +251,12 @@
       npm: name=brunch@1.7.10 global=yes
 
     - name: install fanboi2 brunch requirements
-      sudo_user: ${user}
-      npm: path=${root}
+      sudo_user: "{{user}}"
+      npm: "path={{root}}"
 
     - name: compile fanboi2 assets
-      sudo_user: ${user}
-      command: brunch build --production chdir=${root}
+      sudo_user: "{{user}}"
+      command: "brunch build --production chdir={{root}}"
       when: development|int == 1 or fanboi2_cloned.changed
 
     # Processes.
