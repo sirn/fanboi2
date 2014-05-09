@@ -5,11 +5,13 @@ from pyramid import testing
 
 class TestFormatters(unittest.TestCase):
 
-    def _makeRegistry(self):
+    def _makeRequest(self):
+        """:rtype: pyramid.request.Request"""
         from pyramid.registry import Registry
         registry = Registry()
         registry.settings = {'app.timezone': 'Asia/Bangkok'}
-        return registry
+        testing.setUp(registry)
+        return testing.DummyRequest()
 
     def test_url_fix(self):
         from fanboi2.formatters import url_fix
@@ -165,6 +167,7 @@ class TestFormatters(unittest.TestCase):
     def test_format_markdown(self):
         from fanboi2.formatters import format_markdown
         from markupsafe import Markup
+        request = self._makeRequest()
         tests = [
             ('**Hello, world!**', '<p><strong>Hello, world!</strong></p>\n'),
             ('<b>Foobar</b>', '<p><b>Foobar</b></p>\n'),
@@ -172,30 +175,36 @@ class TestFormatters(unittest.TestCase):
             ('Split\nlines', '<p>Split\nlines</p>\n'),
         ]
         for source, target in tests:
-            self.assertEqual(format_markdown(source), Markup(target))
+            self.assertEqual(format_markdown(None, request, source),
+                             Markup(target))
 
     def test_format_markdown_empty(self):
         from fanboi2.formatters import format_markdown
-        self.assertIsNone(format_markdown(None))
+        request = self._makeRequest()
+        self.assertIsNone(format_markdown(None, request, None))
 
     def test_format_datetime(self):
         from datetime import datetime, timezone
         from fanboi2.formatters import format_datetime
-        testing.setUp(registry=self._makeRegistry())
+        request = self._makeRequest()
         d1 = datetime(2013, 1, 2, 0, 4, 1, 0, timezone.utc)
         d2 = datetime(2012, 12, 31, 16, 59, 59, 0, timezone.utc)
-        self.assertEqual(format_datetime(d1), "Jan 02, 2013 at 07:04:01")
-        self.assertEqual(format_datetime(d2), "Dec 31, 2012 at 23:59:59")
+        self.assertEqual(format_datetime(None, request, d1),
+                         "Jan 02, 2013 at 07:04:01")
+        self.assertEqual(format_datetime(None, request, d2),
+                         "Dec 31, 2012 at 23:59:59")
 
     def test_format_isotime(self):
         from datetime import datetime, timezone, timedelta
         from fanboi2.formatters import format_isotime
         ict = timezone(timedelta(hours=7))
-        testing.setUp(registry=self._makeRegistry())
+        request = self._makeRequest()
         d1 = datetime(2013, 1, 2, 7, 4, 1, 0, ict)
         d2 = datetime(2012, 12, 31, 23, 59, 59, 0, ict)
-        self.assertEqual(format_isotime(d1), "2013-01-02T00:04:01Z")
-        self.assertEqual(format_isotime(d2), "2012-12-31T16:59:59Z")
+        self.assertEqual(format_isotime(None, request, d1),
+                         "2013-01-02T00:04:01Z")
+        self.assertEqual(format_isotime(None, request, d2),
+                         "2012-12-31T16:59:59Z")
 
 
 class TestFormattersWithModel(ModelMixin, unittest.TestCase):
@@ -204,6 +213,7 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
         from fanboi2.formatters import format_post
         from markupsafe import Markup
         self.config.add_route('topic_scoped', '/{board}/{topic}/{query}')
+        request = self._makeRequest()
         board = self._makeBoard(title="Foobar", slug="foobar")
         topic = self._makeTopic(board=board, title="Hogehogehogehogehoge")
         post1 = self._makePost(topic=topic, body="Hogehoge\nHogehoge")
@@ -219,16 +229,17 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
                     "&gt;&gt;1-2</a><br>Hoge</p>"),
         ]
         for source, target in tests:
-            self.assertEqual(format_post(source), Markup(target))
+            self.assertEqual(format_post(None, request, source), Markup(target))
 
     def test_format_post_shorten(self):
         from fanboi2.formatters import format_post
         from markupsafe import Markup
         self.config.add_route('topic_scoped', '/{board}/{topic}/{query}')
+        request = self._makeRequest()
         board = self._makeBoard(title="Foobar", slug="foobar")
         topic = self._makeTopic(board=board, title="Hogehogehogehogehoge")
         post = self._makePost(topic=topic, body="Hello\nworld")
-        self.assertEqual(format_post(post, shorten=5),
+        self.assertEqual(format_post(None, request, post, shorten=5),
                          Markup("<p>Hello</p>\n<p class=\"shortened\">"
                                 "Post shortened. <a href=\"/foobar/1/1-\">"
                                 "See full post</a>.</p>"))

@@ -160,7 +160,7 @@ def format_markdown(context, request, text):
 
     :type context: mako.runtime.Context or None
     :type request: pyramid.request.Request
-    :type text: str
+    :type text: str or None
     :rtype: Markup
     """
     if text is not None:

@@ -103,12 +103,14 @@ class ModelMixin(_ModelInstanceSetup):
         transaction.abort()
 
     def _makeRequest(self):
+        """:rtype: pyramid.request.Request"""
         request = testing.DummyRequest()
         request.user_agent = 'Mock/1.0'
         request.referrer = None
         return request
 
     def _makeRegistry(self):
+        """:rtype: pyramid.registry.Registry"""
         from pyramid.registry import Registry
         registry = Registry()
         registry.settings = {
