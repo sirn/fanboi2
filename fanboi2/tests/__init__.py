@@ -165,12 +165,3 @@ class ViewMixin(object):
         request.remote_addr = "127.0.0.1"
         request.params = MultiDict(data)
         return request
-
-
-class CacheMixin(object):
-
-    def _getRegion(self, store=None):
-        from dogpile.cache import make_region
-        return make_region().configure('dogpile.cache.memory', arguments={
-            'cache_dict': store if store is not None else {},
-        })

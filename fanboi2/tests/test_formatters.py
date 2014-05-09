@@ -10,7 +10,7 @@ class TestFormatters(unittest.TestCase):
         from pyramid.registry import Registry
         registry = Registry()
         registry.settings = {'app.timezone': 'Asia/Bangkok'}
-        testing.setUp(registry)
+        testing.setUp(registry=registry)
         return testing.DummyRequest()
 
     def test_url_fix(self):

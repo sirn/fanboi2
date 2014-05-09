@@ -6,7 +6,7 @@ class TestSecureForm(unittest.TestCase):
 
     def _makeRequest(self):
         request = testing.DummyRequest()
-        request.registry.settings = {'app.secret': 'TESTME'}
+        request.registry.settings = {'app.secret': 'TEST'}
         return request
 
     def _makeForm(self, data):
