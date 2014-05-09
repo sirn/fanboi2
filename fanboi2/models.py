@@ -6,12 +6,15 @@ import random
 import re
 import redis
 import string
-from sqlalchemy import Column, Integer, String, DateTime, Unicode, Text,\
-    Boolean, Enum, ForeignKey, TypeDecorator, UniqueConstraint, func, select,\
-    desc, event
+from sqlalchemy import event
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import scoped_session, sessionmaker, relationship,\
+from sqlalchemy.orm import scoped_session, sessionmaker, relationship, \
     backref, column_property, synonym
+from sqlalchemy.sql import func, select, desc
+from sqlalchemy.sql.schema import Column, ForeignKey, UniqueConstraint
+from sqlalchemy.sql.sqltypes import Integer, String, DateTime, Text, Boolean, \
+    Enum, Unicode
+from sqlalchemy.sql.type_api import TypeDecorator
 from zope.sqlalchemy import ZopeTransactionExtension
 
 
@@ -225,8 +228,8 @@ class Topic(Base):
             for handler, matcher in self.QUERY:
                 match = matcher.match(query)
                 if match:
-                    func = getattr(self, handler)
-                    return func(*match.groups())
+                    fn = getattr(self, handler)
+                    return fn(*match.groups())
         return []
 
     def single_post(self, number=None):

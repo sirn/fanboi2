@@ -6,7 +6,7 @@ from pyramid.exceptions import NotFound
 from pyramid.path import AssetResolver
 from pyramid.view import append_slash_notfound_view
 from pyramid_beaker import session_factory_from_settings
-from sqlalchemy import engine_from_config
+from sqlalchemy.engine import engine_from_config
 from .cache import cache_region
 from .models import DBSession, Base, redis_conn, identity
 from .serializers import add_serializer_adapters

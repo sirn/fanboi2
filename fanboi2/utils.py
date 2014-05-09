@@ -3,9 +3,7 @@ import hashlib
 import requests
 from pyramid.renderers import JSON
 from sqlalchemy.orm import Query
-from zope.interface.registry import Components
-from zope.interface import Interface, providedBy
-from .models import redis_conn, Base
+from .models import redis_conn
 from .version import __VERSION__
 
 
