@@ -8,9 +8,6 @@
     - name: restart redis
       service: name=redis-server state=restarted
 
-    - name: restart uwsgi
-      service: name=uwsgi state=restarted
-
     - name: restart supervisor
       service: name=supervisor state=restarted
 
@@ -157,9 +154,9 @@
     - name: ensure that uwsgi configuration dir exists
       file: path=/etc/uwsgi state=directory
 
-    - name: start uwsgi with upstart
-      copy: src=files/etc/init/uwsgi.conf dest=/etc/init/uwsgi.conf
-      notify: restart uwsgi
+    # TODO: Remove me.
+    - name: remove uwsgi startup files
+      file: dest=/etc/init/uwsgi.conf state=absent
 
     # Workspace setup.
     # ---------------------------------------------------------------------
@@ -240,7 +237,6 @@
 
     - name: startup application with uwsgi
       template: src=files/etc/uwsgi/fanboi2.ini.j2 dest=/etc/uwsgi/fanboi2.ini
-      notify: restart uwsgi
 
     # Assets compilation.
     # ---------------------------------------------------------------------
@@ -272,6 +268,12 @@
       notify: restart supervisor
       when: development|int == 1
 
+    - name: enable uwsgi for fanboi2
+      template:
+        src: files/etc/supervisor/conf.d/uwsgi.conf.j2
+        dest: /etc/supervisor/conf.d/uwsgi.conf
+      notify: restart supervisor
+
     - name: enable celery for fanboi2
       template:
         src: files/etc/supervisor/conf.d/celery.conf.j2
@@ -282,11 +284,8 @@
       command: supervisorctl restart celery
       when: development|int == 1 or fanboi2_cloned.changed
 
-    # Assets compilation.
-    # ---------------------------------------------------------------------
-
-    - name: reload application with uwsgi
-      command: touch /etc/uwsgi/fanboi2.ini
+    - name: restart uwsgi on changes
+      command: supervisorctl restart uwsgi
       when: development|int == 1 or fanboi2_cloned.changed
 
     # Firewall configuration.
