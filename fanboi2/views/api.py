@@ -1,15 +1,31 @@
 import datetime
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.view import view_config as _view_config
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import or_, and_
 from ..models import DBSession, Board, Topic
 
 
 def json_view(**kwargs):
+    """Works similar to :function:`pyramid.views.view_config` but always
+    assume JSON renderer regardless of what renderer is given.
+    """
     kwargs['renderer'] = 'json'
     return _view_config(**kwargs)
 
 
+def wrap_no_result_found(func):
+    """Wrap :exception:`NoResultFound` into :exception:`HTTPNotFound`."""
+    def wrapper(request):
+        try:
+            return func(request)
+        except NoResultFound:
+            raise HTTPNotFound(request.path)
+    return wrapper
+
+
 @json_view(request_method='GET', route_name='api_boards')
+@wrap_no_result_found
 def boards_get(request):
     """Retrieve a list of all boards.
 
@@ -22,6 +38,7 @@ def boards_get(request):
 
 
 @json_view(request_method='GET', route_name='api_board')
+@wrap_no_result_found
 def board_get(request):
     """Retrieve a full info of a single board.
 
@@ -36,6 +53,7 @@ def board_get(request):
 
 
 @json_view(request_method='GET', route_name='api_board_topics')
+@wrap_no_result_found
 def board_topics_get(request):
     """Retrieve all available topics within a single board.
 
@@ -52,12 +70,14 @@ def board_topics_get(request):
 
 
 @json_view(request_method='POST', route_name='api_board_topics')
+@wrap_no_result_found
 def board_topics_post(request):
     """Create a new topic."""
     pass
 
 
 @json_view(request_method='GET', route_name='api_topic')
+@wrap_no_result_found
 def topic_get(request):
     """Retrieve a full post info for an individual topic.
 
@@ -66,11 +86,14 @@ def topic_get(request):
     :type request: pyramid.request.Request
     :rtype: sqlalchemy.orm.Query
     """
-    return DBSession.query(Topic).get(request.matchdict['topic'])
+    return DBSession.query(Topic).\
+        filter_by(id=request.matchdict['topic']).\
+        one()
 
 
 @json_view(request_method='GET', route_name='api_topic_posts')
 @json_view(request_method='GET', route_name='api_topic_posts_scoped')
+@wrap_no_result_found
 def topic_posts_get(request):
     """Retrieve all posts in a single topic or by or by search criteria.
 
@@ -86,6 +109,7 @@ def topic_posts_get(request):
 
 
 @json_view(request_method='POST', route_name='api_topic_posts')
+@wrap_no_result_found
 def topic_posts_post(request):
     """Create a new post within topic."""
     pass

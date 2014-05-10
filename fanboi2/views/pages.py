@@ -118,7 +118,7 @@ def topic_show_get(request):
     board = board_get(request)
     topic = topic_get(request)
     if not topic.board_id == board.id:
-        raise HTTPNotFound
+        raise HTTPNotFound(request.path)
     posts = topic_posts_get(request)
     form = PostForm(request=request)
     return locals()
@@ -136,7 +136,7 @@ def topic_show_post(request):
     board = board_get(request)
     topic = topic_get(request)
     if not topic.board_id == board.id:
-        raise HTTPNotFound
+        raise HTTPNotFound(request.path)
     form = PostForm(request.params, request=request)
 
     if form.validate():
