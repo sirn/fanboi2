@@ -116,22 +116,23 @@ def configure_views(config):  # pragma: no cover
     """
     config.add_static_view('static', 'static', cache_max_age=3600)
 
-    # views.pages
-    config.add_route('root', '/')
-    config.add_route('board', '/{board:\w+}/')
-    config.add_route('board_all', '/{board:\w+}/all/')
-    config.add_route('board_new', '/{board:\w+}/new/')
-    config.add_route('topic', '/{board:\w+}/{topic:\d+}/')
-    config.add_route('topic_scoped', '/{board:\w+}/{topic:\d+}/{query}/')
-
     # views.api
-    config.add_route('api_boards', '/api/boards/')
-    config.add_route('api_board', '/api/boards/{board:\w+}/')
-    config.add_route('api_board_topics', '/api/boards/{board:\w+}/topics/')
-    config.add_route('api_topic', '/api/topics/{topic:\d+}/')
-    config.add_route('api_topic_posts', '/api/topics/{topic:\d+}/posts/')
+    config.add_route('api_root',         '/api/')
+    config.add_route('api_boards',       '/api/1.0/boards/')
+    config.add_route('api_board',        '/api/1.0/boards/{board:\w+}/')
+    config.add_route('api_board_topics', '/api/1.0/boards/{board:\w+}/topics/')
+    config.add_route('api_topic',        '/api/1.0/topics/{topic:\d+}/')
+    config.add_route('api_topic_posts',  '/api/1.0/topics/{topic:\d+}/posts/')
     config.add_route('api_topic_posts_scoped',
-                     '/api/topics/{topic:\d+}/posts/{query}/')
+                     '/api/1.0/topics/{topic:\d+}/posts/{query}/')
+
+    # views.pages
+    config.add_route('root',         '/')
+    config.add_route('board',        '/{board:\w+}/')
+    config.add_route('board_all',    '/{board:\w+}/all/')
+    config.add_route('board_new',    '/{board:\w+}/new/')
+    config.add_route('topic',        '/{board:\w+}/{topic:\d+}/')
+    config.add_route('topic_scoped', '/{board:\w+}/{topic:\d+}/{query}/')
 
     # Fallback
     config.add_view(append_slash_notfound_view, context=NotFound)

@@ -15,6 +15,7 @@ $color-darker = darken($color-gray, 60%)
 $color-light = lighten($color-gray, 30%)
 $color-lighter = lighten($color-gray, 50%)
 $color-reply = #4ab91f
+$color-background = #f6f6f4
 
 /* Metrics */
 $header-logo-height = 15px
@@ -98,6 +99,15 @@ a
 /* Generic class for turning a block into inline-block. */
 .inline-text
     display inline-block
+
+
+/* Generic class for turning text into monospace text. */
+.code
+    background-color $color-secondary
+    border 1px solid #ddd
+    font-family monospace
+    font-size 0.8em
+    padding 0.1em 0.3em
 
 
 /* Generic class for button-style links. */
@@ -224,7 +234,7 @@ a
 
 /* Container for board listing (e.g. root view) */
 .item-board
-    background-color #f6f6f4
+    background-color $color-background
     border-bottom 1px solid #ddd
     line-height $line-height
     padding $vertical-spacing-small 0
@@ -278,6 +288,73 @@ a
             &:hover
                 &:after
                     opacity 0.3
+
+
+/* Disable responsive for API documentation page. */
+body#api_root
+    min-width 979px
+
+
+/* Container for API documentation view (e.g. API doc view) */
+.item-api
+    background-color $color-background
+    border-bottom 1px solid #ddd
+    color $color-dark
+    padding $vertical-spacing-small 0
+
+    .alert
+        border 1px solid $color-primary
+        color $color-primary
+        font-weight bold
+        margin-bottom 1em
+        padding $vertical-spacing $horizontal-spacing
+        text-align center
+
+
+/* Table listing each API details. */
+.table-api
+    border 1px solid #ddd
+    border-collapse collapse
+    font-size 90%
+    line-height $line-height
+    width 100%
+
+    + .table-api
+        margin-top 1em
+
+    .table-api-label
+    .table-api-field
+    .table-api-query
+        width 100px
+
+    .table-api-type
+        width 50px
+
+    strong
+        font-weight bold
+
+    em
+        color $color-light
+        font-weight bold
+
+    ul
+        list-style disc
+        margin-left 2em
+
+    p, ul
+        margin-bottom ($vertical-spacing-small / 2.0)
+
+    td, th
+        padding 10px
+        vertical-align top
+        border 1px solid #ddd
+        overflow auto
+
+    th
+        font-weight bold
+
+    td
+        background-color #fff
 
 
 /* Board header (e.g. board view, topic view) */
@@ -341,7 +418,7 @@ a
 
 /* Topic item (e.g. board view) */
 .item-topic
-    background-color #f6f6f4
+    background-color $color-background
     border-bottom 1px solid #ddd
     line-height $line-height
     padding $vertical-spacing-small 0

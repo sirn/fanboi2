@@ -1,6 +1,6 @@
 import datetime
 from pyramid.httpexceptions import HTTPNotFound
-from pyramid.view import view_config as _view_config
+from pyramid.view import view_config as view_config
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import or_, and_
 from ..models import DBSession, Board, Topic
@@ -11,7 +11,7 @@ def json_view(**kwargs):
     assume JSON renderer regardless of what renderer is given.
     """
     kwargs['renderer'] = 'json'
-    return _view_config(**kwargs)
+    return view_config(**kwargs)
 
 
 def wrap_no_result_found(func):
@@ -22,6 +22,13 @@ def wrap_no_result_found(func):
         except NoResultFound:
             raise HTTPNotFound(request.path)
     return wrapper
+
+
+
+@view_config(request_method='GET', route_name='api_root', renderer='api.mako')
+def root(request):
+    """Display an API documentation view."""
+    return {}
 
 
 @json_view(request_method='GET', route_name='api_boards')

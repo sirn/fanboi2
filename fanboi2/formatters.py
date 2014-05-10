@@ -3,6 +3,7 @@ import isodate
 import misaka
 import pytz
 import re
+import urllib
 import urllib.parse as urlparse
 from collections import OrderedDict
 from html.parser import HTMLParser
@@ -253,3 +254,15 @@ def format_isotime(context, request, dt):
     :rtype: str
     """
     return isodate.datetime_isoformat(dt.astimezone(pytz.utc))
+
+
+def unquoted_path(context, request, *args, **kwargs):
+    """Returns an unquoted path for specific arguments.
+
+    :param context: A :class:`mako.runtime.Context` object.
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type context: mako.runtime.Context or None
+    :type request: pyramid.request.Request
+    :rtype: str"""
+    return urllib.parse.unquote(request.route_path(*args, **kwargs))

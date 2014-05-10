@@ -21,7 +21,7 @@
     <footer id="footer">
         <div class="container">
             All contents are responsibilty of its posters.<br>
-            Fanboi2 is an open-source project. <a href="http://github.com/pxfs/fanboi2">Fork me</a>.
+            Fanboi2 is an <a href="http://github.com/pxfs/fanboi2">open-source</a> project. <a href="${request.route_path('api_root')}">API documentation</a>.
         </div>
     </footer>
 
