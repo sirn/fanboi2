@@ -1,4 +1,4 @@
-/* Modernizr 2.7.1 (Custom Build) | MIT & BSD
+/* Modernizr 2.8.1 (Custom Build) | MIT & BSD
  * Build: http://modernizr.com/download/#-touch-addtest-prefixed-teststyles-testprop-testallprops-hasevent-prefixes-domprefixes
  */
 ;
@@ -7,7 +7,7 @@
 
 window.Modernizr = (function( window, document, undefined ) {
 
-    var version = '2.7.1',
+    var version = '2.8.0',
 
     Modernizr = {},
 
