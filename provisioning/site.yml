@@ -183,6 +183,7 @@
       git:
         repo: https://github.com/pxfs/fanboi2.git
         dest: "{{root}}"
+        version: "feature/experiment-view2"
 
     # Application setup.
     # ---------------------------------------------------------------------
