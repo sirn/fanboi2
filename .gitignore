@@ -36,5 +36,6 @@ settings.ini
 alembic.ini
 
 # Provisioning
-provisioning/production_*
+provisioning/*_hosts
 provisioning/host_vars
+!provisioning/development_hosts
