@@ -11,7 +11,7 @@ requires = [
     'pyramid >=1.4.5, <1.5',
     'pyramid_tm',
     'pyramid_debugtoolbar',
-    'pyramid_jinja2',
+    'pyramid_jinja2 >=1.10, <2.0',
     'pyramid_beaker',
     'waitress',
 
