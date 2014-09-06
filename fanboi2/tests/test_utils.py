@@ -76,6 +76,7 @@ class TestAkismet(unittest.TestCase):
             'https://hogehoge.rest.akismet.com/1.1/comment-check',
             headers=mock.ANY,
             data=mock.ANY,
+            timeout=mock.ANY,
         )
 
     @mock.patch('requests.post')
@@ -88,7 +89,16 @@ class TestAkismet(unittest.TestCase):
             'https://hogehoge.rest.akismet.com/1.1/comment-check',
             headers=mock.ANY,
             data=mock.ANY,
+            timeout=mock.ANY,
         )
+
+    @mock.patch('requests.post')
+    def test_spam_timeout(self, api_call):
+        import requests
+        request = self._makeRequest()
+        akismet = self._makeOne()
+        api_call.side_effect = requests.Timeout('connection timed out')
+        self.assertEqual(akismet.spam(request, 'buy viagra'), False)
 
     # noinspection PyTypeChecker
     @mock.patch('requests.post')

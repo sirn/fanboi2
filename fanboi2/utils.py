@@ -32,23 +32,28 @@ class Akismet(object):
         return requests.post(
             'https://%s.rest.akismet.com/1.1/%s' % (self.key, name),
             headers={'User-Agent': "Fanboi2/%s | Akismet/0.1" % __VERSION__},
-            data=data)
+            data=data,
+            timeout=2)
 
     def spam(self, request, message):
         """Returns :type:`True` if `message` is spam. Always returns
-        :type:`False` if Akismet key is not set.
+        :type:`False` if Akismet key is not set or the request to Akismet
+        was timed out.
         """
         if self.key:
             request = serialize_request(request)
-            return self._api_post('comment-check', data={
-                'blog': request['application_url'],
-                'user_ip': request['remote_addr'],
-                'user_agent': request['user_agent'],
-                'referrer': request['referrer'],
-                'permalink': request['url'],
-                'comment_type': 'comment',
-                'comment_content': message,
-            }).content == b'true'
+            try:
+                return self._api_post('comment-check', data={
+                    'blog': request['application_url'],
+                    'user_ip': request['remote_addr'],
+                    'user_agent': request['user_agent'],
+                    'referrer': request['referrer'],
+                    'permalink': request['url'],
+                    'comment_type': 'comment',
+                    'comment_content': message,
+                }).content == b'true'
+            except requests.Timeout:
+                return False
         return False
 
 
