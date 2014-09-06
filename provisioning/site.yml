@@ -196,7 +196,7 @@
     - name: install application in development mode
       sudo_user: "{{user}}"
       command: |
-        env LANG=en_US.UTF-8 {{pip32}} install -e . --use-mirrors
+        env LANG=en_US.UTF-8 {{pip32}} install -e {{root}} --use-mirrors
         chdir={{root}}
       when: development|int == 1 or fanboi2_cloned.changed
 
