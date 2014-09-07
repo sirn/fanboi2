@@ -2,6 +2,7 @@
 =====
 
 - Changed how post processing failures are handle to no longer rely on `Celery <http://www.celeryproject.org>`_'s exceptions.
+- Added cross-board reference syntax with the syntax of ">>>/board/topic/anchor" (e.g. ">>>/demo/123/10-11").
 
 0.8.2
 -----
