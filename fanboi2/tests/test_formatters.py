@@ -215,7 +215,9 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
         post6 = self._makePost(topic=topic, body=">>>/demo/123/100-")
         post7 = self._makePost(topic=topic, body=">>>/demo/123/100-/")
         post8 = self._makePost(topic=topic, body=">>>/demo/123-/100-/")
-        post9 = self._makePost(topic=topic, body=">>>//123-/100-/")
+        post9 = self._makePost(topic=topic, body=">>>/demo/\n>>>/demo/1/")
+        post10 = self._makePost(topic=topic, body=">>>/demo//100-/")
+        post11 = self._makePost(topic=topic, body=">>>//123-/100-/")
         tests = [
             (post1, "<p>Hogehoge<br>Hogehoge</p>"),
             (post2, "<p><a data-number=\"1\" " +
@@ -228,8 +230,8 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
                     "data-number=\"\" href=\"/demo\" class=\"anchor\">" +
                     "&gt;&gt;&gt;/demo</a></p>"),
             (post5, "<p><a data-board=\"demo\" data-topic=\"123\" " +
-                    "data-number=\"\" href=\"/demo/123/\" class=\"anchor\">" +
-                    "&gt;&gt;&gt;/demo/123</a></p>"),
+                    "data-number=\"\" href=\"/demo/123/recent\" " +
+                    "class=\"anchor\">&gt;&gt;&gt;/demo/123</a></p>"),
             (post6, "<p><a data-board=\"demo\" data-topic=\"123\" " +
                     "data-number=\"100-\" href=\"/demo/123/100-\" " +
                     "class=\"anchor\">&gt;&gt;&gt;/demo/123/100-</a></p>"),
@@ -237,9 +239,18 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
                     "data-number=\"100-\" href=\"/demo/123/100-\" " +
                     "class=\"anchor\">&gt;&gt;&gt;/demo/123/100-/</a></p>"),
             (post8, "<p><a data-board=\"demo\" data-topic=\"123\" " +
-                    "data-number=\"\" href=\"/demo/123/\" " +
+                    "data-number=\"\" href=\"/demo/123/recent\" " +
                     "class=\"anchor\">&gt;&gt;&gt;/demo/123</a>-/100-/</p>"),
-            (post9, "<p>&gt;&gt;&gt;//123-/100-/</p>")
+            (post9, "<p><a data-board=\"demo\" data-topic=\"\" " +
+                    "data-number=\"\" href=\"/demo\" class=\"anchor\">" +
+                    "&gt;&gt;&gt;/demo/</a><br><a data-board=\"demo\" " +
+                    "data-topic=\"1\" data-number=\"\" " +
+                    "href=\"/demo/1/recent\" class=\"anchor\">" +
+                    "&gt;&gt;&gt;/demo/1/</a></p>"),
+            (post10, "<p><a data-board=\"demo\" data-topic=\"\" " +
+                     "data-number=\"\" href=\"/demo\" class=\"anchor\">" +
+                     "&gt;&gt;&gt;/demo/</a>/100-/</p>"),
+            (post11, "<p>&gt;&gt;&gt;//123-/100-/</p>")
         ]
         for source, target in tests:
             self.assertEqual(format_post(source), Markup(target))

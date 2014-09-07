@@ -191,14 +191,14 @@ def format_post(post, shorten=None):
 
         if board and topic:
             args = {'board': board, 'topic': topic, 'query': anchor}
-            args['query'] = anchor if anchor is not None else 'recent'
+            args['query'] = anchor if anchor else 'recent'
             path = request.route_path('topic_scoped', **args)
         else:
             path = request.route_path('board', board=board)
 
         text = []
         for part in (board, topic, anchor):
-            if part is not None and part != '':
+            if part:
                 text.append(part)
         text = html.escape(">>>/%s" % '/'.join(text))
         text += str(trail) if trail else ''
