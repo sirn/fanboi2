@@ -28,6 +28,8 @@ class Dnsbl(object) :
         self.providers = []
 
     def configure_providers(self, providers):
+        if isinstance(providers, str):
+            providers = providers.split()
         self.providers = providers
 
     def listed(self, ip_address):

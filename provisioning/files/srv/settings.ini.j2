@@ -27,6 +27,7 @@ sqlalchemy.url = postgresql://{{ db_user }}:{{ db_pass }}@{{ ansible_default_ipv
 redis.url = redis://{{ ansible_default_ipv4.address }}:6379/0
 celery.broker = redis://{{ ansible_default_ipv4.address }}:6379/1
 akismet.key = {{ akismet_key }}
+dnsbl.providers = {{ dnsbl_providers }}
 
 dogpile.backend = dogpile.cache.memcached
 dogpile.arguments.url = {{ ansible_default_ipv4.address }}:11211

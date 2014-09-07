@@ -51,6 +51,10 @@ class TestDnsBl(unittest.TestCase):
         dnsbl = self._makeOne(providers=[])
         self.assertEqual(dnsbl.providers, [])
 
+    def test_init_string_providers(self):
+        dnsbl = self._makeOne(providers='xbl.spamhaus.org tor.ahbl.org')
+        self.assertEqual(dnsbl.providers, ['xbl.spamhaus.org', 'tor.ahbl.org'])
+
     @mock.patch('socket.gethostbyname')
     def test_listed(self, lookup_call):
         lookup_call.return_value = '127.0.0.2'
@@ -61,7 +65,7 @@ class TestDnsBl(unittest.TestCase):
     @mock.patch('socket.gethostbyname')
     def test_listed_unlisted(self, lookup_call):
         import socket
-        lookup_call.side_effect = socket.gaierror("foobar")
+        lookup_call.side_effect = socket.gaierror('foobar')
         dnsbl = self._makeOne()
         self.assertEqual(dnsbl.listed('10.0.100.1'), False)
         lookup_call.assert_called_with('1.100.0.10.xbl.spamhaus.org.')

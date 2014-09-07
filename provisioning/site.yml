@@ -138,9 +138,9 @@
 
     # pip 1.5 and virtualenv 1.11 is incompatible with system setuptools.
     - name: install python3 requisites
-      command: |
-        easy_install3 {{item}}
-        creates=/usr/local/bin/{{item}}-3.2
+      command: "easy_install3 {{item}}"
+      args:
+        creates: "/usr/local/bin/{{item}}-3.2"
       with_items:
         - pip==1.4.1
         - virtualenv==1.10.1
@@ -189,9 +189,9 @@
 
     - name: setup virtualenv for application directory
       sudo_user: "{{user}}"
-      command: |
-        virtualenv -p python3 {{virtualenv}}
-        creates={{virtualenv}}
+      command: "virtualenv -p python3 {{virtualenv}}"
+      args:
+        creates: "{{virtualenv}}"
 
     - name: install application in development mode
       sudo_user: "{{user}}"
