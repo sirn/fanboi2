@@ -138,10 +138,8 @@ class TestBaseTaskView(ViewMixin, ModelMixin, unittest.TestCase):
 
     @mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_get_dispatch_failure(self, async):
-        from celery.states import FAILURE
-        from fanboi2.tasks import TaskException
-        exception = TaskException('foobar')
-        async.return_value = DummyAsyncResult(FAILURE, None, exception)
+        from celery.states import SUCCESS
+        async.return_value = DummyAsyncResult(SUCCESS, ('failure', 'foobar'))
         request = self._GET({'task': '1234'})
         view = self._makeOne()(request)
         with mock.patch.object(view, 'GET_failure') as get_call:
@@ -291,10 +289,8 @@ class TestBoardNewView(ViewMixin, ModelMixin, unittest.TestCase):
 
     @mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_get_failure(self, async):
-        from celery.states import FAILURE
-        from fanboi2.tasks import TaskException
-        exception = TaskException('foobar')
-        async.return_value = DummyAsyncResult(FAILURE, None, exception)
+        from celery.states import SUCCESS
+        async.return_value = DummyAsyncResult(SUCCESS, ('failure', 'foobar'))
         self.config.testing_add_renderer('boards/error.jinja2')
         request = self._GET({'task': '1234'})
         response = self._getTargetClass()(request)()
@@ -436,10 +432,8 @@ class TestTopicView(ViewMixin, ModelMixin, unittest.TestCase):
 
     @mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_get_failure(self, async):
-        from celery.states import FAILURE
-        from fanboi2.tasks import TaskException
-        exception = TaskException('foobar')
-        async.return_value = DummyAsyncResult(FAILURE, None, exception)
+        from celery.states import SUCCESS
+        async.return_value = DummyAsyncResult(SUCCESS, ('failure', 'foobar'))
         self.config.testing_add_renderer('topics/error.jinja2')
         request = self._GET({'task': '1234'})
         response = self._getTargetClass()(request)()

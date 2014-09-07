@@ -1,5 +1,15 @@
-0.8.1
+0.8.3
 =====
+
+- Changed how post processing failures are handle to no longer rely on `Celery <http://www.celeryproject.org>`_'s exceptions.
+
+0.8.2
+-----
+
+- Fixed Akismet never timed out causing post to hang forever.
+
+0.8.1
+-----
 
 - Fixed broken debug toolbar in development mode due to Python 3.2.3 bug.
 - Removed pyramid_zcml and webtest from application requirements.

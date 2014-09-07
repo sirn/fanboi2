@@ -8,7 +8,7 @@ from sqlalchemy.orm import undefer
 from sqlalchemy.orm.exc import NoResultFound
 from .forms import TopicForm, PostForm
 from .models import Topic, Post, Board, DBSession
-from .tasks import celery, add_topic, add_post, TaskException
+from .tasks import celery, add_topic, add_post
 from .utils import RateLimiter, serialize_request
 
 
@@ -74,14 +74,12 @@ class BaseTaskView(object):
             task = celery.AsyncResult(self.request.params['task'])
 
             if task.state == states.SUCCESS:
-                obj = self._serialize(task.get())
-                return self.GET_success(obj)
-
-            elif task.state == states.FAILURE:
-                try:
-                    task.get()
-                except TaskException as exc:
-                    return self.GET_failure(exc.args[0])
+                result = task.get()
+                if result[0] == 'failure':
+                    return self.GET_failure(result[1])
+                else:
+                    obj = self._serialize(result)
+                    return self.GET_success(obj)
 
             else:
                 return self.GET_task()
