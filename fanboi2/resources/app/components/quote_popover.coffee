@@ -43,10 +43,14 @@ $(document).on 'mouseover', '[data-number]', (e) ->
     $anchor = $(e.target)
     $parent = $anchor.parents('div.posts')
 
+    attrs = $anchor.data('number')
+    topic = $anchor.data('topic')
+    crossRef = topic? and topic != ''
+    return if not attrs? or attrs == ''
+
     # Always build a post range regardless of the quote is ranged posted or
     # not to simplify retrieving process. These number will be used in range
     # loop for cloning DOM.
-    attrs = $anchor.data('number')
     range = rangeQueryRe.exec(attrs)
     unless range
         beginNumber = parseInt(attrs)
@@ -60,16 +64,21 @@ $(document).on 'mouseover', '[data-number]', (e) ->
     # exists in the page (e.g. in recent view) but since we will need to
     # wait for XHR anyway, it is much simpler to retrieve the whole range
     # ("the rest") from AJAX. Thus the immediate break.
+    #
+    # If the link is cross-topic references, then this is skipped.
     nodeList = []
-    for n in [beginNumber..endNumber]
-        node = $parent[0].getElementsByClassName("post-#{n}")[0]
-        if node
-            $cloned = $ node.cloneNode(true)
-            removeQuotePopover $cloned
-            nodeList.push $cloned[0]
-        else
-            xhrNumber = n
-            break
+    if crossRef
+      xhrNumber = beginNumber
+    else
+      for n in [beginNumber..endNumber]
+          node = $parent[0].getElementsByClassName("post-#{n}")[0]
+          if node
+              $cloned = $ node.cloneNode(true)
+              removeQuotePopover $cloned
+              nodeList.push $cloned[0]
+          else
+              xhrNumber = n
+              break
 
     # Since XHR callback is asynchronous, `renderQuotePopover` need to be
     # called in a callback otherwise nodeList would be incomplete. In
