@@ -203,12 +203,21 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
     def test_format_post(self):
         from fanboi2.formatters import format_post
         from jinja2 import Markup
+        self.config.add_route('board', '/{board}')
         self.config.add_route('topic_scoped', '/{board}/{topic}/{query}')
         board = self._makeBoard(title="Foobar", slug="foobar")
         topic = self._makeTopic(board=board, title="Hogehogehogehogehoge")
         post1 = self._makePost(topic=topic, body="Hogehoge\nHogehoge")
         post2 = self._makePost(topic=topic, body=">>1")
         post3 = self._makePost(topic=topic, body=">>1-2\nHoge")
+        post4 = self._makePost(topic=topic, body=">>>/demo")
+        post5 = self._makePost(topic=topic, body=">>>/demo/123")
+        post6 = self._makePost(topic=topic, body=">>>/demo/123/100-")
+        post7 = self._makePost(topic=topic, body=">>>/demo/123/100-/")
+        post8 = self._makePost(topic=topic, body=">>>/demo/123-/100-/")
+        post9 = self._makePost(topic=topic, body=">>>/demo/\n>>>/demo/1/")
+        post10 = self._makePost(topic=topic, body=">>>/demo//100-/")
+        post11 = self._makePost(topic=topic, body=">>>//123-/100-/")
         tests = [
             (post1, "<p>Hogehoge<br>Hogehoge</p>"),
             (post2, "<p><a data-number=\"1\" " +
@@ -217,6 +226,31 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
             (post3, "<p><a data-number=\"1-2\" " +
                     "href=\"/foobar/1/1-2\" class=\"anchor\">" +
                     "&gt;&gt;1-2</a><br>Hoge</p>"),
+            (post4, "<p><a data-board=\"demo\" data-topic=\"\" " +
+                    "data-number=\"\" href=\"/demo\" class=\"anchor\">" +
+                    "&gt;&gt;&gt;/demo</a></p>"),
+            (post5, "<p><a data-board=\"demo\" data-topic=\"123\" " +
+                    "data-number=\"\" href=\"/demo/123/recent\" " +
+                    "class=\"anchor\">&gt;&gt;&gt;/demo/123</a></p>"),
+            (post6, "<p><a data-board=\"demo\" data-topic=\"123\" " +
+                    "data-number=\"100-\" href=\"/demo/123/100-\" " +
+                    "class=\"anchor\">&gt;&gt;&gt;/demo/123/100-</a></p>"),
+            (post7, "<p><a data-board=\"demo\" data-topic=\"123\" " +
+                    "data-number=\"100-\" href=\"/demo/123/100-\" " +
+                    "class=\"anchor\">&gt;&gt;&gt;/demo/123/100-/</a></p>"),
+            (post8, "<p><a data-board=\"demo\" data-topic=\"123\" " +
+                    "data-number=\"\" href=\"/demo/123/recent\" " +
+                    "class=\"anchor\">&gt;&gt;&gt;/demo/123</a>-/100-/</p>"),
+            (post9, "<p><a data-board=\"demo\" data-topic=\"\" " +
+                    "data-number=\"\" href=\"/demo\" class=\"anchor\">" +
+                    "&gt;&gt;&gt;/demo/</a><br><a data-board=\"demo\" " +
+                    "data-topic=\"1\" data-number=\"\" " +
+                    "href=\"/demo/1/recent\" class=\"anchor\">" +
+                    "&gt;&gt;&gt;/demo/1/</a></p>"),
+            (post10, "<p><a data-board=\"demo\" data-topic=\"\" " +
+                     "data-number=\"\" href=\"/demo\" class=\"anchor\">" +
+                     "&gt;&gt;&gt;/demo/</a>/100-/</p>"),
+            (post11, "<p>&gt;&gt;&gt;//123-/100-/</p>")
         ]
         for source, target in tests:
             self.assertEqual(format_post(source), Markup(target))

@@ -141,6 +141,20 @@ def format_markdown(text):
 
 RE_ANCHOR = re.compile(r'%s(\d+)(\-)?(\d+)?' % html.escape('>>'))
 TP_ANCHOR = '<a data-number="%s" href="%s" class="anchor">%s</a>'
+
+RE_ANCHOR_CROSS = re.compile(r"""
+  %s\/                       # Syntax start
+  (\w+)                      # Board name
+  (?:\/(\d+))?               # Topic id
+  (?:\/(\d+)(\-)?(\d+)?)     # Post id
+  ?(\/?)                     # Trailing slash
+""" % html.escape('>>>'), re.VERBOSE)
+TP_ANCHOR_CROSS = ''.join("""
+<a data-board="%s" data-topic="%s" data-number="%s" href="%s" class="anchor">
+%s
+</a>
+""".splitlines())
+
 TP_SHORTENED = ''.join("""
 <p class="shortened">
 Post shortened. <a href="%s">See full post</a>.
@@ -168,7 +182,31 @@ def format_post(post, shorten=None):
     except AttributeError:  # pragma: no cover
         pass
 
-    # Convert post anchor (>>123) to link.
+    # Convert cross anchor (>>>/demo/123/1-10) into link.
+    def _anchor_cross(match):
+        board = match.groups()[0]
+        topic = match.groups()[1] if match.groups()[1] else ''
+        anchor = ''.join([m for m in match.groups()[2:-1] if m is not None])
+        trail = match.groups()[-1]
+
+        if board and topic:
+            args = {'board': board, 'topic': topic, 'query': anchor}
+            args['query'] = anchor if anchor else 'recent'
+            path = request.route_path('topic_scoped', **args)
+        else:
+            path = request.route_path('board', board=board)
+
+        text = []
+        for part in (board, topic, anchor):
+            if part:
+                text.append(part)
+        text = html.escape(">>>/%s" % '/'.join(text))
+        text += str(trail) if trail else ''
+        return Markup(TP_ANCHOR_CROSS % (board, topic, anchor, path, text))
+
+    text = RE_ANCHOR_CROSS.sub(_anchor_cross, text)
+
+    # Convert post anchor (>>123) into link.
     def _anchor(match):
         anchor = ''.join([m for m in match.groups() if m is not None])
         return Markup(TP_ANCHOR % (
