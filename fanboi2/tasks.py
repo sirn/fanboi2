@@ -2,7 +2,7 @@ import transaction
 from celery import Celery
 from sqlalchemy.exc import IntegrityError
 from .models import DBSession, Post, Topic, Board
-from .utils import akismet
+from .utils import akismet, dnsbl
 
 celery = Celery()
 
@@ -33,6 +33,9 @@ def add_topic(request, board_id, title, body):
     """Insert a topic to the database."""
     if akismet.spam(request, body):
         raise AddTopicException('spam')
+
+    if dnsbl.listed(request['remote_addr']):
+        raise AddTopicException('dnsbl')
 
     with transaction.manager:
         board = DBSession.query(Board).get(board_id)

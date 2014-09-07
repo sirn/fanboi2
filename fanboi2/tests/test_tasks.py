@@ -42,6 +42,22 @@ class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
             assert not result.get()
         self.assertEqual(e.exception.args, ('spam',))
 
+    @mock.patch('fanboi2.utils.Dnsbl.listed')
+    def test_add_topic_dnsbl(self, dnsbl):
+        from fanboi2.tasks import AddTopicException
+        from fanboi2.models import Topic
+        dnsbl.return_value = True
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        self.assertFalse(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 0)
+        with self.assertRaises(AddTopicException) as e:
+            assert not result.get()
+        self.assertEqual(e.exception.args, ('dnsbl',))
+
 
 class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
 
