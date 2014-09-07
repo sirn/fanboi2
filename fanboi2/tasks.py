@@ -2,7 +2,7 @@ import transaction
 from celery import Celery
 from sqlalchemy.exc import IntegrityError
 from .models import DBSession, Post, Topic, Board
-from .utils import akismet
+from .utils import akismet, dnsbl
 
 celery = Celery()
 
@@ -20,19 +20,14 @@ def configure_celery(settings):  # pragma: no cover
     }
 
 
-class TaskException(Exception):
-    pass
-
-
-class AddTopicException(TaskException):
-    pass
-
-
-@celery.task(throws=(AddTopicException,))
+@celery.task()
 def add_topic(request, board_id, title, body):
     """Insert a topic to the database."""
     if akismet.spam(request, body):
-        raise AddTopicException('spam')
+        return 'failure', 'spam'
+
+    if dnsbl.listed(request['remote_addr']):
+        return 'failure', 'dnsbl'
 
     with transaction.manager:
         board = DBSession.query(Board).get(board_id)
@@ -43,23 +38,19 @@ def add_topic(request, board_id, title, body):
         return 'topic', post.topic_id
 
 
-class AddPostException(TaskException):
-    pass
-
-
-@celery.task(bind=True, throws=(AddPostException,), max_retries=4)  # 5 total.
+@celery.task(bind=True, max_retries=4)  # 5 total.
 def add_post(self, request, topic_id, body, bumped):
     """Insert a post to a topic."""
     if akismet.spam(request, body):
-        raise AddPostException('spam')
+        return 'failure', 'spam'
 
     with transaction.manager:
         topic = DBSession.query(Topic).get(topic_id)
+        if topic.status != "open":
+            return 'failure', topic.status
+
         post = Post(topic=topic, body=body, bumped=bumped)
         post.ip_address = request['remote_addr']
-
-        if topic.status != "open":
-            raise AddPostException(topic.status)
 
         try:
             DBSession.add(post)

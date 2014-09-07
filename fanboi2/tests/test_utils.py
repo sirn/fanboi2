@@ -34,6 +34,55 @@ class TestRequestSerializer(unittest.TestCase):
         self.assertEqual(self._getTargetFunction()(request), request)
 
 
+class TestDnsBl(unittest.TestCase):
+
+    def _makeOne(self, providers=None):
+        from fanboi2.utils import dnsbl
+        if providers is None:
+            providers = ['xbl.spamhaus.org']
+        dnsbl.configure_providers(providers)
+        return dnsbl
+
+    def test_init(self):
+        dnsbl = self._makeOne()
+        self.assertEqual(dnsbl.providers, ['xbl.spamhaus.org'])
+
+    def test_init_no_providers(self):
+        dnsbl = self._makeOne(providers=[])
+        self.assertEqual(dnsbl.providers, [])
+
+    def test_init_string_providers(self):
+        dnsbl = self._makeOne(providers='xbl.spamhaus.org tor.ahbl.org')
+        self.assertEqual(dnsbl.providers, ['xbl.spamhaus.org', 'tor.ahbl.org'])
+
+    @mock.patch('socket.gethostbyname')
+    def test_listed(self, lookup_call):
+        lookup_call.return_value = '127.0.0.2'
+        dnsbl = self._makeOne()
+        self.assertEqual(dnsbl.listed('10.0.100.254'), True)
+        lookup_call.assert_called_with('254.100.0.10.xbl.spamhaus.org.')
+
+    @mock.patch('socket.gethostbyname')
+    def test_listed_unlisted(self, lookup_call):
+        import socket
+        lookup_call.side_effect = socket.gaierror('foobar')
+        dnsbl = self._makeOne()
+        self.assertEqual(dnsbl.listed('10.0.100.1'), False)
+        lookup_call.assert_called_with('1.100.0.10.xbl.spamhaus.org.')
+
+    @mock.patch('socket.gethostbyname')
+    def test_listed_invalid(self, lookup_call):
+        lookup_call.return_value = '192.168.1.1'
+        dnsbl = self._makeOne()
+        self.assertEqual(dnsbl.listed('10.0.100.2'), False)
+
+    @mock.patch('socket.gethostbyname')
+    def test_listed_malformed(self, lookup_call):
+        lookup_call.return_value = 'foobarbaz'
+        dnsbl = self._makeOne()
+        self.assertEqual(dnsbl.listed('10.0.100.2'), False)
+
+
 class TestAkismet(unittest.TestCase):
 
     def _makeOne(self, key='hogehoge'):

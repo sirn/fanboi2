@@ -1,5 +1,7 @@
 import hashlib
 import requests
+import socket
+from IPy import IP
 from .models import redis_conn
 from .version import __VERSION__
 
@@ -17,6 +19,37 @@ def serialize_request(request):
         'referrer': request.referrer,
         'url': request.url,
     }
+
+
+class Dnsbl(object) :
+    """Utility class for checking IP address against DNSBL providers."""
+
+    def __init__(self):
+        self.providers = []
+
+    def configure_providers(self, providers):
+        if isinstance(providers, str):
+            providers = providers.split()
+        self.providers = providers
+
+    def listed(self, ip_address):
+        """Returns :type:`True` if the given IP address is listed in the
+        DNSBL providers. Returns :type:`False` if not listed or no DNSBL
+        providers present.
+        """
+        if self.providers:
+            for provider in self.providers:
+                try:
+                    check = '.'.join(reversed(ip_address.split('.')))
+                    res = socket.gethostbyname("%s.%s." % (check, provider))
+                    if IP(res).make_net('255.0.0.0') == IP('127.0.0.0/8'):
+                        return True
+                except (socket.gaierror, ValueError):
+                    continue
+        return False
+
+
+dnsbl = Dnsbl()
 
 
 class Akismet(object):
