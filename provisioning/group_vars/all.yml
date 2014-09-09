@@ -6,7 +6,7 @@ ssl: 0
 timezone: "Asia/Bangkok"
 csrf_secret: "changeme"
 session_secret: "changeme"
-dnsbl_providers: "xbl.spamhaus.org"
+dnsbl_providers: "zen.spamhaus.org"
 akismet_key: ""
 
 # Application paths
