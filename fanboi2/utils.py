@@ -1,6 +1,8 @@
 import datetime
 import hashlib
 import requests
+import socket
+from IPy import IP
 from pyramid.renderers import JSON
 from sqlalchemy.orm import Query
 from .models import redis_conn
@@ -26,6 +28,37 @@ def serialize_request(request):
         'referrer': request.referrer,
         'url': request.url,
     }
+
+
+class Dnsbl(object) :
+    """Utility class for checking IP address against DNSBL providers."""
+
+    def __init__(self):
+        self.providers = []
+
+    def configure_providers(self, providers):
+        if isinstance(providers, str):
+            providers = providers.split()
+        self.providers = providers
+
+    def listed(self, ip_address):
+        """Returns :type:`True` if the given IP address is listed in the
+        DNSBL providers. Returns :type:`False` if not listed or no DNSBL
+        providers present.
+        """
+        if self.providers:
+            for provider in self.providers:
+                try:
+                    check = '.'.join(reversed(ip_address.split('.')))
+                    res = socket.gethostbyname("%s.%s." % (check, provider))
+                    if IP(res).make_net('255.0.0.0') == IP('127.0.0.0/8'):
+                        return True
+                except (socket.gaierror, ValueError):
+                    continue
+        return False
+
+
+dnsbl = Dnsbl()
 
 
 class Akismet(object):
@@ -57,11 +90,13 @@ class Akismet(object):
         return requests.post(
             'https://%s.rest.akismet.com/1.1/%s' % (self.key, name),
             headers={'User-Agent': "Fanboi2/%s | Akismet/0.1" % __VERSION__},
-            data=data)
+            data=data,
+            timeout=2)
 
     def spam(self, request, message):
         """Returns :type:`True` if `message` is spam. Always returns
-        :type:`False` if Akismet key is not set.
+        :type:`False` if Akismet key is not set or the request to Akismet
+        was timed out.
 
         :param request: A :class:`pyramid.request.Request` object.
         :param message: A :type:`str` to identify.
@@ -72,15 +107,18 @@ class Akismet(object):
         """
         if self.key:
             request = serialize_request(request)
-            return self._api_post('comment-check', data={
-                'blog': request['application_url'],
-                'user_ip': request['remote_addr'],
-                'user_agent': request['user_agent'],
-                'referrer': request['referrer'],
-                'permalink': request['url'],
-                'comment_type': 'comment',
-                'comment_content': message,
-            }).content == b'true'
+            try:
+                return self._api_post('comment-check', data={
+                    'blog': request['application_url'],
+                    'user_ip': request['remote_addr'],
+                    'user_agent': request['user_agent'],
+                    'referrer': request['referrer'],
+                    'permalink': request['url'],
+                    'comment_type': 'comment',
+                    'comment_content': message,
+                }).content == b'true'
+            except requests.Timeout:
+                return False
         return False
 
 

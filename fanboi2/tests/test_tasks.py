@@ -25,10 +25,10 @@ class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Topic).get(result.get()[1]), topic)
         self.assertEqual(topic.title, 'Foobar')
         self.assertEqual(topic.posts[0].body, 'Hello, world!')
+        self.assertEqual(result.result, ('topic', topic.id))
 
     @mock.patch('fanboi2.utils.Akismet.spam')
     def test_add_topic_spam(self, akismet):
-        from fanboi2.tasks import AddTopicException
         from fanboi2.models import Topic
         akismet.return_value = True
         request = {'remote_addr': '127.0.0.1'}
@@ -36,11 +36,22 @@ class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
             board = self._makeBoard(title='Foobar', slug='foobar')
             board_id = board.id  # board is not bound outside transaction!
         result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        self.assertFalse(result.successful())
+        self.assertTrue(result.successful())
         self.assertEqual(DBSession.query(Topic).count(), 0)
-        with self.assertRaises(AddTopicException) as e:
-            assert not result.get()
-        self.assertEqual(e.exception.args, ('spam',))
+        self.assertEqual(result.result, ('failure', 'spam'))
+
+    @mock.patch('fanboi2.utils.Dnsbl.listed')
+    def test_add_topic_dnsbl(self, dnsbl):
+        from fanboi2.models import Topic
+        dnsbl.return_value = True
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 0)
+        self.assertEqual(result.result, ('failure', 'dnsbl'))
 
 
 class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
@@ -64,11 +75,11 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Post).get(result.get()[1]), post)
         self.assertEqual(post.body, 'Hi!')
         self.assertEqual(post.bumped, True)
+        self.assertEqual(result.result, ('post', post.id))
 
     @mock.patch('fanboi2.utils.Akismet.spam')
     def test_add_post_spam(self, akismet):
         import transaction
-        from fanboi2.tasks import AddPostException
         from fanboi2.models import Post
         akismet.return_value = True
         request = {'remote_addr': '127.0.0.1'}
@@ -77,15 +88,12 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
             topic = self._makeTopic(board=board, title='Hello, world!')
             topic_id = topic.id  # topic is not bound outside transaction!
         result = self._makeOne(request, topic_id, 'Hi!', True)
-        self.assertFalse(result.successful())
+        self.assertTrue(result.successful())
         self.assertEqual(DBSession.query(Post).count(), 0)
-        with self.assertRaises(AddPostException) as e:
-            assert not result.get()
-        self.assertEqual(e.exception.args, ('spam',))
+        self.assertEqual(result.result, ('failure', 'spam'))
 
     def test_add_post_locked(self):
         import transaction
-        from fanboi2.tasks import AddPostException
         from fanboi2.models import Post
         request = {'remote_addr': '127.0.0.1'}
         with transaction.manager:
@@ -96,11 +104,9 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
                 status='locked')
             topic_id = topic.id  # topic is not bound outside transaction!
         result = self._makeOne(request, topic_id, 'Hi!', True)
-        self.assertFalse(result.successful())
+        self.assertTrue(result.successful())
         self.assertEqual(DBSession.query(Post).count(), 0)
-        with self.assertRaises(AddPostException) as e:
-            assert not result.get()
-        self.assertEqual(e.exception.args, ('locked',))
+        self.assertEqual(result.result, ('failure', 'locked'))
 
     def test_add_post_retry(self):
         import transaction

@@ -10,7 +10,7 @@ from sqlalchemy.engine import engine_from_config
 from .cache import cache_region
 from .models import DBSession, Base, redis_conn, identity
 from .serializers import add_serializer_adapters
-from .utils import akismet, json_renderer
+from .utils import akismet, json_renderer, dnsbl
 
 
 def remote_addr(request):
@@ -102,6 +102,7 @@ def configure_components(cfg):  # pragma: no cover
     celery.config_from_object(configure_celery(cfg))
     identity.configure_tz(cfg['app.timezone'])
     akismet.configure_key(cfg['akismet.key'])
+    dnsbl.configure_providers(cfg['dnsbl.providers'])
     cache_region.configure_from_config(cfg, 'dogpile.')
     cache_region.invalidate()
 
