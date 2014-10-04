@@ -32,8 +32,6 @@ Vagrant.configure("2") do |config|
     sudo sh -c 'echo "host all all 127.0.0.1/32 trust" >> /etc/postgresql/9.2/main/pg_hba.conf'
     sudo sh -c 'echo "host all all ::1/128 trust" >> /etc/postgresql/9.2/main/pg_hba.conf'
     sudo service postgresql restart
-    sudo npm install -g brunch
-    sudo chown -R vagrant:vagrant $HOME/.npm
   EOF
 
   config.vm.provision :shell, privileged: false, inline: <<-EOF
@@ -44,7 +42,10 @@ Vagrant.configure("2") do |config|
     curl -sL https://bootstrap.pypa.io/ez_setup.py | $HOME/pypy3/bin/pypy
     curl -sL https://bootstrap.pypa.io/get-pip.py | $HOME/pypy3/bin/pypy
     echo '. "$HOME/.bashrc"' > $HOME/.profile
-    echo 'export PATH="$HOME/pypy3/bin:$HOME/bin:$PATH"' >> $HOME/.profile
+    echo 'export PATH="$HOME/nodejs/bin:$HOME/pypy3/bin:$HOME/bin:$PATH"' >> $HOME/.profile
+
+    npm config set prefix $HOME/nodejs
+    npm install -g brunch
 
     psql template1 -c "CREATE DATABASE fanboi2_development;"
     psql template1 -c "CREATE DATABASE fanboi2_test;"
@@ -57,6 +58,6 @@ Vagrant.configure("2") do |config|
     $HOME/pypy3/bin/pypy setup.py develop
     $HOME/pypy3/bin/alembic upgrade head
     npm install
-    brunch build
+    $HOME/nodejs/bin/brunch build
   EOF
 end
