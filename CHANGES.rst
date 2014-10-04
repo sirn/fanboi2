@@ -1,5 +1,18 @@
+0.10.0
+======
+
+- Changed from `CPython 3.2 <https://www.python.org/download/releases/3.2.5/>`_ to `PyPy 2.3 <http://pypy.org/download.html>`_.
+- Changed from `Jinja2 <http://jinja.pocoo.org/>`_ templates with `Mako <http://www.makotemplates.org/>`_ template.
+- Changed the board design and rewrite all templates.
+- Refactored Pyramid views into modules.
+- Refactored views to use function dispatching instead of class-based one.
+- Removed all usage of ``pyramid.threadlocal``.
+- Removed production provisioning from main repo.
+- Added type annotation in methods as a hint for IDE.
+- Added basic API views.
+
 0.8.3
-=====
+-----
 
 - Changed how post processing failures are handle to no longer rely on `Celery <http://www.celeryproject.org>`_'s exceptions.
 - Added cross-board reference syntax with the syntax of ">>>/board/topic/anchor" (e.g. ">>>/demo/123/10-11").
