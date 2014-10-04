@@ -3,7 +3,7 @@ python: "3.2"
 script: nosetests
 install: "pip install . --use-mirrors"
 before_script: 'psql -c "create database fanboi2;" -U postgres'
-env: POSTGRESQL_TEST_DATABASE=postgresql://postgres@localhost:5432/fanboi2
+env: POSTGRESQL_TEST_DATABASE=postgresql+pg8000://postgres@localhost:5432/fanboi2
 
 notifications:
     email: false

@@ -1,0 +1,71 @@
+[app:main]
+use = egg:fanboi2
+
+pyramid.reload_templates = true
+pyramid.debug_authorization = false
+pyramid.debug_notfound = false
+pyramid.debug_routematch = false
+pyramid.default_locale_name = en
+pyramid.includes =
+    pyramid_debugtoolbar
+    pyramid_tm
+
+debugtoolbar.hosts = 0.0.0.0/0
+
+mako.directories = fanboi2:templates
+sqlalchemy.url = postgresql+pg8000://vagrant:@127.0.0.1:5432/fanboi2_development
+redis.url = redis://127.0.0.1:6379/0
+celery.broker = redis://127.0.0.1:6379/1
+akismet.key =
+dnsbl.providers =
+
+dogpile.backend = dogpile.cache.memcached
+dogpile.arguments.url = 127.0.0.1:11211
+dogpile.arguments.distributed_lock = true
+
+session.type = file
+session.data_dir = %(here)s/tmp/session/data
+session.lock_dir = %(here)s/tmp/session/lock
+session.key = _session
+session.httponly = true
+session.secret = DEVELOPMENT_USE_ONLY_CHANGE_ME_IN_PROD
+
+app.timezone = Asia/Bangkok
+app.secret = DEVELOPMENT_USE_ONLY_CHANGE_ME_IN_PROD
+
+[server:main]
+use = egg:waitress#main
+host = 0.0.0.0
+port = 6543
+
+[loggers]
+keys = root, fanboi2, sqlalchemy
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console
+
+[logger_fanboi2]
+level = DEBUG
+handlers =
+qualname = fanboi2
+
+[logger_sqlalchemy]
+level = INFO
+handlers =
+qualname = sqlalchemy.engine
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s

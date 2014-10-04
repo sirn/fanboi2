@@ -1,12 +1,12 @@
 import html
 import isodate
-import misaka
 import pytz
 import re
 import urllib
 import urllib.parse as urlparse
 from collections import OrderedDict
 from html.parser import HTMLParser
+from markdown import Markdown
 from markupsafe import Markup
 
 
@@ -165,7 +165,8 @@ def format_markdown(context, request, text):
     :rtype: Markup
     """
     if text is not None:
-        return Markup(misaka.html(str(text)))
+        markdown = Markdown()
+        return Markup(markdown.convert(str(text)))
 
 
 RE_ANCHOR = re.compile(r'%s(\d+)(\-)?(\d+)?' % html.escape('>>'))

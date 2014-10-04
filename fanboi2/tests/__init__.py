@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 
 DATABASE_URI = os.environ.get(
     'POSTGRESQL_TEST_DATABASE',
-    'postgresql://fanboi2:fanboi2@localhost:5432/fanboi2_test')
+    'postgresql+pg8000://fanboi2:@localhost:5432/fanboi2_test')
 
 
 class DummyRedis(object):

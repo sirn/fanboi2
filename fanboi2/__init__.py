@@ -95,7 +95,7 @@ def configure_components(cfg):  # pragma: no cover
     #
     # This bug only applies to Python 3.2.3 only.
     from .tasks import celery, configure_celery
-    engine = engine_from_config(cfg, 'sqlalchemy.', client_encoding='utf8')
+    engine = engine_from_config(cfg, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
     redis_conn.from_url(cfg['redis.url'])

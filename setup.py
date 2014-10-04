@@ -20,10 +20,9 @@ requires = [
     'alembic >=0.6.2, <0.7',
     'celery >=3.1, <3.2',
     'transaction',
-    'psycopg2',
+    'pg8000',
     'zope.sqlalchemy',
     'redis',
-    'hiredis',
     'dogpile.cache',
     'python3-memcached',
     'pytz',
@@ -32,7 +31,7 @@ requires = [
 
     # Frontend
     'isodate',
-    'misaka',
+    'Markdown',  # Deprecate me.
 
     # Tests
     'nose',

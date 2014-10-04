@@ -27,6 +27,7 @@ Vagrant.configure("2") do |config|
     sudo apt-get -y install nodejs
 
     sudo -u postgres createuser -ds vagrant || true
+    sudo -u postgres createuser -ds fanboi2 || true
     sudo sh -c 'echo "local all all trust" > /etc/postgresql/9.2/main/pg_hba.conf'
     sudo sh -c 'echo "host all all 127.0.0.1/32 trust" >> /etc/postgresql/9.2/main/pg_hba.conf'
     sudo sh -c 'echo "host all all ::1/128 trust" >> /etc/postgresql/9.2/main/pg_hba.conf'
@@ -35,12 +36,23 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision :shell, privileged: false, inline: <<-EOF
     cd /tmp
-    curl -sLO https://bitbucket.org/pypy/pypy/downloads/pypy3-2.3.1-linux64.tar.bz2
-    tar -xvjf pypy3-2.3.1-linux64.tar.bz2
-    mv pypy3-2.3.1-linux64/ $HOME/pypy
-    curl https://bootstrap.pypa.io/ez_setup.py -o - | $HOME/pypy/bin/pypy
-    curl https://bootstrap.pypa.io/get-pip.py -o - | $HOME/pypy/bin/pypy
+    rm -rf $HOME/pypy3
+    curl -sL https://bitbucket.org/pypy/pypy/downloads/pypy3-2.3.1-linux64.tar.bz2 | tar -xjf -
+    mv pypy3*/ $HOME/pypy3
+    curl -sL https://bootstrap.pypa.io/ez_setup.py | $HOME/pypy3/bin/pypy
+    curl -sL https://bootstrap.pypa.io/get-pip.py | $HOME/pypy3/bin/pypy
     echo '. "$HOME/.bashrc"' > $HOME/.profile
-    echo 'export PATH="$HOME/pypy/bin:$HOME/bin:$PATH"' >> $HOME/.profile
+    echo 'export PATH="$HOME/pypy3/bin:$HOME/bin:$PATH"' >> $HOME/.profile
+
+    psql template1 -c "CREATE DATABASE fanboi2_development;"
+    psql template1 -c "CREATE DATABASE fanboi2_test;"
+
+    cd /vagrant
+    rm -rf fanboi2.egg-info
+    rm -rf node_modules
+    cp development.ini.sample development.ini
+    cp alembic.ini.sample alembic.ini
+    $HOME/pypy3/bin/pypy setup.py develop
+    $HOME/pypy3/bin/alembic upgrade head
   EOF
 end
