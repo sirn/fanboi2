@@ -1,6 +1,0 @@
-[program:celery]
-command = {{ virtualenv }}/bin/fb2_celery {{ base }}/settings.ini worker
-autorestart = true
-startretries = 65535
-user = {{ user }}
-directory = {{ root }}

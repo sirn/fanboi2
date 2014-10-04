@@ -1,9 +1,24 @@
 language: python
-python: "3.2"
 script: nosetests
-install: "pip install . --use-mirrors"
-before_script: 'psql -c "create database fanboi2;" -U postgres'
-env: POSTGRESQL_TEST_DATABASE=postgresql://postgres@localhost:5432/fanboi2
+
+python:
+  - "3.2"
+  - "pypy3"
+
+# PyPy is trying to create a ctype_config_cache, but the directory is not
+# writeable. This is a hacky workaround to make it work.
+before_install:
+  - 'sudo mkdir -p /opt/python/pypy3-2.3.1/lib_pypy/ctypes_config_cache/__pycache__'
+  - 'sudo chmod a+w /opt/python/pypy3-2.3.1/lib_pypy/ctypes_config_cache/__pycache__'
+
+install:
+  - 'pip install -e .'
+
+before_script:
+  - 'psql -c "create database fanboi2;" -U postgres'
+
+env:
+  - POSTGRESQL_TEST_DATABASE=postgresql+pg8000://postgres@localhost:5432/fanboi2
 
 notifications:
-    email: false
+  email: false

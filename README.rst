@@ -1,7 +1,7 @@
 Fanboi2 |ci|
 ============
 
-Board engine behind `Fanboi Channel <http://fanboi.ch/>`_ written in Python.
+Board engine behind `Fanboi Channel <https://fanboi.ch/>`_ written in Python.
 
 .. |ci| image:: https://api.travis-ci.org/pxfs/fanboi2.png?branch=develop
         :target: https://travis-ci.org/pxfs/fanboi2
@@ -9,68 +9,49 @@ Board engine behind `Fanboi Channel <http://fanboi.ch/>`_ written in Python.
 Getting Started
 ---------------
 
+There are two ways of getting the app up and running for development. Using `Vagrant <http://vagrantup.com/>`_ (*The Better Way*) or installing everything manually (*The Adventurous Way*). The recommened method is to use Vagrant as it closely replicates the production environment.
+
 The Better Way
 ~~~~~~~~~~~~~~
 
-We use `Vagrant <http://www.vagrantup.com/>`_ for development environment provisioning. You must first `install Vagrant <http://docs.vagrantup.com/v2/installation/>`_ (and `VirtualBox <https://www.virtualbox.org/>`_ or any other available `providers <http://docs.vagrantup.com/v2/providers/index.html>`_) and `Ansible <http://www.ansibleworks.com/docs/gettingstarted.html#via-pip>`_ (for Windows users, please use `Cygwin <http://www.cygwin.com/>`_)::
+The easiest way to get the app running is to run `Vagrant`_. You can follow these steps to get the app running:
 
-    $ pip install ansible
-    $ vagrant up
+1. Install `Vagrant`_ of your preferred platform.
+2. Install `VirtualBox <https://www.virtualbox.org/>`_ or other `providers <http://docs.vagrantup.com/v2/providers/index.html>`_ supported by Vagrant.
+3. Run ``vagrant up`` and read `Getting Started <http://docs.vagrantup.com/v2/getting-started/index.html>`_ while waiting.
+4. Run ``vagrant ssh`` to SSH into the development machine.
 
-That's it! You can now visit http://localhost:8080/ and proceed on development. To clean up the VM, you can run either ``vagrant destroy`` to completely remove the VM or ``vagrant halt`` to shutdown the VM. See also `Teardown <http://docs.vagrantup.com/v2/getting-started/teardown.html>`_ section of Vagrant documentation. After you've confirmed the app is running, please see **Management Scripts** section below.
+Once the development box is up and running, you may now run the server::
+
+    $ vagrant ssh
+    $ cd /vagrant
+    $ pserve development.ini
+
+Now you're done! You can now proceed to the Management Scripts section below.
 
 The Adventurous Way
 ~~~~~~~~~~~~~~~~~~~
 
-If you don't want to use Vagrant, you can manually install everything. Start with dependencies:
+If you don't really want to use Vagrant, you can also install everything using your preferred methods:
 
-- `Python 3.2 <http://www.python.org/>`_
-- `PostgreSQL 9.1 <http://www.postgresql.org/>`_
-- `Redis <http://redis.io>`_
-- `node.js <http://nodejs.org>`_ with `brunch <http://brunch.io/>`_
+1. `PyPy3 2.3.1 <http://pypy.org/download.html#default-with-a-jit-compiler>`_.
+2. `PostgreSQL 9.2 <http://www.postgresql.org/>`_.
+3. `Redis 2.8 <http://redis.io/>`_.
+4. `Memcached 1.4 <http://www.memcached.org/>`_.
+5. `Node.js 0.10 <http://nodejs.org/>`_ with `Brunch <http://brunch.io/>`_.
 
-After all prerequisites are installed, you can now create the database and run setup::
+After the package above are up and running, you may now setup the application::
 
-    $ createuser -P fanboi2                # Create fanboi2 user. Please set "fanboi2" as password.
-    $ createdb -O fanboi2 fanboi2          # Create main database.
-    $ createdb -O fanboi2 fanboi2_test     # Create test database (required for testing).
-    $ python3 setup.py develop             # Setup app in develop mode.
-    $ pip install jinja2                   # Install Jinja2 for Genconfig.
-    $ python3 provisioning/genconfig.py    # Generate settings.ini and alembic.ini.
-    $ alembic upgrade head                 # Migrate database.
+    $ cp development.ini.sample development.ini
+    $ cp alembic.ini.sample alembic.ini
+    $ pypy setup.py develop
+    $ alembic upgrade head
+    $ pserve development.ini
 
-It is recommended to run tests and see if all tests passed::
-
-    $ pip install nose
-    $ nosetests
-
-If all tests passed, you can now run the application. You must first setup assets compilation and do an initial compile before running::
-
-    $ npm install
-    $ brunch build
-
-Then you have to make sure Celery is running::
-
-    $ fb2_celery development.ini worker
-
-And now you can run the application::
-
-    $ pserve development.ini --reload
-
-You may also found ``brunch watch`` useful for automatic assets compilation::
-
-    $ brunch watch
-
-You should now be able to visit http://localhost:6543/ and proceed on development. After you've confirmed the app is running, please see **Management Scripts** section below.
+And you're done! You can now proceed to the Management Scripts section below.
 
 Management Scripts
 ------------------
-
-We currently uses CLI to manage board settings. If you use Vagrant, you will need to SSH into the development box and run the following commands before begin::
-
-    $ vagrant ssh
-    $ cd /vagrant
-    $ source /srv/http/fanboi2/env/bin/activate
 
 After you've setup the environment, the first thing you want to do is to create a new board::
 
@@ -81,7 +62,18 @@ Above commands will create a board named "Lounge" and "Demo" at ``/lounge`` and 
 
     $ fb2_update_board development.ini -s lounge -f description
 
-Slug is used here to identify which board to edit. All database fields in board are editable this way. Some field, such as ``settings`` must be a **valid JSON**. Both commands also accepts ``--help`` which will display some available options.
+Slug is used here to identify which board to edit. All database fields in board are editable this way. Some field, such as ``settings`` must be a **valid JSON**. Both commands also accepts ``--help`` which will display some available options. Apart from the above two scripts, there are many other commands you might be interested in, such as:
+
+1. ``pserve development.ini`` to run the development server with `Waitress <http://waitress.readthedocs.org/en/latest/>`_.
+2. ``pshell development.ini`` to get into Python console with the app loaded.
+3. ``fb2_celery development.ini worker`` to start a `Celery <http://www.celeryproject.org/>`_ worker.
+4. ``alembic upgrade head`` to update the database to latest version with `Alembic <http://alembic.readthedocs.org/en/latest/>`_.
+5. ``brunch build`` to build assets with `Brunch <http://brunch.io/>`_ (or ``brunch watch`` to do it automatically).
+
+Deployment
+----------
+
+For provisioning, `Fanboi Channel <https://fanboi.ch/>`_ is currently using `Docker <https://www.docker.com/>`_ for production deployment. Please see the `fanboi2-docker <https://github.com/pxfs/fanboi2-docker/>`_ for more information.
 
 Contributing
 ------------
@@ -92,14 +84,12 @@ We use `git-flow <https://github.com/nvie/gitflow>`_ as primary branching model.
 2. Start a new feature with ``git flow feature start feature-name``.
 3. After you've done, open a pull request against **develop** branch of this repo.
 
-Please make sure that test coverage is 100% and everything passed. It's also a good idea to open a bug ticket for feature you want to implement before starting.
-
-We have development IRC channel at `irc.freenode.net#fanboi <irc://irc.freenode.net/#fanboi>`_. Although if you want to submit patch anonymously you can also create git patch and post it to `support thread <https://fanboi.ch/lounge/1/>`_ as well.
+Please make sure that test coverage is 100% and everything passed. It's also a good idea to open a bug ticket for feature you want to implement before starting. We have development IRC channel at `irc.freenode.net#fanboi <irc://irc.freenode.net/#fanboi>`_. Although if you want to submit patch anonymously you can also create git patch and post it to `support board <https://fanboi.ch/meta/>`_ as well.
 
 License
 -------
 
-| Copyright (c) 2013, Kridsada Thanabulpong
+| Copyright (c) 2013-2014, Kridsada Thanabulpong
 | All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:

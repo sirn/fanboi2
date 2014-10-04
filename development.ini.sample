@@ -1,7 +1,6 @@
 [app:main]
 use = egg:fanboi2
 
-{% if development %}
 pyramid.reload_templates = true
 pyramid.debug_authorization = false
 pyramid.debug_notfound = false
@@ -12,25 +11,16 @@ pyramid.includes =
     pyramid_tm
 
 debugtoolbar.hosts = 0.0.0.0/0
-{% else %}
-pyramid.reload_templates = false
-pyramid.debug_authorization = false
-pyramid.debug_notfound = false
-pyramid.debug_routematch = false
-pyramid.default_locale_name = en
-pyramid.includes =
-    pyramid_tm
-{% endif %}
 
 mako.directories = fanboi2:templates
-sqlalchemy.url = postgresql://{{ db_user }}:{{ db_pass }}@{{ ansible_default_ipv4.address }}:5432/{{ db_name }}
-redis.url = redis://{{ ansible_default_ipv4.address }}:6379/0
-celery.broker = redis://{{ ansible_default_ipv4.address }}:6379/1
-akismet.key = {{ akismet_key }}
-dnsbl.providers = {{ dnsbl_providers }}
+sqlalchemy.url = postgresql+pg8000://vagrant:@127.0.0.1:5432/fanboi2_development
+redis.url = redis://127.0.0.1:6379/0
+celery.broker = redis://127.0.0.1:6379/1
+akismet.key =
+dnsbl.providers =
 
 dogpile.backend = dogpile.cache.memcached
-dogpile.arguments.url = {{ ansible_default_ipv4.address }}:11211
+dogpile.arguments.url = 127.0.0.1:11211
 dogpile.arguments.distributed_lock = true
 
 session.type = file
@@ -38,10 +28,15 @@ session.data_dir = %(here)s/tmp/session/data
 session.lock_dir = %(here)s/tmp/session/lock
 session.key = _session
 session.httponly = true
-session.secret = {{ csrf_secret }}
+session.secret = DEVELOPMENT_USE_ONLY_CHANGE_ME_IN_PROD
 
-app.timezone = {{ timezone }}
-app.secret = {{ session_secret }}
+app.timezone = Asia/Bangkok
+app.secret = DEVELOPMENT_USE_ONLY_CHANGE_ME_IN_PROD
+
+[server:main]
+use = egg:waitress#main
+host = 0.0.0.0
+port = 6543
 
 [loggers]
 keys = root, fanboi2, sqlalchemy
@@ -52,7 +47,6 @@ keys = console
 [formatters]
 keys = generic
 
-{% if development %}
 [logger_root]
 level = INFO
 handlers = console
@@ -66,21 +60,6 @@ qualname = fanboi2
 level = INFO
 handlers =
 qualname = sqlalchemy.engine
-{% else %}
-[logger_root]
-level = WARN
-handlers = console
-
-[logger_fanboi2]
-level = WARN
-handlers =
-qualname = fanboi2
-
-[logger_sqlalchemy]
-level = WARN
-handlers =
-qualname = sqlalchemy.engine
-{% endif %}
 
 [handler_console]
 class = StreamHandler

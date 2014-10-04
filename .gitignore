@@ -32,10 +32,5 @@ logs/
 *.gz
 
 # User settings
-settings.ini
+development.ini
 alembic.ini
-
-# Provisioning
-provisioning/*_hosts
-provisioning/host_vars
-!provisioning/development_hosts
