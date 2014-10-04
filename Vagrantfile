@@ -32,6 +32,8 @@ Vagrant.configure("2") do |config|
     sudo sh -c 'echo "host all all 127.0.0.1/32 trust" >> /etc/postgresql/9.2/main/pg_hba.conf'
     sudo sh -c 'echo "host all all ::1/128 trust" >> /etc/postgresql/9.2/main/pg_hba.conf'
     sudo service postgresql restart
+    sudo npm install -g brunch
+    sudo chown -R vagrant:vagrant $HOME/.npm
   EOF
 
   config.vm.provision :shell, privileged: false, inline: <<-EOF
@@ -54,5 +56,7 @@ Vagrant.configure("2") do |config|
     cp alembic.ini.sample alembic.ini
     $HOME/pypy3/bin/pypy setup.py develop
     $HOME/pypy3/bin/alembic upgrade head
+    npm install
+    brunch build
   EOF
 end
