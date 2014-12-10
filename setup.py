@@ -62,7 +62,7 @@ setup(name='fanboi2',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
-      test_suite='fanboi2',
+      test_suite='fanboi2.tests',
       install_requires=requires,
       entry_points="""\
       [paste.app_factory]
