@@ -207,6 +207,18 @@ class TestFormatters(unittest.TestCase):
                          "2012-12-31T16:59:59Z")
 
 
+class TestFormattersWithRegistry(RegistryMixin):
+
+    def test_format_unquoted_path(self):
+        from fanboi2.formatters import unquoted_path
+        request = self._makeRequest()
+        config = self._makeConfig()
+        config.add_route('board', '/test/{board}')
+        self.assertEqual(
+            unquoted_path(None, request, 'board', board='{board.id}'),
+            '/test/{board.id}')
+
+
 class TestFormattersWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
 
     def test_format_post(self):
