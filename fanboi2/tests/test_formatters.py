@@ -1,5 +1,5 @@
 import unittest
-from fanboi2.tests import ModelMixin
+from fanboi2.tests import ModelMixin, RegistryMixin
 from pyramid import testing
 
 
@@ -207,14 +207,15 @@ class TestFormatters(unittest.TestCase):
                          "2012-12-31T16:59:59Z")
 
 
-class TestFormattersWithModel(ModelMixin, unittest.TestCase):
+class TestFormattersWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
 
     def test_format_post(self):
         from fanboi2.formatters import format_post
         from markupsafe import Markup
-        self.config.add_route('board', '/{board}')
-        self.config.add_route('topic_scoped', '/{board}/{topic}/{query}')
         request = self._makeRequest()
+        config = self._makeConfig(request)
+        config.add_route('board', '/{board}')
+        config.add_route('topic_scoped', '/{board}/{topic}/{query}')
         board = self._makeBoard(title="Foobar", slug="foobar")
         topic = self._makeTopic(board=board, title="Hogehogehogehogehoge")
         post1 = self._makePost(topic=topic, body="Hogehoge\nHogehoge")
@@ -268,8 +269,9 @@ class TestFormattersWithModel(ModelMixin, unittest.TestCase):
     def test_format_post_shorten(self):
         from fanboi2.formatters import format_post
         from markupsafe import Markup
-        self.config.add_route('topic_scoped', '/{board}/{topic}/{query}')
         request = self._makeRequest()
+        config = self._makeConfig(request)
+        config.add_route('topic_scoped', '/{board}/{topic}/{query}')
         board = self._makeBoard(title="Foobar", slug="foobar")
         topic = self._makeTopic(board=board, title="Hogehogehogehogehoge")
         post = self._makePost(topic=topic, body="Hello\nworld")

@@ -1,5 +1,6 @@
 import os
 import transaction
+import unittest
 from fanboi2.models import DBSession, Base, redis_conn
 from pyramid import testing
 from sqlalchemy import create_engine
@@ -73,69 +74,78 @@ class _ModelInstanceSetup(object):
         return post
 
 
-class ModelMixin(_ModelInstanceSetup):
+class ModelMixin(_ModelInstanceSetup, unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        super(ModelMixin, cls).tearDownClass()
         Base.metadata.bind = None
         DBSession.remove()
 
     @classmethod
     def setUpClass(cls):
+        super(ModelMixin, cls).setUpClass()
         engine = create_engine(DATABASE_URI)
         DBSession.configure(bind=engine)
         Base.metadata.bind = engine
 
     def setUp(self):
+        super(ModelMixin, self).setUp()
         redis_conn._redis = DummyRedis()
         Base.metadata.drop_all()
         Base.metadata.create_all()
         transaction.begin()
-        self.request = self._makeRequest()
-        self.registry = self._makeRegistry()
-        self.config = testing.setUp(
-            request=self.request,
-            registry=self.registry)
 
     def tearDown(self):
+        super(ModelMixin, self).tearDown()
         redis_conn._redis = None
         testing.tearDown()
         transaction.abort()
 
-    def _makeRequest(self):
+
+class RegistryMixin(unittest.TestCase):
+
+    def _makeConfig(self, request=None, registry=None):
+        return testing.setUp(
+            request=request,
+            registry=registry)
+
+    def _makeRequest(self, **kw):
         """:rtype: pyramid.request.Request"""
-        request = testing.DummyRequest()
-        request.user_agent = 'Mock/1.0'
+        request = testing.DummyRequest(**kw)
+        request.user_agent = kw.get('user_agent', 'Mock/1.0')
+        request.remote_addr = kw.get('remote_addr', '127.0.0.1')
         request.referrer = None
         return request
 
-    def _makeRegistry(self):
+    def _makeRegistry(self, **kw):
         """:rtype: pyramid.registry.Registry"""
         from pyramid.registry import Registry
         registry = Registry()
         registry.settings = {
             'app.timezone': 'Asia/Bangkok',
-            'app.secret': 'Silently test in secret',
+            'app.secret': 'demo',
         }
+        registry.settings.update(kw)
         return registry
 
 
-class TaskMixin(object):
+class TaskMixin(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         from fanboi2.tasks import celery
-        celery.config_from_object({'CELERY_ALWAYS_EAGER': True})
         super(TaskMixin, cls).setUpClass()
+        celery.config_from_object({'CELERY_ALWAYS_EAGER': True})
 
     @classmethod
     def tearDownClass(cls):
         from fanboi2.tasks import celery
-        celery.config_from_object({'CELERY_ALWAYS_EAGER': False})
         super(TaskMixin, cls).tearDownClass()
+        celery.config_from_object({'CELERY_ALWAYS_EAGER': False})
 
 
-class ViewMixin(object):
+class ViewMixin(ModelMixin, RegistryMixin, unittest.TestCase):
 
     def _make_csrf(self, request):
         import hmac
@@ -151,17 +161,13 @@ class ViewMixin(object):
 
     def _POST(self, data=None):
         from webob.multidict import MultiDict
-        request = self.request
+        request = self._makeRequest(params=MultiDict(data))
         request.method = 'POST'
-        request.remote_addr = "127.0.0.1"
-        request.params = MultiDict(data)
         return request
 
     def _GET(self, data=None):
         from webob.multidict import MultiDict
-        request = self.request
         if data is None:
             data = {}
-        request.remote_addr = "127.0.0.1"
-        request.params = MultiDict(data)
+        request = self._makeRequest(params=MultiDict(data))
         return request

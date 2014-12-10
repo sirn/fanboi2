@@ -1,7 +1,7 @@
 import mock
 import unittest
 from fanboi2.models import redis_conn
-from fanboi2.tests import DummyRedis
+from fanboi2.tests import DummyRedis, RegistryMixin
 from pyramid import testing
 
 
@@ -83,20 +83,12 @@ class TestDnsBl(unittest.TestCase):
         self.assertEqual(dnsbl.listed('10.0.100.2'), False)
 
 
-class TestAkismet(unittest.TestCase):
+class TestAkismet(RegistryMixin, unittest.TestCase):
 
     def _makeOne(self, key='hogehoge'):
         from fanboi2.utils import akismet
         akismet.configure_key(key)
         return akismet
-
-    def _makeRequest(self):
-        request = testing.DummyRequest()
-        request.remote_addr = '127.0.0.1'
-        request.user_agent = 'Mock/1.0'
-        request.referrer = 'http://www.example.com/'
-        testing.setUp(request=request)
-        return request
 
     def _makeResponse(self, content):
         class MockResponse(object):
