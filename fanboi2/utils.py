@@ -1,10 +1,7 @@
-import datetime
 import hashlib
 import requests
 import socket
 from IPy import IP
-from pyramid.renderers import JSON
-from sqlalchemy.orm import Query
 from .models import redis_conn
 from .version import __VERSION__
 
@@ -158,33 +155,3 @@ class RateLimiter(object):
         """
         return redis_conn.ttl(self.key)
 
-
-json_renderer = JSON()
-
-
-def _datetime_adapter(obj, request):
-    """Serialize :type:`datetime.datetime` object into a string.
-
-    :param obj: A :class:`datetime.datetime` object.
-    :param request: A :class:`pyramid.request.Request` object.
-
-    :type obj: datetime.datetime
-    :type request: pyramid.request.Request
-    """
-    return obj.isoformat()
-
-
-def _sqlalchemy_query_adapter(obj, request):
-    """Serialize SQLAlchemy query into a list.
-
-    :param obj: An iterable SQLAlchemy's :class:`sqlalchemy.orm.Query` object.
-    :param request: A :class:`pyramid.request.Request` object.
-
-    :type obj: sqlalchemy.orm.Query
-    :type request: pyramid.request.Request
-    """
-    return [item for item in obj]
-
-
-json_renderer.add_adapter(datetime.datetime, _datetime_adapter)
-json_renderer.add_adapter(Query, _sqlalchemy_query_adapter)

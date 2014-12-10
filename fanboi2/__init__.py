@@ -9,8 +9,8 @@ from pyramid_beaker import session_factory_from_settings
 from sqlalchemy.engine import engine_from_config
 from .cache import cache_region
 from .models import DBSession, Base, redis_conn, identity
-from .serializers import add_serializer_adapters
-from .utils import akismet, json_renderer, dnsbl
+from .serializers import json_renderer
+from .utils import akismet, dnsbl
 
 
 def remote_addr(request):
@@ -160,7 +160,6 @@ def main(global_config, **settings):  # pragma: no cover
     config.set_request_property(route_name)
     config.add_request_method(tagged_static_path)
 
-    add_serializer_adapters(json_renderer)
     config.add_renderer('json', json_renderer)
     configure_views(config)
 

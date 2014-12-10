@@ -1,5 +1,39 @@
+import datetime
+from pyramid.renderers import JSON
+from sqlalchemy.orm import Query
 from .models import Board, Topic, Post
 from .formatters import format_post
+
+
+json_renderer = JSON()
+
+
+def _datetime_adapter(obj, request):
+    """Serialize :type:`datetime.datetime` object into a string.
+
+    :param obj: A :class:`datetime.datetime` object.
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type obj: datetime.datetime
+    :type request: pyramid.request.Request
+    """
+    return obj.isoformat()
+
+json_renderer.add_adapter(datetime.datetime, _datetime_adapter)
+
+
+def _sqlalchemy_query_adapter(obj, request):
+    """Serialize SQLAlchemy query into a list.
+
+    :param obj: An iterable SQLAlchemy's :class:`sqlalchemy.orm.Query` object.
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type obj: sqlalchemy.orm.Query
+    :type request: pyramid.request.Request
+    """
+    return [item for item in obj]
+
+json_renderer.add_adapter(Query, _sqlalchemy_query_adapter)
 
 
 def board_serializer(obj, request):
@@ -20,6 +54,8 @@ def board_serializer(obj, request):
         'slug': obj.slug,
         'title': obj.title,
     }
+
+json_renderer.add_adapter(Board, board_serializer)
 
 
 def topic_serializer(obj, request):
@@ -42,6 +78,8 @@ def topic_serializer(obj, request):
         'status': obj.status,
         'title': obj.title,
     }
+
+json_renderer.add_adapter(Topic, topic_serializer)
 
 
 def post_serializer(obj, request):
@@ -66,15 +104,4 @@ def post_serializer(obj, request):
         'topic_id': obj.topic_id,
     }
 
-
-def add_serializer_adapters(renderer):
-    """Registers all serializers to the given ``renderer``.
-
-    :param renderer: A :class:`pyramid.renderers.JSON` object.
-
-    :type renderer: pyramid.renderers.JSON
-    :rtype: None
-    """
-    renderer.add_adapter(Board, board_serializer)
-    renderer.add_adapter(Topic, topic_serializer)
-    renderer.add_adapter(Post, post_serializer)
+json_renderer.add_adapter(Post, post_serializer)
