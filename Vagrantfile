@@ -3,9 +3,9 @@
 
 Vagrant.configure("2") do |config|
   config.vm.box = "phusion/ubuntu-14.04-amd64"
-  config.vm.network :forwarded_port, guest: 6543, host: 6543
+  config.vm.network :forwarded_port, :guest => 6543, :host => 6543
 
-  config.vm.provision :shell, privileged: true, inline: <<-EOF
+  config.vm.provision :shell, :privileged => true, :inline => <<-EOF
     sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 7FCC7D46ACCC4CF8
     sudo apt-get clean
     sudo rm -rf /var/lib/apt/lists/*
@@ -14,6 +14,7 @@ Vagrant.configure("2") do |config|
 
     sudo apt-get -y update
     sudo apt-get -y install curl
+    sudo apt-get -y install software-properties-common
     sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
     curl -sL https://deb.nodesource.com/setup | sudo bash -
     sudo add-apt-repository ppa:rwky/redis
@@ -34,7 +35,7 @@ Vagrant.configure("2") do |config|
     sudo service postgresql restart
   EOF
 
-  config.vm.provision :shell, privileged: false, inline: <<-EOF
+  config.vm.provision :shell, :privileged => false, :inline => <<-EOF
     cd /tmp
     rm -rf $HOME/pypy3
     curl -sL https://bitbucket.org/pypy/pypy/downloads/pypy3-2.4.0-linux64.tar.bz2 | tar -xjf -
