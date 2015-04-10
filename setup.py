@@ -31,7 +31,7 @@ requires = [
 
     # Frontend
     'isodate',
-    'Markdown',  # Deprecate me.
+    'Markdown==2.5.2',  # Deprecate me.
 
     # Tests
     'nose',

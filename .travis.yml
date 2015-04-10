@@ -8,8 +8,7 @@ python:
 # PyPy is trying to create a ctype_config_cache, but the directory is not
 # writeable. This is a hacky workaround to make it work.
 before_install:
-  - 'sudo mkdir -p /opt/python/pypy3-*/lib_pypy/ctypes_config_cache/__pycache__'
-  - 'sudo chmod a+w /opt/python/pypy3-*/lib_pypy/ctypes_config_cache/__pycache__'
+  - 'sudo bash -c "if test -n \"\$(shopt -s nullglob; echo /opt/python/pypy3-*)\"; then cd /opt/python/pypy3-*/lib_pypy/ && mkdir -p ctypes_config_cache/__pycache__ && chmod a+x ctypes_config_cache/__pycache__; fi"'
 
 install:
   - 'pip install -e .'
