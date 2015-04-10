@@ -37,10 +37,10 @@ Vagrant.configure("2") do |config|
   config.vm.provision :shell, privileged: false, inline: <<-EOF
     cd /tmp
     rm -rf $HOME/pypy3
-    curl -sL https://bitbucket.org/pypy/pypy/downloads/pypy3-2.3.1-linux64.tar.bz2 | tar -xjf -
+    curl -sL https://bitbucket.org/pypy/pypy/downloads/pypy3-2.4.0-linux64.tar.bz2 | tar -xjf -
     mv pypy3*/ $HOME/pypy3
-    curl -sL https://bootstrap.pypa.io/ez_setup.py | $HOME/pypy3/bin/pypy
-    curl -sL https://bootstrap.pypa.io/get-pip.py | $HOME/pypy3/bin/pypy
+    curl -sL https://bootstrap.pypa.io/ez_setup.py | $HOME/pypy3/bin/pypy3
+    curl -sL https://bootstrap.pypa.io/get-pip.py | $HOME/pypy3/bin/pypy3
     echo '. "$HOME/.bashrc"' > $HOME/.profile
     echo 'export PATH="$HOME/nodejs/bin:$HOME/pypy3/bin:$HOME/bin:$PATH"' >> $HOME/.profile
 
@@ -55,7 +55,7 @@ Vagrant.configure("2") do |config|
     rm -rf node_modules
     cp development.ini.sample development.ini
     cp alembic.ini.sample alembic.ini
-    $HOME/pypy3/bin/pypy setup.py develop
+    $HOME/pypy3/bin/pypy3 setup.py develop
     $HOME/pypy3/bin/alembic upgrade head
     npm install
     $HOME/nodejs/bin/brunch build
