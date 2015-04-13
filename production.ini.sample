@@ -12,22 +12,20 @@ mako.directories = fanboi2:templates
 sqlalchemy.url =
 redis.url =
 celery.broker =
-akismet.key =
-dnsbl.providers =
 
 dogpile.backend = dogpile.cache.memcached
 dogpile.arguments.url =
 dogpile.arguments.distributed_lock = true
 
-session.type = file
-session.data_dir = %(here)s/tmp/session/data
-session.lock_dir = %(here)s/tmp/session/lock
+session.type = ext:memcached
 session.key = _session
 session.httponly = true
 session.secret =
 
 app.timezone =
 app.secret =
+app.akismet_key =
+app.dnsbl_providers =
 
 [server:main]
 use = egg:waitress#main

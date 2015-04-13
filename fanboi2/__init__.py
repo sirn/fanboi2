@@ -101,8 +101,8 @@ def configure_components(cfg):  # pragma: no cover
     redis_conn.from_url(cfg['redis.url'])
     celery.config_from_object(configure_celery(cfg))
     identity.configure_tz(cfg['app.timezone'])
-    akismet.configure_key(cfg['akismet.key'])
-    dnsbl.configure_providers(cfg['dnsbl.providers'])
+    akismet.configure_key(cfg['app.akismet_key'])
+    dnsbl.configure_providers(cfg['app.dnsbl_providers'])
     cache_region.configure_from_config(cfg, 'dogpile.')
     cache_region.invalidate()
 
