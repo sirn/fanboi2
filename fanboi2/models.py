@@ -226,7 +226,7 @@ class Topic(Base):
             return self.posts.all()
         else:
             for handler, matcher in self.QUERY:
-                match = matcher.match(query)
+                match = matcher.match(str(query))
                 if match:
                     fn = getattr(self, handler)
                     return fn(*match.groups())

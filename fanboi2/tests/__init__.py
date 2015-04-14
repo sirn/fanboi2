@@ -4,6 +4,7 @@ import unittest
 from fanboi2.models import DBSession, Base, redis_conn
 from pyramid import testing
 from sqlalchemy import create_engine
+from sqlalchemy.orm import Query
 
 
 DATABASE_URI = os.environ.get(
@@ -99,11 +100,14 @@ class ModelMixin(_ModelInstanceSetup, unittest.TestCase):
     def tearDown(self):
         super(ModelMixin, self).tearDown()
         redis_conn._redis = None
-        testing.tearDown()
         transaction.abort()
 
 
 class RegistryMixin(unittest.TestCase):
+
+    def tearDown(self):
+        super(RegistryMixin, self).tearDown()
+        testing.tearDown()
 
     def _makeConfig(self, request=None, registry=None):
         return testing.setUp(
@@ -171,3 +175,9 @@ class ViewMixin(ModelMixin, RegistryMixin, unittest.TestCase):
             data = {}
         request = self._makeRequest(params=MultiDict(data))
         return request
+
+    def assertSAEqual(self, first, second, msg=None):
+        if isinstance(first, Query):
+            return self.assertListEqual(list(first), second, msg)
+        else:
+            return self.assertEqual(first, second, msg)

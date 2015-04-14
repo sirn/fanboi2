@@ -88,6 +88,7 @@ def board_new_post(request):
     if form.validate():
         ratelimit = RateLimiter(request, namespace=board.slug)
         if ratelimit.limited():
+            timeleft = ratelimit.timeleft()
             return render_to_response('boards/error.mako', locals())
 
         task = add_topic.delay(
@@ -142,6 +143,7 @@ def topic_show_post(request):
     if form.validate():
         ratelimit = RateLimiter(request, namespace=board.slug)
         if ratelimit.limited():
+            timeleft = ratelimit.timeleft()
             return render_to_response('topics/error.mako', locals())
 
         task = add_post.delay(
