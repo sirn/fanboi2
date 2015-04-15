@@ -1,24 +1,11 @@
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.renderers import render_to_response
-from pyramid.view import view_config as _view_config
-from fanboi2.forms import PostForm, TopicForm
-from fanboi2.tasks import add_topic, add_post
-from fanboi2.utils import RateLimiter, serialize_request
+from fanboi2.errors import RateLimitedError, FormInvalidError
+from fanboi2.forms import SecurePostForm, SecureTopicForm
 from fanboi2.views.api import boards_get, board_get, board_topics_get,\
-    topic_get, topic_posts_get
+    topic_get, topic_posts_get, topic_posts_post, board_topics_post
 
 
-def get_view(**kwargs):
-    kwargs['request_method'] = 'GET'
-    return _view_config(**kwargs)
-
-
-def post_view(**kwargs):
-    kwargs['request_method'] = 'POST'
-    return _view_config(**kwargs)
-
-
-@get_view(route_name='root', renderer='root.mako')
 def root(request):
     """Display a list of all boards.
 
@@ -31,7 +18,6 @@ def root(request):
     return locals()
 
 
-@get_view(route_name='board', renderer='boards/show.mako')
 def board_show(request):
     """Display a single board with its related topics.
 
@@ -45,7 +31,6 @@ def board_show(request):
     return locals()
 
 
-@get_view(route_name='board_all', renderer='boards/all.mako')
 def board_all(request):
     """Display a single board with a list of all its topic.
 
@@ -59,7 +44,6 @@ def board_all(request):
     return locals()
 
 
-@get_view(route_name='board_new', renderer='boards/new.mako')
 def board_new_get(request):
     """Display a form for creating new topic in a board.
 
@@ -69,11 +53,10 @@ def board_new_get(request):
     :rtype: dict
     """
     board = board_get(request)
-    form = TopicForm(request=request)
+    form = SecureTopicForm(request=request)
     return locals()
 
 
-@post_view(route_name='board_new', renderer='boards/new.mako')
 def board_new_post(request):
     """Handle form posting for creating new topic in a board.
 
@@ -83,31 +66,20 @@ def board_new_post(request):
     :rtype: dict
     """
     board = board_get(request)
-    form = TopicForm(request.params, request=request)
-
-    if form.validate():
-        ratelimit = RateLimiter(request, namespace=board.slug)
-        if ratelimit.limited():
-            timeleft = ratelimit.timeleft()
-            return render_to_response('boards/error.mako', locals())
-
-        task = add_topic.delay(
-            request=serialize_request(request),
-            board_id=board.id,
-            title=form.title.data,
-            body=form.body.data)
-
-        ratelimit.limit(board.settings['post_delay'])
+    form = SecureTopicForm(request.params, request=request)
+    try:
+        task = board_topics_post(request, board=board, form=form)
         return HTTPFound(location=request.route_path(
             route_name='board_new',
             board=board.slug,
             _query={'task': task.id}))
+    except RateLimitedError as e:
+        timeleft = e.timeleft
+        return render_to_response('boards/error.mako', locals())
+    except FormInvalidError as e:
+        return locals()
 
-    return locals()
 
-
-@get_view(route_name='topic', renderer='topics/show.mako')
-@get_view(route_name='topic_scoped', renderer='topics/show.mako')
 def topic_show_get(request):
     """Display a single topic with its related posts.
 
@@ -121,11 +93,10 @@ def topic_show_get(request):
     posts = topic_posts_get(request)
     if not topic.board_id == board.id or not posts:
         raise HTTPNotFound(request.path)
-    form = PostForm(request=request)
+    form = SecurePostForm(request=request)
     return locals()
 
 
-@post_view(route_name='topic', renderer='topics/show.mako')
 def topic_show_post(request):
     """Handle form posting for replying to a topic.
 
@@ -138,25 +109,46 @@ def topic_show_post(request):
     topic = topic_get(request)
     if not topic.board_id == board.id:
         raise HTTPNotFound(request.path)
-    form = PostForm(request.params, request=request)
-
-    if form.validate():
-        ratelimit = RateLimiter(request, namespace=board.slug)
-        if ratelimit.limited():
-            timeleft = ratelimit.timeleft()
-            return render_to_response('topics/error.mako', locals())
-
-        task = add_post.delay(
-            request=serialize_request(request),
-            topic_id=topic.id,
-            body=form.body.data,
-            bumped=form.bumped.data)
-
-        ratelimit.limit(board.settings['post_delay'])
+    form = SecurePostForm(request.params, request=request)
+    try:
+        task = topic_posts_post(request, board=board, topic=topic, form=form)
         return HTTPFound(location=request.route_path(
             route_name='topic',
             board=topic.board.slug,
             topic=topic.id,
             _query={'task': task.id}))
+    except RateLimitedError as e:
+        timeleft = e.timeleft
+        return render_to_response('topics/error.mako', locals())
+    except FormInvalidError as e:
+        return locals()
 
-    return locals()
+
+def includeme(config):  # pragma: no cover
+    def _map_view(name, path, renderer, callables=None):
+        config.add_route(name, path)
+        if callables is not None:
+            for method, callable in callables.items():
+                config.add_view(
+                    callable,
+                    request_method=method,
+                    route_name=name,
+                    renderer=renderer)
+
+    _map_view('root', '/', 'root.mako', {'GET': root})
+    _map_view('board', '/{board:\w+}/', 'boards/show.mako', {'GET': board_show})
+    _map_view('board_all', '/{board:\w+}/all/', 'boards/all.mako', {
+        'GET': board_all})
+
+    _map_view('board_new', '/{board:\w+}/new/', 'boards/new.mako', {
+        'GET': board_new_get,
+        'POST': board_new_post})
+
+    _map_view('topic', '/{board:\w+}/{topic:\d+}/', 'topics/show.mako', {
+        'GET': topic_show_get,
+        'POST': topic_show_post})
+
+    _map_view('topic_scoped',
+        '/{board:\w+}/{topic:\d+}/{query}/',
+        'topics/show.mako',
+        {'GET': topic_show_get})

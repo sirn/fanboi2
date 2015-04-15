@@ -7,10 +7,9 @@ from pyramid.path import AssetResolver
 from pyramid.view import append_slash_notfound_view
 from pyramid_beaker import session_factory_from_settings
 from sqlalchemy.engine import engine_from_config
-from .cache import cache_region
-from .models import DBSession, Base, redis_conn, identity
-from .serializers import json_renderer
-from .utils import akismet, dnsbl
+from fanboi2.cache import cache_region
+from fanboi2.models import DBSession, Base, redis_conn, identity
+from fanboi2.utils import akismet, dnsbl
 
 
 def remote_addr(request):
@@ -80,64 +79,27 @@ def tagged_static_path(request, path, **kwargs):
     return request.static_path(path, **kwargs)
 
 
-def configure_components(cfg):  # pragma: no cover
+def configure_components(settings):  # pragma: no cover
     """Configure the application components e.g. database connection.
 
-    :param cfg: A configuration :type:`dict`.
+    :param settings: A configuration :type:`dict`.
 
-    :type cfg: dict
+    :type settings: dict
     :rtype: None
     """
-    # BUG: configure_components should be called after pyramid.Configurator
-    # in order to prevent an importlib bug to cause pkg_resources to fail.
-    # Tasks are imported here because of the same reason (Celery uses
-    # importlib internally.)
-    #
-    # This bug only applies to Python 3.2.3 only.
-    from .tasks import celery, configure_celery
-    engine = engine_from_config(cfg, 'sqlalchemy.')
+    # Note: fanboi2.tasks is imported here since importlib used in celery
+    # is causing pkg_resources to fail. This bug applies to Python 3.2.3.
+    from fanboi2.tasks import celery, configure_celery
+    engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
-    redis_conn.from_url(cfg['redis.url'])
-    celery.config_from_object(configure_celery(cfg))
-    identity.configure_tz(cfg['app.timezone'])
-    akismet.configure_key(cfg['app.akismet_key'])
-    dnsbl.configure_providers(cfg['app.dnsbl_providers'])
-    cache_region.configure_from_config(cfg, 'dogpile.')
+    redis_conn.from_url(settings['redis.url'])
+    celery.config_from_object(configure_celery(settings))
+    identity.configure_tz(settings['app.timezone'])
+    akismet.configure_key(settings['app.akismet_key'])
+    dnsbl.configure_providers(settings['app.dnsbl_providers'])
+    cache_region.configure_from_config(settings, 'dogpile.')
     cache_region.invalidate()
-
-
-def configure_views(config):  # pragma: no cover
-    """Add views and routes to Pyramid configuration.
-
-    :param config: A configuration :class:`pyramid.config.Configurator`.
-
-    :type config: pyramid.config.Configurator
-    :rtype: None
-    """
-    config.add_static_view('static', 'static', cache_max_age=3600)
-
-    # views.api
-    config.add_route('api_root',         '/api/')
-    config.add_route('api_boards',       '/api/1.0/boards/')
-    config.add_route('api_board',        '/api/1.0/boards/{board:\w+}/')
-    config.add_route('api_board_topics', '/api/1.0/boards/{board:\w+}/topics/')
-    config.add_route('api_topic',        '/api/1.0/topics/{topic:\d+}/')
-    config.add_route('api_topic_posts',  '/api/1.0/topics/{topic:\d+}/posts/')
-    config.add_route('api_topic_posts_scoped',
-                     '/api/1.0/topics/{topic:\d+}/posts/{query}/')
-
-    # views.pages
-    config.add_route('root',         '/')
-    config.add_route('board',        '/{board:\w+}/')
-    config.add_route('board_all',    '/{board:\w+}/all/')
-    config.add_route('board_new',    '/{board:\w+}/new/')
-    config.add_route('topic',        '/{board:\w+}/{topic:\d+}/')
-    config.add_route('topic_scoped', '/{board:\w+}/{topic:\d+}/{query}/')
-
-    # Fallback
-    config.add_view(append_slash_notfound_view, context=NotFound)
-    config.scan()
 
 
 def main(global_config, **settings):  # pragma: no cover
@@ -152,15 +114,19 @@ def main(global_config, **settings):  # pragma: no cover
     """
     session_factory = session_factory_from_settings(settings)
     config = Configurator(settings=settings)
-    config.include('pyramid_mako')
     configure_components(settings)
+    config.include('pyramid_mako')
 
     config.set_session_factory(session_factory)
     config.set_request_property(remote_addr)
     config.set_request_property(route_name)
     config.add_request_method(tagged_static_path)
 
-    config.add_renderer('json', json_renderer)
-    configure_views(config)
+    config.include('fanboi2.serializers')
+    config.include('fanboi2.views.api', route_prefix='/api')
+    config.include('fanboi2.views.pages', route_prefix='/')
+    config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_view(append_slash_notfound_view, context=NotFound)
+    config.scan()
 
     return config.make_wsgi_app()

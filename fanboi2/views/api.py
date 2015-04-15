@@ -1,37 +1,29 @@
 import datetime
 from pyramid.httpexceptions import HTTPNotFound
-from pyramid.view import view_config as view_config
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import or_, and_
-from ..models import DBSession, Board, Topic
-
-
-def json_view(**kwargs):
-    """Works similar to :function:`pyramid.views.view_config` but always
-    assume JSON renderer regardless of what renderer is given.
-    """
-    kwargs['renderer'] = 'json'
-    return view_config(**kwargs)
+from fanboi2.errors import FormInvalidError, RateLimitedError, BaseError
+from fanboi2.forms import TopicForm, PostForm
+from fanboi2.models import DBSession, Board, Topic
+from fanboi2.tasks import ResultProxy, add_topic, add_post, celery
+from fanboi2.utils import RateLimiter, serialize_request
 
 
 def wrap_no_result_found(func):
     """Wrap :exception:`NoResultFound` into :exception:`HTTPNotFound`."""
-    def wrapper(request):
+    def wrapper(request, *args, **kwargs):
         try:
-            return func(request)
+            return func(request, *args, **kwargs)
         except NoResultFound:
             raise HTTPNotFound(request.path)
     return wrapper
 
 
-
-@view_config(request_method='GET', route_name='api_root', renderer='api.mako')
 def root(request):
     """Display an API documentation view."""
     return {}
 
 
-@json_view(request_method='GET', route_name='api_boards')
 @wrap_no_result_found
 def boards_get(request):
     """Retrieve a list of all boards.
@@ -44,7 +36,6 @@ def boards_get(request):
     return DBSession.query(Board).order_by(Board.title)
 
 
-@json_view(request_method='GET', route_name='api_board')
 @wrap_no_result_found
 def board_get(request):
     """Retrieve a full info of a single board.
@@ -59,7 +50,6 @@ def board_get(request):
         one()
 
 
-@json_view(request_method='GET', route_name='api_board_topics')
 @wrap_no_result_found
 def board_topics_get(request):
     """Retrieve all available topics within a single board.
@@ -76,14 +66,51 @@ def board_topics_get(request):
                         datetime.timedelta(days=7))))
 
 
-@json_view(request_method='POST', route_name='api_board_topics')
 @wrap_no_result_found
-def board_topics_post(request):
-    """Create a new topic."""
-    pass
+def board_topics_post(request, board=None, form=None):
+    """Create a new topic.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: celery.task.Task
+    """
+    if board is None: board = board_get(request)
+    if form is None: form = TopicForm(request.params, request=request)
+
+    if form.validate():
+        ratelimit = RateLimiter(request, namespace=board.slug)
+        if ratelimit.limited():
+            timeleft = ratelimit.timeleft()
+            raise RateLimitedError(timeleft)
+
+        ratelimit.limit(board.settings['post_delay'])
+        return add_topic.delay(
+            request=serialize_request(request),
+            board_id=board.id,
+            title=form.title.data,
+            body=form.body.data)
+
+    raise FormInvalidError(form.errors)
 
 
-@json_view(request_method='GET', route_name='api_topic')
+@wrap_no_result_found
+def task_get(request):
+    """Retrieve a task processing status for the given task id.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: fanboi2.tasks.ResultProxy
+    """
+    task = celery.AsyncResult(request.matchdict['task'])
+    response = ResultProxy(task)
+    if response.success():
+        if isinstance(response.object, BaseError):
+            raise response.object
+    return response
+
+
 @wrap_no_result_found
 def topic_get(request):
     """Retrieve a full post info for an individual topic.
@@ -98,8 +125,6 @@ def topic_get(request):
         one()
 
 
-@json_view(request_method='GET', route_name='api_topic_posts')
-@json_view(request_method='GET', route_name='api_topic_posts_scoped')
 @wrap_no_result_found
 def topic_posts_get(request):
     """Retrieve all posts in a single topic or by or by search criteria.
@@ -115,8 +140,66 @@ def topic_posts_get(request):
     return topic.posts
 
 
-@json_view(request_method='POST', route_name='api_topic_posts')
 @wrap_no_result_found
-def topic_posts_post(request):
-    """Create a new post within topic."""
-    pass
+def topic_posts_post(request, board=None, topic=None, form=None):
+    """Create a new post within topic.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: celery.task.Task
+    """
+    if topic is None: topic = topic_get(request)
+    if board is None: board = topic.board
+    if form is None: form = PostForm(request.params, request=request)
+
+    if form.validate():
+        ratelimit = RateLimiter(request, namespace=board.slug)
+        if ratelimit.limited():
+            timeleft = ratelimit.timeleft()
+            raise RateLimitedError(timeleft)
+
+        ratelimit.limit(board.settings['post_delay'])
+        return add_post.delay(
+            request=serialize_request(request),
+            topic_id=topic.id,
+            body=form.body.data,
+            bumped=form.bumped.data)
+
+    raise FormInvalidError(form.errors)
+
+
+def includeme(config):  # pragma: no cover
+    config.add_route('api_root', '/')
+    config.add_view(
+        root,
+        request_method='GET',
+        route_name='api_root',
+        renderer='api.mako')
+
+    def _map_api_route(name, path, callables=None):
+        config.add_route(name, path)
+        if callables is not None:
+            for method, callable in callables.items():
+                config.add_view(
+                    callable,
+                    request_method=method,
+                    route_name=name,
+                    renderer='json')
+
+    _map_api_route('api_boards', '/1.0/boards/', {'GET': boards_get})
+    _map_api_route('api_board', '/1.0/boards/{board:\w+}/', {'GET': board_get})
+    _map_api_route('api_board_topics', '/1.0/boards/{board:\w+}/topics/', {
+        'GET': board_topics_get,
+        'POST': board_topics_post})
+
+    _map_api_route('api_task', '/1.0/tasks/{task}/', {'GET': task_get})
+    _map_api_route('api_topic', '/1.0/topics/{topic:\d+}/', {'GET': topic_get})
+    _map_api_route('api_topic_posts', '/1.0/topics/{topic:\d+}/posts/', {
+        'GET': topic_posts_get,
+        'POST': topic_posts_post})
+
+    _map_api_route(
+        'api_topic_posts_scoped',
+        '/1.0/topics/{topic:\d+}/posts/{query}/',
+        {'GET': topic_posts_get})

@@ -105,6 +105,16 @@ class TestJsonType(unittest.TestCase):
         )
 
 
+class TestSerializeModel(unittest.TestCase):
+
+    def test_serialize(self):
+        from fanboi2.models import serialize_model, Board, Topic, Post
+        self.assertEqual(serialize_model('board'), Board)
+        self.assertEqual(serialize_model('topic'), Topic)
+        self.assertEqual(serialize_model('post'), Post)
+        self.assertIsNone(serialize_model('foo'))
+
+
 class BaseModelTest(ModelMixin, unittest.TestCase):
 
     def _getTargetClass(self):

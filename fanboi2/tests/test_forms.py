@@ -2,7 +2,15 @@ import unittest
 from pyramid import testing
 
 
-class TestSecureForm(unittest.TestCase):
+class FormMixin(object):
+
+    def _getTargetClass(self):  # pragma: no cover
+        raise NotImplementedError
+
+    def _makeOne(self, form, request):
+        form = self._getTargetClass()(self._makeForm(form), request=request)
+        form.validate()
+        return form
 
     def _makeRequest(self):
         request = testing.DummyRequest()
@@ -13,23 +21,27 @@ class TestSecureForm(unittest.TestCase):
         from webob.multidict import MultiDict
         return MultiDict(data)
 
-    def _makeOne(self, form, request):
-        from fanboi2.forms import SecureForm
-        form = SecureForm(self._makeForm(form), request=request)
-        form.validate()
-        return form
-
-    def test_csrf_token(self):
+    def _makeCsrfToken(self, request):
         import hmac
         import os
         from hashlib import sha1
-        request = self._makeRequest()
         request.session['csrf'] = sha1(os.urandom(64)).hexdigest()
-        token = hmac.new(
+        return hmac.new(
             bytes(request.registry.settings['app.secret'].encode('utf8')),
             bytes(request.session['csrf'].encode('utf8')),
             digestmod=sha1,
         ).hexdigest()
+
+
+class TestSecureForm(FormMixin, unittest.TestCase):
+
+    def _getTargetClass(self):
+        from fanboi2.forms import SecureForm
+        return SecureForm
+
+    def test_csrf_token(self):
+        request = self._makeRequest()
+        token = self._makeCsrfToken(request)
         form = self._makeOne({'csrf_token': token}, request)
         self.assertTrue(form.validate())
         self.assertEqual(form.errors, {})
@@ -84,7 +96,7 @@ class DummyField(object):
         return self._translations.ngettext(singular, plural, n)
 
 
-class TestForm(unittest.TestCase):
+class TestFormValidators(unittest.TestCase):
 
     def _grab_error(self, callable, form, field):
         from fanboi2.forms import ValidationError
@@ -122,3 +134,136 @@ class TestForm(unittest.TestCase):
         self.assertEqual(Length(max=1)(form, DummyField('\r\n')), None)
         self.assertEqual(Length(max=1)(form, DummyField('\n')), None)
         self.assertEqual(Length(max=1)(form, DummyField('\r')), None)
+
+
+class TestTopicForm(FormMixin, unittest.TestCase):
+
+    def _getTargetClass(self):
+        from fanboi2.forms import TopicForm
+        return TopicForm
+
+    def _makeOne(self, form, request):
+        form = self._getTargetClass()(self._makeForm(form), request=request)
+        form.validate()
+        return form
+
+    def test_validated(self):
+        request = self._makeRequest()
+        form = self._makeOne({'title': 'Words', 'body': 'Words words'}, request)
+        self.assertTrue(form.validate())
+
+    def test_title_missing(self):
+        request = self._makeRequest()
+        form = self._makeOne({}, request)
+        self.assertFalse(form.validate())
+        self.assertListEqual(form.title.errors, ['This field is required.'])
+
+    def test_title_length_shorter(self):
+        request = self._makeRequest()
+        form = self._makeOne({'title': 'Foob'}, request=request)
+        self.assertFalse(form.validate())
+        self.assertListEqual(form.title.errors, [
+            'Field must be between 5 and 200 characters long.'
+        ])
+
+    def test_title_length_longer(self):
+        request = self._makeRequest()
+        form = self._makeOne({'title': 'F'*201}, request=request)
+        self.assertFalse(form.validate())
+        self.assertListEqual(form.title.errors, [
+            'Field must be between 5 and 200 characters long.'
+        ])
+
+    def test_body_missing(self):
+        request = self._makeRequest()
+        form = self._makeOne({}, request)
+        self.assertFalse(form.validate())
+        self.assertListEqual(form.body.errors, ['This field is required.'])
+
+    def test_body_length_shorter(self):
+        request = self._makeRequest()
+        form = self._makeOne({'body': 'F'}, request=request)
+        self.assertFalse(form.validate())
+        self.assertListEqual(form.body.errors, [
+            'Field must be between 2 and 4000 characters long.'
+        ])
+
+    def test_body_length_longer(self):
+        request = self._makeRequest()
+        form = self._makeOne({'body': 'F'*4001}, request=request)
+        self.assertFalse(form.validate())
+        self.assertListEqual(form.body.errors, [
+            'Field must be between 2 and 4000 characters long.'
+        ])
+
+
+# noinspection PyUnresolvedReferences
+class TestSecureTopicForm(TestTopicForm, FormMixin, unittest.TestCase):
+
+    def _getTargetClass(self):
+        from fanboi2.forms import SecureTopicForm
+        return SecureTopicForm
+
+    def test_validated(self):
+        request = self._makeRequest()
+        form = self._makeOne({
+            'title': 'Words',
+            'body': 'Words words',
+            'csrf_token': self._makeCsrfToken(request),
+        }, request)
+        self.assertTrue(form.validate())
+
+    def test_csrf_missing(self):
+        request = self._makeRequest()
+        form = self._makeOne({}, request)
+        self.assertFalse(form.validate())
+        self.assertListEqual(form.csrf_token.errors, ['CSRF token missing.'])
+
+
+class TestPostForm(FormMixin, unittest.TestCase):
+
+    def _getTargetClass(self):
+        from fanboi2.forms import PostForm
+        return PostForm
+
+    def test_validated(self):
+        request = self._makeRequest()
+        form = self._makeOne({'body': 'Words words'}, request)
+        self.assertTrue(form.validate())
+
+    def test_body_missing(self):
+        request = self._makeRequest()
+        form = self._makeOne({}, request)
+        self.assertFalse(form.validate())
+        self.assertListEqual(form.body.errors, ['This field is required.'])
+
+    def test_body_length_shorter(self):
+        request = self._makeRequest()
+        form = self._makeOne({'body': 'F'}, request=request)
+        self.assertFalse(form.validate())
+        self.assertListEqual(form.body.errors, [
+            'Field must be between 2 and 4000 characters long.'
+        ])
+
+    def test_body_length_longer(self):
+        request = self._makeRequest()
+        form = self._makeOne({'body': 'F'*4001}, request=request)
+        self.assertFalse(form.validate())
+        self.assertListEqual(form.body.errors, [
+            'Field must be between 2 and 4000 characters long.'
+        ])
+
+
+class TestSecurePostForm(TestPostForm, FormMixin, unittest.TestCase):
+
+    def _getTargetClass(self):
+        from fanboi2.forms import SecurePostForm
+        return SecurePostForm
+
+    def test_validated(self):
+        request = self._makeRequest()
+        form = self._makeOne({
+            'body': 'Words words',
+            'csrf_token': self._makeCsrfToken(request),
+        }, request)
+        self.assertTrue(form.validate())

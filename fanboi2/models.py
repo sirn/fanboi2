@@ -130,6 +130,14 @@ class JsonType(TypeDecorator):
         return json.loads(value)
 
 
+def serialize_model(type):
+    return {
+        'board': Board,
+        'topic': Topic,
+        'post': Post,
+    }.get(type)
+
+
 class BaseModel(object):
     """Primary mixin that provides common fields for SQLAlchemy models."""
 

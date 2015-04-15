@@ -61,7 +61,7 @@ class SecureForm(Form):
         if not field.data:
             raise ValidationError('CSRF token missing.')
         hmac_compare = self._generate_hmac(field.csrf_key)
-        # TODO: FIXME. Non constant-time comparison! compare_digest is 3.3.
+        # FIXME: Non constant-time comparison! compare_digest is 3.3.
         if not field.data == hmac_compare:
             raise ValidationError('CSRF token mismatched.')
 
@@ -72,7 +72,7 @@ class SecureForm(Form):
         return d
 
 
-class TopicForm(SecureForm):
+class TopicForm(Form):
     """A :class:`Form` for creating new topic. This form should be populated
     to two objects, :attr:`title` to :class:`Topic` and :attr:`body` to
     :class:`Post`.
@@ -81,9 +81,17 @@ class TopicForm(SecureForm):
     body = TextAreaField('Body', validators=[Required(), Length(2, 4000)])
 
 
-class PostForm(SecureForm):
+class SecureTopicForm(SecureForm, TopicForm, Form):
+    pass
+
+
+class PostForm(Form):
     """A :class:`Form` for replying to a topic. The :attr:`body` field should
     be populated to :class:`Post`.
     """
     body = TextAreaField('Body', validators=[Required(), Length(2, 4000)])
     bumped = BooleanField('Bump this topic')
+
+
+class SecurePostForm(SecureForm, PostForm, Form):
+    pass

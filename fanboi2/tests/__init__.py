@@ -1,10 +1,11 @@
 import os
 import transaction
 import unittest
-from fanboi2.models import DBSession, Base, redis_conn
 from pyramid import testing
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Query
+from webob.multidict import MultiDict
+from fanboi2.models import DBSession, Base, redis_conn
 
 
 DATABASE_URI = os.environ.get(
@@ -119,7 +120,8 @@ class RegistryMixin(unittest.TestCase):
         request = testing.DummyRequest(**kw)
         request.user_agent = kw.get('user_agent', 'Mock/1.0')
         request.remote_addr = kw.get('remote_addr', '127.0.0.1')
-        request.referrer = None
+        request.referrer = kw.get('referrer')
+        request.params = MultiDict(kw.get('params') or {})
         return request
 
     def _makeRegistry(self, **kw):
@@ -132,6 +134,30 @@ class RegistryMixin(unittest.TestCase):
         }
         registry.settings.update(kw)
         return registry
+
+
+class DummyAsyncResult(object):
+
+    def __init__(self, id_, status, result=None):
+        self._id = id_
+        self._status = status
+        self._result = result
+
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def status(self):
+        return self._status.upper()
+
+    @property
+    def state(self):
+        from celery import states
+        return getattr(states, self.status)
+
+    def get(self):
+        return self._result
 
 
 class TaskMixin(unittest.TestCase):
@@ -164,16 +190,12 @@ class ViewMixin(ModelMixin, RegistryMixin, unittest.TestCase):
         return request
 
     def _POST(self, data=None):
-        from webob.multidict import MultiDict
-        request = self._makeRequest(params=MultiDict(data))
+        request = self._makeRequest(params=data)
         request.method = 'POST'
         return request
 
     def _GET(self, data=None):
-        from webob.multidict import MultiDict
-        if data is None:
-            data = {}
-        request = self._makeRequest(params=MultiDict(data))
+        request = self._makeRequest(params=data)
         return request
 
     def assertSAEqual(self, first, second, msg=None):
