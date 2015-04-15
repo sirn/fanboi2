@@ -86,10 +86,10 @@ def add_topic(request, board_id, title, body):
     :rtype: tuple
     """
     if akismet.spam(request, body):
-        return 'failure', 'spam_blocked'
+        return 'failure', 'spam_rejected'
 
     if dnsbl.listed(request['remote_addr']):
-        return 'failure', 'dnsbl_blocked'
+        return 'failure', 'dnsbl_rejected'
 
     with transaction.manager:
         board = DBSession.query(Board).get(board_id)
@@ -119,12 +119,12 @@ def add_post(self, request, topic_id, body, bumped):
     :rtype: tuple
     """
     if akismet.spam(request, body):
-        return 'failure', 'spam_blocked'
+        return 'failure', 'spam_rejected'
 
     with transaction.manager:
         topic = DBSession.query(Topic).get(topic_id)
         if topic.status != 'open':
-            return 'failure', 'status_blocked', topic.status
+            return 'failure', 'status_rejected', topic.status
 
         post = Post(topic=topic, body=body, bumped=bumped)
         post.ip_address = request['remote_addr']

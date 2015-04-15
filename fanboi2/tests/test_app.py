@@ -54,12 +54,18 @@ class TestRouteName(unittest.TestCase):
             def __init__(self, name):
                 self.name = name
 
-        request.matched_route = MockMatchedRoute(name)
+        request.matched_route = None
+        if name is not None:
+            request.matched_route = MockMatchedRoute(name)
         return request
 
     def test_route_name(self):
         request = self._makeRequest("foobar")
         self.assertEqual(self._getFunction()(request), "foobar")
+
+    def test_route_name_not_exists(self):
+        request = self._makeRequest(None)
+        self.assertEqual(self._getFunction()(request), None)
 
 
 class DummyStaticURLInfo:

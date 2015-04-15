@@ -1,22 +1,11 @@
 import datetime
-from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import or_, and_
-from fanboi2.errors import FormInvalidError, RateLimitedError, BaseError
+from fanboi2.errors import ParamsInvalidError, RateLimitedError, BaseError
 from fanboi2.forms import TopicForm, PostForm
 from fanboi2.models import DBSession, Board, Topic
 from fanboi2.tasks import ResultProxy, add_topic, add_post, celery
 from fanboi2.utils import RateLimiter, serialize_request
-
-
-def wrap_no_result_found(func):
-    """Wrap :exception:`NoResultFound` into :exception:`HTTPNotFound`."""
-    def wrapper(request, *args, **kwargs):
-        try:
-            return func(request, *args, **kwargs)
-        except NoResultFound:
-            raise HTTPNotFound(request.path)
-    return wrapper
 
 
 def root(request):
@@ -24,7 +13,6 @@ def root(request):
     return {}
 
 
-@wrap_no_result_found
 def boards_get(request):
     """Retrieve a list of all boards.
 
@@ -36,7 +24,6 @@ def boards_get(request):
     return DBSession.query(Board).order_by(Board.title)
 
 
-@wrap_no_result_found
 def board_get(request):
     """Retrieve a full info of a single board.
 
@@ -50,7 +37,6 @@ def board_get(request):
         one()
 
 
-@wrap_no_result_found
 def board_topics_get(request):
     """Retrieve all available topics within a single board.
 
@@ -66,7 +52,6 @@ def board_topics_get(request):
                         datetime.timedelta(days=7))))
 
 
-@wrap_no_result_found
 def board_topics_post(request, board=None, form=None):
     """Create a new topic.
 
@@ -91,10 +76,9 @@ def board_topics_post(request, board=None, form=None):
             title=form.title.data,
             body=form.body.data)
 
-    raise FormInvalidError(form.errors)
+    raise ParamsInvalidError(form.errors)
 
 
-@wrap_no_result_found
 def task_get(request):
     """Retrieve a task processing status for the given task id.
 
@@ -111,7 +95,6 @@ def task_get(request):
     return response
 
 
-@wrap_no_result_found
 def topic_get(request):
     """Retrieve a full post info for an individual topic.
 
@@ -125,7 +108,6 @@ def topic_get(request):
         one()
 
 
-@wrap_no_result_found
 def topic_posts_get(request):
     """Retrieve all posts in a single topic or by or by search criteria.
 
@@ -140,7 +122,6 @@ def topic_posts_get(request):
     return topic.posts
 
 
-@wrap_no_result_found
 def topic_posts_post(request, board=None, topic=None, form=None):
     """Create a new post within topic.
 
@@ -166,7 +147,55 @@ def topic_posts_post(request, board=None, topic=None, form=None):
             body=form.body.data,
             bumped=form.bumped.data)
 
-    raise FormInvalidError(form.errors)
+    raise ParamsInvalidError(form.errors)
+
+
+def error_not_found(exc, request):
+    """Handle any exception that should cause the app to treat it as
+    NotFound resources, such as :class:`pyramid.httpexceptions.HTTPNotFound`
+    or :class:`sqlalchemy.orm.exc.NoResultFound`.
+
+    :param exc: An :class:`Exception`.
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type exc: Exception
+    :type request: pyramid.request.Request
+    :rtype: dict
+    """
+    request.response.status = '404 Not Found'
+    return {
+        'type': 'error',
+        'status': 'not_found',
+        'message': 'The resource %s %s could not be found.' % (
+            request.method,
+            request.path,
+        )
+    }
+
+
+def error_base_handler(exc, request):
+    """Handle any exception that should be rendered with the serializer.
+    Normally this is any subclass of the :class:`fanboi2.errors.BaseError`.
+
+    :param exc: A :class:`fanboi2.errors.BaseError`.
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type exc: fanboi2.errors.BaseError
+    :type request: pyramid.request.Request
+    :rtype: dict
+    """
+    request.response.status = exc.http_status
+    return exc
+
+
+def _api_routes_only(context, request):
+    """A predicate for :meth:`pyramid.config.add_view` that returns true
+    if the requested route is an API route.
+
+    :type request: pyramid.request.Request
+    :rtype: bool
+    """
+    return request.path.startswith('/api/')
 
 
 def includeme(config):  # pragma: no cover
@@ -203,3 +232,18 @@ def includeme(config):  # pragma: no cover
         'api_topic_posts_scoped',
         '/1.0/topics/{topic:\d+}/posts/{query}/',
         {'GET': topic_posts_get})
+
+    def _map_api_errors(exc, callable):
+        config.add_view(
+            callable,
+            context=exc,
+            renderer='json',
+            custom_predicates=[_api_routes_only])
+
+    _map_api_errors(BaseError, error_base_handler)
+    _map_api_errors(NoResultFound, error_not_found)
+    config.add_notfound_view(
+        error_not_found,
+        append_slash=True,
+        renderer='json',
+        custom_predicates=[_api_routes_only])

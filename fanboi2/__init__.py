@@ -2,9 +2,7 @@ import hashlib
 from functools import lru_cache
 from IPy import IP
 from pyramid.config import Configurator
-from pyramid.exceptions import NotFound
 from pyramid.path import AssetResolver
-from pyramid.view import append_slash_notfound_view
 from pyramid_beaker import session_factory_from_settings
 from sqlalchemy.engine import engine_from_config
 from fanboi2.cache import cache_region
@@ -36,7 +34,8 @@ def route_name(request):
     :type request: pyramid.request.Request
     :rtype: str
     """
-    return request.matched_route.name
+    if request.matched_route:
+        return request.matched_route.name
 
 
 @lru_cache(maxsize=10)
@@ -126,7 +125,6 @@ def main(global_config, **settings):  # pragma: no cover
     config.include('fanboi2.views.api', route_prefix='/api')
     config.include('fanboi2.views.pages', route_prefix='/')
     config.add_static_view('static', 'static', cache_max_age=3600)
-    config.add_view(append_slash_notfound_view, context=NotFound)
     config.scan()
 
     return config.make_wsgi_app()

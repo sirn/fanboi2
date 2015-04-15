@@ -5,15 +5,43 @@ def serialize_error(type, *args):
     """
     return {
         'rate_limited': RateLimitedError,
-        'form_invalid': FormInvalidError,
-        'spam_blocked': SpamBlockedError,
-        'dnsbl_blocked': DnsblBlockedError,
-        'status_blocked': StatusBlockedError,
+        'params_invalid': ParamsInvalidError,
+        'spam_rejected': SpamRejectedError,
+        'dnsbl_rejected': DnsblRejectedError,
+        'status_rejected': StatusRejectedError,
     }.get(type, BaseError)(*args)
 
 
 class BaseError(Exception):
-    pass
+    """A base :class:`Exception` class that provides hint for reporting
+    errors as JSON response.
+    """
+
+    def message(self, request):
+        """A serializable object to be include in the response as error
+        message. The return type of this method is not necessary a string,
+        it may be a list of string, a dict containing string or some other
+        serializable types.
+
+        :param request: A :class:`pyramid.request.Request` object.
+        :type request: pyramid.request.Request
+        :rtype: object
+        """
+        return 'An exception error occurred.'
+
+    @property
+    def name(self):
+        """The short globally recognizable name of this error.
+        :rtype: str
+        """
+        return 'unknown'
+
+    @property
+    def http_status(self):
+        """The HTTP status code to response as.
+        :rtype: str
+        """
+        return '500 Internal Server Error'
 
 
 class RateLimitedError(BaseError):
@@ -28,8 +56,19 @@ class RateLimitedError(BaseError):
     def __init__(self, timeleft):
         self.timeleft = timeleft
 
+    def message(self, request):
+        return 'Please wait %s seconds before retrying.' % self.timeleft
 
-class FormInvalidError(BaseError):
+    @property
+    def name(self):
+        return 'rate_limited'
+
+    @property
+    def http_status(self):
+        return '429 Too Many Requests'
+
+
+class ParamsInvalidError(BaseError):
     """An :class:`Exception` class that will be raised if user request could
     not be processed due to form being invalid. Error messages are stored
     inside :property:`messages`.
@@ -41,22 +80,54 @@ class FormInvalidError(BaseError):
     def __init__(self, messages):
         self.messages = messages
 
+    def message(self, request):
+        return self.messages
 
-class SpamBlockedError(BaseError):
+    @property
+    def name(self):
+        return 'params_invalid'
+
+    @property
+    def http_status(self):
+        return '400 Bad Request'
+
+
+class SpamRejectedError(BaseError):
     """An :class:`Exception` class that will be raised if user request was
     blocked due user request failed a spam check.
     """
-    pass
+
+    def message(self, request):
+        return 'The request has been identified as SPAM and therefore rejected.'
+
+    @property
+    def name(self):
+        return 'spam_rejected'
+
+    @property
+    def http_status(self):
+        return '422 Unprocessable Entity'
 
 
-class DnsblBlockedError(BaseError):
+class DnsblRejectedError(BaseError):
     """An :class:`Exception` class that will be raised if user request was
     blocked due user IP address failed an DNSBL check.
     """
-    pass
+
+    def message(self, request):
+        return 'The IP address is blocked in one of DNSBL databases ' +\
+               'and therefore rejected.'
+
+    @property
+    def name(self):
+        return 'dnsbl_rejected'
+
+    @property
+    def http_status(self):
+        return '422 Unprocessable Entity'
 
 
-class StatusBlockedError(BaseError):
+class StatusRejectedError(BaseError):
     """An :class:`Exception` class that will be raised if user request was
     blocked due the topic or the board being locked. The status that caused
     the lock could be retrieved from :property:`status`.
@@ -67,3 +138,14 @@ class StatusBlockedError(BaseError):
 
     def __init__(self, status):
         self.status = status
+
+    def message(self, request):
+        return 'The topic or the board is currently locked.'
+
+    @property
+    def name(self):
+        return 'status_rejected'
+
+    @property
+    def http_status(self):
+        return '422 Unprocessable Entity'

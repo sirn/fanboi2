@@ -1,6 +1,7 @@
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.renderers import render_to_response
-from fanboi2.errors import RateLimitedError, FormInvalidError
+from sqlalchemy.orm.exc import NoResultFound
+from fanboi2.errors import RateLimitedError, ParamsInvalidError
 from fanboi2.forms import SecurePostForm, SecureTopicForm
 from fanboi2.views.api import boards_get, board_get, board_topics_get,\
     topic_get, topic_posts_get, topic_posts_post, board_topics_post
@@ -75,8 +76,11 @@ def board_new_post(request):
             _query={'task': task.id}))
     except RateLimitedError as e:
         timeleft = e.timeleft
-        return render_to_response('boards/error.mako', locals())
-    except FormInvalidError as e:
+        response = render_to_response('boards/error.mako', locals())
+        response.status = e.http_status
+        return response
+    except ParamsInvalidError as e:
+        request.response.status = e.http_status
         return locals()
 
 
@@ -119,9 +123,29 @@ def topic_show_post(request):
             _query={'task': task.id}))
     except RateLimitedError as e:
         timeleft = e.timeleft
-        return render_to_response('topics/error.mako', locals())
-    except FormInvalidError as e:
+        response = render_to_response('topics/error.mako', locals())
+        response.status = e.http_status
+        return response
+    except ParamsInvalidError as e:
+        request.response.status = e.http_status
         return locals()
+
+
+def error_not_found(exc, request):
+    """Handle any exception that should cause the app to treat it as
+    NotFound resources, such as :class:`pyramid.httpexceptions.HTTPNotFound`
+    or :class:`sqlalchemy.orm.exc.NoResultFound`.
+
+    :param exc: An :class:`Exception`.
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type exc: Exception
+    :type request: pyramid.request.Request
+    :rtype: pyramid.response.Response
+    """
+    response = render_to_response('not_found.mako', locals())
+    response.status = '404 Not Found'
+    return response
 
 
 def includeme(config):  # pragma: no cover
@@ -152,3 +176,6 @@ def includeme(config):  # pragma: no cover
         '/{board:\w+}/{topic:\d+}/{query}/',
         'topics/show.mako',
         {'GET': topic_show_get})
+
+    config.add_view(error_not_found, context=NoResultFound)
+    config.add_notfound_view(error_not_found, append_slash=True)

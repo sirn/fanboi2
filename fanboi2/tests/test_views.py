@@ -28,11 +28,11 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         self.assertSAEqual(response, board)
 
     def test_board_get_not_found(self):
-        from pyramid.httpexceptions import HTTPNotFound
+        from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.api import board_get
         request = self._GET()
         request.matchdict['board'] = 'notexists'
-        with self.assertRaises(HTTPNotFound):
+        with self.assertRaises(NoResultFound):
             board_get(request)
 
     def test_board_topics_get(self):
@@ -83,11 +83,11 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         ])
 
     def test_board_topics_get_not_found(self):
-        from pyramid.httpexceptions import HTTPNotFound
+        from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.api import board_topics_get
         request = self._GET()
         request.matchdict['board'] = 'notexists'
-        with self.assertRaises(HTTPNotFound):
+        with self.assertRaises(NoResultFound):
             board_topics_get(request)
 
     # noinspection PyUnresolvedReferences
@@ -113,17 +113,17 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         )
 
     def test_board_topics_post_not_found(self):
-        from pyramid.httpexceptions import HTTPNotFound
+        from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.api import board_topics_post
         request = self._POST({'title': 'Thread thread', 'body': 'Words words'})
         request.matchdict['board'] = 'notexists'
-        with self.assertRaises(HTTPNotFound):
+        with self.assertRaises(NoResultFound):
             board_topics_post(request)
 
     @mock.patch('fanboi2.utils.RateLimiter.limit')
     @mock.patch('fanboi2.tasks.add_topic.delay')
     def test_board_topics_post_failed(self, add_, limit_):
-        from fanboi2.errors import FormInvalidError
+        from fanboi2.errors import ParamsInvalidError
         from fanboi2.models import DBSession, Topic
         from fanboi2.views.api import board_topics_post
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -131,7 +131,7 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         request = self._POST({'title': 'Thread thread', 'body': ''})
         request.matchdict['board'] = board.slug
         self._makeConfig(request, self._makeRegistry())
-        with self.assertRaises(FormInvalidError):
+        with self.assertRaises(ParamsInvalidError):
             board_topics_post(request)
 
         self.assertFalse(limit_.called)
@@ -180,18 +180,18 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
 
     @mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_task_get_failure(self, result_):
-        from fanboi2.errors import SpamBlockedError
+        from fanboi2.errors import SpamRejectedError
         from fanboi2.views.api import task_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         topic = self._makeTopic(board=board, title='Foobar')
         self._makePost(topic=topic, body='Words words')
         result_.return_value = DummyAsyncResult('dummy', 'success', [
             'failure',
-            'spam_blocked'])
+            'spam_rejected'])
 
         request = self._GET()
         request.matchdict['task'] = 'dummy'
-        with self.assertRaises(SpamBlockedError):
+        with self.assertRaises(SpamRejectedError):
             task_get(request)
 
     def test_topic_get(self):
@@ -204,11 +204,11 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         self.assertSAEqual(response, topic)
 
     def test_topic_get_not_found(self):
-        from pyramid.httpexceptions import HTTPNotFound
+        from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.api import topic_get
         request = self._GET()
         request.matchdict['topic'] = '1234'
-        with self.assertRaises(HTTPNotFound):
+        with self.assertRaises(NoResultFound):
             topic_get(request)
 
     def test_topic_posts_get(self):
@@ -239,11 +239,11 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         self.assertSAEqual(response, [post])
 
     def test_topic_posts_not_found(self):
-        from pyramid.httpexceptions import HTTPNotFound
+        from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.api import topic_posts_get
         request = self._GET()
         request.matchdict['topic'] = '1234'
-        with self.assertRaises(HTTPNotFound):
+        with self.assertRaises(NoResultFound):
             topic_posts_get(request)
 
     # noinspection PyUnresolvedReferences
@@ -271,17 +271,17 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         )
 
     def test_topic_posts_post_not_found(self):
-        from pyramid.httpexceptions import HTTPNotFound
+        from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.api import topic_posts_post
         request = self._POST({'body': 'Words words'})
         request.matchdict['topic'] = '12345'
-        with self.assertRaises(HTTPNotFound):
+        with self.assertRaises(NoResultFound):
             topic_posts_post(request)
 
     @mock.patch('fanboi2.utils.RateLimiter.limit')
     @mock.patch('fanboi2.tasks.add_post.delay')
     def test_topic_posts_post_failed(self, add_, limit_):
-        from fanboi2.errors import FormInvalidError
+        from fanboi2.errors import ParamsInvalidError
         from fanboi2.models import DBSession, Post
         from fanboi2.views.api import topic_posts_post
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -292,7 +292,7 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         request = self._POST({'body': ''})
         request.matchdict['topic'] = topic.id
         self._makeConfig(request, self._makeRegistry())
-        with self.assertRaises(FormInvalidError):
+        with self.assertRaises(ParamsInvalidError):
             topic_posts_post(request)
 
         self.assertFalse(limit_.called)
@@ -323,6 +323,38 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         self.assertTrue(limited_.called)
         self.assertTrue(time_.called)
         self.assertEqual(DBSession.query(Post).count(), post_count)
+
+    def test_error_not_found(self):
+        from pyramid.httpexceptions import HTTPNotFound
+        from fanboi2.views.api import error_not_found
+        request = self._makeRequest(path='/foobar')
+        response = error_not_found(HTTPNotFound(), request)
+        self.assertEqual(request.response.status, '404 Not Found')
+        self.assertEqual(response['type'], 'error')
+        self.assertEqual(response['status'], 'not_found')
+        self.assertEqual(
+            response['message'],
+            'The resource GET /foobar could not be found.')
+
+    def test_error_base_handler(self):
+        from fanboi2.errors import BaseError
+        from fanboi2.views.api import error_base_handler
+        request = self._makeRequest(path='/foobar')
+        exc = BaseError()
+        response = error_base_handler(exc, request)
+        self.assertEqual(request.response.status, exc.http_status)
+        self.assertEqual(response, exc)
+
+    def test_api_routes_predicates(self):
+        from fanboi2.views.api import _api_routes_only
+        request = self._makeRequest(path='/api/test')
+        self.assertTrue(_api_routes_only(None, request))
+
+    def test_api_routes_predicates_not_api(self):
+        from fanboi2.views.api import _api_routes_only
+        request = self._makeRequest(path='/foobar/api')
+        self.assertFalse(_api_routes_only(None, request))
+
 
 
 class TestPageViews(ViewMixin, unittest.TestCase):
@@ -388,11 +420,11 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         ])
 
     def test_board_show_not_found(self):
-        from pyramid.httpexceptions import HTTPNotFound
+        from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.pages import board_show
         request = self._GET()
         request.matchdict['board'] = 'notexists'
-        with self.assertRaises(HTTPNotFound):
+        with self.assertRaises(NoResultFound):
             board_show(request)
 
     def test_board_all(self):
@@ -444,11 +476,11 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         ])
 
     def test_board_all_not_found(self):
-        from pyramid.httpexceptions import HTTPNotFound
+        from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.pages import board_all
         request = self._GET()
         request.matchdict['board'] = 'notexists'
-        with self.assertRaises(HTTPNotFound):
+        with self.assertRaises(NoResultFound):
             board_all(request)
 
     def test_board_new_get(self):
@@ -461,11 +493,11 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         self.assertSAEqual(response['board'], board)
 
     def test_board_new_get_not_found(self):
-        from pyramid.httpexceptions import HTTPNotFound
+        from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.pages import board_new_get
         request = self._GET()
         request.matchdict['board'] = 'notexists'
-        with self.assertRaises(HTTPNotFound):
+        with self.assertRaises(NoResultFound):
             board_new_get(request)
 
     # noinspection PyUnresolvedReferences
@@ -533,12 +565,12 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Topic).count(), 0)
 
     def test_board_new_post_not_found(self):
-        from pyramid.httpexceptions import HTTPNotFound
+        from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.pages import board_new_post
         request = self._POST({'title': 'Thread thread', 'body': 'Words words'})
         request.matchdict['board'] = 'notexists'
         self._makeConfig(request, self._makeRegistry())
-        with self.assertRaises(HTTPNotFound):
+        with self.assertRaises(NoResultFound):
             board_new_post(self._make_csrf(request))
 
     def test_topic_show_get(self):
@@ -577,13 +609,13 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         self.assertSAEqual(response['posts'], [post])
 
     def test_topic_show_get_topic_not_found(self):
-        from pyramid.httpexceptions import HTTPNotFound
+        from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.pages import topic_show_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         request = self._GET()
         request.matchdict['board'] = board.slug
         request.matchdict['topic'] = '12345'
-        with self.assertRaises(HTTPNotFound):
+        with self.assertRaises(NoResultFound):
             topic_show_get(request)
 
     def test_topic_show_get_wrong_board(self):
@@ -626,23 +658,23 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         )
 
     def test_topic_show_post_board_not_found(self):
-        from pyramid.httpexceptions import HTTPNotFound
+        from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.pages import topic_show_get
         request = self._POST({'body': 'Words words'})
         request.matchdict['board'] = 'notexists'
         self._makeConfig(request, self._makeRegistry())
-        with self.assertRaises(HTTPNotFound):
+        with self.assertRaises(NoResultFound):
             topic_show_get(self._make_csrf(request))
 
     def test_topic_show_post_post_not_found(self):
-        from pyramid.httpexceptions import HTTPNotFound
+        from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.pages import topic_show_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         request = self._POST({'body': 'Words words'})
         request.matchdict['board'] = board.slug
         request.matchdict['topic'] = '12345'
         self._makeConfig(request, self._makeRegistry())
-        with self.assertRaises(HTTPNotFound):
+        with self.assertRaises(NoResultFound):
             topic_show_get(self._make_csrf(request))
 
     def test_topic_show_post_wrong_board(self):
@@ -706,3 +738,12 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         self.assertTrue(limited_.called)
         self.assertTrue(time_.called)
         self.assertEqual(DBSession.query(Post).count(), post_count)
+
+    def test_error_not_found(self):
+        from pyramid.httpexceptions import HTTPNotFound
+        from fanboi2.views.pages import error_not_found
+        request = self._makeRequest(path='/foobar')
+        config = self._makeConfig(request, self._makeRegistry())
+        config.testing_add_renderer('not_found.mako')
+        response = error_not_found(HTTPNotFound(), request)
+        self.assertEqual(response.status, '404 Not Found')

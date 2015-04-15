@@ -131,7 +131,7 @@ def _result_proxy_serializer(obj, request):
 
 
 def _async_result_serializer(obj, request):
-    """Serialize :class:`celery.result.AsyncResult` into a :type:`dict.
+    """Serialize :class:`celery.result.AsyncResult` into a :type:`dict`.
 
     :param obj: A :class:`celery.result.AsyncResult` object.
     :param request: A :class:`pyramid.request.Request` object.
@@ -148,11 +148,30 @@ def _async_result_serializer(obj, request):
     }
 
 
+def _base_error_serializer(obj, request):
+    """Serialize :class:`fanboi2.errors.BaseError` and its subclasses
+    into :type:`dict` using message and the name defined in the class.
+
+    :param obj: A :class:`fanboi2.errors.BaseError` object.
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type obj: fanboi2.errors.BaseError
+    :type request: pyramid.request.Request
+    :rtype: dict
+    """
+    return {
+        'type': 'error',
+        'status': obj.name,
+        'message': obj.message(request)
+    }
+
+
 def initialize_renderer():
     from celery.result import AsyncResult
     from pyramid.renderers import JSON
     from sqlalchemy.orm import Query
     from fanboi2.models import Board, Topic, Post
+    from fanboi2.errors import BaseError
     from fanboi2.tasks import ResultProxy
     json_renderer = JSON()
     json_renderer.add_adapter(datetime.datetime, _datetime_adapter)
@@ -162,6 +181,7 @@ def initialize_renderer():
     json_renderer.add_adapter(Post, _post_serializer)
     json_renderer.add_adapter(ResultProxy, _result_proxy_serializer)
     json_renderer.add_adapter(AsyncResult, _async_result_serializer)
+    json_renderer.add_adapter(BaseError, _base_error_serializer)
     return json_renderer
 
 

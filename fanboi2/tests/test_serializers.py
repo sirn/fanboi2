@@ -22,6 +22,15 @@ class TestJSONRenderer(RegistryMixin, unittest.TestCase):
             self._makeOne(datetime(2013, 1, 2, 0, 4, 1, 0, timezone.utc)),
             '2013-01-02T00:04:01+00:00')
 
+    def test_error_serializer(self):
+        from fanboi2.errors import BaseError
+        error = BaseError()
+        request = self._makeRequest()
+        response = self._makeOne(error, request=request)
+        self.assertEqual(response['type'], 'error')
+        self.assertEqual(response['status'], error.name)
+        self.assertEqual(response['message'], error.message(request))
+
 
 class TestJSONRendererWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
 

@@ -17,11 +17,11 @@ class TestResultProxy(TaskMixin, ModelMixin, unittest.TestCase):
     # noinspection PyUnresolvedReferences
     def test_object_failure(self):
         from fanboi2.tasks import ResultProxy
-        from fanboi2.errors import BaseError, StatusBlockedError
-        response = ['failure', 'status_blocked', 'locked']
+        from fanboi2.errors import BaseError, StatusRejectedError
+        response = ['failure', 'status_rejected', 'locked']
         proxy = ResultProxy(DummyAsyncResult('demo', 'success', response))
         self.assertIsInstance(proxy.object, BaseError)
-        self.assertIsInstance(proxy.object, StatusBlockedError)
+        self.assertIsInstance(proxy.object, StatusRejectedError)
         self.assertEqual(proxy.object.status, 'locked')
 
     def test_success(self):
@@ -78,7 +78,7 @@ class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
         result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
         self.assertTrue(result.successful())
         self.assertEqual(DBSession.query(Topic).count(), 0)
-        self.assertEqual(result.result, ('failure', 'spam_blocked'))
+        self.assertEqual(result.result, ('failure', 'spam_rejected'))
 
     @mock.patch('fanboi2.utils.Dnsbl.listed')
     def test_add_topic_dnsbl(self, dnsbl):
@@ -91,7 +91,7 @@ class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
         result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
         self.assertTrue(result.successful())
         self.assertEqual(DBSession.query(Topic).count(), 0)
-        self.assertEqual(result.result, ('failure', 'dnsbl_blocked'))
+        self.assertEqual(result.result, ('failure', 'dnsbl_rejected'))
 
 
 class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
@@ -130,7 +130,7 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
         result = self._makeOne(request, topic_id, 'Hi!', True)
         self.assertTrue(result.successful())
         self.assertEqual(DBSession.query(Post).count(), 0)
-        self.assertEqual(result.result, ('failure', 'spam_blocked'))
+        self.assertEqual(result.result, ('failure', 'spam_rejected'))
 
     def test_add_post_locked(self):
         import transaction
@@ -146,7 +146,10 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
         result = self._makeOne(request, topic_id, 'Hi!', True)
         self.assertTrue(result.successful())
         self.assertEqual(DBSession.query(Post).count(), 0)
-        self.assertEqual(result.result, ('failure', 'status_blocked', 'locked'))
+        self.assertEqual(result.result, (
+            'failure',
+            'status_rejected',
+            'locked'))
 
     def test_add_post_retry(self):
         import transaction
