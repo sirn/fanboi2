@@ -76,7 +76,7 @@ def board_new_post(request):
             _query={'task': task.id}))
     except RateLimitedError as e:
         timeleft = e.timeleft
-        response = render_to_response('boards/error.mako', locals())
+        response = render_to_response('boards/rate_limited.mako', locals())
         response.status = e.http_status
         return response
     except ParamsInvalidError as e:
@@ -123,7 +123,7 @@ def topic_show_post(request):
             _query={'task': task.id}))
     except RateLimitedError as e:
         timeleft = e.timeleft
-        response = render_to_response('topics/error.mako', locals())
+        response = render_to_response('topics/rate_limited.mako', locals())
         response.status = e.http_status
         return response
     except ParamsInvalidError as e:

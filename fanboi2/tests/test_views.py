@@ -554,7 +554,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         request = self._POST({'title': 'Thread thread', 'body': 'Words words'})
         request.matchdict['board'] = board.slug
         config = self._makeConfig(request, self._makeRegistry())
-        config.testing_add_renderer('boards/error.mako')
+        config.testing_add_renderer('boards/rate_limited.mako')
         limited_.return_value = True
         time_.return_value = 10
 
@@ -729,7 +729,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         request.matchdict['board'] = board.slug
         request.matchdict['topic'] = topic.id
         config = self._makeConfig(request, self._makeRegistry())
-        config.testing_add_renderer('topics/error.mako')
+        config.testing_add_renderer('topics/rate_limited.mako')
         limited_.return_value = True
         time_.return_value = 10
 
