@@ -4,11 +4,14 @@
     "description": "Assets for Fanboi2 board app",
     "version": "0.2.0",
     "dependencies": {
-        "javascript-brunch":    ">= 1.7 < 1.8",
-        "css-brunch":           ">= 1.7 < 1.8",
-        "stylus-brunch":        ">= 1.7 < 1.8",
-        "uglify-js-brunch":     ">= 1.7 < 1.8",
-        "autoprefixer-brunch":  ">= 1.7 < 1.8",
-        "clean-css-brunch":     ">= 1.7 < 1.8"
+        "javascript-brunch":    "^1.7.1",
+        "babel-brunch":         "^5.1.2",
+        "uglify-js-brunch":     "^1.7.8",
+
+        "css-brunch":           "^1.7.0",
+        "stylus-brunch":        "^1.8.1",
+        "postcss-brunch":       "^0.4.1",
+        "autoprefixer":         "^5.2.0",
+        "csswring":             "^3.0.5"
     }
 }
