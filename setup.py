@@ -67,12 +67,11 @@ setup(name='fanboi2',
       zip_safe=False,
       test_suite='fanboi2.tests',
       install_requires=requires,
-      entry_points="""\
-      [paste.app_factory]
-      main = fanboi2:main
-      [console_scripts]
-      fb2_create_board = fanboi2.scripts.create_board:main
-      fb2_update_board = fanboi2.scripts.update_board:main
-      fb2_celery = fanboi2.scripts.celery:main
-      """,
-      )
+      entry_points={
+          "paste.app_factory": ["main = fanboi2:main"],
+          "console_scripts": [
+              "fb2_create_board = fanboi2.scripts.create_board:main",
+              "fb2_update_board = fanboi2.scripts.update_board:main",
+              "fb2_celery = fanboi2.scripts.celery:main",
+          ]
+      })

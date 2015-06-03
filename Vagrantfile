@@ -16,7 +16,7 @@ Vagrant.configure("2") do |config|
     sudo apt-get -y install curl
     sudo apt-get -y install software-properties-common
     sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-    curl -sL https://deb.nodesource.com/setup | sudo bash -
+    curl -sL https://deb.nodesource.com/setup_dev | sudo bash -
     sudo add-apt-repository ppa:rwky/redis
     sudo apt-get -y update
 
@@ -33,6 +33,8 @@ Vagrant.configure("2") do |config|
     sudo sh -c 'echo "host all all 127.0.0.1/32 trust" >> /etc/postgresql/9.2/main/pg_hba.conf'
     sudo sh -c 'echo "host all all ::1/128 trust" >> /etc/postgresql/9.2/main/pg_hba.conf'
     sudo service postgresql restart
+
+    sudo npm install -g npm
   EOF
 
   config.vm.provision :shell, :privileged => false, :inline => <<-EOF
@@ -45,11 +47,11 @@ Vagrant.configure("2") do |config|
     echo '. "$HOME/.bashrc"' > $HOME/.profile
     echo 'export PATH="$HOME/nodejs/bin:$HOME/pypy3/bin:$HOME/bin:$PATH"' >> $HOME/.profile
 
-    npm config set prefix $HOME/nodejs
-    npm install -g brunch
-
     psql template1 -c "CREATE DATABASE fanboi2_development;"
     psql template1 -c "CREATE DATABASE fanboi2_test;"
+
+    npm config set prefix $HOME/nodejs
+    npm install -g brunch
 
     cd /vagrant
     rm -rf fanboi2.egg-info
@@ -58,7 +60,8 @@ Vagrant.configure("2") do |config|
     cp alembic.ini.sample alembic.ini
     $HOME/pypy3/bin/pypy3 setup.py develop
     $HOME/pypy3/bin/alembic upgrade head
-    npm install
+
+    npm install --no-bin-link
     $HOME/nodejs/bin/brunch build
   EOF
 end
