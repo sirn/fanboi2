@@ -92,6 +92,7 @@ def _post_serializer(obj, request):
         'type': 'post',
         'id': obj.id,
         'body': obj.body,
+        'body_formatted': format_post(None, request, obj),
         'bumped': obj.bumped,
         'created_at': obj.created_at,
         'ident': obj.ident,
@@ -104,8 +105,6 @@ def _post_serializer(obj, request):
             query=obj.number,
         ),
     }
-    if request.params.get('formatted'):
-        result['body_formatted'] = format_post(None, request, obj)
     return result
 
 
