@@ -1,129 +1,130 @@
 0.10.0
 ======
 
-- Changed from `CPython 3.2 <https://www.python.org/download/releases/3.2.5/>`_ to `PyPy 2.3 <http://pypy.org/download.html>`_.
-- Changed from `Jinja2 <http://jinja.pocoo.org/>`_ templates with `Mako <http://www.makotemplates.org/>`_ template.
-- Changed the board design and rewrite all templates.
-- Refactored Pyramid views into modules.
-- Refactored views to use function dispatching instead of class-based one.
-- Removed all usage of ``pyramid.threadlocal``.
-- Removed production provisioning from main repo.
-- Added type annotation in methods as a hint for IDE.
-- Added basic API views.
+- [Add] Basic API for board, topic and post operations.
+- [Change] All new board design.
+- [Change] All methods now comes with type annotation for IDE.
+- [Change] Replaced `CPython 3.2 <https://www.python.org/download/releases/3.2.5/>`_ with `PyPy3 <http://pypy.org/download.html>`_.
+- [Change] Replaced `Jinja2 <http://jinja.pocoo.org/>`_ templates with `Mako <http://www.makotemplates.org/>`_ templates.
+- [Change] Pyramid views are now properly organized into modules.
+- [Change] Views now use function dispatching instead of class-based dispatching one.
+- [Change] Vagrant now use `FreeBSD 10.1 <https://www.freebsd.org/>`_ instead of `Ubuntu 12.04 <http://releases.ubuntu.com/precise/>`_ to match the new production stack.
+- [Remove] Get rid of all usage of ``pyramid.threadlocal``.
+- [Remove] Production provisioning is now private.
 
 0.8.3
 -----
 
-- Changed how post processing failures are handle to no longer rely on `Celery <http://www.celeryproject.org>`_'s exceptions.
-- Added cross-board reference syntax with the syntax of ">>>/board/topic/anchor" (e.g. ">>>/demo/123/10-11").
+- [Add] Referencing post cross-board is now possible with ">>>/board/topic/anchor" syntax (e.g. ">>>/demo/123/10-11").
+- [Change] Post errors reporting now no longer rely on `Celery <http://www.celeryproject.org>`_'s exceptions.
 
 0.8.2
 -----
 
-- Fixed Akismet never timed out causing post to hang forever.
+- [Fix] Akismet now properly timed out and will no longer cause posting to hang forever.
 
 0.8.1
 -----
 
-- Fixed broken debug toolbar in development mode due to Python 3.2.3 bug.
-- Removed pyramid_zcml and webtest from application requirements.
-- Changed Celery process runner to no longer load Pyramid environment.
+- [Fix] Debug toolbar is now working development mode again (caused by Python 3.2.3 bug).
+- [Change] Celery worker no longer load full Pyramid environment.
+- [Remove] No longer use pyramid_zcml and webtest.
 
 0.8.0
 -----
 
-- Changed post processing to use `Celery <http://www.celeryproject.org>`_ instead.
+- [Change] Posts are now processed in a separate worker (using `Celery <http://www.celeryproject.org>`_.
 
 0.7.2
 -----
 
-- Added posting via AJAX in both quick reply and normal reply.
-- Changed "New since visit" button to "Reload posts" via AJAX.
+- [Change] Posting is now done via AJAX in both inline reply and normal reply.
+- [Change] "New since visit" button is now "Reload posts" using AJAX.
 
 0.7.1
 -----
 
-- Changed existing pure-JavaScript to `jQuery <http://jquery.com>`_ and `CoffeeScript <http://coffeescript.org>`_.
-- Changed styling for post number to indicate bump status.
-- Added bump status remembering per topic.
+- [Change] Bump status is now remembered per topic.
+- [Change] Use `jQuery <http://jquery.com>`_ and `CoffeeScript <http://coffeescript.org>`_.
+- [Change] Update the post number styling to indicate bump status.
 
 0.7.0
 -----
 
-- Added reply number autofill when clicking on post number in reply page.
-- Added inline reply when clicking on post number in listing page.
-- Added a flag to bump or not bump post when replying.
+- [Add] When replying, user can now choose to bump topic or to not bump.
+- [Add] Clicking on post number in reply page will now auto-fill the reply textarea.
+- [Add] Clicking on post number in listing page will now display inline reply box.
 
 0.6.2
 -----
 
-- Changed the way `Redis-py <https://redis-py.readthedocs.org>`_ is initialized by using late binding.
-- Changed implementation of user ident generator and avoid accessing `Pyramid registry <http://docs.pylonsproject.org/projects/pyramid/en/latest/glossary.html#term-application-registry>`_.
-- Added `dogpile.cache <http://dogpilecache.readthedocs.org>`_ support for caching.
-- Added template caching for posts using `Memcached <http://memcached.org>`_.
+- [Add] Caching support with `dogpile.cache <http://dogpilecache.readthedocs.org>`_.
+- [Add] Templates could now be cached using `Memcached <http://memcached.org>`_.
+- [Change] Initialize `Redis-py <https://redis-py.readthedocs.org>`_ with late-binding to remove `Pyramid registry <http://docs.pylonsproject.org/projects/pyramid/en/latest/glossary.html#term-application-registry>`_ access.
+- [Change] Ident generator now no longer accessing Pyramid registry.
 
 0.6.1
 -----
 
-- Changed from `Puppet <http://puppetlabs.com>`_ provisioning to `Ansible <http://www.ansibleworks.com>`_ provisioning.
-- Fixed slow navigation bar animation in iOS 7 and Mavericks.
-- Fixed display error when thumbnail and read more posts are displayed together.
+- [Fix] The layout no longer collapse when read more posts and thumbnails are displayed together.
+- [Change] Use `Ansible <http://www.ansibleworks.com>`_ for provisioning instead of `Puppet <http://puppetlabs.com>`_.
+- [Change] Navigation bar now overlay content to workaround slow DOM update in iOS 7 and Mavericks.
 
 0.6.0
 -----
 
-- Changed stylings in all topic list page and reduce font size for 11th posts and on.
-- Added posts abbreviation for post exceeding 500 characters in topic list page.
-- Added per-board posting rate limit.
-- Added temporary favicon.
+- [Add] Temporary favicon.
+- [Change] Posts exceeding 500 characters in topic list will now be abbreviated.
+- [Change] Rate limit could now be set per-board.
+- [Change] stylings in all topic list page and reduce font size for 11th posts and on.
 
 0.5.1
 -----
 
-- Fixed error when board description does not exists.
-- Fixed installation error due to import within setup.py.
-- Fixed post count not in sync with post number issue.
-- Fixed post display issue when post count is not equal to latest post number.
+- [Fix] Site will no longer error when board description does not exists.
+- [Fix] Fix an installation error due to import within setup.py.
+- [Fix] Post count now takes deleted posts into consideration.
+- [Fix] Posts are now properly displayed regardless of post count.
 
 0.5.0
 -----
 
-- Changed from `traversal <http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/traversal.html>`_ to URL dispatching for reduced complexity.
-- Added `Akismet <http://akismet.com>`_ integration for SPAM detection in comments.
+- [Add] Integration with `Akismet <http://akismet.com>`_ for SPAM detection in comments.
+- [Change] Use URL dispatching instead of `traversal <http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/traversal.html>`_ to reduce complexity.
 
 0.4.0
 -----
 
-- Changed redirect path after reply to last 5 posts instead of full topic.
-- Changed link target for topic title to recent posts instead of full topic.
-- Changed header design to be no longer dependent to number of boards.
-- Changed popover for post anchor to support ranged posts.
-- Changed popover to no longer dismiss if user try to mouse over it.
-- Changed assets path timestamp to file hash for smarter cache expiration.
-- Fixed stylings for error page when post wasn't successful.
-- Fixed character count in form is incorrectly counted due to DOS newline.
-- Added top-right and bottom-right buttons for jumping to header and footer.
-- Added auto-link functionality.
+- [Add] Add top-right and bottom-right buttons for jumping to header and footer.
+- [Add] Automatically turning text into links.
+- [Add] Post anchor popover now support ranged posts.
+- [Fix] Adjust stylings for error page when post wasn't successful.
+- [Fix] Character count in form now correctly take DOS newline into consideration.
+- [Fix] popover to no longer dismiss if user try to mouse over it.
+- [Change] Move redirect path after reply to last 5 posts instead of full topic.
+- [Change] Change link target for topic title to recent posts instead of full topic.
+- [Change] Update header design to be no longer dependent to number of boards.
+- [Change] Use file hash instead of timestamp for smarter cache expiration.
 
 0.3.0
 -----
 
-- Changed from fluid layout to fixed 980px layout for widescreen responsive level.
-- Changed all posts page to be mobile-optimized similar to board list page.
-- Added timestamp to all assets path for cache expiration.
-- Added thumbnail preview support for `Imgur <https://imgur.com>`_ links.
-- Added popover for post anchor (single post only).
-- Added proper page title to all user visible pages.
+- [Add] All assets path now has timestamp appended to it for cache expiration.
+- [Add] `Imgur <https://imgur.com>`_ links now show thumbnail preview.
+- [Add] Mouseover post anchor now display a post popover (single post only).
+- [Add] All use-facing pages now has proper page title.
+- [Change] Use a fixed 980px layout for widescreen responsive level instead of fluid layout.
+- [Change] Use the same mobile-optimized layout similar to board listing page in all posts page.
 
 0.2.0
 -----
 
-- Added `CSRF token <http://wtforms.simplecodes.com/docs/1.0.3/ext.html#module-wtforms.ext.csrf>`_ support in forms.
-- Added support for `Beaker <https://github.com/Pylons/pyramid_beaker/>`_ as session factory.
-- Changed from `Bootstrap <http://twitter.github.com/bootstrap/>`_-based templates to a custom-made one.
-- Changed from Makefile-based assets compilation to `Brunch <http://brunch.io/>`_.
-- Changed minimum support Python version to 3.2 (was Python 3.3).
-- Changed to use `Vagrant <http://www.vagrantup.com/>`_ for environment provisioning.
+- [Add] Forms now require `CSRF token <http://wtforms.simplecodes.com/docs/1.0.3/ext.html#module-wtforms.ext.csrf>`_ to be present.
+- [Change] Switch to use `Beaker <https://github.com/Pylons/pyramid_beaker/>`_ for session factory.
+- [Change] Use a custom-made template instead of `Bootstrap <http://twitter.github.com/bootstrap/>`_.
+- [Change] Replaced Makefile-based assets compilation with `Brunch <http://brunch.io/>`_.
+- [Change] Support Python 3.2 as minimal version (was Python 3.3).
+- [Change] Use `Vagrant <http://www.vagrantup.com/>`_ for environment provisioning.
 
 0.1.0
 -----

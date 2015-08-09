@@ -3,7 +3,7 @@ Fanboi2 |ci|
 
 Board engine behind `Fanboi Channel <https://fanboi.ch/>`_ written in Python.
 
-.. |ci| image:: https://api.travis-ci.org/pxfs/fanboi2.png?branch=develop
+.. |ci| image:: https://img.shields.io/travis/pxfs/fanboi2.svg?style=flat-square
         :target: https://travis-ci.org/pxfs/fanboi2
 
 Getting Started
@@ -69,6 +69,8 @@ Slug is used here to identify which board to edit. All database fields in board 
 3. ``fb2_celery development.ini worker`` to start a `Celery <http://www.celeryproject.org/>`_ worker.
 4. ``alembic upgrade head`` to update the database to latest version with `Alembic <http://alembic.readthedocs.org/en/latest/>`_.
 5. ``brunch build`` to build assets with `Brunch <http://brunch.io/>`_ (or ``brunch watch`` to do it automatically).
+
+Celery worker is required to be run if you want to enable posting features.
 
 Contributing
 ------------
