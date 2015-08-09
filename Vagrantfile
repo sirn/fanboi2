@@ -60,7 +60,7 @@ Vagrant.configure("2") do |config|
     $HOME/pypy3/bin/pip3 install -e .
     $HOME/pypy3/bin/alembic upgrade head
 
-    npm install
+    npm install --no-bin-link
     $HOME/nodejs/bin/brunch build
   EOF
 end

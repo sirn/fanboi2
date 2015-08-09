@@ -3,6 +3,13 @@ exports.config =
     public: 'fanboi2/static'
     watched: ['fanboi2/resources']
 
+  plugins:
+    postcss:
+      processors: [
+        require('autoprefixer'),
+        require('csswring')
+      ]
+
   files:
     javascripts:
       joinTo:
@@ -13,7 +20,8 @@ exports.config =
           'fanboi2/resources/vendor/javascripts/jquery.js',
           'fanboi2/resources/vendor/javascripts/lodash.js',
           'fanboi2/resources/vendor/javascripts/modernizr.js',
-          'fanboi2/resources/vendor/javascripts/backbone.js']
+          'fanboi2/resources/vendor/javascripts/backbone.js'
+        ]
 
     stylesheets:
       joinTo:

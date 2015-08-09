@@ -122,6 +122,7 @@ class TestJSONRendererWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
         response = self._makeOne(post, request=request)
         self.assertEqual(response['type'], 'post')
         self.assertEqual(response['body'], 'Hello, world!')
+        self.assertEqual(response['body_formatted'], '<p>Hello, world!</p>')
         self.assertEqual(response['topic_id'], topic.id)
         self.assertEqual(
             response['path'],
@@ -132,17 +133,6 @@ class TestJSONRendererWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
         self.assertIn('name', response)
         self.assertIn('number', response)
         self.assertNotIn('ip_address', response)
-        self.assertNotIn('body_formatted', response)
-
-    def test_post_with_formatted(self):
-        board = self._makeBoard(title='Foobar', slug='foo')
-        topic = self._makeTopic(board=board, title='Baz')
-        post = self._makePost(topic=topic, body='Hello, world!')
-        request = self._makeRequest(params={'formatted': True})
-        config = self._makeConfig(request, self._makeRegistry())
-        config.add_route('api_topic_posts_scoped', '/topic/{topic}/{query}/')
-        response = self._makeOne(post, request=request)
-        self.assertEqual(response['body_formatted'], '<p>Hello, world!</p>')
 
 
 class TestJSONRendererWithTask(
