@@ -70,11 +70,6 @@ Slug is used here to identify which board to edit. All database fields in board 
 4. ``alembic upgrade head`` to update the database to latest version with `Alembic <http://alembic.readthedocs.org/en/latest/>`_.
 5. ``brunch build`` to build assets with `Brunch <http://brunch.io/>`_ (or ``brunch watch`` to do it automatically).
 
-Deployment
-----------
-
-For provisioning, `Fanboi Channel <https://fanboi.ch/>`_ is currently using `Docker <https://www.docker.com/>`_ for production deployment. Please see the `fanboi2-docker <https://github.com/pxfs/fanboi2-docker/>`_ for more information.
-
 Contributing
 ------------
 
@@ -89,7 +84,7 @@ Please make sure that test coverage is 100% and everything passed. It's also a g
 License
 -------
 
-| Copyright (c) 2013-2014, Kridsada Thanabulpong
+| Copyright (c) 2013-2015, Kridsada Thanabulpong
 | All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
