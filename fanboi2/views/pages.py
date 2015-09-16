@@ -68,12 +68,9 @@ def board_new_post(request):
     """
     board = board_get(request)
     form = SecureTopicForm(request.params, request=request)
+
     try:
         task = board_topics_post(request, board=board, form=form)
-        return HTTPFound(location=request.route_path(
-            route_name='board_new',
-            board=board.slug,
-            _query={'task': task.id}))
     except RateLimitedError as e:
         timeleft = e.timeleft
         response = render_to_response('boards/rate_limited.mako', locals())
@@ -82,6 +79,11 @@ def board_new_post(request):
     except ParamsInvalidError as e:
         request.response.status = e.http_status
         return locals()
+
+    return HTTPFound(location=request.route_path(
+        route_name='board_new',
+        board=board.slug,
+        _query={'task': task.id}))
 
 
 def topic_show_get(request):
@@ -111,16 +113,14 @@ def topic_show_post(request):
     """
     board = board_get(request)
     topic = topic_get(request)
+
     if not topic.board_id == board.id:
         raise HTTPNotFound(request.path)
+
     form = SecurePostForm(request.params, request=request)
+
     try:
         task = topic_posts_post(request, board=board, topic=topic, form=form)
-        return HTTPFound(location=request.route_path(
-            route_name='topic',
-            board=topic.board.slug,
-            topic=topic.id,
-            _query={'task': task.id}))
     except RateLimitedError as e:
         timeleft = e.timeleft
         response = render_to_response('topics/rate_limited.mako', locals())
@@ -129,6 +129,12 @@ def topic_show_post(request):
     except ParamsInvalidError as e:
         request.response.status = e.http_status
         return locals()
+
+    return HTTPFound(location=request.route_path(
+        route_name='topic',
+        board=topic.board.slug,
+        topic=topic.id,
+        _query={'task': task.id}))
 
 
 def error_not_found(exc, request):
