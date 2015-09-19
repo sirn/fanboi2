@@ -2,16 +2,18 @@
     "author": "Kridsada Thanabulpong",
     "name": "fanboi2",
     "description": "Assets for Fanboi2 board app",
-    "version": "0.2.0",
+    "version": "0.10.0",
+    "repository": "https://github.com/pxfs/fanboi2.git",
+    "license": "BSD-3-Clause",
     "dependencies": {
         "javascript-brunch":    "^1.7.1",
         "babel-brunch":         "^5.1.2",
         "uglify-js-brunch":     "^1.7.8",
 
         "css-brunch":           "^1.7.0",
-        "stylus-brunch":        "^1.8.1",
-        "postcss-brunch":       "^0.4.1",
-        "autoprefixer":         "^5.2.0",
-        "csswring":             "^3.0.5"
+        "sass-brunch":          "^1.9.0",
+        "postcss-brunch":       "^0.5.0",
+        "autoprefixer":         "^6.0.3",
+        "csswring":             "^4.0.0"
     }
 }
