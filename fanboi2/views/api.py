@@ -79,7 +79,7 @@ def board_topics_post(request, board=None, form=None):
     raise ParamsInvalidError(form.errors)
 
 
-def task_get(request):
+def task_get(request, task=None):
     """Retrieve a task processing status for the given task id.
 
     :param request: A :class:`pyramid.request.Request` object.
@@ -87,7 +87,8 @@ def task_get(request):
     :type request: pyramid.request.Request
     :rtype: fanboi2.tasks.ResultProxy
     """
-    task = celery.AsyncResult(request.matchdict['task'])
+    if task is None:
+        task = celery.AsyncResult(request.matchdict['task'])
     response = ResultProxy(task)
     if response.success():
         if isinstance(response.object, BaseError):

@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="${request.tagged_static_path('fanboi2:static/stylesheets/app.css')}">
     <link rel="shortcut icon" href="${request.tagged_static_path('fanboi2:static/favicon.ico')}">
     <title>${self.title() + ' - ' if hasattr(self, 'title') else ''}Fanboi Channel</title>
+    % if hasattr(self, 'header'):
+        ${self.header()}
+    % endif
 </head>
 <body id="${request.route_name}">
     <header id="header">

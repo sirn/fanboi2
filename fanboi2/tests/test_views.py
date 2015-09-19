@@ -492,6 +492,79 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         response = board_new_get(request)
         self.assertSAEqual(response['board'], board)
 
+    # noinspection PyUnresolvedReferences
+    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_board_new_get_task(self, result_):
+        from fanboi2.views.pages import board_new_get
+        board = self._makeBoard(title='Foobar', slug='foobar')
+        topic = self._makeTopic(board=board, title='Foobar')
+        result_.return_value = DummyAsyncResult(
+            'dummy',
+            'success',
+            ['topic', topic.id])
+
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        request.params['task'] = 'dummy'
+        config = self._makeConfig(request, self._makeRegistry())
+        config.add_route('topic', '/{board}/{topic}')
+
+        response = board_new_get(request)
+        location = '/%s/%s' % (board.slug, topic.id)
+        self.assertEqual(response.location, location)
+        result_.assert_called_with('dummy')
+
+    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_board_new_get_task_wait(self, result_):
+        from fanboi2.views.pages import board_new_get
+        board = self._makeBoard(title='Foobar', slug='foobar')
+        result_.return_value = DummyAsyncResult('dummy', 'pending')
+
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        request.params['task'] = 'dummy'
+        config = self._makeConfig(request, self._makeRegistry())
+        config.testing_add_renderer('boards/new_wait.mako')
+
+        board_new_get(request)
+        result_.assert_called_with('dummy')
+
+    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_board_new_get_spam_rejected(self, result_):
+        from fanboi2.views.pages import board_new_get
+        board = self._makeBoard(title='Foobar', slug='foobar')
+        result_.return_value = DummyAsyncResult('dummy', 'success', [
+            'failure',
+            'spam_rejected'])
+
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        request.params['task'] = 'dummy'
+        config = self._makeConfig(request, self._makeRegistry())
+        config.testing_add_renderer('boards/spam_rejected.mako')
+
+        response = board_new_get(request)
+        result_.assert_called_with('dummy')
+        self.assertEqual(response.status, '422 Unprocessable Entity')
+
+    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_board_new_get_dnsbl_rejected(self, result_):
+        from fanboi2.views.pages import board_new_get
+        board = self._makeBoard(title='Foobar', slug='foobar')
+        result_.return_value = DummyAsyncResult('dummy', 'success', [
+            'failure',
+            'dnsbl_rejected'])
+
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        request.params['task'] = 'dummy'
+        config = self._makeConfig(request, self._makeRegistry())
+        config.testing_add_renderer('boards/dnsbl_rejected.mako')
+
+        response = board_new_get(request)
+        result_.assert_called_with('dummy')
+        self.assertEqual(response.status, '422 Unprocessable Entity')
+
     def test_board_new_get_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.pages import board_new_get
@@ -607,6 +680,73 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
         response = topic_show_get(request)
         self.assertSAEqual(response['posts'], [post])
+
+    # noinspection PyUnresolvedReferences
+    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_topic_show_get_task(self, result_):
+        from fanboi2.views.pages import topic_show_get
+        board = self._makeBoard(title='Foobar', slug='foobar')
+        topic = self._makeTopic(board=board, title='Foobar')
+        self._makePost(topic=topic, body='Lorem ipsum')
+        self._makePost(topic=topic, body='Dolor sit amet')
+        post = self._makePost(topic=topic, body='Foobar baz')
+        result_.return_value = DummyAsyncResult(
+            'dummy',
+            'success',
+            ['post', post.id])
+
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        request.matchdict['topic'] = topic.id
+        request.params['task'] = 'dummy'
+        config = self._makeConfig(request, self._makeRegistry())
+        config.add_route('topic_scoped', '/{board}/{topic}/{query}')
+
+        response = topic_show_get(request)
+        location = '/%s/%s/l10' % (board.slug, topic.id)
+        self.assertEqual(response.location, location)
+        result_.assert_called_with('dummy')
+
+    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_topic_show_get_task_wait(self, result_):
+        from fanboi2.views.pages import topic_show_get
+        board = self._makeBoard(title='Foobar', slug='foobar')
+        topic = self._makeTopic(board=board, title='Foobar')
+        self._makePost(topic=topic, body='Lorem ipsum')
+        self._makePost(topic=topic, body='Dolor sit amet')
+        result_.return_value = DummyAsyncResult('dummy', 'pending')
+
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        request.matchdict['topic'] = topic.id
+        request.params['task'] = 'dummy'
+        config = self._makeConfig(request, self._makeRegistry())
+        config.testing_add_renderer('topics/show_wait.mako')
+
+        topic_show_get(request)
+        result_.assert_called_with('dummy')
+
+    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_topic_show_get_spam_rejected(self, result_):
+        from fanboi2.views.pages import topic_show_get
+        board = self._makeBoard(title='Foobar', slug='foobar')
+        topic = self._makeTopic(board=board, title='Foobar')
+        self._makePost(topic=topic, body='Lorem ipsum')
+        self._makePost(topic=topic, body='Dolor sit amet')
+        result_.return_value = DummyAsyncResult('dummy', 'success', [
+            'failure',
+            'spam_rejected'])
+
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        request.matchdict['topic'] = topic.id
+        request.params['task'] = 'dummy'
+        config = self._makeConfig(request, self._makeRegistry())
+        config.testing_add_renderer('topics/spam_rejected.mako')
+
+        response = topic_show_get(request)
+        result_.assert_called_with('dummy')
+        self.assertEqual(response.status, '422 Unprocessable Entity')
 
     def test_topic_show_get_topic_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound

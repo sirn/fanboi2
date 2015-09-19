@@ -1,10 +1,12 @@
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.renderers import render_to_response
 from sqlalchemy.orm.exc import NoResultFound
-from fanboi2.errors import RateLimitedError, ParamsInvalidError
+from fanboi2.errors import RateLimitedError, ParamsInvalidError, \
+    SpamRejectedError, DnsblRejectedError
 from fanboi2.forms import SecurePostForm, SecureTopicForm
+from fanboi2.tasks import celery
 from fanboi2.views.api import boards_get, board_get, board_topics_get,\
-    topic_get, topic_posts_get, topic_posts_post, board_topics_post
+    topic_get, topic_posts_get, topic_posts_post, board_topics_post, task_get
 
 
 def root(request):
@@ -46,14 +48,40 @@ def board_all(request):
 
 
 def board_new_get(request):
-    """Display a form for creating new topic in a board.
+    """Display a form for creating new topic in a board. If a `task` query
+    string is given, the function will try to retrieve and process that task
+    in board context instead.
 
     :param request: A :class:`pyramid.request.Request` object.
 
     :type request: pyramid.request.Request
-    :rtype: dict
+    :rtype: dict | pyramid.response.Response
     """
     board = board_get(request)
+
+    if request.params.get('task'):
+        try:
+            task_result = celery.AsyncResult(request.params['task'])
+            task = task_get(request, task_result)
+        except SpamRejectedError as e:
+            response = render_to_response('boards/spam_rejected.mako', locals())
+            response.status = e.http_status
+            return response
+        except DnsblRejectedError as e:
+            response = render_to_response(
+                'boards/dnsbl_rejected.mako',
+                locals())
+            response.status = e.http_status
+            return response
+
+        if task.success():
+            topic = task.object
+            return HTTPFound(location=request.route_path(
+                route_name='topic',
+                board=board.slug,
+                topic=topic.id))
+        return render_to_response('boards/new_wait.mako', locals())
+
     form = SecureTopicForm(request=request)
     return locals()
 
@@ -87,15 +115,35 @@ def board_new_post(request):
 
 
 def topic_show_get(request):
-    """Display a single topic with its related posts.
+    """Display a single topic with its related posts. If a `task` query string
+    is given, the function will try to retrieve and process that task in topic
+    context instead.
 
     :param request: A :class:`pyramid.request.Request` object.
 
     :type request: pyramid.request.Request
-    :rtype: dict
+    :rtype: dict | pyramid.response.Response
     """
     board = board_get(request)
     topic = topic_get(request)
+
+    if request.params.get('task'):
+        try:
+            task_result = celery.AsyncResult(request.params['task'])
+            task = task_get(request, task_result)
+        except SpamRejectedError as e:
+            response = render_to_response('topics/spam_rejected.mako', locals())
+            response.status = e.http_status
+            return response
+
+        if task.success():
+            return HTTPFound(location=request.route_path(
+                route_name='topic_scoped',
+                board=board.slug,
+                topic=topic.id,
+                query='l10'))
+        return render_to_response('topics/show_wait.mako', locals())
+
     posts = topic_posts_get(request)
     if not topic.board_id == board.id or not posts:
         raise HTTPNotFound(request.path)
