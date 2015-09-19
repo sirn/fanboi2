@@ -64,13 +64,11 @@ def board_new_get(request):
             task_result = celery.AsyncResult(request.params['task'])
             task = task_get(request, task_result)
         except SpamRejectedError as e:
-            response = render_to_response('boards/spam_rejected.mako', locals())
+            response = render_to_response('boards/error_spam.mako', locals())
             response.status = e.http_status
             return response
         except DnsblRejectedError as e:
-            response = render_to_response(
-                'boards/dnsbl_rejected.mako',
-                locals())
+            response = render_to_response('boards/error_dnsbl.mako', locals())
             response.status = e.http_status
             return response
 
@@ -101,7 +99,7 @@ def board_new_post(request):
         task = board_topics_post(request, board=board, form=form)
     except RateLimitedError as e:
         timeleft = e.timeleft
-        response = render_to_response('boards/rate_limited.mako', locals())
+        response = render_to_response('boards/error_rate.mako', locals())
         response.status = e.http_status
         return response
     except ParamsInvalidError as e:
@@ -132,7 +130,7 @@ def topic_show_get(request):
             task_result = celery.AsyncResult(request.params['task'])
             task = task_get(request, task_result)
         except SpamRejectedError as e:
-            response = render_to_response('topics/spam_rejected.mako', locals())
+            response = render_to_response('topics/error_spam.mako', locals())
             response.status = e.http_status
             return response
 
@@ -171,7 +169,7 @@ def topic_show_post(request):
         task = topic_posts_post(request, board=board, topic=topic, form=form)
     except RateLimitedError as e:
         timeleft = e.timeleft
-        response = render_to_response('topics/rate_limited.mako', locals())
+        response = render_to_response('topics/error_rate.mako', locals())
         response.status = e.http_status
         return response
     except ParamsInvalidError as e:

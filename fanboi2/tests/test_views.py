@@ -541,7 +541,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         request.matchdict['board'] = board.slug
         request.params['task'] = 'dummy'
         config = self._makeConfig(request, self._makeRegistry())
-        config.testing_add_renderer('boards/spam_rejected.mako')
+        config.testing_add_renderer('boards/error_spam.mako')
 
         response = board_new_get(request)
         result_.assert_called_with('dummy')
@@ -559,7 +559,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         request.matchdict['board'] = board.slug
         request.params['task'] = 'dummy'
         config = self._makeConfig(request, self._makeRegistry())
-        config.testing_add_renderer('boards/dnsbl_rejected.mako')
+        config.testing_add_renderer('boards/error_dnsbl.mako')
 
         response = board_new_get(request)
         result_.assert_called_with('dummy')
@@ -627,7 +627,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         request = self._POST({'title': 'Thread thread', 'body': 'Words words'})
         request.matchdict['board'] = board.slug
         config = self._makeConfig(request, self._makeRegistry())
-        config.testing_add_renderer('boards/rate_limited.mako')
+        config.testing_add_renderer('boards/error_rate.mako')
         limited_.return_value = True
         time_.return_value = 10
 
@@ -742,7 +742,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         request.matchdict['topic'] = topic.id
         request.params['task'] = 'dummy'
         config = self._makeConfig(request, self._makeRegistry())
-        config.testing_add_renderer('topics/spam_rejected.mako')
+        config.testing_add_renderer('topics/error_spam.mako')
 
         response = topic_show_get(request)
         result_.assert_called_with('dummy')
@@ -869,7 +869,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         request.matchdict['board'] = board.slug
         request.matchdict['topic'] = topic.id
         config = self._makeConfig(request, self._makeRegistry())
-        config.testing_add_renderer('topics/rate_limited.mako')
+        config.testing_add_renderer('topics/error_rate.mako')
         limited_.return_value = True
         time_.return_value = 10
 
