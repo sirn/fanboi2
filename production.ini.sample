@@ -19,6 +19,7 @@ dogpile.arguments.distributed_lock = true
 
 session.type = ext:memcached
 session.key = _session
+session.url =
 session.httponly = true
 session.secret =
 

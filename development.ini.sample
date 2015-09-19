@@ -23,6 +23,7 @@ dogpile.arguments.distributed_lock = true
 
 session.type = ext:memcached
 session.key = _session
+session.url = 127.0.0.1:11211
 session.httponly = true
 session.secret = DEVELOPMENT_USE_ONLY_CHANGE_ME_IN_PROD
 
