@@ -1,5 +1,5 @@
 <%inherit file='../partials/_layout.mako' />
-<%def name='title()'>API</%def>
+<%def name='title()'>API documentation</%def>
 <header class="subheader">
     <div class="container">
         <h2 class="subheader-title">API documentation</h2>
