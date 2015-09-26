@@ -360,16 +360,8 @@ textarea.input {
 .table-group {
     display: block;
 
-    &.header {
-        display: none;
-    }
-
     @media (min-width: $bound-tablet) {
         display: table-row-group;
-
-        &.header {
-            display: table-row-group;
-        }
     }
 }
 

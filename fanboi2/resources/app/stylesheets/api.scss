@@ -10,11 +10,11 @@
             .table-row-header {
                 width: 120px;
             }
+        }
 
-            &.header {
-                .table-row-header {
-                    width: auto;
-                }
+        thead.table-group {
+            .table-row-header {
+                width: auto;
             }
         }
 

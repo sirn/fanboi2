@@ -35,7 +35,7 @@
                         <td class="table-row-item">
                             <p><code>Object</code> containing the fields as listed below. Unicode strings are escaped in actual response.</p>
                             <table class="api-table table inner">
-                                <thead class="table-group header">
+                                <thead class="table-group">
                                     <tr class="table-row">
                                         <th class="table-row-header">Field</th>
                                         <th class="table-row-header type">Type</th>

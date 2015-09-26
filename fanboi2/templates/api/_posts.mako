@@ -18,7 +18,7 @@
                         <td class="table-row-item">
                             <p><code>Array</code> containing <code>Object</code> of the below fields. Unicode strings are escaped in actual response.</p>
                             <table class="api-table table inner">
-                                <thead class="table-group header">
+                                <thead class="table-group">
                                     <tr class="table-row">
                                         <th class="table-row-header">Field</th>
                                         <th class="table-row-header type">Type</th>
@@ -117,7 +117,7 @@
                             <p><code>GET ${formatters.unquoted_path(request, 'api_topic_posts_scoped', topic='{api_topic.id}', query='{query}')}</code></p>
                             <p>The query could be one of the following:</p>
                             <table class="api-table table inner">
-                                <thead class="table-group header">
+                                <thead class="table-group">
                                     <tr class="table-row">
                                         <th class="table-row-header">Query</th>
                                         <th class="table-row-header">Description</th>
