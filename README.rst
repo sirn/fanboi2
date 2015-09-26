@@ -29,6 +29,8 @@ Once the development box is up and running, you may now run the server::
 
 Now you're done! You can now proceed to the Management Scripts section below.
 
+.. _Vagrant: https://www.vagrantup.com/
+
 The Adventurous Way
 ~~~~~~~~~~~~~~~~~~~
 
@@ -81,7 +83,7 @@ We use `git-flow <https://github.com/nvie/gitflow>`_ as primary branching model.
 2. Start a new feature with ``git flow feature start feature-name``.
 3. After you've done, open a pull request against **develop** branch of this repo.
 
-Please make sure that test coverage is 100% and everything passed. It's also a good idea to open a bug ticket for feature you want to implement before starting. We have development IRC channel at `irc.freenode.net#fanboi <irc://irc.freenode.net/#fanboi>`_. Although if you want to submit patch anonymously you can also create git patch and post it to `support board <https://fanboi.ch/meta/>`_ as well.
+Please make sure that test coverage is 100% and everything passed. It's also a good idea to open a bug ticket for feature you want to implement before starting. We have development IRC channel at `irc.fanboi.ch#fanboi <irc://irc.fanboi.ch/#fanboi>`_. Although if you want to submit patch anonymously you can also create git patch and post it to `support board <https://fanboi.ch/meta/>`_ as well.
 
 License
 -------
