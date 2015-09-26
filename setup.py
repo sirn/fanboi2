@@ -34,7 +34,7 @@ requires = [
 
     # Tests
     'nose',
-    'coverage',
+    'coverage <4.0', # 4.0 drops Python 3.2 support
     'mock',
 
     # Python 3.2 compatible
