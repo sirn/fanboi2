@@ -6,14 +6,17 @@
     "repository": "https://github.com/pxfs/fanboi2.git",
     "license": "BSD-3-Clause",
     "dependencies": {
-        "javascript-brunch":    "^1.7.1",
-        "babel-brunch":         "^5.1.2",
-        "uglify-js-brunch":     "^1.7.8",
+        "javascript-brunch":       "^1.7.1",
+        "babel-brunch":            "^5.1.2",
+        "uglify-js-brunch":        "^1.7.8",
 
-        "css-brunch":           "^1.7.0",
-        "sass-brunch":          "^1.9.0",
-        "postcss-brunch":       "^0.5.0",
-        "autoprefixer":         "^6.0.3",
-        "csswring":             "^4.0.0"
+        "css-brunch":              "^1.7.0",
+        "sass-brunch":             "^1.9.0",
+        "postcss-brunch":          "^0.5.0",
+        "autoprefixer":            "^6.0.3",
+        "postcss-round-subpixels": "^1.0.0",
+        "postcss-urlrev":          "^1.1.2",
+        "css-mqpacker":            "^4.0.0",
+        "csswring":                "^4.0.0"
     }
 }

@@ -1,0 +1,77 @@
+@import "variables";
+@import "mixins";
+
+$post-item-spacing: 5px;
+$post-gap-spacing: $spacing-vertical;
+
+/* Needs rounded value otherwise whitespace calculation in .post will break. */
+$post-date-size: round($font-size-small);
+
+/* Post
+ * ------------------------------------------------------------------------ */
+
+.post {
+    border-bottom: 1px solid;
+    margin: 0;
+    overflow-x: auto;
+    position: relative;
+
+    /* Extra padding values for date part. */
+    $spacing-bottom: $post-gap-spacing + $spacing-vertical;
+    padding: $post-gap-spacing 0 ($spacing-bottom + $post-date-size);
+
+    @media (min-width: $bound-tablet) {
+        padding: $post-gap-spacing 0;
+    }
+}
+
+.post-header {
+    @include clearfix();
+    font-size: $font-size-small;
+    line-height: $font-size-small;
+    margin: 0 0 $spacing-vertical;
+}
+
+.post-header-item {
+    display: block;
+    float: left;
+    margin: 0 $spacing-horizontal-small 0 0;
+    padding: $post-item-spacing 0;
+
+    &.number {
+        border: 1px solid;
+        padding: ($post-item-spacing - 1) ($post-item-spacing - 1);
+    }
+
+    &.name {
+        padding: $post-item-spacing $post-item-spacing;
+    }
+
+    &.date {
+        bottom: $post-gap-spacing;
+        font-size: $post-date-size;
+        font-style: italic;
+        line-height: $post-date-size;
+        padding: 0;
+        position: absolute;
+    }
+
+    @media (min-width: $bound-tablet) {
+        &.date {
+            font-size: inherit;
+            font-style: inherit;
+            padding: $post-item-spacing 0;
+            position: inherit;
+        }
+    }
+}
+
+.post-body {
+    font-size: $font-size-content;
+    line-height: $line-height-content;
+    margin: 0 0 (-$spacing-vertical) 0;
+
+    p {
+        margin: 0 0 $spacing-vertical;
+    }
+}

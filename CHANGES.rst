@@ -2,8 +2,9 @@
 ======
 
 - [Add] Basic API for board, topic and post operations.
-- [Change] All new board design.
-- [Change] All methods now comes with type annotation for IDE.
+- [Add] More random quotes.
+- [Change] Rewrite all board templates.
+- [Change] Codebase now comes with type annotation for IDE.
 - [Change] Replaced `CPython 3.2 <https://www.python.org/download/releases/3.2.5/>`_ with `PyPy3 <http://pypy.org/download.html>`_.
 - [Change] Replaced `Jinja2 <http://jinja.pocoo.org/>`_ templates with `Mako <http://www.makotemplates.org/>`_ templates.
 - [Change] Pyramid views are now properly organized into modules.

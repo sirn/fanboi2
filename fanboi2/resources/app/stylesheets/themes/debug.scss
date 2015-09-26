@@ -1,0 +1,88 @@
+/* Debug theme, for layout debugging
+ * ------------------------------------------------------------------------ */
+
+.theme-debug {
+    background-color: #999;
+
+    /* app.scss
+     * -------------------------------------------------------------------- */
+
+    .container {
+        background-color: rgba(#fff, 0.65);
+    }
+
+    .header {
+        background-color: #114422;
+    }
+
+    .footer {
+        background-color: #669933;
+    }
+
+    .cascade {
+        background-color: #ffcf68;
+    }
+
+    .subheader {
+        background-color: #b686ff;
+    }
+
+    .sheet {
+        background-color: #faa7ff;
+    }
+
+    .form {
+        background-color: #d8ec78;
+    }
+
+    .button {
+        &.primary {
+            font-weight: bold;
+        }
+    }
+
+    .table {
+        background-color: #c1ec4e;
+    }
+
+    .table-row-header {
+        background-color: #97be2d;
+    }
+
+    .codeblock {
+        background-color: #999;
+    }
+
+    /* board.scss
+     * -------------------------------------------------------------------- */
+
+    /* topic.scss
+     * -------------------------------------------------------------------- */
+
+    .topic {
+        background-color: #fc695f;
+    }
+
+    .topic-header {
+        background-color: #ff9783;
+    }
+
+    .topic-footer {
+        background-color: #eec99a;
+    }
+
+    /* post.scss
+     * -------------------------------------------------------------------- */
+
+    .post {
+        background-color: #97d9ff;
+    }
+
+    .post-header {
+        background-color: #007dc4;
+    }
+
+    .post-header-item {
+        background-color: rgba(#fff, 0.5);
+    }
+}

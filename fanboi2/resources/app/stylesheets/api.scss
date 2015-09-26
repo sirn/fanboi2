@@ -1,0 +1,32 @@
+@import "variables";
+@import "mixins";
+
+/* API table
+ * ------------------------------------------------------------------------ */
+
+.api-table {
+    @media (min-width: $bound-tablet) {
+        .table-group {
+            .table-row-header {
+                width: 120px;
+            }
+
+            &.header {
+                .table-row-header {
+                    width: auto;
+                }
+            }
+        }
+
+        &.inner {
+            font-size: $font-size-small;
+            line-height: $line-height-content;
+        }
+
+        .table-row-item {
+            &.type {
+                width: 80px;
+            }
+        }
+    }
+}

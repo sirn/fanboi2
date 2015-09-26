@@ -1,0 +1,56 @@
+/* Colors
+ * ------------------------------------------------------------------------ */
+
+$color-brand:                #eb3a17;
+$color-brand-dark:           #262b2d;
+$color-gray-base:            #5e6b71;
+
+$color-green:                #4ab91f;
+
+/* Responsive width boundaries
+ * ------------------------------------------------------------------------ */
+
+$bound-mobile:               320px;
+$bound-tablet:               640px;
+$bound-desktop:              980px;
+
+/* Typography
+ * ------------------------------------------------------------------------ */
+
+$font-size-base:             16px;
+$font-size-smaller:          $font-size-base * 0.7;
+$font-size-small:            $font-size-base * 0.8;
+$font-size:                  $font-size-base;
+$font-size-large:            $font-size-base * 1.15;
+$font-size-larger:           $font-size-base * 1.3;
+
+$font-size-content:          $font-size;
+$line-height-content:        1.4;
+
+$font-size-input:            14px;
+
+/* Animations
+ * ------------------------------------------------------------------------ */
+
+$animation-timing:           0.2s;
+$animation-function:         linear;
+
+/* Metrics
+ * ------------------------------------------------------------------------ */
+
+$spacing-horizontal-smaller: 3px;
+$spacing-horizontal-small:   6px;
+$spacing-horizontal:         12px;
+$spacing-horizontal-large:   18px;
+$spacing-horizontal-larger:  24px;
+
+$spacing-vertical-smaller:   3px;
+$spacing-vertical-small:     6px;
+$spacing-vertical:           12px;
+$spacing-vertical-large:     18px;
+$spacing-vertical-larger:    24px;
+
+$spacing-content:            12px;
+
+$spacing-vertical-input:     8px;
+$spacing-horizontal-input:   8px;

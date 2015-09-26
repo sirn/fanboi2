@@ -205,7 +205,7 @@ def includeme(config):  # pragma: no cover
         root,
         request_method='GET',
         route_name='api_root',
-        renderer='api.mako')
+        renderer='api/show.mako')
 
     def _map_api_route(name, path, callables=None):
         config.add_route(name, path)

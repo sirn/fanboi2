@@ -1,0 +1,424 @@
+@import "variables";
+@import "mixins";
+
+body {
+    font-family: "Helvetica", "Arial", sans-serif;
+    font-size: $font-size;
+    line-height: $font-size;
+    min-width: $bound-mobile;
+    text-rendering: optimizeLegibility;
+}
+
+/* Generic container
+ * ------------------------------------------------------------------------ */
+
+.container {
+    @include clearfix;
+    box-sizing: border-box;
+    margin: auto;
+    max-width: $bound-desktop;
+    padding: 0 $spacing-horizontal;
+
+    @media (min-width: $bound-desktop) {
+        padding: 0;
+    }
+}
+
+/* Site header
+ * ------------------------------------------------------------------------ */
+
+.header {
+    padding: $spacing-vertical 0;
+}
+
+.header-brand {
+    $logo-width: 97px;
+    $logo-height: 20px;
+
+    @include retina-background("../logo", "png", $logo-width, $logo-height);
+    font-size: $font-size;
+    height: $logo-height;
+    line-height: $font-size;
+    margin: 0 auto;
+    text-indent: -10000em;
+    width: $logo-width;
+
+    a {
+        display: block;
+        float: left;
+        height: $logo-height;
+        width: $logo-width;
+    }
+
+    @media (min-width: $bound-tablet) {
+        margin: 0;
+    }
+}
+
+/* Site footer
+ * ------------------------------------------------------------------------ */
+
+.footer {
+    padding: $spacing-vertical 0;
+}
+
+.footer-lines {
+    font-size: $font-size-small;
+    line-height: $font-size-small;
+    margin: 0 0 $spacing-vertical-small;
+    text-align: center;
+
+    @media (min-width: $bound-tablet) {
+        float: left;
+        margin: 0;
+        text-align: left;
+    }
+}
+
+.footer-lines-item {
+    display: block;
+    margin: 0 0 $spacing-vertical-smaller;
+    padding: 0;
+}
+
+.footer-links {
+    display: block;
+    font-size: $font-size-smaller;
+    line-height: $font-size-smaller;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+
+    @media (min-width: $bound-tablet) {
+        float: right;
+        font-size: $font-size-small;
+        line-height: $font-size-small;
+        text-align: right;
+    }
+}
+
+.footer-links-item {
+    display: inline;
+    margin: 0 $spacing-vertical-smaller;
+
+    @media (min-width: $bound-tablet) {
+        display: block;
+    }
+}
+
+/* Cascade
+ * ------------------------------------------------------------------------ */
+
+.cascade {
+    padding: $spacing-vertical-large 0;
+    border-bottom: 1px solid;
+    position: relative;
+}
+
+.cascade-header {
+    margin: 0 0 $spacing-vertical-smaller;
+}
+
+.cascade-header-link {
+    &:before {
+        bottom: 0;
+        content: "";
+        display: block;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+
+    @media (min-width: $bound-tablet) {
+        &:before {
+            display: none;
+        }
+    }
+}
+
+.cascade-body {
+    font-size: $font-size-small;
+    line-height: $line-height-content;
+
+    /* Calculations to make these spacing same size as $font-size-small
+     * even when line-height is taken into consideration. */
+    $line-height: ($font-size-small * $line-height-content);
+    $diff-height: $line-height - $font-size;
+    $spacing: $diff-height / 2;
+
+    margin: 0 0 (-$spacing);
+
+    p {
+        margin: 0 0 $spacing;
+    }
+}
+
+/* Subheader
+ * ------------------------------------------------------------------------ */
+
+.subheader {
+    border-bottom: 1px solid;
+    padding: $spacing-vertical-larger 0;
+    text-align: center;
+
+    @media (min-width: $bound-tablet) {
+        text-align: left;
+    }
+}
+
+.subheader-title {
+    font-size: $font-size-large;
+    line-height: $font-size-large;
+    margin: 0 0 $spacing-vertical-smaller;
+    padding: 0;
+}
+
+.subheader-body {
+    font-size: $font-size-small;
+    line-height: $line-height-content;
+    margin: 0 0 (-$spacing-vertical-smaller);
+
+    p {
+        margin: 0 0 $spacing-vertical-smaller 0;
+
+        &.subheader-body-item {
+            margin: 0;
+        }
+    }
+}
+
+.subheader-footer {
+    margin: 0 0 (-$spacing-vertical);
+    padding: $spacing-vertical 0;
+
+    .actions-item {
+        display: inline-block;
+        float: none;
+    }
+
+    @media (min-width: $bound-tablet) {
+        .actions-item {
+            display: block;
+            float: left;
+            margin: 0 $spacing-horizontal-smaller 0 0;
+        }
+    }
+}
+
+/* Sheet
+ * ------------------------------------------------------------------------ */
+
+.sheet {
+    $sheet-spacing: $spacing-vertical-large - $spacing-vertical;
+    border-bottom: 1px solid;
+    padding: $spacing-vertical-large 0 $sheet-spacing;
+}
+
+.sheet-title {
+    font-size: $font-size-large;
+    line-height: $font-size-large;
+    margin: 0 0 $spacing-vertical;
+}
+
+.sheet-body {
+    font-size: $font-size-content;
+    line-height: $line-height-content;
+    margin: 0 0 $spacing-vertical;
+
+    ul,
+    p {
+        margin: 0 0 $spacing-vertical-smaller 0;
+    }
+}
+
+/* Action list
+ * ------------------------------------------------------------------------ */
+
+.actions {
+    @include clearfix();
+    display: block;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.actions-item {
+    display: block;
+    float: left;
+}
+
+/* Form
+ * ------------------------------------------------------------------------ */
+
+.form {
+    $form-spacing: $spacing-vertical-large - $spacing-vertical;
+    border-bottom: 1px solid;
+    display: block;
+    padding: $spacing-vertical-large 0 $form-spacing;
+}
+
+.form-item {
+    margin: 0 0 $spacing-vertical;
+}
+
+.form-item-label {
+    display: block;
+    font-size: $font-size-small;
+    line-height: $font-size-small;
+    margin: 0 0 $spacing-vertical-smaller;
+}
+
+/* Form inputs
+ * ------------------------------------------------------------------------ */
+
+.input {
+    border: 1px solid;
+    box-sizing: border-box;
+    line-height: normal;
+    margin: 0;
+    max-width: 100%;
+
+    /* Because input would looks kinda bad without these custom styles. */
+    padding: $spacing-vertical-input $spacing-horizontal-input;
+    font-size: $font-size-input;
+
+    /* Default styling reset. */
+    appearance: none;       /* WebKit on mobile */
+    background-color: #fff; /* Firefox on desktop */
+    background-image: none; /* Firefox on mobile */
+    border-radius: 0;       /* WebKit on mobile */
+    outline: none;          /* WebKit on desktop */
+
+    &.block {
+        display: block;
+        min-width: 100%;
+        width: 100%;
+    }
+
+    &.smaller { font-size: $font-size-smaller; }
+    &.small   { font-size: $font-size-small; }
+    &.content { font-size: $font-size-content; }
+    &.large   { font-size: $font-size-large; }
+    &.larger  { font-size: $font-size-larger; }
+}
+
+textarea.input {
+    line-height: $line-height-content;
+}
+
+/* Buttons
+ * ------------------------------------------------------------------------ */
+
+.button {
+    border-radius: 0;
+    border: 1px solid;
+    box-sizing: border-box;
+    display: inline-block;
+    line-height: normal;
+    margin: 0;
+    outline: none;
+    text-decoration: none;
+
+    /* Because button would looks kinda bad without these custom styles. */
+    padding: $spacing-vertical-input $spacing-horizontal-input;
+    font-size: $font-size-input;
+
+    &.block {
+        display: block;
+        text-align: center;
+        width: 100%;
+    }
+
+    &.primary {
+    }
+}
+
+/* Tables
+ * ------------------------------------------------------------------------ */
+
+.table {
+    border: 1px solid;
+    border-bottom: none;
+    display: block;
+    font-size: $font-size;
+    line-height: $font-size;
+    margin: 0 0 $spacing-vertical;
+    max-width: 100%;
+    width: 100%;
+
+    &.inner {
+        margin: 0;
+    }
+
+    @media (min-width: $bound-tablet) {
+        display: table;
+    }
+}
+
+.table-group {
+    display: block;
+
+    &.header {
+        display: none;
+    }
+
+    @media (min-width: $bound-tablet) {
+        display: table-row-group;
+
+        &.header {
+            display: table-row-group;
+        }
+    }
+}
+
+.table-row {
+    display: block;
+    margin: 0;
+    width: 100%;
+
+    @media (min-width: $bound-tablet) {
+        display: table-row;
+        width: auto;
+    }
+}
+
+.table-row-item {
+    border-bottom: 1px solid;
+    box-sizing: border-box;
+    display: block;
+    line-height: $line-height-content;
+    overflow-x: auto;
+    padding: $spacing-vertical-small $spacing-horizontal-small;
+    word-wrap: break-word;
+
+    ul,
+    p {
+        margin: 0 0 $spacing-vertical-small;
+    }
+
+    @media (min-width: $bound-tablet) {
+        display: table-cell;
+        vertical-align: top;
+    }
+}
+
+.table-row-header {
+    @extend .table-row-item;
+    line-height: $line-height-content;
+    margin: 0 0 $spacing-vertical-smaller;
+    text-align: left;
+}
+
+/* Code block
+ * ------------------------------------------------------------------------ */
+
+.codeblock {
+    margin: 0;
+    overflow-y: auto;
+    padding: $spacing-vertical-small $spacing-horizontal-small;
+    white-space: pre-wrap;
+    word-break: break-all;
+    word-wrap: break-word;
+}

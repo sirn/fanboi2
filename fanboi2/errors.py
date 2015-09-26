@@ -98,7 +98,7 @@ class SpamRejectedError(BaseError):
     """
 
     def message(self, request):
-        return 'The request has been identified as SPAM and therefore rejected.'
+        return 'The request has been identified as spam and therefore rejected.'
 
     @property
     def name(self):
