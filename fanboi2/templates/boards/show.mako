@@ -18,9 +18,9 @@
         <div class="topic-footer">
             <div class="container">
                 <ul class="actions">
-                    <li class="actions-item"><a class="button" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='recent')}">Recent posts</a></li>
-                    <li class="actions-item"><a class="button" href="${request.route_path('topic', board=board.slug, topic=topic.id)}">All posts</a></li>
-                    <li class="actions-item"><a class="button reply" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='recent')}#reply">Reply</a></li>
+                    <li class="actions-item"><a class="button action" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='recent')}">Recent posts</a></li>
+                    <li class="actions-item"><a class="button action" href="${request.route_path('topic', board=board.slug, topic=topic.id)}">All posts</a></li>
+                    <li class="actions-item"><a class="button green" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='recent')}#reply">Reply</a></li>
                 </ul>
             </div>
         </div>

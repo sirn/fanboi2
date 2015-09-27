@@ -182,8 +182,12 @@ body {
 
     p {
         margin: 0 0 $spacing-vertical-smaller 0;
+    }
 
-        &.subheader-body-item {
+    &.lines {
+        margin: 0;
+
+        p {
             margin: 0;
         }
     }
@@ -261,6 +265,9 @@ body {
 
 .form-item {
     margin: 0 0 $spacing-vertical;
+
+    &.error {
+    }
 }
 
 .form-item-label {
@@ -268,6 +275,18 @@ body {
     font-size: $font-size-small;
     line-height: $font-size-small;
     margin: 0 0 $spacing-vertical-smaller;
+}
+
+.form-item-inline {
+    font-size: $font-size-small;
+    line-height: $font-size-small;
+}
+
+.form-item-error {
+    display: inline-block;
+    font-size: $font-size-small;
+    line-height: $font-size-small;
+    padding: $spacing-vertical-smaller $spacing-horizontal-smaller;
 }
 
 /* Form inputs
@@ -325,13 +344,25 @@ textarea.input {
     padding: $spacing-vertical-input $spacing-horizontal-input;
     font-size: $font-size-input;
 
+    &.default {
+    }
+
+    &.muted {
+    }
+
+    &.brand {
+    }
+
+    &.green {
+    }
+
     &.block {
         display: block;
         text-align: center;
         width: 100%;
     }
 
-    &.primary {
+    &.static {
     }
 }
 
@@ -342,8 +373,8 @@ textarea.input {
     border: 1px solid;
     border-bottom: none;
     display: block;
-    font-size: $font-size;
-    line-height: $font-size;
+    font-size: $font-size-small;
+    line-height: $font-size-small;
     margin: 0 0 $spacing-vertical;
     max-width: 100%;
     width: 100%;

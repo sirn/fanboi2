@@ -14,7 +14,7 @@
         ${self.header()}
     % endif
 </head>
-<body id="${request.route_name}" class="theme-debug">
+<body id="${request.route_name}" class="theme-topaz">
 
 <header class="header">
     <div class="container">

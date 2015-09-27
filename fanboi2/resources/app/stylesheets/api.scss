@@ -5,28 +5,26 @@
  * ------------------------------------------------------------------------ */
 
 .api-table {
+}
+
+.api-table-body {
     @media (min-width: $bound-tablet) {
-        .table-group {
-            .table-row-header {
-                width: 120px;
-            }
+        .table-row-header {
+            width: 120px;
         }
+    }
+}
 
-        thead.table-group {
-            .table-row-header {
-                width: auto;
-            }
+.api-table-header {
+    @media (min-width: $bound-tablet) {
+        .table-row-header {
+            width: auto;
         }
+    }
+}
 
-        &.inner {
-            font-size: $font-size-small;
-            line-height: $line-height-content;
-        }
-
-        .table-row-item {
-            &.type {
-                width: 80px;
-            }
-        }
+.api-table-row-type {
+    @media (min-width: $bound-tablet) {
+        width: 80px;
     }
 }

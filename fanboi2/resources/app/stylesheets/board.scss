@@ -1,5 +1,17 @@
 @import "variables";
 @import "mixins";
 
-/* Board info
+/* Board agreement
  * ------------------------------------------------------------------------ */
+
+.board-agreement {
+}
+
+.board-agreement-notice {
+    font-size: $font-size-small;
+    line-height: $font-size-content;
+
+    p {
+        margin: 0 0 $spacing-vertical-small;
+    }
+}

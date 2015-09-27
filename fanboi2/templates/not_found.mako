@@ -4,7 +4,7 @@
 <header class="subheader">
     <div class="container">
         <h2 class="subheader-title">404 Not Found</h2>
-        <div class="subheader-body"><p class="subheader-body-item">The page you requested could not be found.</p></div>
+        <div class="subheader-body"><p>The page you requested could not be found.</p></div>
     </div>
 </header>
 <div class="sheet">

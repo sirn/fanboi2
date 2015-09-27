@@ -10,7 +10,7 @@
             <p>If you're not getting redirected after few seconds, please click retry below.</p>
         </div>
         <div class="sheet-body">
-            <a class="button" href="${request.path_qs}">Retry</a>
+            <a class="button muted" href="${request.path_qs}">Retry</a>
         </div>
     </div>
 </div>
