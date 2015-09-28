@@ -215,20 +215,6 @@ $color-text:             #333;
         }
     }
 
-    .table {
-        border-color: $color-gray-light;
-    }
-
-    .table-row-item {
-        border-color: $color-gray-light;
-    }
-
-    .table-row-header {
-        background-color: $color-gray-lighter;
-        border-color: $color-gray-light;
-        color: $color-gray-dark;
-    }
-
     .codeblock {
         background-color: $color-gray-lighter;
         color: $color-gray-darker;
@@ -236,6 +222,65 @@ $color-text:             #333;
 
     /* api.scss
      * -------------------------------------------------------------------- */
+
+    .api-request {
+        background-color: #fff;
+    }
+
+    .api-request-title {
+        color: $color-brand;
+    }
+
+    .api-request-name {
+        color: $color-gray;
+    }
+
+    .api-request-endpoint {
+        color: $color-gray-dark;
+        border-color: $color-gray-lighter;
+    }
+
+    .api-request-verb {
+        border-radius: 3px;
+        font-weight: bold;
+
+        &.verb-get {
+            background-color: $color-green;
+            color: #fff;
+        }
+
+        &.verb-post {
+            background-color: $color-red;
+            color: #fff;
+        }
+    }
+
+    .api-response {
+        background-color: $color-tint-lighter;
+        border-color: $color-tint;
+    }
+
+    .api-response-title {
+        color: $color-gray-dark;
+    }
+
+    .api-table {
+        border-color: $color-tint;
+    }
+
+    .api-table-item {
+        border-color: $color-tint;
+
+        &.type {
+            color: $color-gray-dark;
+        }
+
+        &.title {
+            color: $color-gray-dark;
+            border-color: #fff;
+            background-color: $color-tint;
+        }
+    }
 
     /* board.scss
      * -------------------------------------------------------------------- */

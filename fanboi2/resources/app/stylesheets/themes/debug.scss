@@ -41,16 +41,31 @@
         }
     }
 
-    .table {
+    .codeblock {
+        background-color: #999;
+    }
+
+    /* api.scss
+     * -------------------------------------------------------------------- */
+
+    .api-section {
+        background-color: #ffae00;
+    }
+
+    .api-request {
+        background-color: #ebcb85;
+    }
+
+    .api-response {
+        background-color: #ffcb5b;
+    }
+
+    .api-table {
         background-color: #c1ec4e;
     }
 
-    .table-row-header {
+    .api-table-header {
         background-color: #97be2d;
-    }
-
-    .codeblock {
-        background-color: #999;
     }
 
     /* board.scss
