@@ -20,6 +20,7 @@
 % endif
 % if topic.status == 'open':
     <form class="form" id="reply" action="${request.route_path('topic', board=board.slug, topic=topic.id)}" method="post">
+        ${form.csrf_token}
         <div class="container">
             <div class="form-item${' error' if form.body.errors else ''}">
                 <label class="form-item-label" for="${form.body.id}">Reply</label>
