@@ -1,7 +1,355 @@
 @import "../variables";
 
+$color-gray-base:        #181c1e;
+$color-gray-darker:      lighten($color-gray-base, 3.0%);
+$color-gray-dark:        lighten($color-gray-base, 5.0%);
+$color-gray:             lighten($color-gray-base, 8.0%);
+$color-gray-light:       lighten($color-gray-base, 44.0%);
+$color-gray-lighter:     lighten($color-gray-base, 80.0%);
+
+$color-muted-base:       #293033;
+$color-muted-darker:     lighten($color-muted-base, 2.0%);
+$color-muted-dark:       lighten($color-muted-base, 10.0%);
+$color-muted:            lighten($color-muted-base, 20.0%);
+$color-muted-light:      lighten($color-muted-base, 30.0%);
+$color-muted-lighter:    lighten($color-muted-base, 50.0%);
+
+$color-background:       $color-gray-base;
+$color-background-light: lighten($color-gray-base, 1.5%);
+$color-text:             #cfcfcf;
+
 /* Obsidian theme, the dark theme
  * ------------------------------------------------------------------------ */
 
 .theme-obsidian {
+    background-color: $color-background;
+    color: $color-text;
+
+    a {
+        color: $color-brand;
+        text-decoration: none;
+        transition-duration: $animation-timing;
+        transition-property: color;
+        transition-timing-function: $animation-function;
+
+        &:hover {
+            color: $color-gray-lighter;
+        }
+    }
+
+    /* app.scss
+     * -------------------------------------------------------------------- */
+
+    .header {
+        background-color: $color-brand-dark;
+        border-color: $color-brand-dark;
+        padding-bottom: 0;
+    }
+
+    .footer {
+        color: $color-gray-light;
+    }
+
+    .cascade {
+        background-color: $color-gray-dark;
+        border-color: $color-gray;
+
+        a {
+            font-weight: bold;
+        }
+    }
+
+    .subheader {
+        background-color: $color-brand-dark;
+        border-bottom: 3px solid $color-brand;
+        padding: $spacing-vertical 0 $spacing-vertical-large;
+    }
+
+    .subheader-title {
+        color: $color-gray-lighter;
+
+        a {
+            color: $color-gray-lighter;
+        }
+    }
+
+    .subheader-body {
+        color: $color-gray-light;
+    }
+
+    .subheader-footer {
+        .button {
+            border-color: transparent;
+            color: $color-gray-light;
+
+            &:hover {
+                color: $color-gray-lighter;
+            }
+        }
+    }
+
+    .sheet {
+        background-color: $color-gray-dark;
+        border-color: $color-gray;
+
+        &.alternate {
+            background-color: $color-gray;
+        }
+    }
+
+    .sheet-title {
+        color: $color-brand;
+    }
+
+    .form {
+        background-color: $color-gray-dark;
+        border-color: $color-gray;
+    }
+
+    .form-item {
+        &.error {
+            .form-item-label {
+                color: $color-red;
+            }
+
+            .input {
+                border-color: $color-red;
+            }
+        }
+    }
+
+    .form-item-label {
+        color: $color-gray-light;
+    }
+
+    .form-item-inline {
+        color: $color-gray-light;
+        font-weight: bold;
+    }
+
+    .form-item-error {
+        background-color: $color-red;
+        color: #fff;
+    }
+
+    .input {
+        background-color: $color-gray;
+        border-color: $color-muted-dark;
+        transition-duration: $animation-timing;
+        transition-property: border-color;
+        transition-timing-function: $animation-function;
+
+        &:focus {
+            border-color: $color-muted;
+        }
+    }
+
+    .button {
+        transition-duration: $animation-timing;
+        transition-property: background-color, border-color, color;
+        transition-timing-function: $animation-function;
+
+        &.default {
+            background-color: $color-muted-light;
+            border-color: $color-muted-light;
+            color: $color-gray-lighter;
+
+            &:hover {
+                background-color: $color-muted;
+                border-color: $color-muted;
+            }
+        }
+
+        &.muted {
+            background-color: $color-muted;
+            border-color: $color-muted;
+            color: $color-gray-lighter;
+
+            &:hover {
+                background-color: $color-muted-light;
+                border-color: $color-muted-light;
+            }
+        }
+
+        &.brand {
+            background-color: $color-brand;
+            border-color: $color-brand;
+            color: #fff;
+        }
+
+        &.green {
+            background-color: $color-green;
+            border-color: $color-green;
+            color: #fff;
+        }
+
+        &.static {
+            &.default:hover {
+                background-color: $color-muted-light;
+                border-color: $color-muted-light;
+            }
+
+            &.muted:hover {
+                background-color: $color-muted;
+                border-color: $color-muted;
+            }
+
+            &.brand:hover {
+                background-color: $color-brand;
+                color: #fff;
+            }
+
+            &.green:hover {
+                background-color: $color-green;
+                color: #fff;
+            }
+        }
+    }
+
+    .codeblock {
+        background-color: $color-gray-dark;
+        color: $color-gray-light;
+    }
+
+    /* api.scss
+     * -------------------------------------------------------------------- */
+
+    .api-request {
+        background-color: $color-gray-dark;
+    }
+
+    .api-request-title {
+        color: $color-brand;
+    }
+
+    .api-request-name {
+        color: $color-gray-light;
+    }
+
+    .api-request-endpoint {
+        color: $color-gray-lighter;
+        border-color: $color-gray;
+    }
+
+    .api-request-verb {
+        border-radius: 2px;
+        font-weight: bold;
+        color: #fff;
+
+        &.verb-get {
+            background-color: $color-green;
+        }
+
+        &.verb-post {
+            background-color: $color-red;
+        }
+    }
+
+    .api-response {
+        background-color: $color-gray-darker;
+        border-color: $color-background-light;
+    }
+
+    .api-response-title {
+        color: $color-gray-light;
+    }
+
+    .api-table {
+        border-color: $color-muted-dark;
+    }
+
+    .api-table-item {
+        border-color: $color-muted-dark;
+
+        &.type {
+            color: $color-gray-light;
+        }
+
+        &.title {
+            color: $color-gray-lighter;
+            border-color: $color-muted-dark;
+            background-color: $color-gray;
+        }
+    }
+
+    /* board.scss
+     * -------------------------------------------------------------------- */
+
+    .board-agreement-notice {
+        color: $color-gray-lighter;
+    }
+
+    /* topic.scss
+     * -------------------------------------------------------------------- */
+
+    .topic {
+        background-color: $color-gray-dark;
+    }
+
+    .topic-header {
+        border-color: $color-gray-dark;
+    }
+
+    .topic-footer {
+        background-color: $color-background-light;
+        border-color: $color-gray-dark;
+
+        .button {
+            &.action {
+                background-color: $color-muted-dark;
+                border-color: $color-muted-dark;
+                color: $color-gray-lighter;
+
+                &:hover {
+                    background-color: $color-muted;
+                    border-color: $color-muted;
+                }
+            }
+        }
+    }
+
+    /* post.scss
+     * -------------------------------------------------------------------- */
+
+    .post {
+        background-color: $color-gray-darker;
+        border-color: $color-background-light;
+    }
+
+    .post-header {
+        color: $color-muted;
+        font-weight: bold;
+    }
+
+    .post-header-item {
+        &.number {
+            background-color: $color-gray-dark;
+            border: 1px solid $color-muted-dark;
+            color: $color-muted-lighter;
+
+            &.bumped {
+                background-color: $color-muted-dark;
+                color: $color-muted-lighter;
+            }
+        }
+
+        &.name {
+            background-color: $color-gray-dark;
+            color: $color-muted-lighter;
+        }
+
+        &.date {
+            font-weight: normal;
+        }
+    }
+
+    .post-body {
+        .anchor {
+            color: #6aa5c3;
+
+            &:hover {
+                color: $color-gray-lighter;
+            }
+        }
+    }
 }

@@ -2,6 +2,7 @@
 ======
 
 - [Add] Basic API for board, topic and post operations.
+- [Add] Dark theme ("Obsidian").
 - [Add] More random quotes.
 - [Change] Rewrite all board templates.
 - [Change] Codebase now comes with type annotation for IDE.

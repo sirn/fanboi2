@@ -24,6 +24,7 @@ $color-text:             #333;
 
 .theme-topaz {
     background-color: $color-background;
+    border-color: $color-background;
     color: $color-text;
 
     a {
@@ -78,7 +79,7 @@ $color-text:             #333;
 
     .subheader-footer {
         .button {
-            border: none;
+            border-color: transparent;
             color: $color-gray;
 
             &:hover {
@@ -243,15 +244,14 @@ $color-text:             #333;
     .api-request-verb {
         border-radius: 3px;
         font-weight: bold;
+        color: #fff;
 
         &.verb-get {
             background-color: $color-green;
-            color: #fff;
         }
 
         &.verb-post {
             background-color: $color-red;
-            color: #fff;
         }
     }
 
