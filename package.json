@@ -1,22 +1,28 @@
 {
-    "author": "Kridsada Thanabulpong",
-    "name": "fanboi2",
-    "description": "Assets for Fanboi2 board app",
-    "version": "0.10.0",
-    "repository": "https://github.com/pxfs/fanboi2.git",
-    "license": "BSD-3-Clause",
-    "dependencies": {
-        "javascript-brunch":       "^1.7.1",
-        "babel-brunch":            "^5.1.2",
-        "uglify-js-brunch":        "^1.7.8",
+  "author": "Kridsada Thanabulpong",
+  "name": "fanboi2",
+  "description": "Assets for Fanboi2 board app",
+  "version": "0.10.0",
+  "repository": "https://github.com/pxfs/fanboi2.git",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "gulp":                    "^3.9.0",
+    "gulp-sourcemaps":         "^1.6.0",
+    "gulp-concat":             "^2.6.0",
+    "event-stream":            "^3.3.2",
 
-        "css-brunch":              "^1.7.0",
-        "sass-brunch":             "^1.9.0",
-        "postcss-brunch":          "^0.5.0",
-        "autoprefixer":            "^6.0.3",
-        "postcss-round-subpixels": "^1.0.0",
-        "postcss-urlrev":          "^1.1.2",
-        "css-mqpacker":            "^4.0.0",
-        "csswring":                "^4.0.0"
-    }
+    "gulp-sass":               "^2.1.0",
+    "gulp-postcss":            "^6.0.1",
+    "autoprefixer":            "^6.0.3",
+    "postcss-round-subpixels": "^1.0.0",
+    "postcss-urlrev":          "^1.1.2",
+    "css-mqpacker":            "^4.0.0",
+    "csswring":                "^4.0.0",
+
+    "gulp-uglify":             "^1.4.2",
+    "tsify":                   "^0.12.2",
+    "vinyl-source-stream":     "^1.1.0",
+    "vinyl-buffer":            "^1.0.0",
+    "browserify":              "^12.0.1"
+  }
 }

@@ -40,7 +40,7 @@ Vagrant.configure("2") do |config|
     fetch -o - https://bootstrap.pypa.io/get-pip.py |$HOME/pypy3/bin/pypy3 -
 
     npm config set prefix $HOME/nodejs
-    npm install -g brunch
+    npm install -g gulp
 
     echo 'EDITOR=vi; export EDITOR' > $HOME/.profile
     echo 'PAGER=more; export PAGER' >> $HOME/.profile
