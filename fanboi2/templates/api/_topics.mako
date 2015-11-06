@@ -129,7 +129,7 @@
                             <td class="api-table-item type">Integer</td>
                             <td class="api-table-item">
                                 <p>Internal ID of a board the topic is associated with.</p>
-                                <pre class="codeblock">"id":1</pre>
+                                <pre class="codeblock">"board_id":1</pre>
                             </td>
                         </tr>
                         <tr class="api-table-row">
