@@ -11,6 +11,7 @@ var source            = require('vinyl-source-stream');
 var buffer            = require('vinyl-buffer');
 var browserify        = require('browserify');
 var tsify             = require('tsify');
+var babelify          = require('babelify');
 
 
 /* Settings
@@ -29,7 +30,7 @@ var paths = {
         javascripts: {
             glob: 'fanboi2/resources/app/javascripts/**/*.ts',
             base: 'fanboi2/resources/app/javascripts/',
-            main: 'app.ts'
+            entry: 'app.ts'
         }
     },
 
@@ -37,7 +38,10 @@ var paths = {
     vendor: {
         assets: 'fanboi2/resources/vendor/assets/*',
         stylesheets: 'fanboi2/resources/vendor/stylesheets/**/*.css',
-        javascripts: 'fanboi2/resources/vendor/javascripts/**/*.js'
+        javascripts: [
+            'fanboi2/resources/vendor/javascripts/polyfill.js',
+            'fanboi2/resources/vendor/javascripts/**/*.js'
+        ]
     },
 
     /* Path for storing compatibility assets. */
@@ -103,7 +107,10 @@ gulp.task('styles/vendor', function(){
         pipe(gulp.dest(paths.dest));
 });
 
-gulp.task('styles', ['styles/app', 'styles/vendor']);
+gulp.task('styles', [
+    'styles/app',
+    'styles/vendor'
+]);
 
 
 /* JavaScripts
@@ -111,8 +118,9 @@ gulp.task('styles', ['styles/app', 'styles/vendor']);
 
 gulp.task('javascripts/app', function(){
     return browserify({basedir: paths.app.javascripts.base, debug: true}).
-        add(paths.app.javascripts.main).
-        plugin(tsify).
+        plugin(tsify, {target: 'es6', noImplicitAny: true}).
+        transform(babelify, {extensions: ['.ts'], presets: ['es2015']}).
+        require(paths.app.javascripts.entry, {entry: true}).
         bundle().
             pipe(source('app.js')).
             pipe(buffer()).
@@ -120,6 +128,16 @@ gulp.task('javascripts/app', function(){
                 pipe(uglify()).
             pipe(sourcemaps.write('.')).
             pipe(gulp.dest(paths.dest));
+});
+
+gulp.task('javascripts/vendor', function(){
+    return gulp.
+        src(paths.vendor.javascripts).
+        pipe(sourcemaps.init()).
+            pipe(concat('vendor.js')).
+            pipe(uglify()).
+        pipe(sourcemaps.write('.')).
+        pipe(gulp.dest(paths.dest));
 });
 
 gulp.task('javascripts/legacy', function(){
@@ -132,7 +150,11 @@ gulp.task('javascripts/legacy', function(){
         pipe(gulp.dest(paths.dest));
 });
 
-gulp.task('javascripts', ['javascripts/app', 'javascripts/legacy']);
+gulp.task('javascripts', [
+    'javascripts/app',
+    'javascripts/vendor',
+    'javascripts/legacy'
+]);
 
 
 /* Defaults
@@ -140,9 +162,11 @@ gulp.task('javascripts', ['javascripts/app', 'javascripts/legacy']);
 
 gulp.task('default', ['assets', 'styles', 'javascripts']);
 
-gulp.task('watch', function(){
+gulp.task('watch', ['default'], function(){
     gulp.watch(paths.app.stylesheets, ['styles/app']);
-    gulp.watch(paths.app.javascripts.glob, ['javascripts/app']);
     gulp.watch(paths.vendor.stylesheets, ['styles/vendor']);
+
+    gulp.watch(paths.app.javascripts.glob, ['javascripts/app']);
+    gulp.watch(paths.vendor.javascripts, ['javascripts/vendor']);
     gulp.watch(paths.legacy.javascripts, ['javascripts/legacy']);
 });
