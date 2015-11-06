@@ -12,6 +12,9 @@ tmp/
 *.tmp
 *.dump
 
+# Assets
+fanboi2/resources/app/javascripts/typings
+
 # IDE stuff
 out/
 fanboi2.iml

@@ -1,5 +1,6 @@
-/// <reference path="../../../vendor/javascripts/fetch.d.ts" />
+/// <reference path="../typings/whatwg-fetch/whatwg-fetch.d.ts" />
 
+import 'whatwg-fetch'
 import Topic from "./topic";
 
 export default class Board {

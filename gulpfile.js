@@ -116,11 +116,19 @@ gulp.task('styles', [
 /* JavaScripts
  * ---------------------------------------------------------------------- */
 
+var externalDependencies = [
+    'babel-polyfill',
+    'whatwg-fetch',
+    'virtual-dom',
+    'domready'
+];
+
 gulp.task('javascripts/app', function(){
     return browserify({basedir: paths.app.javascripts.base, debug: true}).
         plugin(tsify, {target: 'es6', noImplicitAny: true}).
         transform(babelify, {extensions: ['.ts'], presets: ['es2015']}).
         require(paths.app.javascripts.entry, {entry: true}).
+        external(externalDependencies).
         bundle().
             pipe(source('app.js')).
             pipe(buffer()).
@@ -131,13 +139,15 @@ gulp.task('javascripts/app', function(){
 });
 
 gulp.task('javascripts/vendor', function(){
-    return gulp.
-        src(paths.vendor.javascripts).
-        pipe(sourcemaps.init()).
-            pipe(concat('vendor.js')).
-            pipe(uglify()).
-        pipe(sourcemaps.write('.')).
-        pipe(gulp.dest(paths.dest));
+    return browserify({debug: true}).
+        require(externalDependencies).
+        bundle().
+            pipe(source('vendor.js')).
+            pipe(buffer()).
+            pipe(sourcemaps.init({loadMaps: true})).
+                pipe(uglify()).
+            pipe(sourcemaps.write('.')).
+            pipe(gulp.dest(paths.dest));
 });
 
 gulp.task('javascripts/legacy', function(){

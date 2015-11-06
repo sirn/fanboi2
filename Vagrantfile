@@ -41,6 +41,7 @@ Vagrant.configure("2") do |config|
 
     npm config set prefix $HOME/nodejs
     npm install -g gulp
+    npm install -g tsd
 
     echo 'EDITOR=vi; export EDITOR' > $HOME/.profile
     echo 'PAGER=more; export PAGER' >> $HOME/.profile
