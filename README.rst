@@ -9,7 +9,7 @@ Board engine behind `Fanboi Channel <https://fanboi.ch/>`_ written in Python.
 Getting Started
 ---------------
 
-There are two ways of getting the app up and running for development. Using `Vagrant <http://vagrantup.com/>`_ (*The Better Way*) or installing everything manually (*The Adventurous Way*). The recommened method is to use Vagrant as it closely replicates the production environment.
+There are two ways of getting the app up and running for development. Using `Vagrant`_ (*The Better Way*) or installing everything manually (*The Adventurous Way*). The recommened method is to use Vagrant as it closely replicates the production environment.
 
 The Better Way
 ~~~~~~~~~~~~~~
@@ -29,8 +29,6 @@ Once the development box is up and running, you may now run the server::
 
 Now you're done! You can now proceed to the Management Scripts section below.
 
-.. _Vagrant: https://www.vagrantup.com/
-
 The Adventurous Way
 ~~~~~~~~~~~~~~~~~~~
 
@@ -40,7 +38,7 @@ If you don't really want to use Vagrant, you can also install everything using y
 2. `PostgreSQL 9.2 <http://www.postgresql.org/>`_.
 3. `Redis 2.8 <http://redis.io/>`_.
 4. `Memcached 1.4 <http://www.memcached.org/>`_.
-5. `Node.js 0.10 <http://nodejs.org/>`_ with `Brunch <http://brunch.io/>`_.
+5. `Node.js 4.2 <http://nodejs.org/>`_ with `Gulp`_ and `TSD`_.
 
 After the package above are up and running, you may now setup the application::
 
@@ -51,6 +49,16 @@ After the package above are up and running, you may now setup the application::
     $ pserve development.ini
 
 And you're done! You can now proceed to the Management Scripts section below.
+
+Assets
+------
+
+The application doesn't come with assets compiled by default and are done externally via `Gulp`_ and `TSD`_. Once you've setup the environment, you can use these two commands to build assets:
+
+1. ``tsd install`` to download `TypeScript <http://www.typescriptlang.org/>`_ definition for dependencies.
+2. ``gulp`` to build assets with `Gulp`_ (or use ``gulp watch`` to auto-reload).
+
+Once these two commands are run, assets will be compiled to ``fanboi2/static`` in which you should point the web server to it. You should do this on every deploy.
 
 Management Scripts
 ------------------
@@ -70,7 +78,6 @@ Slug is used here to identify which board to edit. All database fields in board 
 2. ``pshell development.ini`` to get into Python console with the app loaded.
 3. ``fb2_celery development.ini worker`` to start a `Celery <http://www.celeryproject.org/>`_ worker.
 4. ``alembic upgrade head`` to update the database to latest version with `Alembic <http://alembic.readthedocs.org/en/latest/>`_.
-5. ``brunch build`` to build assets with `Brunch <http://brunch.io/>`_ (or ``brunch watch`` to do it automatically).
 
 Celery worker is required to be run if you want to enable posting features.
 
@@ -98,3 +105,7 @@ Redistribution and use in source and binary forms, with or without modification,
 - Neither the name of the author nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+.. _Vagrant: https://www.vagrantup.com/
+.. _Gulp: https://github.com/gulpjs/gulp/
+.. _TSD: http://definitelytyped.org/tsd/
