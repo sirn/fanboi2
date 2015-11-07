@@ -21,34 +21,34 @@ var paths = {
 
     /* Path for storing application-specific assets. */
     app: {
-        assets: 'fanboi2/resources/app/assets/*',
+        assets: 'assets/app/assets/*',
         stylesheets: [
-            'fanboi2/resources/app/stylesheets/app.scss',
-            'fanboi2/resources/app/stylesheets/*.scss',
-            'fanboi2/resources/app/stylesheets/themes/*.scss'
+            'assets/app/stylesheets/app.scss',
+            'assets/app/stylesheets/*.scss',
+            'assets/app/stylesheets/themes/*.scss'
         ],
         javascripts: {
-            glob: 'fanboi2/resources/app/javascripts/**/*.ts',
-            base: 'fanboi2/resources/app/javascripts/',
+            glob: 'assets/app/javascripts/**/*.ts',
+            base: 'assets/app/javascripts/',
             entry: 'app.ts'
         }
     },
 
     /* Path for storing third-party assets. */
     vendor: {
-        assets: 'fanboi2/resources/vendor/assets/*',
-        stylesheets: 'fanboi2/resources/vendor/stylesheets/**/*.css',
+        assets: 'assets/vendor/assets/*',
+        stylesheets: 'assets/vendor/stylesheets/**/*.css',
         javascripts: [
-            'fanboi2/resources/vendor/javascripts/polyfill.js',
-            'fanboi2/resources/vendor/javascripts/**/*.js'
+            'assets/vendor/javascripts/polyfill.js',
+            'assets/vendor/javascripts/**/*.js'
         ]
     },
 
     /* Path for storing compatibility assets. */
     legacy: {
-        assets: 'fanboi2/resources/legacy/assets/*',
-        stylesheets: 'fanboi2/resources/legacy/stylesheets/**/*.css',
-        javascripts: 'fanboi2/resources/legacy/javascripts/**/*.js'
+        assets: 'assets/legacy/assets/*',
+        stylesheets: 'assets/legacy/stylesheets/**/*.css',
+        javascripts: 'assets/legacy/javascripts/**/*.js'
     },
 
     /* Path to output compiled assets to. */

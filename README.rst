@@ -42,8 +42,8 @@ If you don't really want to use Vagrant, you can also install everything using y
 
 After the package above are up and running, you may now setup the application::
 
-    $ cp development.ini.sample development.ini
-    $ cp alembic.ini.sample alembic.ini
+    $ cp examples/development.ini.sample development.ini
+    $ cp examples/alembic.ini.sample alembic.ini
     $ pypy setup.py develop
     $ alembic upgrade head
     $ pserve development.ini

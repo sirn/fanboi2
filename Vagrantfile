@@ -55,8 +55,8 @@ Vagrant.configure("2") do |config|
     rm -rf fanboi2.egg-info
     rm -rf node_modules
 
-    cp development.ini.sample development.ini
-    cp alembic.ini.sample alembic.ini
+    cp examples/development.ini.sample development.ini
+    cp examples/alembic.ini.sample alembic.ini
 
     $HOME/pypy3/bin/pip3 install -e .
     $HOME/pypy3/bin/alembic upgrade head

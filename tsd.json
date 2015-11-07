@@ -2,8 +2,8 @@
   "version": "v4",
   "repo": "borisyankov/DefinitelyTyped",
   "ref": "master",
-  "path": "fanboi2/resources/app/javascripts/typings",
-  "bundle": "fanboi2/resources/app/javascripts/typings/tsd.d.ts",
+  "path": "assets/app/javascripts/typings",
+  "bundle": "assets/app/javascripts/typings/tsd.d.ts",
   "installed": {
     "virtual-dom/virtual-dom.d.ts": {
       "commit": "35989a3ab4834b8e8b2b56788f1d4fc46a25dc8d"

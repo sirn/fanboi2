@@ -13,7 +13,7 @@ tmp/
 *.dump
 
 # Assets
-fanboi2/resources/app/javascripts/typings
+assets/app/javascripts/typings
 
 # IDE stuff
 out/
