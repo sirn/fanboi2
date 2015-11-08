@@ -39,7 +39,7 @@ export default class Board {
         return window.fetch('/api/1.0/boards/').
             then(function(resp: Response): any { return resp.json(); }).
             then(function*(boards: any[]): Iterable<Board> {
-                for (var board of boards) {
+                for (let board of boards) {
                     yield new Board(board);
                 }
             });
@@ -49,7 +49,7 @@ export default class Board {
         return window.fetch(`/api/1.0/boards/${slug}/`).
             then(function(resp: Response): any { return resp.json(); }).
             then(function(board: any): Board {
-                return new Board(board)
+                return new Board(board);
             });
     }
 

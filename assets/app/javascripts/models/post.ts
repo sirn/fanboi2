@@ -1,6 +1,6 @@
 /// <reference path="../typings/whatwg-fetch/whatwg-fetch.d.ts" />
 
-import 'whatwg-fetch'
+import 'whatwg-fetch';
 
 export default class Post {
     type: string;
@@ -33,10 +33,10 @@ export default class Post {
         topicId: number,
         query?: string
     ): Promise<Iterable<Post>> {
-        var entryPoint: string;
+        let entryPoint: string;
 
         if (query) {
-            entryPoint = `/api/1.0/topics/${topicId}/posts/${query}/`
+            entryPoint = `/api/1.0/topics/${topicId}/posts/${query}/`;
         } else {
             entryPoint = `/api/1.0/topics/${topicId}/posts/`;
         }
@@ -44,7 +44,7 @@ export default class Post {
         return window.fetch(entryPoint).
             then(function(resp: Response): any { return resp.json(); }).
             then(function*(posts: any[]): Iterable<Post> {
-                for (var post of posts) {
+                for (let post of posts) {
                     yield new Post(post);
                 }
             });

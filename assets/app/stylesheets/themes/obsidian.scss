@@ -352,4 +352,14 @@ $color-text:             #cfcfcf;
             }
         }
     }
+
+    /* js.scss
+     * -------------------------------------------------------------------- */
+
+    .js-board-selector-list {
+        .cascade {
+            background-color: $color-brand-dark;
+            border-color: $color-brand-dark;
+        }
+    }
 }

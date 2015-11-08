@@ -43,7 +43,7 @@ export default class Topic {
         return window.fetch(`/api/1.0/boards/${slug}/topics/`).
             then(function(resp: Response): any { return resp.json(); }).
             then(function*(topics: any[]): Iterable<Topic> {
-                for (var topic of topics) {
+                for (let topic of topics) {
                     yield new Topic(topic);
                 }
             });

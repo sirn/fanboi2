@@ -1,0 +1,46 @@
+@import "variables";
+@import "mixins";
+
+/* JS Board Selector
+ * ------------------------------------------------------------------------ */
+
+.js-board-selector {
+    .container {
+        position: relative;
+    }
+}
+
+.js-board-selector-button {
+    $icon-width: 20px;
+    $icon-height: 20px;
+
+    @include retina-background("burger", "png", $icon-width, $icon-height);
+    height: $icon-height;
+    left: $spacing-vertical;
+    position: absolute;
+    text-indent: -10000em;
+    top: 0;
+    width: $icon-width;
+
+    a {
+        display: block;
+        float: left;
+        height: $icon-height;
+        width: $icon-width;
+    }
+
+    @media (min-width: $bound-tablet) {
+        left: auto;
+        right: 0;
+    }
+}
+
+.js-board-selector-list {
+    &.disabled {
+        display: none;
+    }
+
+    &.enabled {
+        display: block;
+    }
+}
