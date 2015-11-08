@@ -3,23 +3,6 @@
 import * as VirtualDOM from 'virtual-dom';
 import Board from "../models/board";
 
-var h = VirtualDOM.h;
-var createElement = VirtualDOM.create;
-
-class BoardSelectorButton {
-    label: string;
-
-    constructor(label: string) {
-        this.label = label;
-    }
-
-    render(): VirtualDOM.VNode {
-        return h('div', {className: 'js-board-selector-button'}, [
-            h('a', {href: '#'}, [this.label]),
-        ])
-    }
-}
-
 class BoardSelectorList {
     boards: Board[];
     show: boolean;
@@ -30,9 +13,24 @@ class BoardSelectorList {
     }
 
     render(): VirtualDOM.VNode {
-        return h('div',
+        return VirtualDOM.h('div',
             {className: this.getCssFromState()},
-            this.renderList()
+            this.boards.map(function(board: Board): VirtualDOM.VNode {
+                return VirtualDOM.h('div', {className: 'cascade'}, [
+                    VirtualDOM.h('div', {className: 'container'}, [
+                        VirtualDOM.h('div', {className: 'cascade-header'}, [
+                            VirtualDOM.h('a',
+                                {href: `/${board.slug}/`},
+                                String(board.title)
+                            ),
+                        ]),
+                        VirtualDOM.h('div',
+                            {className: 'cascade-body'},
+                            String(board.description)
+                        ),
+                    ]),
+                ])
+            })
         )
     }
 
@@ -41,21 +39,6 @@ class BoardSelectorList {
             'js-board-selector-list',
             this.show ? 'enabled' : 'disabled'
         ].join(' ');
-    }
-
-    private renderList(): VirtualDOM.VNode[] {
-        return this.boards.map(function (board:Board):VirtualDOM.VNode {
-            return h('div', {className: 'cascade'}, [
-                h('div', {className: 'container'}, [
-                    h('div', {className: 'cascade-header'}, [
-                        h('a', {href: `/${board.slug}/`}, String(board.title))
-                    ]),
-                    h('div', {className: 'cascade-body'},
-                        String(board.description)
-                    ),
-                ]),
-            ])
-        });
     }
 }
 
@@ -81,7 +64,8 @@ export default class BoardSelector {
     private attachList(): void {
         let view = new BoardSelectorList([]);
         this.listNode = view.render();
-        this.listElement = createElement(this.listNode);
+        this.listElement = VirtualDOM.create(this.listNode);
+
         document.body.insertBefore(
             this.listElement,
             this.targetElement.nextSibling
@@ -89,18 +73,20 @@ export default class BoardSelector {
     }
 
     private attachButton(): void {
-        let view = new BoardSelectorButton('Boards');
-        this.buttonNode = view.render();
-        this.buttonElement = createElement(this.buttonNode);
-
-        let containerElement = this.targetElement.querySelector('.container');
-        containerElement.appendChild(this.buttonElement);
-
         let self = this;
-        self.buttonElement.addEventListener('click', function(e: Event): void {
+        this.buttonNode = VirtualDOM.h('div',
+            {className: 'js-board-selector-button'},
+            [VirtualDOM.h('a', {'href': '#'}, ['Boards'])]
+        );
+
+        this.buttonElement = VirtualDOM.create(this.buttonNode);
+        this.buttonElement.addEventListener('click', function(e) {
             e.preventDefault();
             self.eventButtonClicked();
         });
+
+        let containerElement = this.targetElement.querySelector('.container');
+        containerElement.appendChild(this.buttonElement);
     }
 
     private eventButtonClicked(): void {
