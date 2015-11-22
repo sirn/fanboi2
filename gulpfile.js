@@ -120,7 +120,8 @@ var externalDependencies = [
     'babel-polyfill',
     'whatwg-fetch',
     'virtual-dom',
-    'domready'
+    'domready',
+    'dom4'
 ];
 
 gulp.task('javascripts/app', function(){
