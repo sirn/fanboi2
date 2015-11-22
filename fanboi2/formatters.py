@@ -170,7 +170,11 @@ def format_markdown(context, request, text):
 
 
 RE_ANCHOR = re.compile(r'%s(\d+)(\-)?(\d+)?' % html.escape('>>'))
-TP_ANCHOR = '<a data-number="%s" href="%s" class="anchor">%s</a>'
+TP_ANCHOR = ''.join("""
+<a data-topic="%s" data-number="%s" href="%s" class="anchor">
+%s
+</a>
+""".splitlines())
 
 RE_ANCHOR_CROSS = re.compile(r"""
   %s\/                       # Syntax start
@@ -251,6 +255,7 @@ def format_post(context, request, post, shorten=None):
     def _anchor(match):
         anchor = ''.join([m for m in match.groups() if m is not None])
         return Markup(TP_ANCHOR % (
+            post.topic.id,
             anchor,
             request.route_path('topic_scoped',
                                board=post.topic.board.slug,

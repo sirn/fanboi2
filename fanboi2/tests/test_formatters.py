@@ -243,10 +243,10 @@ class TestFormattersWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
         post11 = self._makePost(topic=topic, body=">>>//123-/100-/")
         tests = [
             (post1, "<p>Hogehoge<br>Hogehoge</p>"),
-            (post2, "<p><a data-number=\"1\" " +
+            (post2, "<p><a data-topic=\"1\" data-number=\"1\" " +
                     "href=\"/foobar/1/1\" class=\"anchor\">" +
                     "&gt;&gt;1</a></p>"),
-            (post3, "<p><a data-number=\"1-2\" " +
+            (post3, "<p><a data-topic=\"1\" data-number=\"1-2\" " +
                     "href=\"/foobar/1/1-2\" class=\"anchor\">" +
                     "&gt;&gt;1-2</a><br>Hoge</p>"),
             (post4, "<p><a data-board=\"demo\" data-topic=\"\" " +
