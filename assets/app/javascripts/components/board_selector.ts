@@ -50,8 +50,8 @@ export default class BoardSelector {
     listElement: Element;
     boards: Board[];
 
-    constructor(targetElement: string) {
-        this.targetElement = document.querySelector(targetElement);
+    constructor(targetSelector: string) {
+        this.targetElement = document.querySelector(targetSelector);
 
         let className = this.targetElement.className.split(' ');
         className.push('js-board-selector');
@@ -95,7 +95,7 @@ export default class BoardSelector {
         if (this.boards) {
             this.toggleBoardSelectorListState();
         } else {
-            Board.queryAll().then(function (boards: Iterable<Board>): void {
+            Board.queryAll().then(function(boards: Iterable<Board>): void {
                 self.boards = Array.from(boards);
                 self.toggleBoardSelectorListState();
             });
