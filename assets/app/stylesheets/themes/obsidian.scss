@@ -344,11 +344,25 @@ $color-text:             #cfcfcf;
     }
 
     .post-body {
-        .anchor {
+        p.shortened {
+            color: $color-muted;
+
+            a.anchor {
+                font-weight: bold;
+            }
+        }
+
+        a.anchor {
             color: #6aa5c3;
 
             &:hover {
                 color: $color-gray-lighter;
+            }
+        }
+
+        a.thumbnail {
+            &:hover {
+                opacity: 0.7;
             }
         }
     }

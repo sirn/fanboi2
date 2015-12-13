@@ -4,6 +4,12 @@
 $post-item-spacing: 5px;
 $post-gap-spacing: $spacing-vertical;
 
+$thumbnail-width: 90px;
+$thumbnail-height: 90px;
+$thumbnail-gap-vertical: $spacing-vertical-smaller;
+$thumbnail-gap-horizontal: $spacing-horizontal-smaller;
+$thumbnails-margin-vertical: $spacing-vertical - $thumbnail-gap-vertical;
+
 /* Needs rounded value otherwise whitespace calculation in .post will break. */
 $post-date-size: round($font-size-small);
 
@@ -73,5 +79,40 @@ $post-date-size: round($font-size-small);
 
     p {
         margin: 0 0 $spacing-vertical;
+    }
+
+    p.thumbnails {
+        @include clearfix();
+        margin: 0 0 $thumbnails-margin-vertical;
+    }
+
+    p.shortened {
+        font-size: $font-size-small;
+        font-style: italic;
+        line-height: $font-size-small;
+        margin: 0 0 $spacing-vertical-small;
+    }
+
+    a.anchor {
+    }
+
+    a.thumbnail {
+        display: block;
+        float: left;
+        height: $thumbnail-height;
+        margin: 0 $thumbnail-gap-vertical $thumbnail-gap-horizontal 0;
+        overflow: hidden;
+        width: $thumbnail-width;
+
+        img {
+            max-height: $thumbnail-height;
+            max-width: $thumbnail-width;
+        }
+    }
+
+    @media (min-width: $bound-tablet) {
+        p.shortened {
+            margin: 0 0 $spacing-vertical-large;
+        }
     }
 }

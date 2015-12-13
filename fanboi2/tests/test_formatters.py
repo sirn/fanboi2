@@ -289,5 +289,5 @@ class TestFormattersWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
         post = self._makePost(topic=topic, body="Hello\nworld")
         self.assertEqual(format_post(None, request, post, shorten=5),
                          Markup("<p>Hello</p>\n<p class=\"shortened\">"
-                                "Post shortened. <a href=\"/foobar/1/1-\">"
-                                "See full post</a>.</p>"))
+                                "Post shortened. <a href=\"/foobar/1/1-\" "
+                                "class=\"anchor\">See full post</a>.</p>"))

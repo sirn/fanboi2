@@ -191,7 +191,7 @@ TP_ANCHOR_CROSS = ''.join("""
 
 TP_SHORTENED = ''.join("""
 <p class="shortened">
-Post shortened. <a href="%s">See full post</a>.
+Post shortened. <a href="%s" class="anchor">See full post</a>.
 </p>
 """.splitlines())
 
