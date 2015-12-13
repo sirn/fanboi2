@@ -18,9 +18,13 @@ class TestJSONRenderer(RegistryMixin, unittest.TestCase):
 
     def test_datetime(self):
         from datetime import datetime, timezone
+        request = self._makeRequest()
+        registry = self._makeRegistry(settings={'app.timezone': 'Asia/Bangkok'})
+        self._makeConfig(request, registry)
+        date = datetime(2013, 1, 2, 0, 4, 1, 0, timezone.utc)
         self.assertEqual(
-            self._makeOne(datetime(2013, 1, 2, 0, 4, 1, 0, timezone.utc)),
-            '2013-01-02T00:04:01+00:00')
+            self._makeOne(date, request=request),
+            '2013-01-02T07:04:01+07:00')
 
     def test_error_serializer(self):
         from fanboi2.errors import BaseError

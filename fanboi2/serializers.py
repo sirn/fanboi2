@@ -1,4 +1,5 @@
 import datetime
+import pytz
 from fanboi2.formatters import format_post
 
 
@@ -11,7 +12,10 @@ def _datetime_adapter(obj, request):
     :type obj: datetime.datetime
     :type request: pyramid.request.Request
     """
-    return obj.isoformat()
+    settings = request.registry.settings
+    assert isinstance(settings, dict)
+    tz = pytz.timezone(settings['app.timezone'])
+    return obj.astimezone(tz).isoformat()
 
 
 def _sqlalchemy_query_adapter(obj, request):
