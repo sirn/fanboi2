@@ -41,15 +41,15 @@
 }
 
 .api-request-body {
-    margin: 0 0 (-$spacing-content);
+    margin: 0 0 (-$spacing-vertical);
 
     p {
         line-height: $line-height-content;
-        margin: 0 0 $spacing-content;
+        margin: 0 0 $spacing-vertical;
     }
 
     table {
-        margin: 0 0 $spacing-content;
+        margin: 0 0 $spacing-vertical;
     }
 }
 
