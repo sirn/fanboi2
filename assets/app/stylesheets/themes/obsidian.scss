@@ -28,9 +28,6 @@ $color-text:             #cfcfcf;
     a {
         color: $color-brand;
         text-decoration: none;
-        transition-duration: $animation-timing;
-        transition-property: color;
-        transition-timing-function: $animation-function;
 
         &:hover {
             color: $color-gray-lighter;
@@ -135,9 +132,6 @@ $color-text:             #cfcfcf;
     .input {
         background-color: $color-gray;
         border-color: $color-muted-dark;
-        transition-duration: $animation-timing;
-        transition-property: border-color;
-        transition-timing-function: $animation-function;
 
         &:focus {
             border-color: $color-muted;
@@ -145,10 +139,6 @@ $color-text:             #cfcfcf;
     }
 
     .button {
-        transition-duration: $animation-timing;
-        transition-property: background-color, border-color, color;
-        transition-timing-function: $animation-function;
-
         &.default {
             background-color: $color-muted-light;
             border-color: $color-muted-light;

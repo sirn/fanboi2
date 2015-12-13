@@ -30,9 +30,6 @@ $color-text:             #333;
     a {
         color: $color-brand;
         text-decoration: none;
-        transition-duration: $animation-timing;
-        transition-property: color;
-        transition-timing-function: $animation-function;
 
         &:hover {
             color: $color-gray-dark;
@@ -137,9 +134,6 @@ $color-text:             #333;
 
     .input {
         border-color: $color-tint;
-        transition-duration: $animation-timing;
-        transition-property: border-color;
-        transition-timing-function: $animation-function;
 
         &:focus {
             border-color: $color-tint-dark;
@@ -147,10 +141,6 @@ $color-text:             #333;
     }
 
     .button {
-        transition-duration: $animation-timing;
-        transition-property: background-color, border-color, color;
-        transition-timing-function: $animation-function;
-
         &.default {
             background-color: $color-gray-lighter;
             border-color: $color-gray-light;
