@@ -3,6 +3,7 @@
 import 'whatwg-fetch'
 import Topic from "./topic";
 
+
 export default class Board {
     type: string;
     id: number;

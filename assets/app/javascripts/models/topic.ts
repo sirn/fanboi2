@@ -3,6 +3,7 @@
 import 'whatwg-fetch'
 import Post from "./post";
 
+
 enum Statuses {
     Open,
     Locked,

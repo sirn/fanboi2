@@ -2,6 +2,7 @@
 
 import 'whatwg-fetch';
 
+
 export default class Post {
     type: string;
     id: number;

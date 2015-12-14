@@ -3,7 +3,8 @@
 import * as VirtualDOM from 'virtual-dom';
 import Board from "../models/board";
 
-class BoardSelectorList {
+
+class BoardSelectorListView {
     boards: Board[];
     show: boolean;
 
@@ -42,6 +43,7 @@ class BoardSelectorList {
     }
 }
 
+
 export default class BoardSelector {
     targetElement: Element;
     buttonNode: VirtualDOM.VNode;
@@ -62,7 +64,7 @@ export default class BoardSelector {
     }
 
     private attachList(): void {
-        let view = new BoardSelectorList([]);
+        let view = new BoardSelectorListView([]);
         this.listNode = view.render();
         this.listElement = VirtualDOM.create(this.listNode);
 
@@ -104,7 +106,7 @@ export default class BoardSelector {
 
     private toggleBoardSelectorListState(): void {
         let state = this.listElement.className.includes('disabled');
-        let view = new BoardSelectorList(Array.from(this.boards), state);
+        let view = new BoardSelectorListView(Array.from(this.boards), state);
         let viewNode = view.render();
         let patches = VirtualDOM.diff(this.listNode, viewNode);
 
