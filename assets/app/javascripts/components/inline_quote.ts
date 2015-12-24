@@ -26,19 +26,19 @@ class InlineBoardView {
                     ])
                 ])
             ]
-        )
+        );
     }
 
     private static renderTitle(board: Board): VirtualDOM.VNode {
         return VirtualDOM.h('div', {className: 'cascade-header'}, [
             String(board.title)
-        ])
+        ]);
     }
 
     private static renderDescription(board: Board): VirtualDOM.VNode {
         return VirtualDOM.h('div', {className: 'cascade-body'}, [
             String(board.description)
-        ])
+        ]);
     }
 }
 
@@ -62,7 +62,7 @@ class InlineTopicView {
                     ])
                 ])
             ]
-        )
+        );
     }
 
     private static renderTitle(topic: Topic): VirtualDOM.VNode {
@@ -102,7 +102,7 @@ class InlinePostsView {
             this.posts.map(function(post: Post): VirtualDOM.VNode {
                 return InlinePostsView.renderPost(post);
             })
-        )
+        );
     }
 
     private static renderPost(post: Post): VirtualDOM.VNode {
@@ -143,7 +143,7 @@ class InlinePostsView {
         }, [String(`Posted ${dateFormatter}`)]);
     }
 
-    private static renderHeaderIdent(post: Post): (VirtualDOM.VNode | string) {
+    private static renderHeaderIdent(post: Post): VirtualDOM.VNode | string {
         if (post.ident) {
             return VirtualDOM.h('span', {
                 className: 'post-header-item ident'
@@ -162,6 +162,62 @@ class InlinePostsView {
 }
 
 
+class InlineQuoteHandler {
+    targetElement: Element;
+    quoteElement: Element;
+
+    constructor(element: Element) {
+        this.targetElement = element;
+    }
+
+    attach(): void {
+        let self = this;
+        this.render().then(function(node: VirtualDOM.VNode | void) {
+            if (node) {
+                self.quoteElement = VirtualDOM.create(<VirtualDOM.VNode>node);
+                document.body.insertBefore(self.quoteElement, null);
+            }
+        });
+    }
+
+    detach(): void {
+        if (this.quoteElement) {
+            this.quoteElement.parentElement.removeChild(this.quoteElement);
+        }
+    }
+
+    private render(): Promise<VirtualDOM.VNode | void> {
+        let targetElement = this.targetElement;
+        let boardSlug = targetElement.getAttribute('data-board');
+        let topicId = parseInt(targetElement.getAttribute('data-topic'), 10);
+        let number = targetElement.getAttribute('data-number');
+
+        if (boardSlug && !topicId && !number) {
+            return Board.querySlug(boardSlug).then(function(board: Board) {
+                if (board) {
+                    return new InlineBoardView(board).render();
+                }
+            });
+        } else if (topicId && !number) {
+            return Topic.queryId(topicId).then(function(topic: Topic) {
+                if (topic) {
+                    return new InlineTopicView(topic).render();
+                }
+            });
+        } else if (topicId && number) {
+            return Post.queryAll(topicId, number).then(
+                function(posts: Iterable<Post>) {
+                    let postsArray = Array.from(posts);
+                    if (postsArray && postsArray.length) {
+                        return new InlinePostsView(postsArray).render();
+                    }
+                }
+            );
+        }
+    }
+}
+
+
 export default class InlineQuote {
     targetSelector: string;
 
@@ -176,52 +232,13 @@ export default class InlineQuote {
         document.addEventListener('mouseover', function(e: Event): void {
             if ((<Element>e.target).matches(self.targetSelector)) {
                 e.preventDefault();
-                self.eventQuoteMouseOver(<Element>e.target);
+                InlineQuote.eventQuoteMouseOver(<Element>e.target);
             }
         });
     }
 
-    private eventQuoteMouseOver(element: Element): void {
-        let boardSlug = element.getAttribute('data-board');
-        let topicId = parseInt(element.getAttribute('data-topic'), 10);
-        let number = element.getAttribute('data-number');
-
-        if (boardSlug && !topicId && !number) {
-            this.renderBoard(boardSlug);
-        } else if (topicId && !number) {
-            this.renderTopic(topicId);
-        } else if (topicId && number) {
-            this.renderTopicPosts(topicId, number);
-        }
-    }
-
-    private renderBoard(boardSlug: string): void {
-        Board.querySlug(boardSlug).then(function(board: Board) {
-            let view = new InlineBoardView(board);
-            let node = view.render();
-            let element = VirtualDOM.create(node);
-            console.log(node);
-            console.log(element);
-        });
-    }
-
-    private renderTopic(topicId: number): void {
-        Topic.queryId(topicId).then(function(topic: Topic) {
-            let view = new InlineTopicView(topic);
-            let node = view.render();
-            let element = VirtualDOM.create(node);
-            console.log(node);
-            console.log(element);
-        });
-    }
-
-    private renderTopicPosts(topicId: number, query: string): void {
-        Post.queryAll(topicId, query).then(function(posts: Iterable<Post>) {
-            let view = new InlinePostsView(Array.from(posts));
-            let node = view.render();
-            let element = VirtualDOM.create(node);
-            console.log(node);
-            console.log(element);
-        });
+    private static eventQuoteMouseOver(element: Element): void {
+        let handler = new InlineQuoteHandler(element);
+        handler.attach();
     }
 }
