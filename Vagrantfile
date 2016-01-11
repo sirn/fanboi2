@@ -62,6 +62,7 @@ Vagrant.configure("2") do |config|
     $HOME/pypy3/bin/alembic upgrade head
 
     npm install --no-bin-link
-    $HOME/nodejs/bin/brunch build
+    $HOME/nodejs/bin/tsd install
+    $HOME/nodejs/bin/gulp
   EOF
 end
