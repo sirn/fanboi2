@@ -1,26 +1,26 @@
 /// <reference path="../typings/dom4/dom4.d.ts" />
 
-import * as VirtualDOM from 'virtual-dom';
+import vdom = require('virtual-dom');
+import dateFormatter = require('../utils/date_formatter');
 
-import DateFormatter from '../utils/date_formatter';
-import Board from '../models/board';
-import Topic from '../models/topic';
-import Post from '../models/post';
+import board = require('../models/board');
+import topic = require('../models/topic');
+import post = require('../models/post');
 
 
 class InlineBoardView {
-    board: Board;
+    board: board.Board;
 
-    constructor(board: Board) {
+    constructor(board: board.Board) {
         this.board = board;
     }
 
-    render(): VirtualDOM.VNode {
-        return VirtualDOM.h('div',
+    render(): vdom.VNode {
+        return vdom.h('div',
             {className: 'js-inline-board'},
             [
-                VirtualDOM.h('div', {className: 'cascade'}, [
-                    VirtualDOM.h('div', {className: 'container'}, [
+                vdom.h('div', {className: 'cascade'}, [
+                    vdom.h('div', {className: 'container'}, [
                         InlineBoardView.renderTitle(this.board),
                         InlineBoardView.renderDescription(this.board),
                     ])
@@ -29,14 +29,14 @@ class InlineBoardView {
         );
     }
 
-    private static renderTitle(board: Board): VirtualDOM.VNode {
-        return VirtualDOM.h('div', {className: 'cascade-header'}, [
+    private static renderTitle(board: board.Board): vdom.VNode {
+        return vdom.h('div', {className: 'cascade-header'}, [
             String(board.title)
         ]);
     }
 
-    private static renderDescription(board: Board): VirtualDOM.VNode {
-        return VirtualDOM.h('div', {className: 'cascade-body'}, [
+    private static renderDescription(board: board.Board): vdom.VNode {
+        return vdom.h('div', {className: 'cascade-body'}, [
             String(board.description)
         ]);
     }
@@ -44,18 +44,18 @@ class InlineBoardView {
 
 
 class InlineTopicView {
-    topic: Topic;
+    topic: topic.Topic;
 
-    constructor(topic: Topic) {
+    constructor(topic: topic.Topic) {
         this.topic = topic;
     }
 
-    render(): VirtualDOM.VNode {
-        return VirtualDOM.h('div',
+    render(): vdom.VNode {
+        return vdom.h('div',
             {className: 'js-inline-topic'},
             [
-                VirtualDOM.h('div', {className: 'topic-header'}, [
-                    VirtualDOM.h('div', {className: 'container'}, [
+                vdom.h('div', {className: 'topic-header'}, [
+                    vdom.h('div', {className: 'container'}, [
                         InlineTopicView.renderTitle(this.topic),
                         InlineTopicView.renderDate(this.topic),
                         InlineTopicView.renderCount(this.topic),
@@ -65,55 +65,55 @@ class InlineTopicView {
         );
     }
 
-    private static renderTitle(topic: Topic): VirtualDOM.VNode {
-        return VirtualDOM.h('h3', {className: 'topic-header-title'}, [
+    private static renderTitle(topic: topic.Topic): vdom.VNode {
+        return vdom.h('h3', {className: 'topic-header-title'}, [
             String(topic.title)
         ]);
     }
 
-    private static renderDate(topic: Topic): VirtualDOM.VNode {
+    private static renderDate(topic: topic.Topic): vdom.VNode {
         let postedAt = new Date(topic.postedAt);
-        let dateFormatter = new DateFormatter(postedAt);
-        return VirtualDOM.h('p', {className: 'topic-header-item'}, [
+        let formatter = new dateFormatter.DateFormatter(postedAt);
+        return vdom.h('p', {className: 'topic-header-item'}, [
             String('Last posted '),
-            VirtualDOM.h('strong', {}, [String(dateFormatter)]),
+            vdom.h('strong', {}, [String(formatter)]),
         ]);
     }
 
-    private static renderCount(topic: Topic): VirtualDOM.VNode {
-        return VirtualDOM.h('p', {className: 'topic-header-item'}, [
+    private static renderCount(topic: topic.Topic): vdom.VNode {
+        return vdom.h('p', {className: 'topic-header-item'}, [
             String('Total of '),
-            VirtualDOM.h('strong', {}, [String(`${topic.postCount} posts`)]),
+            vdom.h('strong', {}, [String(`${topic.postCount} posts`)]),
         ]);
     }
 }
 
 
 class InlinePostsView {
-    posts: Post[];
+    posts: post.Post[];
 
-    constructor(posts: Post[]) {
+    constructor(posts: post.Post[]) {
         this.posts = posts;
     }
 
-    render(): VirtualDOM.VNode {
-        return VirtualDOM.h('div',
+    render(): vdom.VNode {
+        return vdom.h('div',
             {className: 'js-inline-post'},
-            this.posts.map(function(post: Post): VirtualDOM.VNode {
+            this.posts.map(function(post: post.Post): vdom.VNode {
                 return InlinePostsView.renderPost(post);
             })
         );
     }
 
-    private static renderPost(post: Post): VirtualDOM.VNode {
-        return VirtualDOM.h('div', {className: 'container'}, [
+    private static renderPost(post: post.Post): vdom.VNode {
+        return vdom.h('div', {className: 'container'}, [
             InlinePostsView.renderHeader(post),
             InlinePostsView.renderBody(post),
         ]);
     }
 
-    private static renderHeader(post: Post): VirtualDOM.VNode {
-        return VirtualDOM.h('div', {className: 'post-header'}, [
+    private static renderHeader(post: post.Post): vdom.VNode {
+        return vdom.h('div', {className: 'post-header'}, [
             InlinePostsView.renderHeaderNumber(post),
             InlinePostsView.renderHeaderName(post),
             InlinePostsView.renderHeaderDate(post),
@@ -121,31 +121,31 @@ class InlinePostsView {
         ]);
     }
 
-    private static renderHeaderNumber(post: Post): VirtualDOM.VNode {
+    private static renderHeaderNumber(post: post.Post): vdom.VNode {
         let classList = ['post-header-item', 'number'];
         if (post.bumped) { classList.push('bumped'); }
-        return VirtualDOM.h('span', {
+        return vdom.h('span', {
             className: classList.join(' '),
         }, [String(post.number)]);
     }
 
-    private static renderHeaderName(post: Post): VirtualDOM.VNode {
-        return VirtualDOM.h('span', {
+    private static renderHeaderName(post: post.Post): vdom.VNode {
+        return vdom.h('span', {
             className: 'post-header-item name'
         }, [String(post.name)]);
     }
 
-    private static renderHeaderDate(post: Post): VirtualDOM.VNode {
+    private static renderHeaderDate(post: post.Post): vdom.VNode {
         let createdAt = new Date(post.createdAt);
-        let dateFormatter = new DateFormatter(createdAt);
-        return VirtualDOM.h('span', {
+        let formatter = new dateFormatter.DateFormatter(createdAt);
+        return vdom.h('span', {
             className: 'post-header-item date'
-        }, [String(`Posted ${dateFormatter}`)]);
+        }, [String(`Posted ${formatter}`)]);
     }
 
-    private static renderHeaderIdent(post: Post): VirtualDOM.VNode | string {
+    private static renderHeaderIdent(post: post.Post): vdom.VNode | string {
         if (post.ident) {
-            return VirtualDOM.h('span', {
+            return vdom.h('span', {
                 className: 'post-header-item ident'
             }, [String(`ID:${post.ident}`)]);
         } else {
@@ -153,8 +153,8 @@ class InlinePostsView {
         }
     }
 
-    private static renderBody(post: Post): VirtualDOM.VNode {
-        return VirtualDOM.h('div', {
+    private static renderBody(post: post.Post): vdom.VNode {
+        return vdom.h('div', {
             className: 'post-body',
             innerHTML: post.bodyFormatted,
         }, []);
@@ -172,9 +172,9 @@ class InlineQuoteHandler {
 
     attach(): void {
         let self = this;
-        this.render().then(function(node: VirtualDOM.VNode | void) {
+        this.render().then(function(node: vdom.VNode | void) {
             if (node) {
-                self.quoteElement = VirtualDOM.create(<VirtualDOM.VNode>node);
+                self.quoteElement = vdom.create(<vdom.VNode>node);
                 document.body.insertBefore(self.quoteElement, null);
             }
         });
@@ -186,30 +186,33 @@ class InlineQuoteHandler {
         }
     }
 
-    private render(): Promise<VirtualDOM.VNode | void> {
+    private render(): Promise<vdom.VNode | void> {
         let targetElement = this.targetElement;
         let boardSlug = targetElement.getAttribute('data-board');
         let topicId = parseInt(targetElement.getAttribute('data-topic'), 10);
         let number = targetElement.getAttribute('data-number');
 
         if (boardSlug && !topicId && !number) {
-            return Board.querySlug(boardSlug).then(function(board: Board) {
+            return board.Board.querySlug(boardSlug).then(function(
+                board: board.Board
+            ): vdom.VNode {
                 if (board) {
                     return new InlineBoardView(board).render();
                 }
             });
         } else if (topicId && !number) {
-            return Topic.queryId(topicId).then(function(topic: Topic) {
+            return topic.Topic.queryId(topicId).then(function(
+                topic: topic.Topic
+            ): vdom.VNode {
                 if (topic) {
                     return new InlineTopicView(topic).render();
                 }
             });
         } else if (topicId && number) {
-            return Post.queryAll(topicId, number).then(
-                function(posts: Iterable<Post>) {
-                    let postsArray = Array.from(posts);
-                    if (postsArray && postsArray.length) {
-                        return new InlinePostsView(postsArray).render();
+            return post.Post.queryAll(topicId, number).then(
+                function(posts: Array<post.Post>) {
+                    if (posts && posts.length) {
+                        return new InlinePostsView(posts).render();
                     }
                 }
             );
@@ -218,7 +221,7 @@ class InlineQuoteHandler {
 }
 
 
-export default class InlineQuote {
+export class InlineQuote {
     targetSelector: string;
 
     constructor(targetSelector: string) {

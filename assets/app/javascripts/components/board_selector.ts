@@ -1,31 +1,32 @@
 /// <reference path="../typings/virtual-dom/virtual-dom.d.ts" />
+/// <reference path="../typings/es6-promise/es6-promise.d.ts" />
 
-import * as VirtualDOM from 'virtual-dom';
-import Board from "../models/board";
+import vdom = require('virtual-dom');
+import board = require('../models/board');
 
 
 class BoardSelectorListView {
-    boards: Board[];
+    boards: board.Board[];
     show: boolean;
 
-    constructor(boards: Board[], show?: boolean) {
+    constructor(boards: board.Board[], show?: boolean) {
         this.boards = boards;
         this.show = !!show;
     }
 
-    render(): VirtualDOM.VNode {
-        return VirtualDOM.h('div',
+    render(): vdom.VNode {
+        return vdom.h('div',
             {className: this.getCssFromState()},
-            this.boards.map(function(board: Board): VirtualDOM.VNode {
-                return VirtualDOM.h('div', {className: 'cascade'}, [
-                    VirtualDOM.h('div', {className: 'container'}, [
-                        VirtualDOM.h('div', {className: 'cascade-header'}, [
-                            VirtualDOM.h('a',
+            this.boards.map(function(board: board.Board): vdom.VNode {
+                return vdom.h('div', {className: 'cascade'}, [
+                    vdom.h('div', {className: 'container'}, [
+                        vdom.h('div', {className: 'cascade-header'}, [
+                            vdom.h('a',
                                 {href: `/${board.slug}/`},
                                 String(board.title)
                             ),
                         ]),
-                        VirtualDOM.h('div',
+                        vdom.h('div',
                             {className: 'cascade-body'},
                             String(board.description)
                         ),
@@ -44,13 +45,13 @@ class BoardSelectorListView {
 }
 
 
-export default class BoardSelector {
+export class BoardSelector {
     targetElement: Element;
-    buttonNode: VirtualDOM.VNode;
+    buttonNode: vdom.VNode;
     buttonElement: Element;
-    listNode: VirtualDOM.VNode;
+    listNode: vdom.VNode;
     listElement: Element;
-    boards: Board[];
+    boards: board.Board[];
 
     constructor(targetSelector: string) {
         this.targetElement = document.querySelector(targetSelector);
@@ -66,7 +67,7 @@ export default class BoardSelector {
     private attachList(): void {
         let view = new BoardSelectorListView([]);
         this.listNode = view.render();
-        this.listElement = VirtualDOM.create(this.listNode);
+        this.listElement = vdom.create(this.listNode);
 
         document.body.insertBefore(
             this.listElement,
@@ -76,12 +77,12 @@ export default class BoardSelector {
 
     private attachButton(): void {
         let self = this;
-        this.buttonNode = VirtualDOM.h('div',
+        this.buttonNode = vdom.h('div',
             {className: 'js-board-selector-button'},
-            [VirtualDOM.h('a', {'href': '#'}, ['Boards'])]
+            [vdom.h('a', {'href': '#'}, ['Boards'])]
         );
 
-        this.buttonElement = VirtualDOM.create(this.buttonNode);
+        this.buttonElement = vdom.create(this.buttonNode);
         this.buttonElement.addEventListener('click', function(e) {
             e.preventDefault();
             self.eventButtonClicked();
@@ -97,20 +98,22 @@ export default class BoardSelector {
         if (this.boards) {
             this.toggleBoardSelectorListState();
         } else {
-            Board.queryAll().then(function(boards: Iterable<Board>): void {
-                self.boards = Array.from(boards);
+            board.Board.queryAll().then(function(
+                boards: Array<board.Board>
+            ): void {
+                self.boards = boards;
                 self.toggleBoardSelectorListState();
             });
         }
     }
 
     private toggleBoardSelectorListState(): void {
-        let state = this.listElement.className.includes('disabled');
-        let view = new BoardSelectorListView(Array.from(this.boards), state);
+        let state = this.listElement.className.indexOf('disabled') != -1;
+        let view = new BoardSelectorListView(this.boards, state);
         let viewNode = view.render();
-        let patches = VirtualDOM.diff(this.listNode, viewNode);
+        let patches = vdom.diff(this.listNode, viewNode);
 
-        this.listElement = VirtualDOM.patch(this.listElement, patches);
+        this.listElement = vdom.patch(this.listElement, patches);
         this.listNode = viewNode;
     }
 }

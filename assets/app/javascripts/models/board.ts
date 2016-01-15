@@ -1,10 +1,10 @@
 /// <reference path="../typings/whatwg-fetch/whatwg-fetch.d.ts" />
+/// <reference path="../typings/es6-promise/es6-promise.d.ts" />
 
-import 'whatwg-fetch'
-import Topic from "./topic";
+import topic = require('./topic');
 
 
-export default class Board {
+export class Board {
     type: string;
     id: number;
     agreements: string;
@@ -36,13 +36,13 @@ export default class Board {
         };
     }
 
-    static queryAll(): Promise<Iterable<Board>> {
+    static queryAll(): Promise<Array<Board>> {
         return window.fetch('/api/1.0/boards/').
             then(function(resp: Response): any { return resp.json(); }).
-            then(function*(boards: any[]): Iterable<Board> {
-                for (let board of boards) {
-                    yield new Board(board);
-                }
+            then(function(boards: any[]): Array<Board> {
+                return boards.map(function(board: Object) {
+                    return new Board(board);
+                });
             });
     }
 
@@ -54,7 +54,7 @@ export default class Board {
             });
     }
 
-    getTopics(): Promise<Iterable<Topic>> {
-        return Topic.queryAll(this.slug);
+    getTopics(): Promise<Array<topic.Topic>> {
+        return topic.Topic.queryAll(this.slug);
     }
 }

@@ -11,7 +11,6 @@ var source            = require('vinyl-source-stream');
 var buffer            = require('vinyl-buffer');
 var browserify        = require('browserify');
 var tsify             = require('tsify');
-var babelify          = require('babelify');
 
 
 /* Settings
@@ -39,7 +38,6 @@ var paths = {
         assets: 'assets/vendor/assets/*',
         stylesheets: 'assets/vendor/stylesheets/**/*.css',
         javascripts: [
-            'assets/vendor/javascripts/polyfill.js',
             'assets/vendor/javascripts/**/*.js'
         ]
     },
@@ -117,8 +115,8 @@ gulp.task('styles', [
  * ---------------------------------------------------------------------- */
 
 var externalDependencies = [
-    'babel-polyfill',
     'whatwg-fetch',
+    'es6-promise',
     'virtual-dom',
     'domready',
     'dom4'
@@ -126,8 +124,7 @@ var externalDependencies = [
 
 gulp.task('javascripts/app', function(){
     return browserify({basedir: paths.app.javascripts.base, debug: true}).
-        plugin(tsify, {target: 'es6', noImplicitAny: true}).
-        transform(babelify, {extensions: ['.ts'], presets: ['es2015']}).
+        plugin(tsify).
         require(paths.app.javascripts.entry, {entry: true}).
         external(externalDependencies).
         bundle().

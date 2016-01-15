@@ -1,14 +1,11 @@
-/// <reference path="typings/node/node.d.ts" />
 /// <reference path="typings/domready/domready.d.ts" />
 
-import 'babel-polyfill';
-import 'dom4';
-
-import BoardSelector from './components/board_selector';
-import InlineQuote from './components/inline_quote';
+import domready = require('domready');
+import boardSelector = require('./components/board_selector');
+import inlineQuote = require('./components/inline_quote');
 
 
-require('domready')(function(): void {
-    new BoardSelector('.header');
-    new InlineQuote('[data-number]');
+domready(function(): void {
+    new boardSelector.BoardSelector('.header');
+    new inlineQuote.InlineQuote('[data-number]');
 });

@@ -1,7 +1,7 @@
 /// <reference path="../typings/whatwg-fetch/whatwg-fetch.d.ts" />
+/// <reference path="../typings/es6-promise/es6-promise.d.ts" />
 
-import 'whatwg-fetch'
-import Post from "./post";
+import post = require('./post');
 
 
 enum Statuses {
@@ -10,7 +10,7 @@ enum Statuses {
     Archived,
 }
 
-export default class Topic {
+export class Topic {
     type: string;
     id: number;
     boardId: number;
@@ -40,13 +40,13 @@ export default class Topic {
         }
     }
 
-    static queryAll(slug: string): Promise<Iterable<Topic>> {
+    static queryAll(slug: string): Promise<Array<Topic>> {
         return window.fetch(`/api/1.0/boards/${slug}/topics/`).
             then(function(resp: Response): any { return resp.json(); }).
-            then(function*(topics: any[]): Iterable<Topic> {
-                for (let topic of topics) {
-                    yield new Topic(topic);
-                }
+            then(function(topics: any[]): Array<Topic> {
+                return topics.map(function(topic: Object) {
+                    return new Topic(topic);
+                });
             });
     }
 
@@ -58,7 +58,7 @@ export default class Topic {
             });
     }
 
-    getPosts(query?: string): Promise<Iterable<Post>> {
-        return Post.queryAll(this.id, query);
+    getPosts(query?: string): Promise<Array<post.Post>> {
+        return post.Post.queryAll(this.id, query);
     }
 }

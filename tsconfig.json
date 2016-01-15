@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "noImplicitAny": true
+  },
+  "exclude": [
+    "examples",
+    "fanboi2",
+    "migration",
+    "node_modules"
+  ]
+}

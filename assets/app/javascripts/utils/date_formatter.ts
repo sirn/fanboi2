@@ -13,7 +13,7 @@ const monthNames = [
     'Dec',
 ];
 
-export default class DateFormatter {
+export class DateFormatter {
     date: Date;
 
     constructor(date: Date) {

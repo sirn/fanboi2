@@ -1,9 +1,8 @@
 /// <reference path="../typings/whatwg-fetch/whatwg-fetch.d.ts" />
+/// <reference path="../typings/es6-promise/es6-promise.d.ts" />
 
-import 'whatwg-fetch';
 
-
-export default class Post {
+export class Post {
     type: string;
     id: number;
     body: string;
@@ -33,7 +32,7 @@ export default class Post {
     static queryAll(
         topicId: number,
         query?: string
-    ): Promise<Iterable<Post>> {
+    ): Promise<Array<Post>> {
         let entryPoint: string;
 
         if (query) {
@@ -44,10 +43,10 @@ export default class Post {
 
         return window.fetch(entryPoint).
             then(function(resp: Response): any { return resp.json(); }).
-            then(function*(posts: any[]): Iterable<Post> {
-                for (let post of posts) {
-                    yield new Post(post);
-                }
+            then(function(posts: any[]): Array<Post> {
+                return posts.map(function(post: Object): Post {
+                    return new Post(post);
+                });
             });
     }
 }
