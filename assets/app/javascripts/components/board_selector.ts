@@ -4,7 +4,6 @@
 
 import vdom = require('virtual-dom');
 import board = require('../models/board');
-import merge = require('lodash.merge');
 
 
 const animationDuration = 200;
@@ -12,15 +11,17 @@ const animationDuration = 200;
 
 class BoardSelectorListView {
     boards: board.Board[];
+    boardList: vdom.VNode[];
 
     constructor(boards: board.Board[]) {
         this.boards = boards;
+        this.boardList = this.renderBoards();
     }
 
     render(args?: any): vdom.VNode {
         return vdom.h('div', BoardSelectorListView.getViewClassName(args), [
             vdom.h('div', {className: 'js-board-selector-list-inner'},
-                this.renderBoards()
+                this.boardList
             )
         ]);
     }
@@ -36,8 +37,22 @@ class BoardSelectorListView {
         })
     }
 
-    private static getViewClassName(args?: any) {
-        return merge({className: 'js-board-selector-list'}, args);
+    private static getViewClassName(args?: any): any {
+        let className = 'js-board-selector-list';
+
+        if (!args) {
+            args = {};
+        }
+
+        if (args.className) {
+            let classNames = args.className.split(' ');
+            classNames.push(className);
+            args.className = classNames.join(' ');
+        } else {
+            args.className = className;
+        }
+
+        return args;
     }
 
     private static renderHeader(board: board.Board): vdom.VNode {
@@ -61,8 +76,10 @@ export class BoardSelector {
     buttonNode: vdom.VNode;
     buttonElement: Element;
 
+    listView: BoardSelectorListView;
     listNode: vdom.VNode;
     listElement: Element;
+    listHeight: number;
     listState: boolean;
 
     constructor(targetSelector: string) {
@@ -72,19 +89,7 @@ export class BoardSelector {
         className.push('js-board-selector');
         this.targetElement.className = className.join(' ');
 
-        this.attachList();
         this.attachButton();
-    }
-
-    private attachList(): void {
-        let view = new BoardSelectorListView([]);
-        this.listNode = view.render();
-        this.listElement = vdom.create(this.listNode);
-
-        document.body.insertBefore(
-            this.listElement,
-            this.targetElement.nextSibling
-        )
     }
 
     private attachButton(): void {
@@ -114,6 +119,7 @@ export class BoardSelector {
                 boards: Array<board.Board>
             ): void {
                 self.boards = boards;
+                self.attachBoardSelector();
                 self.toggleBoardSelectorListState();
             });
         }
@@ -129,10 +135,23 @@ export class BoardSelector {
         }
     }
 
+    private attachBoardSelector(): void {
+        this.listView = new BoardSelectorListView(this.boards);
+        this.listNode = this.listView.render();
+        this.listElement = vdom.create(this.listNode);
+
+        document.body.insertBefore(
+            this.listElement,
+            this.targetElement.nextSibling
+        )
+
+        let wrapper = '.js-board-selector-list-inner';
+        let wrapperElement = this.listElement.querySelector(wrapper);
+        this.listHeight = wrapperElement.clientHeight;
+    }
+
     private hideBoardSelector(): void {
         let self = this;
-        let view = new BoardSelectorListView(this.boards);
-        let maxHeight = this.computeBoardSelectorHeight();
         let startTime: number;
 
         let animateStep = function(time: number) {
@@ -143,9 +162,9 @@ export class BoardSelector {
             let elapsed = Math.min(time - startTime, animationDuration);
             let elapsedPercent = elapsed/animationDuration;
 
-            let viewNode = view.render({
+            let viewNode = self.listView.render({
                 style: {
-                    height: `${maxHeight * (1 - elapsedPercent)}px`,
+                    height: `${self.listHeight * (1 - elapsedPercent)}px`,
                     visibility: 'visible',
                 }
             });
@@ -164,11 +183,6 @@ export class BoardSelector {
 
     private showBoardSelector(): void {
         let self = this;
-        let view = new BoardSelectorListView(this.boards);
-
-        // Need to re-render to compute actual height.
-        this.renderBoardSelector(view);
-        let maxHeight = this.computeBoardSelectorHeight();
         let startTime: number;
 
         let animateStep = function(time: number) {
@@ -179,9 +193,9 @@ export class BoardSelector {
             let elapsed = Math.min(time - startTime, animationDuration);
             let elapsedPercent = elapsed/animationDuration;
 
-            let viewNode = view.render({
+            let viewNode = self.listView.render({
                 style: {
-                    height: `${maxHeight * elapsedPercent}px`,
+                    height: `${self.listHeight * elapsedPercent}px`,
                     visibility: 'visible',
                 }
             });
@@ -196,19 +210,5 @@ export class BoardSelector {
         }
 
         requestAnimationFrame(animateStep);
-    }
-
-    private renderBoardSelector(view: BoardSelectorListView): void {
-        let viewNode = view.render();
-        let patches = vdom.diff(this.listNode, viewNode);
-
-        this.listElement = vdom.patch(this.listElement, patches);
-        this.listNode = viewNode;
-    }
-
-    private computeBoardSelectorHeight(): number {
-        let wrapper = '.js-board-selector-list-inner';
-        let wrapperElement = this.listElement.querySelector(wrapper);
-        return wrapperElement.clientHeight;
     }
 }
