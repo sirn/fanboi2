@@ -115,11 +115,12 @@ gulp.task('styles', [
  * ---------------------------------------------------------------------- */
 
 var externalDependencies = [
-    'whatwg-fetch',
-    'es6-promise',
-    'virtual-dom',
+    'dom4',
     'domready',
-    'dom4'
+    'es6-promise',
+    'lodash.merge',
+    'virtual-dom',
+    'whatwg-fetch'
 ];
 
 gulp.task('javascripts/app', function(){
