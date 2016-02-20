@@ -3,6 +3,7 @@
 
 import vdom = require('virtual-dom');
 import dateFormatter = require('../utils/date_formatter');
+import elementId = require('../utils/element_id');
 
 import board = require('../models/board');
 import topic = require('../models/topic');
@@ -74,7 +75,7 @@ class InlineTopicView {
 
     private static renderDate(topic: topic.Topic): vdom.VNode {
         let postedAt = new Date(topic.postedAt);
-        let formatter = new dateFormatter.DateFormatter(postedAt);
+        let formatter = dateFormatter.formatDate(postedAt);
         return vdom.h('p', {className: 'topic-header-item'}, [
             String('Last posted '),
             vdom.h('strong', {}, [String(formatter)]),
@@ -138,7 +139,7 @@ class InlinePostsView {
 
     private static renderHeaderDate(post: post.Post): vdom.VNode {
         let createdAt = new Date(post.createdAt);
-        let formatter = new dateFormatter.DateFormatter(createdAt);
+        let formatter = dateFormatter.formatDate(createdAt);
         return vdom.h('span', {
             className: 'post-header-item date'
         }, [String(`Posted ${formatter}`)]);
@@ -163,27 +164,76 @@ class InlinePostsView {
 }
 
 
+class InlineQuoteView {
+    childNode: vdom.VNode;
+    targetElement: Element;
+
+    constructor(targetElement: Element, childNode: vdom.VNode) {
+        this.targetElement = targetElement;
+        this.childNode = childNode;
+    }
+
+    render(): vdom.VNode {
+        let pos = this.computePosition();
+        return vdom.h('div', {
+            className: 'js-inline',
+            style: {
+                position: 'absolute',
+                top: `${pos.posX}px`,
+                left: `${pos.posY}px`,
+            }
+        }, [this.childNode]);
+    }
+
+    private computePosition(): {posX: number, posY: number} {
+        let bodyRect = document.body.getBoundingClientRect();
+        let elemRect = this.targetElement.getBoundingClientRect();
+        let yRefRect = elemRect;
+
+        // Indent relative to container rather than element if there is
+        // container in element ancestor.
+        let containerElement = this.targetElement.closest('.container');
+        if (containerElement) {
+            yRefRect = containerElement.getBoundingClientRect();
+        }
+
+        return {
+            posX: (elemRect.bottom + 5) - bodyRect.top,
+            posY: yRefRect.left - bodyRect.left,
+        }
+    }
+}
+
+
 class InlineQuoteHandler {
     targetElement: Element;
     quoteElement: Element;
+    parentElement: Element;
 
     constructor(element: Element) {
         this.targetElement = element;
+        this.parentElement = document.body;
     }
 
-    attach(): void {
+    attach(): Promise<void> {
         let self = this;
-        this.render().then(function(node: vdom.VNode | void) {
+        return this.render().then(function(node: vdom.VNode | void) {
             if (node) {
-                self.quoteElement = vdom.create(<vdom.VNode>node);
-                document.body.insertBefore(self.quoteElement, null);
+                let quoteNode = new InlineQuoteView(
+                    self.targetElement,
+                    <vdom.VNode>node
+                ).render();
+
+                self.quoteElement = vdom.create(quoteNode);
+                self.parentElement.insertBefore(self.quoteElement, null);
             }
         });
     }
 
     detach(): void {
         if (this.quoteElement) {
-            this.quoteElement.parentElement.removeChild(this.quoteElement);
+            this.parentElement.removeChild(this.quoteElement);
+            this.quoteElement = null;
         }
     }
 
@@ -224,9 +274,11 @@ class InlineQuoteHandler {
 
 export class InlineQuote {
     targetSelector: string;
+    store: {[key: string]: InlineQuoteHandler}
 
     constructor(targetSelector: string) {
         this.targetSelector = targetSelector;
+        this.store = {};
         this.attachSelf();
     }
 
@@ -236,13 +288,25 @@ export class InlineQuote {
         document.addEventListener('mouseover', function(e: Event): void {
             if ((<Element>e.target).matches(self.targetSelector)) {
                 e.preventDefault();
-                InlineQuote.eventQuoteMouseOver(<Element>e.target);
+                let eid = elementId.getElementId(<Element>e.target);
+                if (!self.store[eid]) {
+                    let handler = new InlineQuoteHandler(<Element>e.target);
+                    handler.attach().then(function(): void {
+                        self.store[eid] = handler;
+                    });
+                }
             }
         });
-    }
 
-    private static eventQuoteMouseOver(element: Element): void {
-        let handler = new InlineQuoteHandler(element);
-        handler.attach();
+        document.addEventListener('mouseout', function(e: Event): void {
+            if ((<Element>e.target).matches(self.targetSelector)) {
+                e.preventDefault();
+                let eid = elementId.getElementId(<Element>e.target);
+                if (self.store[eid]) {
+                    self.store[eid].detach();
+                    delete self.store[eid];
+                }
+            }
+        });
     }
 }
