@@ -129,6 +129,10 @@ gulp.task('javascripts/app', function(){
         require(paths.app.javascripts.entry, {entry: true}).
         external(externalDependencies).
         bundle().
+            on('error', function(err) {
+                console.log(err.message);
+                this.emit('end');
+            }).
             pipe(source('app.js')).
             pipe(buffer()).
             pipe(sourcemaps.init({loadMaps: true})).
@@ -141,6 +145,10 @@ gulp.task('javascripts/vendor', function(){
     return browserify({debug: true}).
         require(externalDependencies).
         bundle().
+            on('error', function(err) {
+                console.log(err.message);
+                this.emit('end');
+            }).
             pipe(source('vendor.js')).
             pipe(buffer()).
             pipe(sourcemaps.init({loadMaps: true})).
