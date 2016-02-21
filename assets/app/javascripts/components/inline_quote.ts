@@ -1,6 +1,3 @@
-/// <reference path="../typings/dom4/dom4.d.ts" />
-/// <reference path="../typings/virtual-dom/virtual-dom.d.ts" />
-
 import vdom = require('virtual-dom');
 import dateFormatter = require('../utils/date_formatter');
 import elementId = require('../utils/element_id');

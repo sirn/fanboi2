@@ -3,10 +3,8 @@
     "module": "commonjs",
     "noImplicitAny": true
   },
-  "exclude": [
-    "examples",
-    "fanboi2",
-    "migration",
-    "node_modules"
+  "files": [
+    "typings/browser.d.ts",
+    "assets/app/javascripts/app.ts"
   ]
 }

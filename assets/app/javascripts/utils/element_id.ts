@@ -1,5 +1,6 @@
 import uuid = require('./uuid');
 
+
 export function getElementId(element: Element): string {
     let elementId = element.getAttribute('data-element-id');
 

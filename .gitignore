@@ -13,7 +13,8 @@ tmp/
 *.dump
 
 # Assets
-assets/app/javascripts/typings
+typings/*
+!typings/vendor/
 
 # IDE stuff
 out/

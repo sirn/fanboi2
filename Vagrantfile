@@ -41,7 +41,7 @@ Vagrant.configure("2") do |config|
 
     npm config set prefix $HOME/nodejs
     npm install -g gulp
-    npm install -g tsd
+    npm install -g typings
 
     echo 'EDITOR=vi; export EDITOR' > $HOME/.profile
     echo 'PAGER=more; export PAGER' >> $HOME/.profile
@@ -62,7 +62,7 @@ Vagrant.configure("2") do |config|
     $HOME/pypy3/bin/alembic upgrade head
 
     npm install --no-bin-link
-    $HOME/nodejs/bin/tsd install
+    $HOME/nodejs/bin/typings install
     $HOME/nodejs/bin/gulp
   EOF
 end

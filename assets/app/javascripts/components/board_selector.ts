@@ -1,7 +1,3 @@
-/// <reference path="../typings/virtual-dom/virtual-dom.d.ts" />
-/// <reference path="../typings/es6-promise/es6-promise.d.ts" />
-/// <reference path="../typings/lodash.merge/lodash.merge.d.ts" />
-
 import vdom = require('virtual-dom');
 import board = require('../models/board');
 

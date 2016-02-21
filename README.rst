@@ -38,7 +38,7 @@ If you don't really want to use Vagrant, you can also install everything using y
 2. `PostgreSQL 9.2 <http://www.postgresql.org/>`_.
 3. `Redis 2.8 <http://redis.io/>`_.
 4. `Memcached 1.4 <http://www.memcached.org/>`_.
-5. `Node.js 4.2 <http://nodejs.org/>`_ with `Gulp`_ and `TSD`_.
+5. `Node.js 4.2 <http://nodejs.org/>`_ with `Gulp`_ and `Typings`_.
 
 After the package above are up and running, you may now setup the application::
 
@@ -53,9 +53,9 @@ And you're done! You can now proceed to the Management Scripts section below.
 Assets
 ------
 
-The application doesn't come with assets compiled by default and are done externally via `Gulp`_ and `TSD`_. Once you've setup the environment, you can use these two commands to build assets:
+The application doesn't come with assets compiled by default and are done externally via `Gulp`_ and `Typings`_. Once you've setup the environment, you can use these two commands to build assets:
 
-1. ``tsd install`` to download `TypeScript <http://www.typescriptlang.org/>`_ definition for dependencies.
+1. ``typings install`` to download `TypeScript <http://www.typescriptlang.org/>`_ definition for dependencies.
 2. ``gulp`` to build assets with `Gulp`_ (or use ``gulp watch`` to auto-reload).
 
 Once these two commands are run, assets will be compiled to ``fanboi2/static`` in which you should point the web server to it. You should do this on every deploy.
@@ -107,5 +107,5 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 .. _Vagrant: https://www.vagrantup.com/
-.. _Gulp: https://github.com/gulpjs/gulp/
-.. _TSD: http://definitelytyped.org/tsd/
+.. _Gulp: https://github.com/gulpjs/gulp
+.. _Typings: https://github.com/typings/typings

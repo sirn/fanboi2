@@ -29,7 +29,8 @@ var paths = {
         javascripts: {
             glob: 'assets/app/javascripts/**/*.ts',
             base: 'assets/app/javascripts/',
-            entry: 'app.ts'
+            typings: 'typings/browser.d.ts',
+            entry: 'assets/app/javascripts/app.ts'
         }
     },
 
@@ -118,14 +119,14 @@ var externalDependencies = [
     'dom4',
     'domready',
     'es6-promise',
-    'lodash.merge',
     'virtual-dom',
     'whatwg-fetch'
 ];
 
 gulp.task('javascripts/app', function(){
-    return browserify({basedir: paths.app.javascripts.base, debug: true}).
+    return browserify({debug: true}).
         plugin(tsify).
+        require(paths.app.javascripts.typings, {entry: true}).
         require(paths.app.javascripts.entry, {entry: true}).
         external(externalDependencies).
         bundle().

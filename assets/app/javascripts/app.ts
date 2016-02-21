@@ -1,6 +1,3 @@
-/// <reference path="typings/domready/domready.d.ts" />
-/// <reference path="typings/whatwg-fetch/whatwg-fetch.d.ts" />
-
 import 'whatwg-fetch';
 
 import domready = require('domready');

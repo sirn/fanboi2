@@ -1,7 +1,3 @@
-/// <reference path="../typings/whatwg-fetch/whatwg-fetch.d.ts" />
-/// <reference path="../typings/es6-promise/es6-promise.d.ts" />
-
-
 export class Post {
     type: string;
     id: number;
