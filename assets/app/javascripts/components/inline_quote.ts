@@ -1,6 +1,7 @@
 import vdom = require('virtual-dom');
 import dateFormatter = require('../utils/date_formatter');
 import elementId = require('../utils/element_id');
+import cancellable = require('../utils/cancellable');
 
 import board = require('../models/board');
 import topic = require('../models/topic');
@@ -206,10 +207,13 @@ class InlineQuoteHandler {
     targetElement: Element;
     quoteElement: Element;
     parentElement: Element;
+    cancellableToken: cancellable.CancellableToken;
 
     constructor(element: Element) {
         this.targetElement = element;
+        this.quoteElement = null;
         this.parentElement = document.body;
+        this.cancellableToken = null;
     }
 
     attach(): Promise<void> {
@@ -228,6 +232,10 @@ class InlineQuoteHandler {
     }
 
     detach(): void {
+        if (this.cancellableToken) {
+            this.cancellableToken.cancel();
+        }
+
         if (this.quoteElement) {
             this.parentElement.removeChild(this.quoteElement);
             this.quoteElement = null;
@@ -240,25 +248,32 @@ class InlineQuoteHandler {
         let topicId = parseInt(targetElement.getAttribute('data-topic'), 10);
         let number = targetElement.getAttribute('data-number');
 
+        this.cancellableToken = new cancellable.CancelToken();
+
         if (boardSlug && !topicId && !number) {
-            return board.Board.querySlug(boardSlug).then(function(
-                board: board.Board
-            ): vdom.VNode {
+            return board.Board.querySlug(
+                boardSlug,
+                this.cancellableToken
+            ).then(function(board: board.Board): vdom.VNode {
                 if (board) {
                     return new InlineBoardView(board).render();
                 }
             });
         } else if (topicId && !number) {
-            return topic.Topic.queryId(topicId).then(function(
-                topic: topic.Topic
-            ): vdom.VNode {
+            return topic.Topic.queryId(
+                topicId,
+                this.cancellableToken
+            ).then(function(topic: topic.Topic): vdom.VNode {
                 if (topic) {
                     return new InlineTopicView(topic).render();
                 }
             });
         } else if (topicId && number) {
-            return post.Post.queryAll(topicId, number).then(
-                function(posts: Array<post.Post>) {
+            return post.Post.queryAll(
+                topicId,
+                number,
+                this.cancellableToken
+            ).then(function(posts: Array<post.Post>) {
                     if (posts && posts.length) {
                         return new InlinePostsView(posts).render();
                     }
@@ -287,10 +302,8 @@ export class InlineQuote {
                 e.preventDefault();
                 let eid = elementId.getElementId(<Element>e.target);
                 if (!self.store[eid]) {
-                    let handler = new InlineQuoteHandler(<Element>e.target);
-                    handler.attach().then(function(): void {
-                        self.store[eid] = handler;
-                    });
+                    self.store[eid] = new InlineQuoteHandler(<Element>e.target);
+                    self.store[eid].attach();
                 }
             }
         });

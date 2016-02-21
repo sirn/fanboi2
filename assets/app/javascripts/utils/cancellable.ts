@@ -1,7 +1,7 @@
 export interface CancellableToken {
-    cancel: void|(() => void);
+    cancel: (() => void);
 }
 
 export class CancelToken implements CancellableToken {
-    cancel: void
+    cancel(): void {}
 };
