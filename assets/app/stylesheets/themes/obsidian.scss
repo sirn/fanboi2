@@ -366,4 +366,16 @@ $color-text:             #cfcfcf;
             border-color: $color-brand-dark;
         }
     }
+
+    .js-inline {
+        box-shadow: 0 0 1px 0 rgba(0, 0, 0, .5);
+    }
+
+    .js-inline-topic {
+        background-color: $color-gray-darker;
+    }
+
+    .js-inline-board {
+        background-color: $color-gray-darker;
+    }
 }

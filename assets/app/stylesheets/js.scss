@@ -40,3 +40,33 @@
     overflow: hidden;
     visibility: hidden;
 }
+
+/* JS Inline Quote
+ * ------------------------------------------------------------------------ */
+
+.js-inline {
+}
+
+.js-inline-post {
+    @media (min-width: $bound-tablet) {
+        .post {
+            padding: 8px;
+        }
+    }
+}
+
+.js-inline-topic {
+    .topic-header {
+        padding: 8px;
+    }
+
+    .topic-header-item:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.js-inline-board {
+    .cascade {
+        padding: 8px;
+    }
+}

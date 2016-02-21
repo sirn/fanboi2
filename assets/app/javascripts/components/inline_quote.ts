@@ -31,7 +31,10 @@ class InlineBoardView {
 
     private static renderTitle(board: board.Board): vdom.VNode {
         return vdom.h('div', {className: 'cascade-header'}, [
-            String(board.title)
+            vdom.h('a', {
+                className: 'cascade-header-link',
+                href: `/${board.slug}/`
+            }, String(board.title))
         ]);
     }
 
@@ -106,9 +109,11 @@ class InlinePostsView {
     }
 
     private static renderPost(post: post.Post): vdom.VNode {
-        return vdom.h('div', {className: 'container'}, [
-            InlinePostsView.renderHeader(post),
-            InlinePostsView.renderBody(post),
+        return vdom.h('div', {className: 'post'}, [
+            vdom.h('div', {className: 'container'}, [
+                InlinePostsView.renderHeader(post),
+                InlinePostsView.renderBody(post),
+            ])
         ]);
     }
 
