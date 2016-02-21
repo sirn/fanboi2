@@ -47,17 +47,20 @@
 .js-inline {
 }
 
+.js-inline-inner {
+}
+
 .js-inline-post {
     @media (min-width: $bound-tablet) {
         .post {
-            padding: 8px;
+            padding: 10px;
         }
     }
 }
 
 .js-inline-topic {
     .topic-header {
-        padding: 8px;
+        padding: 10px;
     }
 
     .topic-header-item:last-child {
@@ -67,6 +70,6 @@
 
 .js-inline-board {
     .cascade {
-        padding: 8px;
+        padding: 10px;
     }
 }

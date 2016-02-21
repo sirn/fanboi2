@@ -178,14 +178,16 @@ class InlineQuoteView {
 
     render(): vdom.VNode {
         let pos = this.computePosition();
-        return vdom.h('div', {
-            className: 'js-inline',
-            style: {
-                position: 'absolute',
-                top: `${pos.posX}px`,
-                left: `${pos.posY}px`,
-            }
-        }, [this.childNode]);
+        return vdom.h('div', {className: 'js-inline'}, [
+            vdom.h('div', {
+                className: 'js-inline-inner',
+                style: {
+                    position: 'absolute',
+                    top: `${pos.posX}px`,
+                    left: `${pos.posY}px`,
+                }
+            }, [this.childNode])
+        ]);
     }
 
     private computePosition(): {posX: number, posY: number} {
@@ -214,14 +216,17 @@ class InlineQuoteHandler {
     parentElement: Element;
     cancellableToken: cancellable.CancellableToken;
 
-    constructor(element: Element) {
+    constructor(element: Element, parentElement?: Element) {
         this.targetElement = element;
         this.quoteElement = null;
-        this.parentElement = document.body;
         this.cancellableToken = null;
+        this.parentElement = parentElement;
+        if (!this.parentElement) {
+            this.parentElement = document.body;
+        }
     }
 
-    attach(): Promise<void> {
+    attach(callback?: (element: Element) => void): Promise<void> {
         let self = this;
         return this.render().then(function(node: vdom.VNode | void) {
             if (node) {
@@ -232,6 +237,10 @@ class InlineQuoteHandler {
 
                 self.quoteElement = vdom.create(quoteNode);
                 self.parentElement.insertBefore(self.quoteElement, null);
+
+                if (callback) {
+                    callback(self.quoteElement);
+                }
             }
         });
     }
@@ -291,36 +300,76 @@ class InlineQuoteHandler {
 
 export class InlineQuote {
     targetSelector: string;
+    dismissTimer: number;
     store: {[key: string]: InlineQuoteHandler}
 
     constructor(targetSelector: string) {
         this.targetSelector = targetSelector;
+        this.dismissTimer = null;
         this.store = {};
-        this.attachSelf();
+        this.bindSelf();
     }
 
-    private attachSelf(): void {
+    private bindSelf(): void {
         let self = this;
 
         document.addEventListener('mouseover', function(e: Event): void {
-            if ((<Element>e.target).matches(self.targetSelector)) {
+            let target = <Element>e.target;
+            if (target.matches(self.targetSelector)) {
                 e.preventDefault();
-                let eid = elementId.getElementId(<Element>e.target);
+                let eid = elementId.getElementId(target);
+                let parent = target.closest('.js-inline');
                 if (!self.store[eid]) {
-                    self.store[eid] = new InlineQuoteHandler(<Element>e.target);
-                    self.store[eid].attach();
+                    self.store[eid] = new InlineQuoteHandler(target, parent);
+                    self.store[eid].attach(function(quoteElement: Element) {
+                        self.bindDeepDetach(eid, quoteElement);
+                    });
                 }
             }
         });
 
         document.addEventListener('mouseout', function(e: Event): void {
-            if ((<Element>e.target).matches(self.targetSelector)) {
+            let target = <Element>e.target;
+            if (target.matches(self.targetSelector)) {
                 e.preventDefault();
-                let eid = elementId.getElementId(<Element>e.target);
-                if (self.store[eid]) {
-                    self.store[eid].detach();
-                    delete self.store[eid];
-                }
+                let eid = elementId.getElementId(target);
+                self.dismissTimer = setTimeout(function(): void {
+                    self.detach(eid);
+                }, 100);
+            }
+        });
+    }
+
+    private detach(eid: string): void {
+        if (this.store[eid]) {
+            this.store[eid].detach();
+            delete this.store[eid];
+        }
+    }
+
+    private bindDeepDetach(eid: string, quoteElement: Element): void {
+        let self = this;
+        quoteElement.addEventListener('mouseover', function() {
+            if (self.dismissTimer) {
+                clearTimeout(self.dismissTimer);
+                self.dismissTimer = null;
+
+                quoteElement.removeEventListener(
+                    'mouseover',
+                    <EventListener>arguments.callee
+                );
+
+                document.addEventListener('mouseover', function(e) {
+                    let _n = <Node>e.target;
+                    while (_n && _n != quoteElement) { _n = _n.parentNode; }
+                    if (_n != quoteElement) {
+                        self.detach(eid);
+                        document.removeEventListener(
+                            'mouseover',
+                            <EventListener>arguments.callee
+                        );
+                    }
+                });
             }
         });
     }
