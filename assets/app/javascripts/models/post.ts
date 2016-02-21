@@ -1,3 +1,6 @@
+import request = require('../utils/request');
+import cancellable = require('../utils/cancellable');
+
 export class Post {
     type: string;
     id: number;
@@ -27,7 +30,8 @@ export class Post {
 
     static queryAll(
         topicId: number,
-        query?: string
+        query?: string,
+        token?: cancellable.CancellableToken
     ): Promise<Array<Post>> {
         let entryPoint: string;
 
@@ -37,12 +41,10 @@ export class Post {
             entryPoint = `/api/1.0/topics/${topicId}/posts/`;
         }
 
-        return window.fetch(entryPoint).
-            then(function(resp: Response): any { return resp.json(); }).
-            then(function(posts: any[]): Array<Post> {
-                return posts.map(function(post: Object): Post {
-                    return new Post(post);
-                });
+        return request.request('GET', entryPoint, token).then(function(resp) {
+            return JSON.parse(resp).map(function(data: Object): Post {
+                return new Post(data);
             });
+        });
     }
 }

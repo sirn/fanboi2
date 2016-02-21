@@ -26,7 +26,6 @@
     "tsify": "^0.12.2",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
-    "virtual-dom": "^2.1.1",
-    "whatwg-fetch": "^0.10.1"
+    "virtual-dom": "^2.1.1"
   }
 }

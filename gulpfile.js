@@ -119,8 +119,7 @@ var externalDependencies = [
     'dom4',
     'domready',
     'es6-promise',
-    'virtual-dom',
-    'whatwg-fetch'
+    'virtual-dom'
 ];
 
 gulp.task('javascripts/app', function(){

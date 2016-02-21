@@ -1,5 +1,6 @@
+import request = require('../utils/request');
+import cancellable = require('../utils/cancellable');
 import topic = require('./topic');
-
 
 export class Board {
     type: string;
@@ -33,25 +34,30 @@ export class Board {
         };
     }
 
-    static queryAll(): Promise<Array<Board>> {
-        return window.fetch('/api/1.0/boards/').
-            then(function(resp: Response): any { return resp.json(); }).
-            then(function(boards: any[]): Array<Board> {
-                return boards.map(function(board: Object) {
-                    return new Board(board);
+    static queryAll(
+        token?: cancellable.CancellableToken
+    ): Promise<Array<Board>> {
+        return request.request('GET', '/api/1.0/boards/', token).
+            then(function(resp: string): Array<Board> {
+                return JSON.parse(resp).map(function(data: Object) {
+                    return new Board(data);
                 });
             });
     }
 
-    static querySlug(slug: string): Promise<Board> {
-        return window.fetch(`/api/1.0/boards/${slug}/`).
-            then(function(resp: Response): any { return resp.json(); }).
-            then(function(board: any): Board {
-                return new Board(board);
+    static querySlug(
+        slug: string,
+        token?: cancellable.CancellableToken
+    ): Promise<Board> {
+        return request.request('GET', `/api/1.0/boards/${slug}/`, token).
+            then(function(resp: string): Board {
+                return new Board(JSON.parse(resp));
             });
     }
 
-    getTopics(): Promise<Array<topic.Topic>> {
-        return topic.Topic.queryAll(this.slug);
+    getTopics(
+        token?: cancellable.CancellableToken
+    ): Promise<Array<topic.Topic>> {
+        return topic.Topic.queryAll(this.slug, token);
     }
 }

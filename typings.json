@@ -7,7 +7,6 @@
   "ambientDependencies": {
     "dom4": "file:typings/vendor/dom4.d.ts",
     "es6-promise": "github:DefinitelyTyped/DefinitelyTyped/es6-promise/es6-promise.d.ts#830e8ebd9ef137d039d5c7ede24a421f08595f83",
-    "virtual-dom": "github:DefinitelyTyped/DefinitelyTyped/virtual-dom/virtual-dom.d.ts#df507c636cf0c799a8a20f35af89a3d0caae6c32",
-    "whatwg-fetch": "github:DefinitelyTyped/DefinitelyTyped/whatwg-fetch/whatwg-fetch.d.ts#9027703c0bd831319dcdf7f3169f7a468537f448"
+    "virtual-dom": "github:DefinitelyTyped/DefinitelyTyped/virtual-dom/virtual-dom.d.ts#df507c636cf0c799a8a20f35af89a3d0caae6c32"
   }
 }
