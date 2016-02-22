@@ -322,9 +322,16 @@ export class InlineQuote {
                     function(e: Event): void {
                         e.preventDefault();
 
-                        self.dismissTimer = setTimeout(function(): void {
+                        // If quoteElement is already rendered then wait and
+                        // see if user will move mouse into the quote; otherwise
+                        // immediately detach.
+                        if (handler.quoteElement) {
+                            self.dismissTimer = setTimeout(function(): void {
+                                handler.detach();
+                            }, 100);
+                        } else {
                             handler.detach();
-                        }, 100);
+                        }
                     }
                 );
             }
