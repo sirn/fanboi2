@@ -90,7 +90,7 @@ class PostForm(Form):
     be populated to :class:`Post`.
     """
     body = TextAreaField('Body', validators=[Required(), Length(2, 4000)])
-    bumped = BooleanField('Bump this topic')
+    bumped = BooleanField('Bump this topic', default=True)
 
 
 class SecurePostForm(SecureForm, PostForm, Form):
