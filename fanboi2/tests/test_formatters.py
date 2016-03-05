@@ -243,36 +243,54 @@ class TestFormattersWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
         post11 = self._makePost(topic=topic, body=">>>//123-/100-/")
         tests = [
             (post1, "<p>Hogehoge<br>Hogehoge</p>"),
-            (post2, "<p><a data-topic=\"1\" data-number=\"1\" " +
-                    "href=\"/foobar/1/1\" class=\"anchor\">" +
-                    "&gt;&gt;1</a></p>"),
-            (post3, "<p><a data-topic=\"1\" data-number=\"1-2\" " +
-                    "href=\"/foobar/1/1-2\" class=\"anchor\">" +
-                    "&gt;&gt;1-2</a><br>Hoge</p>"),
-            (post4, "<p><a data-board=\"demo\" data-topic=\"\" " +
-                    "data-number=\"\" href=\"/demo\" class=\"anchor\">" +
-                    "&gt;&gt;&gt;/demo</a></p>"),
-            (post5, "<p><a data-board=\"demo\" data-topic=\"123\" " +
-                    "data-number=\"\" href=\"/demo/123/recent\" " +
+            (post2, "<p><a data-anchor-topic=\"1\" " +
+                    "data-anchor=\"1\" " +
+                    "href=\"/foobar/1/1\" " +
+                    "class=\"anchor\">&gt;&gt;1</a></p>"),
+            (post3, "<p><a data-anchor-topic=\"1\" " +
+                    "data-anchor=\"1-2\" " +
+                    "href=\"/foobar/1/1-2\" " +
+                    "class=\"anchor\">&gt;&gt;1-2</a><br>Hoge</p>"),
+            (post4, "<p><a data-anchor-board=\"demo\" " +
+                    "data-anchor-topic=\"\" " +
+                    "data-anchor=\"\" " +
+                    "href=\"/demo\" " +
+                    "class=\"anchor\">&gt;&gt;&gt;/demo</a></p>"),
+            (post5, "<p><a data-anchor-board=\"demo\" " +
+                    "data-anchor-topic=\"123\" " +
+                    "data-anchor=\"\" " +
+                    "href=\"/demo/123/recent\" " +
                     "class=\"anchor\">&gt;&gt;&gt;/demo/123</a></p>"),
-            (post6, "<p><a data-board=\"demo\" data-topic=\"123\" " +
-                    "data-number=\"100-\" href=\"/demo/123/100-\" " +
+            (post6, "<p><a data-anchor-board=\"demo\" " +
+                    "data-anchor-topic=\"123\" " +
+                    "data-anchor=\"100-\" " +
+                    "href=\"/demo/123/100-\" " +
                     "class=\"anchor\">&gt;&gt;&gt;/demo/123/100-</a></p>"),
-            (post7, "<p><a data-board=\"demo\" data-topic=\"123\" " +
-                    "data-number=\"100-\" href=\"/demo/123/100-\" " +
+            (post7, "<p><a data-anchor-board=\"demo\" " +
+                    "data-anchor-topic=\"123\" " +
+                    "data-anchor=\"100-\" " +
+                    "href=\"/demo/123/100-\" " +
                     "class=\"anchor\">&gt;&gt;&gt;/demo/123/100-/</a></p>"),
-            (post8, "<p><a data-board=\"demo\" data-topic=\"123\" " +
-                    "data-number=\"\" href=\"/demo/123/recent\" " +
+            (post8, "<p><a data-anchor-board=\"demo\" " +
+                    "data-anchor-topic=\"123\" " +
+                    "data-anchor=\"\" " +
+                    "href=\"/demo/123/recent\" " +
                     "class=\"anchor\">&gt;&gt;&gt;/demo/123</a>-/100-/</p>"),
-            (post9, "<p><a data-board=\"demo\" data-topic=\"\" " +
-                    "data-number=\"\" href=\"/demo\" class=\"anchor\">" +
-                    "&gt;&gt;&gt;/demo/</a><br><a data-board=\"demo\" " +
-                    "data-topic=\"1\" data-number=\"\" " +
-                    "href=\"/demo/1/recent\" class=\"anchor\">" +
-                    "&gt;&gt;&gt;/demo/1/</a></p>"),
-            (post10, "<p><a data-board=\"demo\" data-topic=\"\" " +
-                     "data-number=\"\" href=\"/demo\" class=\"anchor\">" +
-                     "&gt;&gt;&gt;/demo/</a>/100-/</p>"),
+            (post9, "<p><a data-anchor-board=\"demo\" " +
+                    "data-anchor-topic=\"\" " +
+                    "data-anchor=\"\" " +
+                    "href=\"/demo\" " +
+                    "class=\"anchor\">&gt;&gt;&gt;/demo/</a><br>" +
+                    "<a data-anchor-board=\"demo\" " +
+                    "data-anchor-topic=\"1\" " +
+                    "data-anchor=\"\" " +
+                    "href=\"/demo/1/recent\" " +
+                    "class=\"anchor\">&gt;&gt;&gt;/demo/1/</a></p>"),
+            (post10, "<p><a data-anchor-board=\"demo\" " +
+                     "data-anchor-topic=\"\" " +
+                     "data-anchor=\"\" " +
+                     "href=\"/demo\" " +
+                     "class=\"anchor\">&gt;&gt;&gt;/demo/</a>/100-/</p>"),
             (post11, "<p>&gt;&gt;&gt;//123-/100-/</p>")
         ]
         for source, target in tests:

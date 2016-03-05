@@ -7,7 +7,7 @@ import topic = require('../models/topic');
 import post = require('../models/post');
 
 
-class InlineBoardView {
+class BoardPopoverView {
     board: board.Board;
 
     constructor(board: board.Board) {
@@ -16,12 +16,12 @@ class InlineBoardView {
 
     render(): vdom.VNode {
         return vdom.h('div',
-            {className: 'js-inline-board'},
+            {className: 'js-anchor-popover-board'},
             [
                 vdom.h('div', {className: 'cascade'}, [
                     vdom.h('div', {className: 'container'}, [
-                        InlineBoardView.renderTitle(this.board),
-                        InlineBoardView.renderDescription(this.board),
+                        BoardPopoverView.renderTitle(this.board),
+                        BoardPopoverView.renderDescription(this.board),
                     ])
                 ])
             ]
@@ -45,7 +45,7 @@ class InlineBoardView {
 }
 
 
-class InlineTopicView {
+class TopicPopoverView {
     topic: topic.Topic;
 
     constructor(topic: topic.Topic) {
@@ -54,13 +54,13 @@ class InlineTopicView {
 
     render(): vdom.VNode {
         return vdom.h('div',
-            {className: 'js-inline-topic'},
+            {className: 'js-anchor-popover-topic'},
             [
                 vdom.h('div', {className: 'topic-header'}, [
                     vdom.h('div', {className: 'container'}, [
-                        InlineTopicView.renderTitle(this.topic),
-                        InlineTopicView.renderDate(this.topic),
-                        InlineTopicView.renderCount(this.topic),
+                        TopicPopoverView.renderTitle(this.topic),
+                        TopicPopoverView.renderDate(this.topic),
+                        TopicPopoverView.renderCount(this.topic),
                     ])
                 ])
             ]
@@ -91,7 +91,7 @@ class InlineTopicView {
 }
 
 
-class InlinePostsView {
+class PostPopoverView {
     posts: post.Post[];
 
     constructor(posts: post.Post[]) {
@@ -100,9 +100,9 @@ class InlinePostsView {
 
     render(): vdom.VNode {
         return vdom.h('div',
-            {className: 'js-inline-post'},
+            {className: 'js-anchor-popover-post'},
             this.posts.map(function(post: post.Post): vdom.VNode {
-                return InlinePostsView.renderPost(post);
+                return PostPopoverView.renderPost(post);
             })
         );
     }
@@ -110,18 +110,18 @@ class InlinePostsView {
     private static renderPost(post: post.Post): vdom.VNode {
         return vdom.h('div', {className: 'post'}, [
             vdom.h('div', {className: 'container'}, [
-                InlinePostsView.renderHeader(post),
-                InlinePostsView.renderBody(post),
+                PostPopoverView.renderHeader(post),
+                PostPopoverView.renderBody(post),
             ])
         ]);
     }
 
     private static renderHeader(post: post.Post): vdom.VNode {
         return vdom.h('div', {className: 'post-header'}, [
-            InlinePostsView.renderHeaderNumber(post),
-            InlinePostsView.renderHeaderName(post),
-            InlinePostsView.renderHeaderDate(post),
-            InlinePostsView.renderHeaderIdent(post),
+            PostPopoverView.renderHeaderNumber(post),
+            PostPopoverView.renderHeaderName(post),
+            PostPopoverView.renderHeaderDate(post),
+            PostPopoverView.renderHeaderIdent(post),
         ]);
     }
 
@@ -166,7 +166,7 @@ class InlinePostsView {
 }
 
 
-class InlineQuoteView {
+class AnchorPopoverView {
     childNode: vdom.VNode;
     targetElement: Element;
 
@@ -177,9 +177,9 @@ class InlineQuoteView {
 
     render(): vdom.VNode {
         let pos = this.computePosition();
-        return vdom.h('div', {className: 'js-inline'}, [
+        return vdom.h('div', {className: 'js-anchor-popover'}, [
             vdom.h('div', {
-                className: 'js-inline-inner',
+                className: 'js-anchor-popover-inner',
                 style: {
                     position: 'absolute',
                     top: `${pos.posX}px`,
@@ -209,7 +209,7 @@ class InlineQuoteView {
 }
 
 
-class InlineQuoteHandler {
+class AnchorPopoverHandler {
     targetElement: Element;
     quoteElement: Element;
     parentElement: Element;
@@ -229,7 +229,7 @@ class InlineQuoteHandler {
         let self = this;
         return this.render().then(function(node: vdom.VNode | void) {
             if (node) {
-                let quoteNode = new InlineQuoteView(
+                let quoteNode = new AnchorPopoverView(
                     self.targetElement,
                     <vdom.VNode>node
                 ).render();
@@ -252,39 +252,39 @@ class InlineQuoteHandler {
     }
 
     private render(): Promise<vdom.VNode | void> {
-        let targetElement = this.targetElement;
-        let boardSlug = targetElement.getAttribute('data-board');
-        let topicId = parseInt(targetElement.getAttribute('data-topic'), 10);
-        let number = targetElement.getAttribute('data-number');
+        let target = this.targetElement;
+        let boardSlug = target.getAttribute('data-anchor-board');
+        let topicId = parseInt(target.getAttribute('data-anchor-topic'), 10);
+        let postNumber = target.getAttribute('data-anchor');
 
         this.cancellableToken = new cancellable.CancelToken();
 
-        if (boardSlug && !topicId && !number) {
+        if (boardSlug && !topicId && !postNumber) {
             return board.Board.querySlug(
                 boardSlug,
                 this.cancellableToken
             ).then(function(board: board.Board): vdom.VNode {
                 if (board) {
-                    return new InlineBoardView(board).render();
+                    return new BoardPopoverView(board).render();
                 }
             });
-        } else if (topicId && !number) {
+        } else if (topicId && !postNumber) {
             return topic.Topic.queryId(
                 topicId,
                 this.cancellableToken
             ).then(function(topic: topic.Topic): vdom.VNode {
                 if (topic) {
-                    return new InlineTopicView(topic).render();
+                    return new TopicPopoverView(topic).render();
                 }
             });
-        } else if (topicId && number) {
+        } else if (topicId && postNumber) {
             return post.Post.queryAll(
                 topicId,
-                number,
+                postNumber,
                 this.cancellableToken
             ).then(function(posts: Array<post.Post>) {
                     if (posts && posts.length) {
-                        return new InlinePostsView(posts).render();
+                        return new PostPopoverView(posts).render();
                     }
                 }
             );
@@ -293,7 +293,7 @@ class InlineQuoteHandler {
 }
 
 
-export class InlineQuote {
+export class AnchorPopover {
     targetSelector: string;
     dismissTimer: number;
 
@@ -310,8 +310,8 @@ export class InlineQuote {
             if (target.matches(self.targetSelector)) {
                 e.preventDefault();
 
-                let parent = target.closest('.js-inline');
-                let handler = new InlineQuoteHandler(target, parent);
+                let parent = target.closest('.js-anchor-popover');
+                let handler = new AnchorPopoverHandler(target, parent);
 
                 handler.attach().then(function(): void {
                     let quoteElement = handler.quoteElement;
@@ -339,7 +339,7 @@ export class InlineQuote {
     }
 
     private bindQuoteElement(
-        handler: InlineQuoteHandler,
+        handler: AnchorPopoverHandler,
         quoteElement: Element
     ): void {
         let self = this;
@@ -359,7 +359,7 @@ export class InlineQuote {
     }
 
     private bindQuoteElementDocument(
-        handler: InlineQuoteHandler,
+        handler: AnchorPopoverHandler,
         quoteElement: Element
     ): void {
         let self = this;

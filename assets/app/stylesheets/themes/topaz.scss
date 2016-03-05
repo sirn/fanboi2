@@ -382,18 +382,18 @@ $color-text:             #333;
     /* js.scss
      * -------------------------------------------------------------------- */
 
-    .js-inline {
+    .js-anchor-popover {
     }
 
-    .js-inline-inner {
+    .js-anchor-popover-inner {
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .3);
     }
 
-    .js-inline-topic {
+    .js-anchor-popover-topic {
         background-color: $color-tint-lighter;
     }
 
-    .js-inline-board {
+    .js-anchor-popover-board {
         background-color: $color-tint-lighter;
     }
 }

@@ -171,7 +171,7 @@ def format_markdown(context, request, text):
 
 RE_ANCHOR = re.compile(r'%s(\d+)(\-)?(\d+)?' % html.escape('>>'))
 TP_ANCHOR = ''.join("""
-<a data-topic="%s" data-number="%s" href="%s" class="anchor">
+<a data-anchor-topic="%s" data-anchor="%s" href="%s" class="anchor">
 %s
 </a>
 """.splitlines())
@@ -184,7 +184,11 @@ RE_ANCHOR_CROSS = re.compile(r"""
   ?(\/?)                     # Trailing slash
 """ % html.escape('>>>'), re.VERBOSE)
 TP_ANCHOR_CROSS = ''.join("""
-<a data-board="%s" data-topic="%s" data-number="%s" href="%s" class="anchor">
+<a data-anchor-board="%s"
+ data-anchor-topic="%s"
+ data-anchor="%s"
+ href="%s"
+ class="anchor">
 %s
 </a>
 """.splitlines())

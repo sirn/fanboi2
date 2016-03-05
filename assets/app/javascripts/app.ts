@@ -1,8 +1,8 @@
 import domready = require('domready');
 import boardSelector = require('./components/board_selector');
-import inlineQuote = require('./components/inline_quote');
+import anchorPopover = require('./components/anchor_popover');
 
 domready(function(): void {
     new boardSelector.BoardSelector('.header');
-    new inlineQuote.InlineQuote('[data-number]');
+    new anchorPopover.AnchorPopover('[data-anchor]');
 });
