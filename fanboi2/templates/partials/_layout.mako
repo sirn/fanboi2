@@ -21,7 +21,7 @@
 </head>
 <body id="${request.route_name}" class="theme-topaz">
 
-<header class="header">
+<header class="header" data-board-selector="true">
     <div class="container">
         <h1 class="header-brand"><a href="/">Fanboi Channel</a></h1>
     </div>
