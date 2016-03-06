@@ -1,7 +1,7 @@
 import {NotImplementedError} from '../utils/errors';
 
 
-interface IComponent {
+export interface IComponent {
     targetSelector: string;
 }
 
