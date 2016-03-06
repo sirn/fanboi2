@@ -16,7 +16,7 @@
 
     @include retina-background("burger", "png", $icon-width, $icon-height);
     height: $icon-height;
-    left: $spacing-vertical;
+    left: $spacing-horizontal;
     position: absolute;
     text-indent: -10000em;
     top: 0;
@@ -31,7 +31,7 @@
 
     @media (min-width: $bound-tablet) {
         left: auto;
-        right: 0;
+        right: $spacing-horizontal;
     }
 }
 
