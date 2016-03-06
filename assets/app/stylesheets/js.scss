@@ -41,6 +41,27 @@
     visibility: hidden;
 }
 
+/* JS Theme Selector
+ * ------------------------------------------------------------------------ */
+
+.js-theme-selector {
+}
+
+.js-theme-selector-title {
+}
+
+.js-theme-selector-list {
+    display: inline;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.js-theme-selector-list-item {
+    display: inline;
+    margin: 0 0 0 $spacing-horizontal-small;
+}
+
 /* JS Inline Quote
  * ------------------------------------------------------------------------ */
 

@@ -382,6 +382,13 @@ $color-text:             #333;
     /* js.scss
      * -------------------------------------------------------------------- */
 
+    .js-theme-selector-list-item {
+        .current {
+            font-weight: bold;
+            color: $color-gray-dark;
+        }
+    }
+
     .js-anchor-popover {
     }
 

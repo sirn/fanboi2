@@ -367,6 +367,13 @@ $color-text:             #cfcfcf;
         }
     }
 
+    .js-theme-selector-list-item {
+        .current {
+            font-weight: bold;
+            color: $color-gray-light;
+        }
+    }
+
     .js-anchor-popover {
     }
 

@@ -312,5 +312,31 @@ def unquoted_path(context, request, *args, **kwargs):
 
     :type context: mako.runtime.Context or None
     :type request: pyramid.request.Request
-    :rtype: str"""
+    :rtype: str
+    """
     return urllib.parse.unquote(request.route_path(*args, **kwargs))
+
+
+THEMES = [
+    'topaz',
+    'obsidian',
+    'debug',
+]
+
+
+def user_theme(context, request, cookie='_theme'):
+    """Returns the current theme set by the user. If no theme was set
+    in the :param:`cookie`, or one was set but invalid, the default
+    theme will be returned.
+
+    :param context: A :class:`mako.runtime.Context` object.
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type context: mako.runtime.Context or None
+    :type request: pyramid.request.Request
+    :rtype: str
+    """
+    user_theme = request.cookies.get(cookie)
+    if user_theme is None or user_theme not in THEMES:
+        user_theme = THEMES[0]
+    return "theme-%s" % user_theme

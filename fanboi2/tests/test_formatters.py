@@ -5,13 +5,13 @@ from pyramid import testing
 
 class TestFormatters(unittest.TestCase):
 
-    def _makeRequest(self):
+    def _makeRequest(self, **kwargs):
         """:rtype: pyramid.request.Request"""
         from pyramid.registry import Registry
         registry = Registry()
         registry.settings = {'app.timezone': 'Asia/Bangkok'}
         testing.setUp(registry=registry)
-        return testing.DummyRequest()
+        return testing.DummyRequest(**kwargs)
 
     def test_url_fix(self):
         from fanboi2.formatters import url_fix
@@ -205,6 +205,26 @@ class TestFormatters(unittest.TestCase):
                          "2013-01-02T00:04:01Z")
         self.assertEqual(format_isotime(None, request, d2),
                          "2012-12-31T16:59:59Z")
+
+    def test_user_theme(self):
+        from fanboi2.formatters import user_theme
+        request = self._makeRequest(cookies={'_theme': 'debug'})
+        self.assertEqual(user_theme(None, request), 'theme-debug')
+
+    def test_user_theme_empty(self):
+        from fanboi2.formatters import user_theme
+        request = self._makeRequest()
+        self.assertEqual(user_theme(None, request), 'theme-topaz')
+
+    def test_user_theme_invalid(self):
+        from fanboi2.formatters import user_theme
+        request = self._makeRequest(cookies={'_theme': 'bogus'})
+        self.assertEqual(user_theme(None, request), 'theme-topaz')
+
+    def test_user_theme_alternative(self):
+        from fanboi2.formatters import user_theme
+        request = self._makeRequest(cookies={'_foo': 'debug'})
+        self.assertEqual(user_theme(None, request, '_foo'), 'theme-debug')
 
 
 class TestFormattersWithRegistry(RegistryMixin):

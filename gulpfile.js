@@ -119,6 +119,7 @@ var externalDependencies = [
     'dom4',
     'domready',
     'es6-promise',
+    'js-cookie',
     'virtual-dom'
 ];
 

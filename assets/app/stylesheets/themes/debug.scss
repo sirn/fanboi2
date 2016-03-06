@@ -100,4 +100,13 @@
     .post-header-item {
         background-color: rgba(#fff, 0.5);
     }
+
+    /* js.scss
+     * -------------------------------------------------------------------- */
+
+    .js-theme-selector-list-item {
+        .current {
+            font-weight: bold;
+        }
+    }
 }

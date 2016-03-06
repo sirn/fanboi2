@@ -1,3 +1,4 @@
+<%namespace name="formatters" module="fanboi2.formatters" />
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,7 +20,7 @@
         ${self.header()}
     % endif
 </head>
-<body id="${request.route_name}" class="theme-topaz">
+<body id="${request.route_name}" class="${formatters.user_theme(request)}">
 
 <header class="header" data-board-selector="true">
     <div class="container">
@@ -31,13 +32,12 @@ ${self.body()}
 
 <footer class="footer">
     <div class="container">
-        <div class="footer-lines">
+        <div class="footer-lines" data-theme-selector="true">
             <p class="footer-lines-item">All contents are responsibility of its posters.</p>
-            <p class="footer-lines-item">Fanboi2 is an <a href="https://github.com/pxfs/fanboi2">open-source</a> project.</p>
         </div>
         <ul class="footer-links">
             <li class="footer-links-item"><a href="${request.route_path('api_root')}">API documentation</a></li>
-            <li class="footer-links-item"><a href="https://twitter.com/fanboich">Twitter</a></li>
+            <li class="footer-links-item"><a href="https://github.com/pxfs/fanboi2">Source code</a></li>
         </ul>
     </div>
 </footer>
