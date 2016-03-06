@@ -97,6 +97,20 @@ export class BoardSelector extends SingletonComponent {
 
         let containerElement = this.targetElement.querySelector('.container');
         containerElement.appendChild(this.buttonElement);
+
+        // Attempt to restore height on resize. Since the resize may cause
+        // clientHeight to change (and will cause the board selector to be
+        // clipped or has extra whitespace).
+        window.addEventListener('resize', function(e: Event) {
+            let listHeight = self.getListHeight();
+            if (self.listHeight != listHeight) {
+                self.listHeight = listHeight;
+                if (self.listState) {
+                    self.showBoardSelector(false);
+                    this.listState = true;
+                }
+            }
+        });
     }
 
     private eventButtonClicked(): void {
@@ -117,10 +131,10 @@ export class BoardSelector extends SingletonComponent {
 
     private toggleBoardSelectorListState(): void {
         if (this.listState) {
-            this.hideBoardSelector();
+            this.hideBoardSelector(true);
             this.listState = false;
         } else {
-            this.showBoardSelector();
+            this.showBoardSelector(true);
             this.listState = true;
         }
     }
@@ -135,70 +149,79 @@ export class BoardSelector extends SingletonComponent {
             this.targetElement.nextSibling
         )
 
-        let wrapper = '.js-board-selector-list-inner';
-        let wrapperElement = this.listElement.querySelector(wrapper);
-        this.listHeight = wrapperElement.clientHeight;
+        this.listHeight = this.getListHeight();
     }
 
-    private hideBoardSelector(): void {
+    private hideBoardSelector(animate?: boolean): void {
         let self = this;
-        let startTime: number;
 
-        let animateStep = function(time: number) {
-            if (!startTime) {
-                startTime = time;
-            }
-
-            let elapsed = Math.min(time - startTime, animationDuration);
-            let elapsedPercent = elapsed/animationDuration;
-
-            let viewNode = self.listView.render({
-                style: {
-                    height: `${self.listHeight * (1 - elapsedPercent)}px`,
-                    visibility: 'visible',
+        if (animate) {
+            let startTime: number;
+            let animateStep = function(time: number) {
+                if (!startTime) {
+                    startTime = time;
                 }
-            });
 
-            let patches = diff(self.listNode, viewNode);
-            self.listElement = patch(self.listElement, patches);
-            self.listNode = viewNode;
+                let elapsed = Math.min(time - startTime, animationDuration);
+                let elapsedPercent = elapsed/animationDuration;
+                self.updateListElement(self.listHeight * (1 - elapsedPercent));
 
-            if (elapsed < animationDuration) {
-                requestAnimationFrame(animateStep);
+                if (elapsed < animationDuration) {
+                    requestAnimationFrame(animateStep);
+                }
             }
-        }
 
-        requestAnimationFrame(animateStep);
+            requestAnimationFrame(animateStep);
+        } else {
+            this.updateListElement(0, 'hidden');
+        }
     }
 
-    private showBoardSelector(): void {
+    private showBoardSelector(animate?: boolean): void {
         let self = this;
-        let startTime: number;
 
-        let animateStep = function(time: number) {
-            if (!startTime) {
-                startTime = time;
-            }
-
-            let elapsed = Math.min(time - startTime, animationDuration);
-            let elapsedPercent = elapsed/animationDuration;
-
-            let viewNode = self.listView.render({
-                style: {
-                    height: `${self.listHeight * elapsedPercent}px`,
-                    visibility: 'visible',
+        if (animate) {
+            let startTime: number;
+            let animateStep = function(time: number) {
+                if (!startTime) {
+                    startTime = time;
                 }
-            });
 
-            let patches = diff(self.listNode, viewNode);
-            self.listElement = patch(self.listElement, patches);
-            self.listNode = viewNode;
+                let elapsed = Math.min(time - startTime, animationDuration);
+                let elapsedPercent = elapsed/animationDuration;
+                self.updateListElement(self.listHeight * elapsedPercent);
 
-            if (elapsed < animationDuration) {
-                requestAnimationFrame(animateStep);
+                if (elapsed < animationDuration) {
+                    requestAnimationFrame(animateStep);
+                }
             }
+
+            requestAnimationFrame(animateStep);
+        } else {
+            this.updateListElement(this.listHeight);
+        }
+    }
+
+    private updateListElement(height: number, visibility?: string) {
+        if (!visibility) {
+            visibility = 'visible';
         }
 
-        requestAnimationFrame(animateStep);
+        let viewNode = this.listView.render({
+            style: {
+                height: `${height}px`,
+                visibility: visibility,
+            }
+        });
+
+        let patches = diff(this.listNode, viewNode);
+        this.listElement = patch(this.listElement, patches);
+        this.listNode = viewNode;
+    }
+
+    private getListHeight(): number {
+        return this.listElement.querySelector(
+            '.js-board-selector-list-inner'
+        ).clientHeight;
     }
 }
