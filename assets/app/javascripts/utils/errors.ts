@@ -9,3 +9,16 @@ export class NotImplementedError extends Error {
         }
     }
 }
+
+
+export class ResourceError extends Error {
+    name: string;
+
+    constructor(public message?: string) {
+        super();
+        this.name = 'ResourceError';
+        if (!this.message) {
+            this.message = 'The resource could not be retrieved from the API.';
+        }
+    }
+}

@@ -1,5 +1,5 @@
 import {request} from '../utils/request';
-import {Model} from './base';
+import {Model, IModelData} from './base';
 import {CancellableToken} from '../utils/cancellable';
 
 
@@ -16,19 +16,20 @@ export class Post extends Model {
     topicId: number;
     path: string;
 
-    constructor(data: any) {
-        super();
-        this.type = data.type;
-        this.id = data.id;
-        this.body = data.body;
-        this.bodyFormatted = data.body_formatted;
-        this.bumped = data.bumped;
-        this.createdAt = data.created_at;
-        this.ident = data.ident;
-        this.name = data.name;
-        this.number = data.number;
-        this.topicId = data.topic_id;
-        this.path = data.path;
+    serialize(data: IModelData) {
+        Model.assertType(data, 'post');
+
+        this.type = data['type'];
+        this.id = data['id'];
+        this.body = data['body'];
+        this.bodyFormatted = data['body_formatted'];
+        this.bumped = data['bumped'];
+        this.createdAt = data['created_at'];
+        this.ident = data['ident'];
+        this.name = data['name'];
+        this.number = data['number'];
+        this.topicId = data['topic_id'];
+        this.path = data['path'];
     }
 
     static queryAll(

@@ -1,5 +1,5 @@
 import {request} from '../utils/request';
-import {Model} from './base';
+import {Model, IModelData} from './base';
 import {CancellableToken} from '../utils/cancellable';
 import {Post} from './post';
 
@@ -23,19 +23,20 @@ export class Topic extends Model {
     title: string;
     path: string;
 
-    constructor(data: any) {
-        super();
-        this.type = data.type;
-        this.id = data.id;
-        this.boardId = data.board_id;
-        this.bumpedAt = data.bumped_at;
-        this.createdAt = data.created_at;
-        this.postCount = data.post_count;
-        this.postedAt = data.posted_at;
-        this.title = data.title;
-        this.path = data.path;
+    serialize(data: IModelData) {
+        Model.assertType(data, 'topic');
 
-        switch (data.status) {
+        this.type = data['type'];
+        this.id = data['id'];
+        this.boardId = data['board_id'];
+        this.bumpedAt = data['bumped_at'];
+        this.createdAt = data['created_at'];
+        this.postCount = data['post_count'];
+        this.postedAt = data['posted_at'];
+        this.title = data['title'];
+        this.path = data['path'];
+
+        switch (data['status']) {
             case "open" : this.status = Statuses.Open; break;
             case "locked" : this.status = Statuses.Locked; break;
             case "archived" : this.status = Statuses.Archived; break;

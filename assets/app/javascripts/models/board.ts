@@ -1,5 +1,5 @@
 import {request} from '../utils/request';
-import {Model} from './base';
+import {Model, IModelData} from './base';
 import {CancellableToken} from '../utils/cancellable';
 import {Topic} from './topic';
 
@@ -19,21 +19,22 @@ export class Board extends Model {
     title: string;
     path: string;
 
-    constructor(data: any) {
-        super();
-        this.type = data.type;
-        this.id = data.id;
-        this.agreements = data.agreements;
-        this.description = data.description;
-        this.slug = data.slug;
-        this.title = data.title;
-        this.path = data.path;
+    protected serialize(data: IModelData) {
+        Model.assertType(data, 'board');
+
+        this.type = data['type'];
+        this.id = data['id'];
+        this.agreements = data['agreements'];
+        this.description = data['description'];
+        this.slug = data['slug'];
+        this.title = data['title'];
+        this.path = data['path'];
 
         this.settings = {
-            postDelay: data.settings.post_delay,
-            useIdent: data.settings.use_ident,
-            name: data.settings.name,
-            maxPosts: data.settings.max_posts,
+            postDelay: data['settings']['post_delay'],
+            useIdent: data['settings']['use_ident'],
+            name: data['settings']['name'],
+            maxPosts: data['settings']['max_posts'],
         };
     }
 
