@@ -38,9 +38,8 @@ $color-text:             #cfcfcf;
      * -------------------------------------------------------------------- */
 
     .header {
-        background-color: $color-brand-dark;
-        border-color: $color-brand-dark;
-        padding-bottom: 0;
+        background-color: $color-brand;
+        border-color: $color-brand;
     }
 
     .footer {
@@ -58,8 +57,7 @@ $color-text:             #cfcfcf;
 
     .subheader {
         background-color: $color-brand-dark;
-        border-bottom: 3px solid $color-brand;
-        padding: $spacing-vertical 0 $spacing-vertical-large;
+        border-color: $color-gray-darker;
     }
 
     .subheader-title {
@@ -359,13 +357,6 @@ $color-text:             #cfcfcf;
 
     /* js.scss
      * -------------------------------------------------------------------- */
-
-    .js-board-selector-list {
-        .cascade {
-            background-color: $color-brand-dark;
-            border-color: $color-brand-dark;
-        }
-    }
 
     .js-theme-selector-list-item {
         .current {
