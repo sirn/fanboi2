@@ -1,6 +1,8 @@
-import request = require('../utils/request');
-import cancellable = require('../utils/cancellable');
-import post = require('./post');
+import {request} from '../utils/request';
+import {Model} from './base';
+import {CancellableToken} from '../utils/cancellable';
+import {Post} from './post';
+
 
 enum Statuses {
     Open,
@@ -8,7 +10,8 @@ enum Statuses {
     Archived,
 }
 
-export class Topic {
+
+export class Topic extends Model {
     type: string;
     id: number;
     boardId: number;
@@ -21,6 +24,7 @@ export class Topic {
     path: string;
 
     constructor(data: any) {
+        super();
         this.type = data.type;
         this.id = data.id;
         this.boardId = data.board_id;
@@ -40,9 +44,9 @@ export class Topic {
 
     static queryAll(
         slug: string,
-        token?: cancellable.CancellableToken
-    ): Promise<Array<Topic>> {
-        return request.request('GET', `/api/1.0/boards/${slug}/topics/`, token).
+        token?: CancellableToken
+    ): Promise<Topic[]> {
+        return request('GET', `/api/1.0/boards/${slug}/topics/`, token).
             then(function(resp: string): Array<Topic> {
                 return JSON.parse(resp).map(function(data: Object) {
                     return new Topic(data);
@@ -52,9 +56,9 @@ export class Topic {
 
     static queryId(
         id: number,
-        token?: cancellable.CancellableToken
+        token?: CancellableToken
     ): Promise<Topic> {
-        return request.request('GET', `/api/1.0/topics/${id}/`, token).
+        return request('GET', `/api/1.0/topics/${id}/`, token).
             then(function(resp: string) {
                 return new Topic(JSON.parse(resp));
             });
@@ -62,8 +66,8 @@ export class Topic {
 
     getPosts(
         query?: string,
-        token?: cancellable.CancellableToken
-    ): Promise<Array<post.Post>> {
-        return post.Post.queryAll(this.id, query, token);
+        token?: CancellableToken
+    ): Promise<Post[]> {
+        return Post.queryAll(this.id, query, token);
     }
 }

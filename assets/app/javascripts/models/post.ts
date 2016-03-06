@@ -1,7 +1,9 @@
-import request = require('../utils/request');
-import cancellable = require('../utils/cancellable');
+import {request} from '../utils/request';
+import {Model} from './base';
+import {CancellableToken} from '../utils/cancellable';
 
-export class Post {
+
+export class Post extends Model {
     type: string;
     id: number;
     body: string;
@@ -15,6 +17,7 @@ export class Post {
     path: string;
 
     constructor(data: any) {
+        super();
         this.type = data.type;
         this.id = data.id;
         this.body = data.body;
@@ -31,8 +34,8 @@ export class Post {
     static queryAll(
         topicId: number,
         query?: string,
-        token?: cancellable.CancellableToken
-    ): Promise<Array<Post>> {
+        token?: CancellableToken
+    ): Promise<Post[]> {
         let entryPoint: string;
 
         if (query) {
@@ -41,7 +44,7 @@ export class Post {
             entryPoint = `/api/1.0/topics/${topicId}/posts/`;
         }
 
-        return request.request('GET', entryPoint, token).then(function(resp) {
+        return request('GET', entryPoint, token).then(function(resp) {
             return JSON.parse(resp).map(function(data: Object): Post {
                 return new Post(data);
             });

@@ -1,9 +1,10 @@
-import cancellable = require('./cancellable');
+import {CancellableToken, Cancelled} from './cancellable';
+
 
 export function request(
     method: string,
     url: string,
-    token?: cancellable.CancellableToken
+    token?: CancellableToken
 ): Promise<string> {
     let xhr = new XMLHttpRequest();
     xhr.open(method, url);
@@ -14,7 +15,7 @@ export function request(
         if (token) {
             token.cancel = function(): void {
                 xhr.abort();
-                reject(new Error('Cancelled by token.'));
+                reject(new Cancelled);
             }
         }
         xhr.send();

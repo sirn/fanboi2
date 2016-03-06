@@ -1,25 +1,26 @@
-import vdom = require('virtual-dom');
-import dateFormatter = require('../utils/date_formatter');
-import cancellable = require('../utils/cancellable');
+import {VNode, create, diff, patch, h} from 'virtual-dom';
+import {DelegationComponent} from './base';
+import {formatDate} from '../utils/date_formatter';
+import {CancellableToken, CancelToken} from '../utils/cancellable';
 
-import board = require('../models/board');
-import topic = require('../models/topic');
-import post = require('../models/post');
+import {Board} from '../models/board';
+import {Topic} from '../models/topic';
+import {Post} from '../models/post';
 
 
 class BoardPopoverView {
-    board: board.Board;
+    board: Board;
 
-    constructor(board: board.Board) {
+    constructor(board: Board) {
         this.board = board;
     }
 
-    render(): vdom.VNode {
-        return vdom.h('div',
+    render(): VNode {
+        return h('div',
             {className: 'js-anchor-popover-board'},
             [
-                vdom.h('div', {className: 'cascade'}, [
-                    vdom.h('div', {className: 'container'}, [
+                h('div', {className: 'cascade'}, [
+                    h('div', {className: 'container'}, [
                         BoardPopoverView.renderTitle(this.board),
                         BoardPopoverView.renderDescription(this.board),
                     ])
@@ -28,17 +29,17 @@ class BoardPopoverView {
         );
     }
 
-    private static renderTitle(board: board.Board): vdom.VNode {
-        return vdom.h('div', {className: 'cascade-header'}, [
-            vdom.h('a', {
+    private static renderTitle(board: Board): VNode {
+        return h('div', {className: 'cascade-header'}, [
+            h('a', {
                 className: 'cascade-header-link',
                 href: `/${board.slug}/`
             }, String(board.title))
         ]);
     }
 
-    private static renderDescription(board: board.Board): vdom.VNode {
-        return vdom.h('div', {className: 'cascade-body'}, [
+    private static renderDescription(board: Board): VNode {
+        return h('div', {className: 'cascade-body'}, [
             String(board.description)
         ]);
     }
@@ -46,18 +47,18 @@ class BoardPopoverView {
 
 
 class TopicPopoverView {
-    topic: topic.Topic;
+    topic: Topic;
 
-    constructor(topic: topic.Topic) {
+    constructor(topic: Topic) {
         this.topic = topic;
     }
 
-    render(): vdom.VNode {
-        return vdom.h('div',
+    render(): VNode {
+        return h('div',
             {className: 'js-anchor-popover-topic'},
             [
-                vdom.h('div', {className: 'topic-header'}, [
-                    vdom.h('div', {className: 'container'}, [
+                h('div', {className: 'topic-header'}, [
+                    h('div', {className: 'container'}, [
                         TopicPopoverView.renderTitle(this.topic),
                         TopicPopoverView.renderDate(this.topic),
                         TopicPopoverView.renderCount(this.topic),
@@ -67,57 +68,57 @@ class TopicPopoverView {
         );
     }
 
-    private static renderTitle(topic: topic.Topic): vdom.VNode {
-        return vdom.h('h3', {className: 'topic-header-title'}, [
+    private static renderTitle(topic: Topic): VNode {
+        return h('h3', {className: 'topic-header-title'}, [
             String(topic.title)
         ]);
     }
 
-    private static renderDate(topic: topic.Topic): vdom.VNode {
+    private static renderDate(topic: Topic): VNode {
         let postedAt = new Date(topic.postedAt);
-        let formatter = dateFormatter.formatDate(postedAt);
-        return vdom.h('p', {className: 'topic-header-item'}, [
+        let formatter = formatDate(postedAt);
+        return h('p', {className: 'topic-header-item'}, [
             String('Last posted '),
-            vdom.h('strong', {}, [String(formatter)]),
+            h('strong', {}, [String(formatter)]),
         ]);
     }
 
-    private static renderCount(topic: topic.Topic): vdom.VNode {
-        return vdom.h('p', {className: 'topic-header-item'}, [
+    private static renderCount(topic: Topic): VNode {
+        return h('p', {className: 'topic-header-item'}, [
             String('Total of '),
-            vdom.h('strong', {}, [String(`${topic.postCount} posts`)]),
+            h('strong', {}, [String(`${topic.postCount} posts`)]),
         ]);
     }
 }
 
 
 class PostPopoverView {
-    posts: post.Post[];
+    posts: Post[];
 
-    constructor(posts: post.Post[]) {
+    constructor(posts: Post[]) {
         this.posts = posts;
     }
 
-    render(): vdom.VNode {
-        return vdom.h('div',
+    render(): VNode {
+        return h('div',
             {className: 'js-anchor-popover-post'},
-            this.posts.map(function(post: post.Post): vdom.VNode {
+            this.posts.map(function(post: Post): VNode {
                 return PostPopoverView.renderPost(post);
             })
         );
     }
 
-    private static renderPost(post: post.Post): vdom.VNode {
-        return vdom.h('div', {className: 'post'}, [
-            vdom.h('div', {className: 'container'}, [
+    private static renderPost(post: Post): VNode {
+        return h('div', {className: 'post'}, [
+            h('div', {className: 'container'}, [
                 PostPopoverView.renderHeader(post),
                 PostPopoverView.renderBody(post),
             ])
         ]);
     }
 
-    private static renderHeader(post: post.Post): vdom.VNode {
-        return vdom.h('div', {className: 'post-header'}, [
+    private static renderHeader(post: Post): VNode {
+        return h('div', {className: 'post-header'}, [
             PostPopoverView.renderHeaderNumber(post),
             PostPopoverView.renderHeaderName(post),
             PostPopoverView.renderHeaderDate(post),
@@ -125,31 +126,31 @@ class PostPopoverView {
         ]);
     }
 
-    private static renderHeaderNumber(post: post.Post): vdom.VNode {
+    private static renderHeaderNumber(post: Post): VNode {
         let classList = ['post-header-item', 'number'];
         if (post.bumped) { classList.push('bumped'); }
-        return vdom.h('span', {
+        return h('span', {
             className: classList.join(' '),
         }, [String(post.number)]);
     }
 
-    private static renderHeaderName(post: post.Post): vdom.VNode {
-        return vdom.h('span', {
+    private static renderHeaderName(post: Post): VNode {
+        return h('span', {
             className: 'post-header-item name'
         }, [String(post.name)]);
     }
 
-    private static renderHeaderDate(post: post.Post): vdom.VNode {
+    private static renderHeaderDate(post: Post): VNode {
         let createdAt = new Date(post.createdAt);
-        let formatter = dateFormatter.formatDate(createdAt);
-        return vdom.h('span', {
+        let formatter = formatDate(createdAt);
+        return h('span', {
             className: 'post-header-item date'
         }, [String(`Posted ${formatter}`)]);
     }
 
-    private static renderHeaderIdent(post: post.Post): vdom.VNode | string {
+    private static renderHeaderIdent(post: Post): VNode | string {
         if (post.ident) {
-            return vdom.h('span', {
+            return h('span', {
                 className: 'post-header-item ident'
             }, [String(`ID:${post.ident}`)]);
         } else {
@@ -157,8 +158,8 @@ class PostPopoverView {
         }
     }
 
-    private static renderBody(post: post.Post): vdom.VNode {
-        return vdom.h('div', {
+    private static renderBody(post: Post): VNode {
+        return h('div', {
             className: 'post-body',
             innerHTML: post.bodyFormatted,
         }, []);
@@ -167,18 +168,18 @@ class PostPopoverView {
 
 
 class AnchorPopoverView {
-    childNode: vdom.VNode;
+    childNode: VNode;
     targetElement: Element;
 
-    constructor(targetElement: Element, childNode: vdom.VNode) {
+    constructor(targetElement: Element, childNode: VNode) {
         this.targetElement = targetElement;
         this.childNode = childNode;
     }
 
-    render(): vdom.VNode {
+    render(): VNode {
         let pos = this.computePosition();
-        return vdom.h('div', {className: 'js-anchor-popover'}, [
-            vdom.h('div', {
+        return h('div', {className: 'js-anchor-popover'}, [
+            h('div', {
                 className: 'js-anchor-popover-inner',
                 style: {
                     position: 'absolute',
@@ -213,7 +214,7 @@ class AnchorPopoverHandler {
     targetElement: Element;
     quoteElement: Element;
     parentElement: Element;
-    cancellableToken: cancellable.CancellableToken;
+    cancellableToken: CancellableToken;
 
     constructor(element: Element, parentElement?: Element) {
         this.targetElement = element;
@@ -227,14 +228,14 @@ class AnchorPopoverHandler {
 
     attach(): Promise<void> {
         let self = this;
-        return this.render().then(function(node: vdom.VNode | void) {
+        return this.render().then(function(node: VNode | void) {
             if (node) {
                 let quoteNode = new AnchorPopoverView(
                     self.targetElement,
-                    <vdom.VNode>node
+                    <VNode>node
                 ).render();
 
-                self.quoteElement = vdom.create(quoteNode);
+                self.quoteElement = create(quoteNode);
                 self.parentElement.insertBefore(self.quoteElement, null);
             }
         });
@@ -251,38 +252,38 @@ class AnchorPopoverHandler {
         }
     }
 
-    private render(): Promise<vdom.VNode | void> {
+    private render(): Promise<VNode | void> {
         let target = this.targetElement;
         let boardSlug = target.getAttribute('data-anchor-board');
         let topicId = parseInt(target.getAttribute('data-anchor-topic'), 10);
         let postNumber = target.getAttribute('data-anchor');
 
-        this.cancellableToken = new cancellable.CancelToken();
+        this.cancellableToken = new CancelToken();
 
         if (boardSlug && !topicId && !postNumber) {
-            return board.Board.querySlug(
+            return Board.querySlug(
                 boardSlug,
                 this.cancellableToken
-            ).then(function(board: board.Board): vdom.VNode {
+            ).then(function(board: Board): VNode {
                 if (board) {
                     return new BoardPopoverView(board).render();
                 }
             });
         } else if (topicId && !postNumber) {
-            return topic.Topic.queryId(
+            return Topic.queryId(
                 topicId,
                 this.cancellableToken
-            ).then(function(topic: topic.Topic): vdom.VNode {
+            ).then(function(topic: Topic): VNode {
                 if (topic) {
                     return new TopicPopoverView(topic).render();
                 }
             });
         } else if (topicId && postNumber) {
-            return post.Post.queryAll(
+            return Post.queryAll(
                 topicId,
                 postNumber,
                 this.cancellableToken
-            ).then(function(posts: Array<post.Post>) {
+            ).then(function(posts: Array<Post>) {
                     if (posts && posts.length) {
                         return new PostPopoverView(posts).render();
                     }
@@ -293,17 +294,10 @@ class AnchorPopoverHandler {
 }
 
 
-export class AnchorPopover {
-    targetSelector: string;
+export class AnchorPopover extends DelegationComponent {
     dismissTimer: number;
 
-    constructor(targetSelector: string) {
-        this.targetSelector = targetSelector;
-        this.dismissTimer = null;
-        this.bindGlobal();
-    }
-
-    private bindGlobal(): void {
+    protected bindGlobal(): void {
         let self = this;
         document.addEventListener('mouseover', function(e: Event): void {
             let target = <Element>e.target;

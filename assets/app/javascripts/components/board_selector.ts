@@ -1,31 +1,32 @@
-import vdom = require('virtual-dom');
-import board = require('../models/board');
+import {VNode, create, diff, patch, h} from 'virtual-dom';
+import {SingletonComponent} from './base';
+import {Board} from '../models/board';
 
 
 const animationDuration = 200;
 
 
 class BoardSelectorListView {
-    boards: board.Board[];
-    boardList: vdom.VNode[];
+    boards: Board[];
+    boardList: VNode[];
 
-    constructor(boards: board.Board[]) {
+    constructor(boards: Board[]) {
         this.boards = boards;
         this.boardList = this.renderBoards();
     }
 
-    render(args?: any): vdom.VNode {
-        return vdom.h('div', BoardSelectorListView.getViewClassName(args), [
-            vdom.h('div', {className: 'js-board-selector-list-inner'},
+    render(args?: any): VNode {
+        return h('div', BoardSelectorListView.getViewClassName(args), [
+            h('div', {className: 'js-board-selector-list-inner'},
                 this.boardList
             )
         ]);
     }
 
-    private renderBoards(): vdom.VNode[] {
-        return this.boards.map(function(board: board.Board): vdom.VNode {
-            return vdom.h('div', {className: 'cascade'}, [
-                vdom.h('div', {className: 'container'}, [
+    private renderBoards(): VNode[] {
+        return this.boards.map(function(board: Board): VNode {
+            return h('div', {className: 'cascade'}, [
+                h('div', {className: 'container'}, [
                     BoardSelectorListView.renderHeader(board),
                     BoardSelectorListView.renderBody(board),
                 ]),
@@ -51,51 +52,44 @@ class BoardSelectorListView {
         return args;
     }
 
-    private static renderHeader(board: board.Board): vdom.VNode {
-        return vdom.h('div', {className: 'cascade-header'}, [
-            vdom.h('a', {href: `/${board.slug}/`}, [String(board.title)]),
+    private static renderHeader(board: Board): VNode {
+        return h('div', {className: 'cascade-header'}, [
+            h('a', {href: `/${board.slug}/`}, [String(board.title)]),
         ]);
     }
 
-    private static renderBody(board: board.Board): vdom.VNode {
-        return vdom.h('div', {className: 'cascade-body'}, [
+    private static renderBody(board: Board): VNode {
+        return h('div', {className: 'cascade-body'}, [
             String(board.description)
         ]);
     }
 }
 
 
-export class BoardSelector {
-    boards: board.Board[];
+export class BoardSelector extends SingletonComponent {
+    boards: Board[];
 
-    targetElement: Element;
-    buttonNode: vdom.VNode;
     buttonElement: Element;
 
     listView: BoardSelectorListView;
-    listNode: vdom.VNode;
+    listNode: VNode;
     listElement: Element;
     listHeight: number;
     listState: boolean;
 
-    constructor(targetSelector: string) {
-        this.targetElement = document.querySelector(targetSelector);
-
-        let className = this.targetElement.className.split(' ');
-        className.push('js-board-selector');
-        this.targetElement.className = className.join(' ');
-
-        this.attachButton();
-    }
-
-    private attachButton(): void {
+    protected bindOne(element: Element): void {
         let self = this;
-        this.buttonNode = vdom.h('div',
+        let className = element.className.split(' ');
+
+        className.push('js-board-selector');
+        element.className = className.join(' ');
+
+        let buttonNode = h('div',
             {className: 'js-board-selector-button'},
-            [vdom.h('a', {'href': '#'}, ['Boards'])]
+            [h('a', {'href': '#'}, ['Boards'])]
         );
 
-        this.buttonElement = vdom.create(this.buttonNode);
+        this.buttonElement = create(buttonNode);
         this.buttonElement.addEventListener('click', function(e) {
             e.preventDefault();
             self.eventButtonClicked();
@@ -111,8 +105,8 @@ export class BoardSelector {
         if (this.boards) {
             this.toggleBoardSelectorListState();
         } else {
-            board.Board.queryAll().then(function(
-                boards: Array<board.Board>
+            Board.queryAll().then(function(
+                boards: Array<Board>
             ): void {
                 self.boards = boards;
                 self.attachBoardSelector();
@@ -134,7 +128,7 @@ export class BoardSelector {
     private attachBoardSelector(): void {
         this.listView = new BoardSelectorListView(this.boards);
         this.listNode = this.listView.render();
-        this.listElement = vdom.create(this.listNode);
+        this.listElement = create(this.listNode);
 
         document.body.insertBefore(
             this.listElement,
@@ -165,8 +159,8 @@ export class BoardSelector {
                 }
             });
 
-            let patches = vdom.diff(self.listNode, viewNode);
-            self.listElement = vdom.patch(self.listElement, patches);
+            let patches = diff(self.listNode, viewNode);
+            self.listElement = patch(self.listElement, patches);
             self.listNode = viewNode;
 
             if (elapsed < animationDuration) {
@@ -196,8 +190,8 @@ export class BoardSelector {
                 }
             });
 
-            let patches = vdom.diff(self.listNode, viewNode);
-            self.listElement = vdom.patch(self.listElement, patches);
+            let patches = diff(self.listNode, viewNode);
+            self.listElement = patch(self.listElement, patches);
             self.listNode = viewNode;
 
             if (elapsed < animationDuration) {

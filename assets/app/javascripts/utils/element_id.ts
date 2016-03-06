@@ -1,11 +1,11 @@
-import uuid = require('./uuid');
+import {generateUuid} from './uuid';
 
 
 export function getElementId(element: Element): string {
     let elementId = element.getAttribute('data-element-id');
 
     if (!elementId) {
-        elementId = `js-${uuid.generateUuid()}`;
+        elementId = `js-${generateUuid()}`;
         element.setAttribute(
             'data-element-id',
             elementId

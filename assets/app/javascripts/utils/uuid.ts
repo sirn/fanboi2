@@ -1,4 +1,4 @@
-/* Derived from original source code by Jed Schmidt:
+/* Ported from original source code by Jed Schmidt:
  * https://gist.github.com/jed/982883
  */
 

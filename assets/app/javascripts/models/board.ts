@@ -1,8 +1,10 @@
-import request = require('../utils/request');
-import cancellable = require('../utils/cancellable');
-import topic = require('./topic');
+import {request} from '../utils/request';
+import {Model} from './base';
+import {CancellableToken} from '../utils/cancellable';
+import {Topic} from './topic';
 
-export class Board {
+
+export class Board extends Model {
     type: string;
     id: number;
     agreements: string;
@@ -18,6 +20,7 @@ export class Board {
     path: string;
 
     constructor(data: any) {
+        super();
         this.type = data.type;
         this.id = data.id;
         this.agreements = data.agreements;
@@ -35,9 +38,9 @@ export class Board {
     }
 
     static queryAll(
-        token?: cancellable.CancellableToken
-    ): Promise<Array<Board>> {
-        return request.request('GET', '/api/1.0/boards/', token).
+        token?: CancellableToken
+    ): Promise<Board[]> {
+        return request('GET', '/api/1.0/boards/', token).
             then(function(resp: string): Array<Board> {
                 return JSON.parse(resp).map(function(data: Object) {
                     return new Board(data);
@@ -47,17 +50,17 @@ export class Board {
 
     static querySlug(
         slug: string,
-        token?: cancellable.CancellableToken
+        token?: CancellableToken
     ): Promise<Board> {
-        return request.request('GET', `/api/1.0/boards/${slug}/`, token).
+        return request('GET', `/api/1.0/boards/${slug}/`, token).
             then(function(resp: string): Board {
                 return new Board(JSON.parse(resp));
             });
     }
 
     getTopics(
-        token?: cancellable.CancellableToken
-    ): Promise<Array<topic.Topic>> {
-        return topic.Topic.queryAll(this.slug, token);
+        token?: CancellableToken
+    ): Promise<Topic[]> {
+        return Topic.queryAll(this.slug, token);
     }
 }
