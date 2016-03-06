@@ -309,7 +309,9 @@ export class AnchorPopover extends DelegationComponent {
 
                 handler.attach().then(function(): void {
                     let quoteElement = handler.quoteElement;
-                    self.bindQuoteElement(handler, handler.quoteElement);
+                    if (quoteElement) {
+                        self.bindQuoteElement(handler, quoteElement);
+                    }
                 });
 
                 target.addEventListener('mouseout',
