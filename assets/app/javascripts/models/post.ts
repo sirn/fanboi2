@@ -1,5 +1,6 @@
-import {request} from '../utils/request';
+import {request, IRequestBody} from '../utils/request';
 import {Model, IModelData} from './base';
+import {Task} from './task';
 import {CancellableToken} from '../utils/cancellable';
 
 
@@ -50,5 +51,28 @@ export class Post extends Model {
                 return new Post(data);
             });
         });
+    }
+
+    static createOne(
+        topicId: number,
+        params: IRequestBody,
+        token?: CancellableToken
+    ): Promise<Post> {
+        let self = this;
+        let entryPoint = `/api/1.0/topics/${topicId}/posts/`;
+
+        return request('POST', entryPoint, params, token).then(
+            function(resp: string) {
+                let data: IModelData = JSON.parse(resp);
+                if (data['type'] == 'task') {
+                    let id = data['id'];
+                    return Task.waitFor(id, token).then(function(task: Task) {
+                        return new Post(task.data);
+                    });
+                } else {
+                    return new Post(data);
+                }
+            }
+        );
     }
 }
