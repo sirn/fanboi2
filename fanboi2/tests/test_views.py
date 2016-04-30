@@ -112,6 +112,28 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
             body='Words words',
         )
 
+    # noinspection PyUnresolvedReferences
+    @mock.patch('fanboi2.utils.RateLimiter.limit')
+    @mock.patch('fanboi2.tasks.add_topic.delay')
+    def test_board_topics_post_json(self, add_, limit_):
+        from fanboi2.views.api import board_topics_post
+        board = self._makeBoard(title='Foobar', slug='foobar')
+
+        request = self._json_POST({'title': 'Thread', 'body': 'Words words'})
+        request.matchdict['board'] = board.slug
+        self._makeConfig(request, self._makeRegistry())
+        add_.return_value = mock_response = mock.Mock(id='task-uuid')
+
+        response = board_topics_post(request)
+        self.assertEqual(response, mock_response)
+        limit_.assert_called_with(board.settings['post_delay'])
+        add_.assert_called_with(
+            request=mock.ANY,
+            board_id=board.id,
+            title='Thread',
+            body='Words words',
+        )
+
     def test_board_topics_post_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
         from fanboi2.views.api import board_topics_post
@@ -256,6 +278,30 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         self._makePost(topic=topic, body='Words')
 
         request = self._POST({'body': 'Words words'})
+        request.matchdict['topic'] = topic.id
+        self._makeConfig(request, self._makeRegistry())
+        add_.return_value = mock_response = mock.Mock(id='task-uuid')
+
+        response = topic_posts_post(request)
+        self.assertEqual(response, mock_response)
+        limit_.assert_called_with(board.settings['post_delay'])
+        add_.assert_called_with(
+            request=mock.ANY,
+            topic_id=topic.id,
+            body='Words words',
+            bumped=False,
+        )
+
+    # noinspection PyUnresolvedReferences
+    @mock.patch('fanboi2.utils.RateLimiter.limit')
+    @mock.patch('fanboi2.tasks.add_post.delay')
+    def test_topic_posts_post_json(self, add_, limit_):
+        from fanboi2.views.api import topic_posts_post
+        board = self._makeBoard(title='Foobar', slug='foobar')
+        topic = self._makeTopic(board=board, title='Foobar')
+        self._makePost(topic=topic, body='Words')
+
+        request = self._json_POST({'body': 'Words words'})
         request.matchdict['topic'] = topic.id
         self._makeConfig(request, self._makeRegistry())
         add_.return_value = mock_response = mock.Mock(id='task-uuid')

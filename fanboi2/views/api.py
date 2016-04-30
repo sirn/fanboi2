@@ -1,11 +1,30 @@
 import datetime
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import or_, and_
+from webob.multidict import MultiDict
 from fanboi2.errors import ParamsInvalidError, RateLimitedError, BaseError
 from fanboi2.forms import TopicForm, PostForm
 from fanboi2.models import DBSession, Board, Topic
 from fanboi2.tasks import ResultProxy, add_topic, add_post, celery
 from fanboi2.utils import RateLimiter, serialize_request
+
+
+def _get_params(request):
+    """Return a :class:`MultiDict` of the params given in request
+    regardless of whether the request is sent as JSON or as formdata.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: str
+    """
+    params = request.params
+    if request.content_type.startswith('application/json'):
+        try:
+            params = MultiDict(request.json_body)
+        except ValueError:
+            pass
+    return params
 
 
 def root(request):
@@ -60,8 +79,12 @@ def board_topics_post(request, board=None, form=None):
     :type request: pyramid.request.Request
     :rtype: celery.task.Task
     """
-    if board is None: board = board_get(request)
-    if form is None: form = TopicForm(request.params, request=request)
+    params = _get_params(request)
+
+    if board is None:
+        board = board_get(request)
+    if form is None:
+        form = TopicForm(params, request=request)
 
     if form.validate():
         ratelimit = RateLimiter(request, namespace=board.slug)
@@ -131,9 +154,14 @@ def topic_posts_post(request, board=None, topic=None, form=None):
     :type request: pyramid.request.Request
     :rtype: celery.task.Task
     """
-    if topic is None: topic = topic_get(request)
-    if board is None: board = topic.board
-    if form is None: form = PostForm(request.params, request=request)
+    params = _get_params(request)
+
+    if topic is None:
+        topic = topic_get(request)
+    if board is None:
+        board = topic.board
+    if form is None:
+        form = PostForm(params, request=request)
 
     if form.validate():
         ratelimit = RateLimiter(request, namespace=board.slug)

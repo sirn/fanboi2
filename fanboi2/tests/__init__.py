@@ -121,6 +121,7 @@ class RegistryMixin(unittest.TestCase):
         request.user_agent = kw.get('user_agent', 'Mock/1.0')
         request.remote_addr = kw.get('remote_addr', '127.0.0.1')
         request.referrer = kw.get('referrer')
+        request.content_type = 'application/x-www-form-urlencoded'
         request.params = MultiDict(kw.get('params') or {})
         return request
 
@@ -196,6 +197,12 @@ class ViewMixin(ModelMixin, RegistryMixin, unittest.TestCase):
 
     def _GET(self, data=None):
         request = self._makeRequest(params=data)
+        return request
+
+    def _json_POST(self, data=None):
+        request = self._makeRequest()
+        request.content_type = 'application/json'
+        request.json_body = data
         return request
 
     def assertSAEqual(self, first, second, msg=None):
