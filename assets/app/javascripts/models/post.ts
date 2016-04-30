@@ -45,7 +45,7 @@ export class Post extends Model {
             entryPoint = `/api/1.0/topics/${topicId}/posts/`;
         }
 
-        return request('GET', entryPoint, token).then(function(resp) {
+        return request('GET', entryPoint, null, token).then(function(resp) {
             return JSON.parse(resp).map(function(data: Object): Post {
                 return new Post(data);
             });
