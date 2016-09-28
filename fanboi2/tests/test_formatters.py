@@ -44,11 +44,13 @@ class TestFormatters(unittest.TestCase):
         http://imgur.com/<script>alert("haxx0red!!")</script>.jpg
         http://<script></script>.imgur.com/image6.gif
         http://imgur.com/ほげ
+        http://imgur.com/a/demo
 
         Lorem ipsum dolor sit amet.
 
         https://imgur.com/image5
         https://i.imgur.com/image7.jpg
+        https://imgur.com/a/demo
         """
         self.assertTupleEqual(tuple(extract_thumbnail(text)), (
             ('//i.imgur.com/image1s.jpg', '//imgur.com/image1'),
