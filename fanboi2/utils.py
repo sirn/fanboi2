@@ -1,7 +1,7 @@
 import hashlib
 import requests
 import socket
-from IPy import IP
+from ipaddress import ip_interface, ip_network
 from .models import redis_conn
 from .version import __VERSION__
 
@@ -48,7 +48,8 @@ class Dnsbl(object) :
                 try:
                     check = '.'.join(reversed(ip_address.split('.')))
                     res = socket.gethostbyname("%s.%s." % (check, provider))
-                    if IP(res).make_net('255.0.0.0') == IP('127.0.0.0/8'):
+                    ipaddr = ip_interface("%s/255.0.0.0" % (res,))
+                    if ipaddr.network == ip_network('127.0.0.0/8'):
                         return True
                 except (socket.gaierror, ValueError):
                     continue

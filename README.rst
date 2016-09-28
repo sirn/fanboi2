@@ -34,17 +34,17 @@ The Adventurous Way
 
 If you don't really want to use Vagrant, you can also install everything using your preferred methods:
 
-1. `PyPy3 2.3.1 <http://pypy.org/download.html#default-with-a-jit-compiler>`_.
-2. `PostgreSQL 9.2 <http://www.postgresql.org/>`_.
-3. `Redis 2.8 <http://redis.io/>`_.
+1. `Python 3.5 <https://www.python.org/downloads/>`_.
+2. `PostgreSQL 9.5 <http://www.postgresql.org/>`_.
+3. `Redis 3.0 <http://redis.io/>`_.
 4. `Memcached 1.4 <http://www.memcached.org/>`_.
-5. `Node.js 4.2 <http://nodejs.org/>`_ with `Gulp`_ and `Typings`_.
+5. `Node.js 6.2 <http://nodejs.org/>`_ with `Gulp`_ and `Typings`_.
 
 After the package above are up and running, you may now setup the application::
 
     $ cp examples/development.ini.sample development.ini
     $ cp examples/alembic.ini.sample alembic.ini
-    $ pypy setup.py develop
+    $ python3.5 setup.py develop
     $ alembic upgrade head
     $ pserve development.ini
 
@@ -95,8 +95,7 @@ Please make sure that test coverage is 100% and everything passed. It's also a g
 License
 -------
 
-| Copyright (c) 2013-2015, Kridsada Thanabulpong
-| All rights reserved.
+Copyright (c) 2013-2016, Kridsada Thanabulpong. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 

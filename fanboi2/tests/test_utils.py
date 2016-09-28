@@ -1,5 +1,5 @@
-import mock
 import unittest
+import unittest.mock
 from fanboi2.models import redis_conn
 from fanboi2.tests import DummyRedis, RegistryMixin
 from pyramid import testing
@@ -55,14 +55,14 @@ class TestDnsBl(unittest.TestCase):
         dnsbl = self._makeOne(providers='xbl.spamhaus.org tor.ahbl.org')
         self.assertEqual(dnsbl.providers, ['xbl.spamhaus.org', 'tor.ahbl.org'])
 
-    @mock.patch('socket.gethostbyname')
+    @unittest.mock.patch('socket.gethostbyname')
     def test_listed(self, lookup_call):
         lookup_call.return_value = '127.0.0.2'
         dnsbl = self._makeOne()
         self.assertEqual(dnsbl.listed('10.0.100.254'), True)
         lookup_call.assert_called_with('254.100.0.10.xbl.spamhaus.org.')
 
-    @mock.patch('socket.gethostbyname')
+    @unittest.mock.patch('socket.gethostbyname')
     def test_listed_unlisted(self, lookup_call):
         import socket
         lookup_call.side_effect = socket.gaierror('foobar')
@@ -70,13 +70,13 @@ class TestDnsBl(unittest.TestCase):
         self.assertEqual(dnsbl.listed('10.0.100.1'), False)
         lookup_call.assert_called_with('1.100.0.10.xbl.spamhaus.org.')
 
-    @mock.patch('socket.gethostbyname')
+    @unittest.mock.patch('socket.gethostbyname')
     def test_listed_invalid(self, lookup_call):
         lookup_call.return_value = '192.168.1.1'
         dnsbl = self._makeOne()
         self.assertEqual(dnsbl.listed('10.0.100.2'), False)
 
-    @mock.patch('socket.gethostbyname')
+    @unittest.mock.patch('socket.gethostbyname')
     def test_listed_malformed(self, lookup_call):
         lookup_call.return_value = 'foobarbaz'
         dnsbl = self._makeOne()
@@ -107,7 +107,7 @@ class TestAkismet(RegistryMixin, unittest.TestCase):
         akismet = self._makeOne(key=None)
         self.assertEqual(akismet.key, None)
 
-    @mock.patch('requests.post')
+    @unittest.mock.patch('requests.post')
     def test_spam(self, api_call):
         api_call.return_value = self._makeResponse(b'true')
         request = self._makeRequest()
@@ -115,12 +115,12 @@ class TestAkismet(RegistryMixin, unittest.TestCase):
         self.assertEqual(akismet.spam(request, 'buy viagra'), True)
         api_call.assert_called_with(
             'https://hogehoge.rest.akismet.com/1.1/comment-check',
-            headers=mock.ANY,
-            data=mock.ANY,
-            timeout=mock.ANY,
+            headers=unittest.mock.ANY,
+            data=unittest.mock.ANY,
+            timeout=unittest.mock.ANY,
         )
 
-    @mock.patch('requests.post')
+    @unittest.mock.patch('requests.post')
     def test_spam_ham(self, api_call):
         api_call.return_value = self._makeResponse(b'false')
         request = self._makeRequest()
@@ -128,12 +128,12 @@ class TestAkismet(RegistryMixin, unittest.TestCase):
         self.assertEqual(akismet.spam(request, 'Hogehogehogehoge!'), False)
         api_call.assert_called_with(
             'https://hogehoge.rest.akismet.com/1.1/comment-check',
-            headers=mock.ANY,
-            data=mock.ANY,
-            timeout=mock.ANY,
+            headers=unittest.mock.ANY,
+            data=unittest.mock.ANY,
+            timeout=unittest.mock.ANY,
         )
 
-    @mock.patch('requests.post')
+    @unittest.mock.patch('requests.post')
     def test_spam_timeout(self, api_call):
         import requests
         request = self._makeRequest()
@@ -142,7 +142,7 @@ class TestAkismet(RegistryMixin, unittest.TestCase):
         self.assertEqual(akismet.spam(request, 'buy viagra'), False)
 
     # noinspection PyTypeChecker
-    @mock.patch('requests.post')
+    @unittest.mock.patch('requests.post')
     def test_spam_no_key(self, api_call):
         request = self._makeRequest()
         akismet = self._makeOne(key=None)

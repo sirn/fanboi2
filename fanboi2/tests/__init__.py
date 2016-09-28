@@ -10,7 +10,7 @@ from fanboi2.models import DBSession, Base, redis_conn
 
 DATABASE_URI = os.environ.get(
     'POSTGRESQL_TEST_DATABASE',
-    'postgresql+pg8000://fanboi2:@localhost:5432/fanboi2_test')
+    'postgresql://fanboi2:@localhost:5432/fanboi2_test')
 
 
 class DummyRedis(object):

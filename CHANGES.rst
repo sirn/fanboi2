@@ -6,11 +6,11 @@
 - [Add] More random quotes.
 - [Change] Rewrite all board templates.
 - [Change] Codebase now comes with type annotation for IDE.
-- [Change] Replaced `CPython 3.2 <https://www.python.org/download/releases/3.2.5/>`_ with `PyPy3 <http://pypy.org/download.html>`_.
+- [Change] Codebase now uses `Python 3.5 <https://docs.python.org/3.5/whatsnew/changelog.html#python-3-5-2>`_.
 - [Change] Replaced `Jinja2 <http://jinja.pocoo.org/>`_ templates with `Mako <http://www.makotemplates.org/>`_ templates.
-- [Change] Pyramid views are now properly organized into modules.
-- [Change] Views now use function dispatching instead of class-based dispatching one.
-- [Change] Vagrant now use `FreeBSD 10.1 <https://www.freebsd.org/>`_ instead of `Ubuntu 12.04 <http://releases.ubuntu.com/precise/>`_ to match the new production stack.
+- [Change] Pyramid views are now organized into modules.
+- [Change] Views now use function dispatching instead of class-based dispatching.
+- [Change] Vagrant now use `FreeBSD 10.3 <https://www.freebsd.org/>`_ instead of `Ubuntu 12.04 <http://releases.ubuntu.com/precise/>`_ to match the new production stack.
 - [Remove] Get rid of all usage of ``pyramid.threadlocal``.
 - [Remove] Production provisioning is now private.
 

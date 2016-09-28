@@ -1,5 +1,5 @@
-import mock
 import unittest
+import unittest.mock
 from fanboi2.tests import ViewMixin, ModelMixin, TaskMixin, DummyAsyncResult
 
 
@@ -91,8 +91,8 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
             board_topics_get(request)
 
     # noinspection PyUnresolvedReferences
-    @mock.patch('fanboi2.utils.RateLimiter.limit')
-    @mock.patch('fanboi2.tasks.add_topic.delay')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.limit')
+    @unittest.mock.patch('fanboi2.tasks.add_topic.delay')
     def test_board_topics_post(self, add_, limit_):
         from fanboi2.views.api import board_topics_post
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -100,21 +100,21 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         request = self._POST({'title': 'Thread thread', 'body': 'Words words'})
         request.matchdict['board'] = board.slug
         self._makeConfig(request, self._makeRegistry())
-        add_.return_value = mock_response = mock.Mock(id='task-uuid')
+        add_.return_value = mock_response = unittest.mock.Mock(id='task-uuid')
 
         response = board_topics_post(request)
         self.assertEqual(response, mock_response)
         limit_.assert_called_with(board.settings['post_delay'])
         add_.assert_called_with(
-            request=mock.ANY,
+            request=unittest.mock.ANY,
             board_id=board.id,
             title='Thread thread',
             body='Words words',
         )
 
     # noinspection PyUnresolvedReferences
-    @mock.patch('fanboi2.utils.RateLimiter.limit')
-    @mock.patch('fanboi2.tasks.add_topic.delay')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.limit')
+    @unittest.mock.patch('fanboi2.tasks.add_topic.delay')
     def test_board_topics_post_json(self, add_, limit_):
         from fanboi2.views.api import board_topics_post
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -122,13 +122,13 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         request = self._json_POST({'title': 'Thread', 'body': 'Words words'})
         request.matchdict['board'] = board.slug
         self._makeConfig(request, self._makeRegistry())
-        add_.return_value = mock_response = mock.Mock(id='task-uuid')
+        add_.return_value = mock_response = unittest.mock.Mock(id='task-uuid')
 
         response = board_topics_post(request)
         self.assertEqual(response, mock_response)
         limit_.assert_called_with(board.settings['post_delay'])
         add_.assert_called_with(
-            request=mock.ANY,
+            request=unittest.mock.ANY,
             board_id=board.id,
             title='Thread',
             body='Words words',
@@ -142,8 +142,8 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         with self.assertRaises(NoResultFound):
             board_topics_post(request)
 
-    @mock.patch('fanboi2.utils.RateLimiter.limit')
-    @mock.patch('fanboi2.tasks.add_topic.delay')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.limit')
+    @unittest.mock.patch('fanboi2.tasks.add_topic.delay')
     def test_board_topics_post_failed(self, add_, limit_):
         from fanboi2.errors import ParamsInvalidError
         from fanboi2.models import DBSession, Topic
@@ -160,9 +160,9 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         self.assertFalse(add_.called)
         self.assertEqual(DBSession.query(Topic).count(), 0)
 
-    @mock.patch('fanboi2.utils.RateLimiter.timeleft')
-    @mock.patch('fanboi2.utils.RateLimiter.limited')
-    @mock.patch('fanboi2.tasks.add_topic.delay')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.timeleft')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.limited')
+    @unittest.mock.patch('fanboi2.tasks.add_topic.delay')
     def test_board_topics_post_limited(self, add_, limited_, time_):
         from fanboi2.errors import RateLimitedError
         from fanboi2.models import DBSession, Topic
@@ -182,7 +182,7 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         self.assertTrue(time_.called)
         self.assertEqual(DBSession.query(Topic).count(), 0)
 
-    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_task_get(self, result_):
         from fanboi2.views.api import task_get
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -200,7 +200,7 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         self.assertEqual(response.object, topic)
         result_.assert_called_with('dummy')
 
-    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_task_get_failure(self, result_):
         from fanboi2.errors import SpamRejectedError
         from fanboi2.views.api import task_get
@@ -269,8 +269,8 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
             topic_posts_get(request)
 
     # noinspection PyUnresolvedReferences
-    @mock.patch('fanboi2.utils.RateLimiter.limit')
-    @mock.patch('fanboi2.tasks.add_post.delay')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.limit')
+    @unittest.mock.patch('fanboi2.tasks.add_post.delay')
     def test_topic_posts_post(self, add_, limit_):
         from fanboi2.views.api import topic_posts_post
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -280,21 +280,21 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         request = self._POST({'body': 'Words words'})
         request.matchdict['topic'] = topic.id
         self._makeConfig(request, self._makeRegistry())
-        add_.return_value = mock_response = mock.Mock(id='task-uuid')
+        add_.return_value = mock_response = unittest.mock.Mock(id='task-uuid')
 
         response = topic_posts_post(request)
         self.assertEqual(response, mock_response)
         limit_.assert_called_with(board.settings['post_delay'])
         add_.assert_called_with(
-            request=mock.ANY,
+            request=unittest.mock.ANY,
             topic_id=topic.id,
             body='Words words',
             bumped=False,
         )
 
     # noinspection PyUnresolvedReferences
-    @mock.patch('fanboi2.utils.RateLimiter.limit')
-    @mock.patch('fanboi2.tasks.add_post.delay')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.limit')
+    @unittest.mock.patch('fanboi2.tasks.add_post.delay')
     def test_topic_posts_post_json(self, add_, limit_):
         from fanboi2.views.api import topic_posts_post
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -304,13 +304,13 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         request = self._json_POST({'body': 'Words words'})
         request.matchdict['topic'] = topic.id
         self._makeConfig(request, self._makeRegistry())
-        add_.return_value = mock_response = mock.Mock(id='task-uuid')
+        add_.return_value = mock_response = unittest.mock.Mock(id='task-uuid')
 
         response = topic_posts_post(request)
         self.assertEqual(response, mock_response)
         limit_.assert_called_with(board.settings['post_delay'])
         add_.assert_called_with(
-            request=mock.ANY,
+            request=unittest.mock.ANY,
             topic_id=topic.id,
             body='Words words',
             bumped=False,
@@ -324,8 +324,8 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         with self.assertRaises(NoResultFound):
             topic_posts_post(request)
 
-    @mock.patch('fanboi2.utils.RateLimiter.limit')
-    @mock.patch('fanboi2.tasks.add_post.delay')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.limit')
+    @unittest.mock.patch('fanboi2.tasks.add_post.delay')
     def test_topic_posts_post_failed(self, add_, limit_):
         from fanboi2.errors import ParamsInvalidError
         from fanboi2.models import DBSession, Post
@@ -345,9 +345,9 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         self.assertFalse(add_.called)
         self.assertEqual(DBSession.query(Post).count(), post_count)
 
-    @mock.patch('fanboi2.utils.RateLimiter.timeleft')
-    @mock.patch('fanboi2.utils.RateLimiter.limited')
-    @mock.patch('fanboi2.tasks.add_post.delay')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.timeleft')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.limited')
+    @unittest.mock.patch('fanboi2.tasks.add_post.delay')
     def test_topic_posts_post_limited(self, add_, limited_, time_):
         from fanboi2.errors import RateLimitedError
         from fanboi2.models import DBSession, Post
@@ -539,7 +539,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         self.assertSAEqual(response['board'], board)
 
     # noinspection PyUnresolvedReferences
-    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_board_new_get_task(self, result_):
         from fanboi2.views.pages import board_new_get
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -560,7 +560,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         self.assertEqual(response.location, location)
         result_.assert_called_with('dummy')
 
-    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_board_new_get_task_wait(self, result_):
         from fanboi2.views.pages import board_new_get
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -575,7 +575,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         board_new_get(request)
         result_.assert_called_with('dummy')
 
-    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_board_new_get_spam_rejected(self, result_):
         from fanboi2.views.pages import board_new_get
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -593,7 +593,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         result_.assert_called_with('dummy')
         self.assertEqual(response.status, '422 Unprocessable Entity')
 
-    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_board_new_get_dnsbl_rejected(self, result_):
         from fanboi2.views.pages import board_new_get
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -620,8 +620,8 @@ class TestPageViews(ViewMixin, unittest.TestCase):
             board_new_get(request)
 
     # noinspection PyUnresolvedReferences
-    @mock.patch('fanboi2.utils.RateLimiter.limit')
-    @mock.patch('fanboi2.tasks.add_topic.delay')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.limit')
+    @unittest.mock.patch('fanboi2.tasks.add_topic.delay')
     def test_board_new_post(self, add_, limit_):
         from fanboi2.views.pages import board_new_post
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -630,20 +630,20 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         request.matchdict['board'] = board.slug
         config = self._makeConfig(request, self._makeRegistry())
         config.add_route('board_new', '/{board}/new')
-        add_.return_value = mock.Mock(id='task-uuid')
+        add_.return_value = unittest.mock.Mock(id='task-uuid')
 
         response = board_new_post(self._make_csrf(request))
         self.assertEqual(response.location, '/foobar/new?task=task-uuid')
         limit_.assert_called_with(board.settings['post_delay'])
         add_.assert_called_with(
-            request=mock.ANY,
+            request=unittest.mock.ANY,
             board_id=board.id,
             title='Thread thread',
             body='Words words',
         )
 
-    @mock.patch('fanboi2.utils.RateLimiter.limit')
-    @mock.patch('fanboi2.tasks.add_topic.delay')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.limit')
+    @unittest.mock.patch('fanboi2.tasks.add_topic.delay')
     def test_board_new_post_failed(self, add_, limit_):
         from fanboi2.models import DBSession, Topic
         from fanboi2.views.pages import board_new_post
@@ -662,9 +662,9 @@ class TestPageViews(ViewMixin, unittest.TestCase):
             'body': ['This field is required.']
         })
 
-    @mock.patch('fanboi2.utils.RateLimiter.timeleft')
-    @mock.patch('fanboi2.utils.RateLimiter.limited')
-    @mock.patch('fanboi2.tasks.add_topic.delay')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.timeleft')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.limited')
+    @unittest.mock.patch('fanboi2.tasks.add_topic.delay')
     def test_board_new_post_limited(self, add_, limited_, time_):
         from fanboi2.models import DBSession, Topic
         from fanboi2.views.pages import board_new_post
@@ -728,7 +728,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         self.assertSAEqual(response['posts'], [post])
 
     # noinspection PyUnresolvedReferences
-    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_topic_show_get_task(self, result_):
         from fanboi2.views.pages import topic_show_get
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -753,7 +753,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         self.assertEqual(response.location, location)
         result_.assert_called_with('dummy')
 
-    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_topic_show_get_task_wait(self, result_):
         from fanboi2.views.pages import topic_show_get
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -772,7 +772,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         topic_show_get(request)
         result_.assert_called_with('dummy')
 
-    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_topic_show_get_spam_rejected(self, result_):
         from fanboi2.views.pages import topic_show_get
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -794,7 +794,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         result_.assert_called_with('dummy')
         self.assertEqual(response.status, '422 Unprocessable Entity')
 
-    @mock.patch('fanboi2.tasks.celery.AsyncResult')
+    @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_topic_show_get_status_rejected(self, result_):
         from fanboi2.views.pages import topic_show_get
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -840,8 +840,8 @@ class TestPageViews(ViewMixin, unittest.TestCase):
             topic_show_get(request)
 
     # noinspection PyUnresolvedReferences
-    @mock.patch('fanboi2.utils.RateLimiter.limit')
-    @mock.patch('fanboi2.tasks.add_post.delay')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.limit')
+    @unittest.mock.patch('fanboi2.tasks.add_post.delay')
     def test_topic_show_post(self, add_, limit_):
         from fanboi2.views.pages import topic_show_post
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -853,14 +853,14 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         request.matchdict['topic'] = topic.id
         config = self._makeConfig(request, self._makeRegistry())
         config.add_route('topic', '/{board}/{topic}')
-        add_.return_value = mock.Mock(id='task-uuid')
+        add_.return_value = unittest.mock.Mock(id='task-uuid')
 
         response = topic_show_post(self._make_csrf(request))
         location = '/%s/%s?task=task-uuid' % (board.slug, topic.id)
         self.assertEqual(response.location, location)
         limit_.assert_called_with(board.settings['post_delay'])
         add_.assert_called_with(
-            request=mock.ANY,
+            request=unittest.mock.ANY,
             topic_id=topic.id,
             body='Words words',
             bumped=False,
@@ -899,8 +899,8 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         with self.assertRaises(HTTPNotFound):
             topic_show_post(self._make_csrf(request))
 
-    @mock.patch('fanboi2.utils.RateLimiter.limit')
-    @mock.patch('fanboi2.tasks.add_post.delay')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.limit')
+    @unittest.mock.patch('fanboi2.tasks.add_post.delay')
     def test_topic_show_post_failed(self, add_, limit_):
         from fanboi2.models import DBSession, Post
         from fanboi2.views.pages import topic_show_post
@@ -923,9 +923,9 @@ class TestPageViews(ViewMixin, unittest.TestCase):
             'body': ['This field is required.']
         })
 
-    @mock.patch('fanboi2.utils.RateLimiter.timeleft')
-    @mock.patch('fanboi2.utils.RateLimiter.limited')
-    @mock.patch('fanboi2.tasks.add_post.delay')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.timeleft')
+    @unittest.mock.patch('fanboi2.utils.RateLimiter.limited')
+    @unittest.mock.patch('fanboi2.tasks.add_post.delay')
     def test_board_show_post_limited(self, add_, limited_, time_):
         from fanboi2.models import DBSession, Post
         from fanboi2.views.pages import topic_show_post

@@ -2,13 +2,7 @@ language: python
 script: nosetests
 
 python:
-  - "3.2"
-  - "pypy3"
-
-# PyPy is trying to create a ctype_config_cache, but the directory is not
-# writeable. This is a hacky workaround to make it work.
-before_install:
-  - 'sudo bash -c "if test -n \"\$(shopt -s nullglob; echo /opt/python/pypy3-*)\"; then cd /opt/python/pypy3-*/lib_pypy/ && mkdir -p ctypes_config_cache/__pycache__ && chmod a+x ctypes_config_cache/__pycache__; fi"'
+  - "3.5"
 
 install:
   - 'pip install -e .'
@@ -17,7 +11,7 @@ before_script:
   - 'psql -c "create database fanboi2;" -U postgres'
 
 env:
-  - POSTGRESQL_TEST_DATABASE=postgresql+pg8000://postgres@localhost:5432/fanboi2
+  - POSTGRESQL_TEST_DATABASE=postgresql://postgres@localhost:5432/fanboi2
 
 notifications:
   email: false

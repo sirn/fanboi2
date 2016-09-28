@@ -5,6 +5,7 @@ Thumbs.db
 # Application runtime
 static/
 tmp/
+.eggs/
 *.egg-info/
 *.sqlite
 *.pyc

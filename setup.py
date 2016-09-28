@@ -8,7 +8,7 @@ changes = open(os.path.join(here, 'CHANGES.rst')).read()
 requires = [
 
     # Pyramid
-    'pyramid >=1.5, <1.6',
+    'pyramid >=1.7, <1.8',
     'pyramid_mako',
     'pyramid_tm',
     'pyramid_debugtoolbar',
@@ -16,33 +16,28 @@ requires = [
     'waitress',
 
     # Backend
-    'sqlalchemy >=0.9, <0.10',
-    'alembic >=0.6.2, <0.7',
+    'sqlalchemy >=1.0, <1.1',
+    'alembic >=0.8, <0.9',
     'celery >=3.1, <3.2',
     'transaction',
-    'pg8000',
+    'psycopg2',
     'zope.sqlalchemy',
     'redis',
     'dogpile.cache',
     'python3-memcached',
     'pytz',
-    'IPy',
     'requests',
 
     # Frontend
     'isodate',
+    'MarkupSafe',
+    'wtforms',
 
     # Tests
     'nose',
-    'coverage <4.0', # 4.0 drops Python 3.2 support
-    'mock',
-
-    # Python 3.2 compatible
-    'MarkupSafe==0.15', # https://github.com/mitsuhiko/markupsafe/pull/13
-    'wtforms==1.0.3', # https://bitbucket.org/simplecodes/wtforms/issue/153/
+    'coverage',
 
     # To be deprecate.
-    'Pygments==1.6',
     'Markdown==2.5.2',
 
     ]

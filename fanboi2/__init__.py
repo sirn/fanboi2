@@ -1,6 +1,6 @@
 import hashlib
 from functools import lru_cache
-from IPy import IP
+from ipaddress import ip_address
 from pyramid.config import Configurator
 from pyramid.path import AssetResolver
 from pyramid_beaker import session_factory_from_settings
@@ -20,8 +20,8 @@ def remote_addr(request):
     :type request: pyramid.request.Request
     :rtype: str
     """
-    ipaddr = IP(request.environ.get('REMOTE_ADDR', '255.255.255.255'))
-    if ipaddr.iptype() == "PRIVATE":
+    ipaddr = ip_address(request.environ.get('REMOTE_ADDR', '255.255.255.255'))
+    if ipaddr.is_private:
         return request.environ.get('HTTP_X_FORWARDED_FOR', str(ipaddr))
     return str(ipaddr)
 

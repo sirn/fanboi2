@@ -22,7 +22,7 @@ def _get_params(request):
     if request.content_type.startswith('application/json'):
         try:
             params = MultiDict(request.json_body)
-        except ValueError:
+        except ValueError:  # pragma: no cover
             pass
     return params
 

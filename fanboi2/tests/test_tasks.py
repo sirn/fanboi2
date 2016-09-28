@@ -1,6 +1,6 @@
-import mock
 import transaction
 import unittest
+import unittest.mock
 from fanboi2.models import DBSession
 from fanboi2.tests import ModelMixin, TaskMixin, DummyAsyncResult
 
@@ -67,7 +67,7 @@ class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(topic.posts[0].body, 'Hello, world!')
         self.assertEqual(result.result, ('topic', topic.id))
 
-    @mock.patch('fanboi2.utils.Akismet.spam')
+    @unittest.mock.patch('fanboi2.utils.Akismet.spam')
     def test_add_topic_spam(self, akismet):
         from fanboi2.models import Topic
         akismet.return_value = True
@@ -80,7 +80,7 @@ class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Topic).count(), 0)
         self.assertEqual(result.result, ('failure', 'spam_rejected'))
 
-    @mock.patch('fanboi2.utils.Dnsbl.listed')
+    @unittest.mock.patch('fanboi2.utils.Dnsbl.listed')
     def test_add_topic_dnsbl(self, dnsbl):
         from fanboi2.models import Topic
         dnsbl.return_value = True
@@ -117,7 +117,7 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(post.bumped, True)
         self.assertEqual(result.result, ('post', post.id))
 
-    @mock.patch('fanboi2.utils.Akismet.spam')
+    @unittest.mock.patch('fanboi2.utils.Akismet.spam')
     def test_add_post_spam(self, akismet):
         import transaction
         from fanboi2.models import Post
@@ -159,7 +159,7 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
             board = self._makeBoard(title='Foobar', slug='foobar')
             topic = self._makeTopic(board=board, title='Hello, world!')
             topic_id = topic.id  # topic is not bound outside transaction!
-        with mock.patch('fanboi2.models.DBSession.flush') as dbs:
+        with unittest.mock.patch('fanboi2.models.DBSession.flush') as dbs:
             dbs.side_effect = IntegrityError(None, None, None)
             result = self._makeOne(request, topic_id, 'Hi!', True)
         self.assertEqual(dbs.call_count, 5)

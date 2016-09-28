@@ -13,7 +13,7 @@ pyramid.includes =
 debugtoolbar.hosts = 0.0.0.0/0
 
 mako.directories = fanboi2:templates
-sqlalchemy.url = postgresql+pg8000://vagrant:@127.0.0.1:5432/fanboi2_development
+sqlalchemy.url = postgresql://vagrant:@127.0.0.1:5432/fanboi2_development
 redis.url = redis://127.0.0.1:6379/0
 celery.broker = redis://127.0.0.1:6379/1
 

@@ -35,10 +35,10 @@ class PostMarkup(Markup):
     formatting such as raw data length or shortened status.
     """
 
-    def __init__(self, *args, **kwargs):
-        super(PostMarkup, self).__init__(*args, **kwargs)
+    def __new__(self, *args, **kwargs):
         self.length = None
         self.shortened = False
+        return super(PostMarkup, self).__new__(self, *args, **kwargs)
 
     def __len__(self):
         if not self.length:

@@ -11,7 +11,7 @@ class TestJSONRenderer(RegistryMixin, unittest.TestCase):
         return initialize_renderer()
 
     def _makeOne(self, object, request=None):
-        if request is None:
+        if request is None:  # pragma: no cover
             request = testing.DummyRequest()
         renderer = self._getTargetFunction()(None)
         return json.loads(renderer(object, {'request': request}))
