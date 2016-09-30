@@ -101,13 +101,17 @@ export class BoardSelector extends SingletonComponent {
         // Attempt to restore height on resize. Since the resize may cause
         // clientHeight to change (and will cause the board selector to be
         // clipped or has extra whitespace).
+        //
+        // Do nothing if resize was called before board selector was attached.
         window.addEventListener('resize', function(e: Event) {
-            let listHeight = self.getListHeight();
-            if (self.listHeight != listHeight) {
-                self.listHeight = listHeight;
-                if (self.listState) {
-                    self.showBoardSelector(false);
-                    this.listState = true;
+            if (self.listElement) {
+                let listHeight = self.getListHeight();
+                if (self.listHeight != listHeight) {
+                    self.listHeight = listHeight;
+                    if (self.listState) {
+                        self.showBoardSelector(false);
+                        this.listState = true;
+                    }
                 }
             }
         });
