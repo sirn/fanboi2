@@ -1,9 +1,13 @@
-export class NotImplementedError extends Error {
+export interface Error {
     name: string;
+    message?: string;
+}
+
+export class NotImplementedError implements Error {
+    public name = 'NotImplementedError';
 
     constructor(public message?: string) {
-        super();
-        this.name = 'NotImplementedError';
+        this.message = message;
         if (!this.message) {
             this.message = 'The method was called but not implemented.';
         }
@@ -11,12 +15,11 @@ export class NotImplementedError extends Error {
 }
 
 
-export class ResourceError extends Error {
-    name: string;
+export class ResourceError implements Error {
+    public name = 'ResourceError';
 
     constructor(public message?: string) {
-        super();
-        this.name = 'ResourceError';
+        this.message = message;
         if (!this.message) {
             this.message = 'The resource could not be retrieved from the API.';
         }
