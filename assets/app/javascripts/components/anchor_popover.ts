@@ -339,19 +339,21 @@ export class AnchorPopover extends DelegationComponent {
         quoteElement: Element
     ): void {
         let self = this;
-        quoteElement.addEventListener('mouseover', function(e: Event): void {
-            e.preventDefault();
+        quoteElement.addEventListener('mouseover',
+            function _bindQuote(e: Event): void {
+                e.preventDefault();
 
-            if (self.dismissTimer) {
-                clearTimeout(self.dismissTimer);
-                self.dismissTimer = null;
-                self.bindQuoteElementDocument(handler, quoteElement);
-                quoteElement.removeEventListener(
-                    'mouseover',
-                    <EventListener>arguments.callee
-                );
+                if (self.dismissTimer) {
+                    clearTimeout(self.dismissTimer);
+                    self.dismissTimer = null;
+                    self.bindQuoteElementDocument(handler, quoteElement);
+                    quoteElement.removeEventListener(
+                        'mouseover',
+                        <EventListener>_bindQuote
+                    );
+                }
             }
-        });
+        );
     }
 
     private bindQuoteElementDocument(
@@ -359,21 +361,23 @@ export class AnchorPopover extends DelegationComponent {
         quoteElement: Element
     ): void {
         let self = this;
-        document.addEventListener('mouseover', function(e: Event): void {
-            e.preventDefault();
+        document.addEventListener('mouseover',
+            function _bindQuoteDocument(e: Event): void {
+                e.preventDefault();
 
-            let _n = <Node>e.target;
-            while (_n && _n != quoteElement) {
-                _n = _n.parentNode;
-            }
+                let _n = <Node>e.target;
+                while (_n && _n != quoteElement) {
+                    _n = _n.parentNode;
+                }
 
-            if (_n != quoteElement) {
-                handler.detach();
-                document.removeEventListener(
-                    'mouseover',
-                    <EventListener>arguments.callee
-                );
+                if (_n != quoteElement) {
+                    handler.detach();
+                    document.removeEventListener(
+                        'mouseover',
+                        <EventListener>_bindQuoteDocument
+                    );
+                }
             }
-        });
+        );
     }
 }
