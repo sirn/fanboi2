@@ -153,3 +153,127 @@ class TestTaggedStaticUrl(unittest.TestCase):
         request.registry.registerUtility(info, IStaticURLInfo)
         with self.assertRaises(IOError):
             self._getFunction()(request, 'static/notexists')
+
+
+class TestNormalizeSettings(unittest.TestCase):
+
+    def _getFunction(self):
+        from fanboi2 import normalize_settings
+        return normalize_settings
+
+    def _makeOne(self, settings=None, environ=None):
+        if environ is None:
+            environ = {}
+        func = self._getFunction()
+        return func(settings, environ)
+
+    def test_settings(self):
+        result = self._makeOne({})
+        self.assertEqual(result['sqlalchemy.url'], '')
+        self.assertEqual(result['redis.url'], '')
+        self.assertEqual(result['celery.broker'], '')
+        self.assertEqual(result['dogpile.arguments.url'], '')
+        self.assertEqual(result['session.url'], '')
+        self.assertEqual(result['session.secret'], '')
+        self.assertEqual(result['app.timezone'], '')
+        self.assertEqual(result['app.secret'], '')
+        self.assertEqual(result['app.akismet_key'], '')
+        self.assertEqual(result['app.dnsbl_providers'], [])
+
+    def test_settings(self):
+        r = self._makeOne({
+            'sqlalchemy.url': 'postgresql://localhost:5432/foo',
+            'redis.url': 'redis://127.0.0.1:6379/0',
+            'celery.broker': 'redis://127.0.0.1:6379/1',
+            'dogpile.arguments.url': '127.0.0.1:11211',
+            'session.url': '127.0.0.1:11211',
+            'session.secret': 'SESSION_SECRET',
+            'app.timezone': 'Asia/Bangkok',
+            'app.secret': 'APP_SECRET',
+            'app.akismet_key': 'TEST_KEY',
+            'app.dnsbl_providers': '1.example.com\n2.example.com 3.example.com',
+        })
+
+        self.assertEqual(r['sqlalchemy.url'], 'postgresql://localhost:5432/foo')
+        self.assertEqual(r['redis.url'], 'redis://127.0.0.1:6379/0')
+        self.assertEqual(r['celery.broker'], 'redis://127.0.0.1:6379/1')
+        self.assertEqual(r['dogpile.arguments.url'], '127.0.0.1:11211')
+        self.assertEqual(r['session.url'], '127.0.0.1:11211')
+        self.assertEqual(r['session.secret'], 'SESSION_SECRET')
+        self.assertEqual(r['app.timezone'], 'Asia/Bangkok')
+        self.assertEqual(r['app.secret'], 'APP_SECRET')
+        self.assertEqual(r['app.akismet_key'], 'TEST_KEY')
+        self.assertEqual(r['app.dnsbl_providers'], [
+            '1.example.com',
+            '2.example.com',
+            '3.example.com',
+        ])
+
+    def test_environ(self):
+        r = self._makeOne({}, environ={
+            'SQLALCHEMY_URL': 'postgresql://localhost:5432/foo',
+            'REDIS_URL': 'redis://127.0.0.1:6379/0',
+            'CELERY_BROKER_URL': 'redis://127.0.0.1:6379/1',
+            'DOGPILE_URL': '127.0.0.1:11211',
+            'SESSION_URL': '127.0.0.1:11211',
+            'SESSION_SECRET': 'SESSION_SECRET',
+            'APP_TIMEZONE': 'Asia/Bangkok',
+            'APP_SECRET': 'APP_SECRET',
+            'APP_AKISMET_KEY': 'TEST_KEY',
+            'APP_DNSBL_PROVIDERS': '1.example.com\n2.example.com 3.example.com',
+        })
+
+        self.assertEqual(r['sqlalchemy.url'], 'postgresql://localhost:5432/foo')
+        self.assertEqual(r['redis.url'], 'redis://127.0.0.1:6379/0')
+        self.assertEqual(r['celery.broker'], 'redis://127.0.0.1:6379/1')
+        self.assertEqual(r['dogpile.arguments.url'], '127.0.0.1:11211')
+        self.assertEqual(r['session.url'], '127.0.0.1:11211')
+        self.assertEqual(r['session.secret'], 'SESSION_SECRET')
+        self.assertEqual(r['app.timezone'], 'Asia/Bangkok')
+        self.assertEqual(r['app.secret'], 'APP_SECRET')
+        self.assertEqual(r['app.akismet_key'], 'TEST_KEY')
+        self.assertEqual(r['app.dnsbl_providers'], [
+            '1.example.com',
+            '2.example.com',
+            '3.example.com',
+        ])
+
+    def test_override(self):
+        r = self._makeOne({
+            'sqlalchemy.url': 'postgresql://localhost:5432/foo',
+            'redis.url': 'redis://127.0.0.1:6379/0',
+            'celery.broker': 'redis://127.0.0.1:6379/1',
+            'dogpile.arguments.url': '127.0.0.1:11211',
+            'session.url': '127.0.0.1:11211',
+            'session.secret': 'SESSION_SECRET',
+            'app.timezone': 'Asia/Bangkok',
+            'app.secret': 'APP_SECRET',
+            'app.akismet_key': 'TEST_KEY',
+            'app.dnsbl_providers': '1.example.com\n2.example.com 3.example.com',
+        }, environ={
+            'SQLALCHEMY_URL': 'postgresql://localhost:5432/baz',
+            'REDIS_URL': 'redis://127.0.0.2:6379/0',
+            'CELERY_BROKER_URL': 'redis://127.0.0.2:6379/1',
+            'DOGPILE_URL': '127.0.0.2:11211',
+            'SESSION_URL': '127.0.0.2:11211',
+            'SESSION_SECRET': 'SESSION_SECRET_2',
+            'APP_TIMEZONE': 'Asia/Tokyo',
+            'APP_SECRET': 'APP_SECRET_2',
+            'APP_AKISMET_KEY': 'TEST_KEY_2',
+            'APP_DNSBL_PROVIDERS': '4.example.com\n5.example.com 6.example.com',
+        })
+
+        self.assertEqual(r['sqlalchemy.url'], 'postgresql://localhost:5432/baz')
+        self.assertEqual(r['redis.url'], 'redis://127.0.0.2:6379/0')
+        self.assertEqual(r['celery.broker'], 'redis://127.0.0.2:6379/1')
+        self.assertEqual(r['dogpile.arguments.url'], '127.0.0.2:11211')
+        self.assertEqual(r['session.url'], '127.0.0.2:11211')
+        self.assertEqual(r['session.secret'], 'SESSION_SECRET_2')
+        self.assertEqual(r['app.timezone'], 'Asia/Tokyo')
+        self.assertEqual(r['app.secret'], 'APP_SECRET_2')
+        self.assertEqual(r['app.akismet_key'], 'TEST_KEY_2')
+        self.assertEqual(r['app.dnsbl_providers'], [
+            '4.example.com',
+            '5.example.com',
+            '6.example.com',
+        ])

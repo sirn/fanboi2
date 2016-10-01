@@ -4,7 +4,9 @@
 - [Add] Basic API for board, topic and post operations.
 - [Add] Dark theme ("Obsidian").
 - [Add] More random quotes.
+- [Fix] Imgur album now no longer matched in thumbnail extractor.
 - [Change] Rewrite all board templates.
+- [Change] Application settings can now be override via environment variables.
 - [Change] Codebase now comes with type annotation for IDE.
 - [Change] Codebase now uses `Python 3.5 <https://docs.python.org/3.5/whatsnew/changelog.html#python-3-5-2>`_.
 - [Change] Replaced `Jinja2 <http://jinja.pocoo.org/>`_ templates with `Mako <http://www.makotemplates.org/>`_ templates.

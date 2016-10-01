@@ -1,12 +1,15 @@
+import copy
 import hashlib
+import os
 from functools import lru_cache
 from ipaddress import ip_address
 from pyramid.config import Configurator
 from pyramid.path import AssetResolver
-from pyramid_beaker import session_factory_from_settings
+from pyramid.settings import aslist
 from sqlalchemy.engine import engine_from_config
 from fanboi2.cache import cache_region
 from fanboi2.models import DBSession, Base, redis_conn, identity
+from fanboi2.tasks import celery, configure_celery
 from fanboi2.utils import akismet, dnsbl
 
 
@@ -78,6 +81,51 @@ def tagged_static_path(request, path, **kwargs):
     return request.static_path(path, **kwargs)
 
 
+def normalize_settings(settings, _environ=os.environ):
+    """Normalize settings to the correct format and merge it with environment
+    equivalent if relevant key exists.
+
+    :param settings: A settings :type:`dict`.
+
+    :type settings: dict
+    :rtype: dict
+    """
+    def _cget(env_key, settings_key):
+        settings_val = settings.get(settings_key, '')
+        return _environ.get(env_key, settings_val)
+
+    sqlalchemy_url = _cget('SQLALCHEMY_URL', 'sqlalchemy.url')
+    redis_url = _cget('REDIS_URL', 'redis.url')
+    celery_broker_url = _cget('CELERY_BROKER_URL', 'celery.broker')
+    dogpile_url = _cget('DOGPILE_URL', 'dogpile.arguments.url')
+    session_url = _cget('SESSION_URL', 'session.url')
+    session_secret = _cget('SESSION_SECRET', 'session.secret')
+
+    app_timezone = _cget('APP_TIMEZONE', 'app.timezone')
+    app_secret = _cget('APP_SECRET', 'app.secret')
+    app_akismet_key = _cget('APP_AKISMET_KEY', 'app.akismet_key')
+    app_dnsbl_providers = _cget('APP_DNSBL_PROVIDERS', 'app.dnsbl_providers')
+
+    if app_dnsbl_providers is not None:
+        app_dnsbl_providers = aslist(app_dnsbl_providers)
+
+    _settings = copy.deepcopy(settings)
+    _settings.update({
+        'sqlalchemy.url': sqlalchemy_url,
+        'redis.url': redis_url,
+        'celery.broker': celery_broker_url,
+        'dogpile.arguments.url': dogpile_url,
+        'session.url': session_url,
+        'session.secret': session_secret,
+        'app.timezone': app_timezone,
+        'app.secret': app_secret,
+        'app.akismet_key': app_akismet_key,
+        'app.dnsbl_providers': app_dnsbl_providers,
+    })
+
+    return _settings
+
+
 def configure_components(settings):  # pragma: no cover
     """Configure the application components e.g. database connection.
 
@@ -86,19 +134,18 @@ def configure_components(settings):  # pragma: no cover
     :type settings: dict
     :rtype: None
     """
-    # Note: fanboi2.tasks is imported here since importlib used in celery
-    # is causing pkg_resources to fail. This bug applies to Python 3.2.3.
-    from fanboi2.tasks import celery, configure_celery
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
+
+    cache_region.configure_from_config(settings, 'dogpile.')
+    cache_region.invalidate()
+
     redis_conn.from_url(settings['redis.url'])
     celery.config_from_object(configure_celery(settings))
     identity.configure_tz(settings['app.timezone'])
     akismet.configure_key(settings['app.akismet_key'])
     dnsbl.configure_providers(settings['app.dnsbl_providers'])
-    cache_region.configure_from_config(settings, 'dogpile.')
-    cache_region.invalidate()
 
 
 def main(global_config, **settings):  # pragma: no cover
@@ -111,12 +158,12 @@ def main(global_config, **settings):  # pragma: no cover
     :type settings: dict
     :rtype: pyramid.router.Router
     """
-    session_factory = session_factory_from_settings(settings)
+    settings = normalize_settings(settings)
     config = Configurator(settings=settings)
     configure_components(settings)
     config.include('pyramid_mako')
+    config.include('pyramid_beaker')
 
-    config.set_session_factory(session_factory)
     config.set_request_property(remote_addr)
     config.set_request_property(route_name)
     config.add_request_method(tagged_static_path)
