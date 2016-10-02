@@ -167,7 +167,7 @@ class TestNormalizeSettings(unittest.TestCase):
         func = self._getFunction()
         return func(settings, environ)
 
-    def test_settings(self):
+    def test_defaults(self):
         result = self._makeOne({})
         self.assertEqual(result['sqlalchemy.url'], '')
         self.assertEqual(result['redis.url'], '')

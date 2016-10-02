@@ -403,10 +403,10 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
 
 
 
-class TestPageViews(ViewMixin, unittest.TestCase):
+class TestBoardViews(ViewMixin, unittest.TestCase):
 
     def test_root(self):
-        from fanboi2.views.pages import root
+        from fanboi2.views.boards import root
         board1 = self._makeBoard(title='Foobar', slug='foobar')
         board2 = self._makeBoard(title='Foobaz', slug='foobaz')
         board3 = self._makeBoard(title='Demo', slug='foodemo')
@@ -419,7 +419,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         ])
 
     def test_board_show(self):
-        from fanboi2.views.pages import board_show
+        from fanboi2.views.boards import board_show
 
         def _make_topic(days=0, **kwargs):
             from datetime import datetime, timedelta
@@ -467,14 +467,14 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     def test_board_show_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
-        from fanboi2.views.pages import board_show
+        from fanboi2.views.boards import board_show
         request = self._GET()
         request.matchdict['board'] = 'notexists'
         with self.assertRaises(NoResultFound):
             board_show(request)
 
     def test_board_all(self):
-        from fanboi2.views.pages import board_all
+        from fanboi2.views.boards import board_all
 
         def _make_topic(days=0, **kwargs):
             from datetime import datetime, timedelta
@@ -523,14 +523,14 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     def test_board_all_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
-        from fanboi2.views.pages import board_all
+        from fanboi2.views.boards import board_all
         request = self._GET()
         request.matchdict['board'] = 'notexists'
         with self.assertRaises(NoResultFound):
             board_all(request)
 
     def test_board_new_get(self):
-        from fanboi2.views.pages import board_new_get
+        from fanboi2.views.boards import board_new_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         request = self._GET()
         request.matchdict['board'] = board.slug
@@ -541,7 +541,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
     # noinspection PyUnresolvedReferences
     @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_board_new_get_task(self, result_):
-        from fanboi2.views.pages import board_new_get
+        from fanboi2.views.boards import board_new_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         topic = self._makeTopic(board=board, title='Foobar')
         result_.return_value = DummyAsyncResult(
@@ -562,7 +562,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_board_new_get_task_wait(self, result_):
-        from fanboi2.views.pages import board_new_get
+        from fanboi2.views.boards import board_new_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         result_.return_value = DummyAsyncResult('dummy', 'pending')
 
@@ -577,7 +577,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_board_new_get_spam_rejected(self, result_):
-        from fanboi2.views.pages import board_new_get
+        from fanboi2.views.boards import board_new_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         result_.return_value = DummyAsyncResult('dummy', 'success', [
             'failure',
@@ -595,7 +595,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_board_new_get_dnsbl_rejected(self, result_):
-        from fanboi2.views.pages import board_new_get
+        from fanboi2.views.boards import board_new_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         result_.return_value = DummyAsyncResult('dummy', 'success', [
             'failure',
@@ -613,7 +613,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     def test_board_new_get_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
-        from fanboi2.views.pages import board_new_get
+        from fanboi2.views.boards import board_new_get
         request = self._GET()
         request.matchdict['board'] = 'notexists'
         with self.assertRaises(NoResultFound):
@@ -623,7 +623,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
     @unittest.mock.patch('fanboi2.utils.RateLimiter.limit')
     @unittest.mock.patch('fanboi2.tasks.add_topic.delay')
     def test_board_new_post(self, add_, limit_):
-        from fanboi2.views.pages import board_new_post
+        from fanboi2.views.boards import board_new_post
         board = self._makeBoard(title='Foobar', slug='foobar')
 
         request = self._POST({'title': 'Thread thread', 'body': 'Words words'})
@@ -646,7 +646,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
     @unittest.mock.patch('fanboi2.tasks.add_topic.delay')
     def test_board_new_post_failed(self, add_, limit_):
         from fanboi2.models import DBSession, Topic
-        from fanboi2.views.pages import board_new_post
+        from fanboi2.views.boards import board_new_post
         board = self._makeBoard(title='Foobar', slug='foobar')
 
         request = self._POST({'title': 'Thread thread', 'body': ''})
@@ -667,7 +667,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
     @unittest.mock.patch('fanboi2.tasks.add_topic.delay')
     def test_board_new_post_limited(self, add_, limited_, time_):
         from fanboi2.models import DBSession, Topic
-        from fanboi2.views.pages import board_new_post
+        from fanboi2.views.boards import board_new_post
         board = self._makeBoard(title='Foobar', slug='foobar')
 
         request = self._POST({'title': 'Thread thread', 'body': 'Words words'})
@@ -685,7 +685,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     def test_board_new_post_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
-        from fanboi2.views.pages import board_new_post
+        from fanboi2.views.boards import board_new_post
         request = self._POST({'title': 'Thread thread', 'body': 'Words words'})
         request.matchdict['board'] = 'notexists'
         self._makeConfig(request, self._makeRegistry())
@@ -693,7 +693,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
             board_new_post(self._make_csrf(request))
 
     def test_topic_show_get(self):
-        from fanboi2.views.pages import topic_show_get
+        from fanboi2.views.boards import topic_show_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         topic1 = self._makeTopic(board=board, title='Foobar')
         post1 = self._makePost(topic=topic1, body='Words')
@@ -712,7 +712,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
         self.assertSAEqual(response['posts'], [post1, post2])
 
     def test_topic_show_get_query(self):
-        from fanboi2.views.pages import topic_show_get
+        from fanboi2.views.boards import topic_show_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         topic = self._makeTopic(board=board, title='Demo')
         post = self._makePost(topic=topic, body='Lorem ipsum')
@@ -730,7 +730,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
     # noinspection PyUnresolvedReferences
     @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_topic_show_get_task(self, result_):
-        from fanboi2.views.pages import topic_show_get
+        from fanboi2.views.boards import topic_show_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         topic = self._makeTopic(board=board, title='Foobar')
         self._makePost(topic=topic, body='Lorem ipsum')
@@ -755,7 +755,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_topic_show_get_task_wait(self, result_):
-        from fanboi2.views.pages import topic_show_get
+        from fanboi2.views.boards import topic_show_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         topic = self._makeTopic(board=board, title='Foobar')
         self._makePost(topic=topic, body='Lorem ipsum')
@@ -774,7 +774,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_topic_show_get_spam_rejected(self, result_):
-        from fanboi2.views.pages import topic_show_get
+        from fanboi2.views.boards import topic_show_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         topic = self._makeTopic(board=board, title='Foobar')
         self._makePost(topic=topic, body='Lorem ipsum')
@@ -796,7 +796,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_topic_show_get_status_rejected(self, result_):
-        from fanboi2.views.pages import topic_show_get
+        from fanboi2.views.boards import topic_show_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         topic = self._makeTopic(board=board, title='Foobar')
         self._makePost(topic=topic, body='Lorem ipsum')
@@ -819,7 +819,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     def test_topic_show_get_topic_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
-        from fanboi2.views.pages import topic_show_get
+        from fanboi2.views.boards import topic_show_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         request = self._GET()
         request.matchdict['board'] = board.slug
@@ -829,7 +829,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     def test_topic_show_get_wrong_board(self):
         from pyramid.httpexceptions import HTTPNotFound
-        from fanboi2.views.pages import topic_show_get
+        from fanboi2.views.boards import topic_show_get
         board1 = self._makeBoard(title='Foobar', slug='foobar')
         board2 = self._makeBoard(title='Foobaz', slug='foobaz')
         topic = self._makeTopic(board=board1, title='Foobar')
@@ -843,7 +843,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
     @unittest.mock.patch('fanboi2.utils.RateLimiter.limit')
     @unittest.mock.patch('fanboi2.tasks.add_post.delay')
     def test_topic_show_post(self, add_, limit_):
-        from fanboi2.views.pages import topic_show_post
+        from fanboi2.views.boards import topic_show_post
         board = self._makeBoard(title='Foobar', slug='foobar')
         topic = self._makeTopic(board=board, title='Foobar')
         self._makePost(topic=topic, body='Words')
@@ -868,7 +868,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     def test_topic_show_post_board_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
-        from fanboi2.views.pages import topic_show_get
+        from fanboi2.views.boards import topic_show_get
         request = self._POST({'body': 'Words words'})
         request.matchdict['board'] = 'notexists'
         self._makeConfig(request, self._makeRegistry())
@@ -877,7 +877,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     def test_topic_show_post_post_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
-        from fanboi2.views.pages import topic_show_get
+        from fanboi2.views.boards import topic_show_get
         board = self._makeBoard(title='Foobar', slug='foobar')
         request = self._POST({'body': 'Words words'})
         request.matchdict['board'] = board.slug
@@ -888,7 +888,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     def test_topic_show_post_wrong_board(self):
         from pyramid.httpexceptions import HTTPNotFound
-        from fanboi2.views.pages import topic_show_post
+        from fanboi2.views.boards import topic_show_post
         board1 = self._makeBoard(title='Foobar', slug='foobar')
         board2 = self._makeBoard(title='Foobaz', slug='foobaz')
         topic = self._makeTopic(board=board1, title='Foobar')
@@ -903,7 +903,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
     @unittest.mock.patch('fanboi2.tasks.add_post.delay')
     def test_topic_show_post_failed(self, add_, limit_):
         from fanboi2.models import DBSession, Post
-        from fanboi2.views.pages import topic_show_post
+        from fanboi2.views.boards import topic_show_post
         board = self._makeBoard(title='Foobar', slug='foobar')
         topic = self._makeTopic(board=board, title='Foobar')
         self._makePost(topic=topic, body='Words words')
@@ -928,7 +928,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
     @unittest.mock.patch('fanboi2.tasks.add_post.delay')
     def test_board_show_post_limited(self, add_, limited_, time_):
         from fanboi2.models import DBSession, Post
-        from fanboi2.views.pages import topic_show_post
+        from fanboi2.views.boards import topic_show_post
         board = self._makeBoard(title='Foobar', slug='foobar')
         topic = self._makeTopic(board=board, title='Foobar')
         self._makePost(topic=topic, body='Words words')
@@ -950,7 +950,7 @@ class TestPageViews(ViewMixin, unittest.TestCase):
 
     def test_error_not_found(self):
         from pyramid.httpexceptions import HTTPNotFound
-        from fanboi2.views.pages import error_not_found
+        from fanboi2.views.boards import error_not_found
         request = self._makeRequest(path='/foobar')
         config = self._makeConfig(request, self._makeRegistry())
         config.testing_add_renderer('not_found.mako')
