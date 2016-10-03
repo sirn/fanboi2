@@ -358,6 +358,36 @@ $color-text:             #cfcfcf;
     /* js.scss
      * -------------------------------------------------------------------- */
 
+    .js-button-loading {
+        &.default {
+            &:after {
+                border-color: rgba($color-gray-lighter, 0.7);
+                border-top-color: rgba($color-gray-lighter, 1);
+            }
+        }
+
+        &.muted {
+            &:after {
+                border-color: rgba($color-gray-lighter, 0.7);
+                border-top-color: rgba($color-gray-lighter, 1);
+            }
+        }
+
+        &.brand {
+            &:after {
+                border-color: rgba(#fff, 0.7);
+                border-top-color: rgba(#fff, 1);
+            }
+        }
+
+        &.green {
+            &:after {
+                border-color: rgba(#fff, 0.7);
+                border-top-color: rgba(#fff, 1);
+            }
+        }
+    }
+
     .js-theme-selector-list-item {
         .current {
             font-weight: bold;

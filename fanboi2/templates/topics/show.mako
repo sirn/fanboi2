@@ -2,6 +2,7 @@
 <%include file='_subheader.mako' />
 <%inherit file='../partials/_layout.mako' />
 <%def name='title()'>${topic.title} - ${board.title}</%def>
+<%def name='body_args()'>data-topic-reloader="${topic.id}"</%def>
 % if posts:
     ${post.render_posts(topic, posts)}
     <div class="topic-footer">
@@ -10,9 +11,9 @@
                 <li class="actions-item"><a class="button action" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='recent')}">Latest posts</a></li>
                 <li class="actions-item"><a class="button action" href="${request.route_path('topic', board=board.slug, topic=topic.id)}">All posts</a></li>
                 % if posts and topic.status == 'open' and posts[-1].number == topic.post_count:
-                    <li class="actions-item"><a class="button brand" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query="%s-" % topic.post_count)}">Reload posts</a></li>
+                    <li class="actions-item"><a class="button brand" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query="%s-" % topic.post_count)}" data-topic-reloader-button="${topic.post_count}">Reload posts</a></li>
                 % elif posts and posts[-1].number != topic.post_count:
-                    <li class="actions-item"><a class="button action" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query="%s-" % posts[-1].number)}">Newer posts</a></li>
+                    <li class="actions-item"><a class="button action" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query="%s-" % posts[-1].number)}" data-topic-reloader-button="${posts[-1].number}" data-topic-reloader-alt-label="Reload posts" data-topic-reloader-alt-class="button brand">Newer posts</a></li>
                 % endif
             </ul>
         </div>

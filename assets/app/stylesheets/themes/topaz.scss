@@ -382,6 +382,51 @@ $color-text:             #333;
     /* js.scss
      * -------------------------------------------------------------------- */
 
+    .js-button-loading {
+        &.default {
+            &:after {
+                border-color: rgba($color-gray-dark, 0.7);
+                border-top-color: rgba($color-gray-dark, 1);
+            }
+        }
+
+        &.muted {
+            &:after {
+                border-color: rgba(#fff, 0.7);
+                border-top-color: rgba(#fff, 1);
+            }
+
+            &:hover:after {
+                border-color: rgba($color-gray-dark, 0.7);
+                border-top-color: rgba($color-gray-dark, 1);
+            }
+        }
+
+        &.brand {
+            &:after {
+                border-color: rgba(#fff, 0.7);
+                border-top-color: rgba(#fff, 1);
+            }
+
+            &:hover:after {
+                border-color: rgba($color-brand, 0.7);
+                border-top-color: rgba($color-brand, 1);
+            }
+        }
+
+        &.green {
+            &:after {
+                border-color: rgba(#fff, 0.7);
+                border-top-color: rgba(#fff, 1);
+            }
+
+            &:hover:after {
+                border-color: rgba($color-green, 0.7);
+                border-top-color: rgba($color-green, 1);
+            }
+        }
+    }
+
     .js-theme-selector-list-item {
         .current {
             font-weight: bold;

@@ -1,6 +1,40 @@
 @import "variables";
 @import "mixins";
 
+/* JS Button
+ * ------------------------------------------------------------------------ */
+
+.js-button-loading {
+    $spinner-size: 18px;
+    $edge-size: 2px;
+    padding-right: ($spacing-horizontal-input * 2) + $spinner-size;
+    position: relative;
+
+    &:after {
+        animation: js-button-animation 0.6s infinite linear;
+        border-radius: 100%;
+        border: $edge-size solid;
+        content: "";
+        display: block;
+        height: ($spinner-size - $edge-size - $edge-size);
+        margin: -($spinner-size/2) 0 0 $spacing-vertical-small;
+        position: absolute;
+        right: $spacing-horizontal-input;
+        top: 50%;
+        width: ($spinner-size - $edge-size - $edge-size);
+    }
+}
+
+@keyframes js-button-animation {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(359deg);
+    }
+}
+
 /* JS Board Selector
  * ------------------------------------------------------------------------ */
 

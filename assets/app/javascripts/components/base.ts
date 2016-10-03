@@ -22,7 +22,9 @@ export class SingletonComponent implements IComponent {
 
     constructor(public targetSelector: string) {
         this.targetElement = document.querySelector(targetSelector);
-        this.bindOne(this.targetElement);
+        if (this.targetElement) {
+            this.bindOne(this.targetElement);
+        }
     }
 
     protected bindOne(element: Element): void {

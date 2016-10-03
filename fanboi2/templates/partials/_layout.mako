@@ -20,7 +20,7 @@
         ${self.header()}
     % endif
 </head>
-<body id="${request.route_name}" class="${formatters.user_theme(request)}">
+<body id="${request.route_name}" class="${formatters.user_theme(request)}"${' ' + self.body_args() if hasattr(self, 'body_args') else ''}>
 
 <header class="header" data-board-selector="true">
     <div class="container">
