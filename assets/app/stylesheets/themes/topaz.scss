@@ -389,18 +389,17 @@ $color-text:             #333;
         }
     }
 
-    .js-anchor-popover {
+    .js-popover {
+        .js-board {
+            background-color: $color-tint-lighter;
+        }
+
+        .js-topic {
+            background-color: $color-tint-lighter;
+        }
     }
 
-    .js-anchor-popover-inner {
+    .js-popover-inner {
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .3);
-    }
-
-    .js-anchor-popover-topic {
-        background-color: $color-tint-lighter;
-    }
-
-    .js-anchor-popover-board {
-        background-color: $color-tint-lighter;
     }
 }

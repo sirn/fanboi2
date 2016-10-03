@@ -4,7 +4,7 @@
 /* JS Board Selector
  * ------------------------------------------------------------------------ */
 
-.js-board-selector {
+.js-board-selector-wrapper {
     .container {
         position: relative;
     }
@@ -35,7 +35,7 @@
     }
 }
 
-.js-board-selector-list {
+.js-board-selector {
     height: 0;
     overflow: hidden;
     visibility: hidden;
@@ -65,32 +65,31 @@
 /* JS Inline Quote
  * ------------------------------------------------------------------------ */
 
-.js-anchor-popover {
-}
-
-.js-anchor-popover-inner {
-}
-
-.js-anchor-popover-post {
-    @media (min-width: $bound-tablet) {
-        .post {
+.js-popover {
+    .js-board {
+        .cascade {
             padding: 10px;
+        }
+    }
+
+    .js-topic {
+        .topic-header {
+            padding: 10px;
+        }
+
+        .topic-header-item:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .js-post-collection {
+        @media (min-width: $bound-tablet) {
+            .post {
+                padding: 10px;
+            }
         }
     }
 }
 
-.js-anchor-popover-topic {
-    .topic-header {
-        padding: 10px;
-    }
-
-    .topic-header-item:last-child {
-        margin-bottom: 0;
-    }
-}
-
-.js-anchor-popover-board {
-    .cascade {
-        padding: 10px;
-    }
+.js-popover-inner {
 }

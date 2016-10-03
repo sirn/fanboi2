@@ -1,69 +1,10 @@
-import {VNode, create, diff, patch, h} from 'virtual-dom';
+import {VNode, create, diff, h, patch} from 'virtual-dom';
 import {SingletonComponent} from './base';
+import {BoardSelectorView} from '../views/board_selector_view';
 import {Board} from '../models/board';
 
 
 const animationDuration = 200;
-
-
-class BoardSelectorListView {
-    boards: Board[];
-    boardList: VNode[];
-
-    constructor(boards: Board[]) {
-        this.boards = boards;
-        this.boardList = this.renderBoards();
-    }
-
-    render(args?: any): VNode {
-        return h('div', BoardSelectorListView.getViewClassName(args), [
-            h('div', {className: 'js-board-selector-list-inner'},
-                this.boardList
-            )
-        ]);
-    }
-
-    private renderBoards(): VNode[] {
-        return this.boards.map(function(board: Board): VNode {
-            return h('div', {className: 'cascade'}, [
-                h('div', {className: 'container'}, [
-                    BoardSelectorListView.renderHeader(board),
-                    BoardSelectorListView.renderBody(board),
-                ]),
-            ]);
-        })
-    }
-
-    private static getViewClassName(args?: any): any {
-        let className = 'js-board-selector-list';
-
-        if (!args) {
-            args = {};
-        }
-
-        if (args.className) {
-            let classNames = args.className.split(' ');
-            classNames.push(className);
-            args.className = classNames.join(' ');
-        } else {
-            args.className = className;
-        }
-
-        return args;
-    }
-
-    private static renderHeader(board: Board): VNode {
-        return h('div', {className: 'cascade-header'}, [
-            h('a', {href: `/${board.slug}/`}, [String(board.title)]),
-        ]);
-    }
-
-    private static renderBody(board: Board): VNode {
-        return h('div', {className: 'cascade-body'}, [
-            String(board.description)
-        ]);
-    }
-}
 
 
 export class BoardSelector extends SingletonComponent {
@@ -71,17 +12,17 @@ export class BoardSelector extends SingletonComponent {
 
     buttonElement: Element;
 
-    listView: BoardSelectorListView;
-    listNode: VNode;
-    listElement: Element;
-    listHeight: number;
-    listState: boolean;
+    selectorView: BoardSelectorView;
+    selectorNode: VNode;
+    selectorElement: Element;
+    selectorHeight: number;
+    selectorState: boolean;
 
     protected bindOne(element: Element): void {
         let self = this;
         let className = element.className.split(' ');
 
-        className.push('js-board-selector');
+        className.push('js-board-selector-wrapper');
         element.className = className.join(' ');
 
         let buttonNode = h('div',
@@ -104,13 +45,13 @@ export class BoardSelector extends SingletonComponent {
         //
         // Do nothing if resize was called before board selector was attached.
         window.addEventListener('resize', function(e: Event) {
-            if (self.listElement) {
-                let listHeight = self.getListHeight();
-                if (self.listHeight != listHeight) {
-                    self.listHeight = listHeight;
-                    if (self.listState) {
+            if (self.selectorElement) {
+                let selectorHeight = self.getSelectorHeight();
+                if (self.selectorHeight != selectorHeight) {
+                    self.selectorHeight = selectorHeight;
+                    if (self.selectorState) {
                         self.showBoardSelector(false);
-                        this.listState = true;
+                        this.selectorState = true;
                     }
                 }
             }
@@ -121,39 +62,39 @@ export class BoardSelector extends SingletonComponent {
         let self = this;
 
         if (this.boards) {
-            this.toggleBoardSelectorListState();
+            this.toggleBoardSelectorState();
         } else {
             Board.queryAll().then(function(
                 boards: Array<Board>
             ): void {
                 self.boards = boards;
                 self.attachBoardSelector();
-                self.toggleBoardSelectorListState();
+                self.toggleBoardSelectorState();
             });
         }
     }
 
-    private toggleBoardSelectorListState(): void {
-        if (this.listState) {
+    private toggleBoardSelectorState(): void {
+        if (this.selectorState) {
             this.hideBoardSelector(true);
-            this.listState = false;
+            this.selectorState = false;
         } else {
             this.showBoardSelector(true);
-            this.listState = true;
+            this.selectorState = true;
         }
     }
 
     private attachBoardSelector(): void {
-        this.listView = new BoardSelectorListView(this.boards);
-        this.listNode = this.listView.render();
-        this.listElement = create(this.listNode);
+        this.selectorView = new BoardSelectorView(this.boards);
+        this.selectorNode = this.selectorView.render();
+        this.selectorElement = create(this.selectorNode);
 
         document.body.insertBefore(
-            this.listElement,
+            this.selectorElement,
             this.targetElement.nextSibling
         )
 
-        this.listHeight = this.getListHeight();
+        this.selectorHeight = this.getSelectorHeight();
     }
 
     private hideBoardSelector(animate?: boolean): void {
@@ -168,7 +109,9 @@ export class BoardSelector extends SingletonComponent {
 
                 let elapsed = Math.min(time - startTime, animationDuration);
                 let elapsedPercent = elapsed/animationDuration;
-                self.updateListElement(self.listHeight * (1 - elapsedPercent));
+                self.updateSelectorElement(
+                    self.selectorHeight * (1 - elapsedPercent)
+                );
 
                 if (elapsed < animationDuration) {
                     requestAnimationFrame(animateStep);
@@ -177,7 +120,7 @@ export class BoardSelector extends SingletonComponent {
 
             requestAnimationFrame(animateStep);
         } else {
-            this.updateListElement(0, 'hidden');
+            this.updateSelectorElement(0, 'hidden');
         }
     }
 
@@ -193,7 +136,7 @@ export class BoardSelector extends SingletonComponent {
 
                 let elapsed = Math.min(time - startTime, animationDuration);
                 let elapsedPercent = elapsed/animationDuration;
-                self.updateListElement(self.listHeight * elapsedPercent);
+                self.updateSelectorElement(self.selectorHeight * elapsedPercent);
 
                 if (elapsed < animationDuration) {
                     requestAnimationFrame(animateStep);
@@ -202,30 +145,30 @@ export class BoardSelector extends SingletonComponent {
 
             requestAnimationFrame(animateStep);
         } else {
-            this.updateListElement(this.listHeight);
+            this.updateSelectorElement(this.selectorHeight);
         }
     }
 
-    private updateListElement(height: number, visibility?: string) {
+    private updateSelectorElement(height: number, visibility?: string) {
         if (!visibility) {
             visibility = 'visible';
         }
 
-        let viewNode = this.listView.render({
+        let viewNode = this.selectorView.render({
             style: {
                 height: `${height}px`,
                 visibility: visibility,
             }
         });
 
-        let patches = diff(this.listNode, viewNode);
-        this.listElement = patch(this.listElement, patches);
-        this.listNode = viewNode;
+        let patches = diff(this.selectorNode, viewNode);
+        this.selectorElement = patch(this.selectorElement, patches);
+        this.selectorNode = viewNode;
     }
 
-    private getListHeight(): number {
-        return this.listElement.querySelector(
-            '.js-board-selector-list-inner'
+    private getSelectorHeight(): number {
+        return this.selectorElement.querySelector(
+            '.js-board-selector-inner'
         ).clientHeight;
     }
 }
