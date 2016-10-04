@@ -97,6 +97,8 @@ class AnchorPopoverHandler {
 
 
 export class AnchorPopover extends DelegationComponent {
+    public targetSelector = '[data-anchor]';
+
     dismissTimer: number;
 
     protected bindGlobal(): void {

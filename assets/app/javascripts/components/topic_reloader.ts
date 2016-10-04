@@ -5,8 +5,10 @@ import {Post} from '../models/post';
 
 
 export class TopicReloader extends SingletonComponent {
-    buttonElement: Element;
+    public targetSelector = '[data-topic-reloader]';
 
+    targetElement: Element;
+    buttonElement: Element;
     topicId: number;
     lastPostNumber: number;
     loadingState: boolean;
@@ -16,6 +18,7 @@ export class TopicReloader extends SingletonComponent {
         let buttonSelector = '[data-topic-reloader-button]';
 
         this.topicId = parseInt(element.getAttribute('data-topic-reloader'), 10);
+        this.targetElement = element;
         this.refreshButtonState();
 
         this.buttonElement.addEventListener('click', function(e: Event) {

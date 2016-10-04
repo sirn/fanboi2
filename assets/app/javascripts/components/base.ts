@@ -7,8 +7,13 @@ export interface IComponent {
 
 
 export class DelegationComponent implements IComponent {
-    constructor(public targetSelector: string) {
-        this.bindGlobal();
+    public targetSelector: string;
+
+    constructor() {
+        let self = this;
+        setTimeout(function(): void {
+            self.bindGlobal();
+        }, 1);
     }
 
     protected bindGlobal(): void {
@@ -18,13 +23,16 @@ export class DelegationComponent implements IComponent {
 
 
 export class SingletonComponent implements IComponent {
-    targetElement: Element;
+    public targetSelector: string;
 
-    constructor(public targetSelector: string) {
-        this.targetElement = document.querySelector(targetSelector);
-        if (this.targetElement) {
-            this.bindOne(this.targetElement);
-        }
+    constructor() {
+        let self = this;
+        setTimeout(function(): void {
+            let targetElement = document.querySelector(self.targetSelector);
+            if (targetElement) {
+                self.bindOne(targetElement);
+            }
+        }, 1);
     }
 
     protected bindOne(element: Element): void {
@@ -34,16 +42,19 @@ export class SingletonComponent implements IComponent {
 
 
 export class CollectionComponent implements IComponent {
-    targetElements: NodeListOf<Element>;
+    public targetSelector: string;
 
-    constructor(public targetSelector: string) {
-        this.targetElements = document.querySelectorAll(targetSelector);
-        this.bindAll();
+    constructor() {
+        let self = this;
+        setTimeout(function(): void {
+            let targetElements = document.querySelectorAll(self.targetSelector);
+            self.bindAll(targetElements);
+        }, 1);
     }
 
-    protected bindAll(): void {
-        for (let i = 0, len = this.targetElements.length; i < len; i++) {
-            this.bindOne(this.targetElements[i]);
+    protected bindAll(targetElements: NodeListOf<Element>): void {
+        for (let i = 0, len = targetElements.length; i < len; i++) {
+            this.bindOne(targetElements[i]);
         }
     }
 

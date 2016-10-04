@@ -8,10 +8,11 @@ const animationDuration = 200;
 
 
 export class BoardSelector extends SingletonComponent {
+    public targetSelector = '[data-board-selector]';
+
     boards: Board[];
-
+    targetElement: Element;
     buttonElement: Element;
-
     selectorView: BoardSelectorView;
     selectorNode: VNode;
     selectorElement: Element;
@@ -30,6 +31,7 @@ export class BoardSelector extends SingletonComponent {
             [h('a', {'href': '#'}, ['Boards'])]
         );
 
+        this.targetElement = element;
         this.buttonElement = create(buttonNode);
         this.buttonElement.addEventListener('click', function(e) {
             e.preventDefault();

@@ -2,6 +2,8 @@ import {CollectionComponent} from './base';
 
 
 export class StateTracker extends CollectionComponent {
+    public targetSelector = '[data-state-tracker]';
+
     protected bindOne(element: Element): void {
         if (element.nodeName == 'INPUT') {
             let inputElement = <HTMLInputElement>element;

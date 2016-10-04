@@ -7,9 +7,9 @@ import {StateTracker} from './components/state_tracker';
 
 
 domready(function(): void {
-    new BoardSelector('[data-board-selector]');
-    new ThemeSelector('[data-theme-selector]');
-    new TopicReloader('[data-topic-reloader]');
-    new AnchorPopover('[data-anchor]');
-    new StateTracker('[data-state-tracker]');
+    new BoardSelector();
+    new ThemeSelector();
+    new TopicReloader();
+    new AnchorPopover();
+    new StateTracker();
 });

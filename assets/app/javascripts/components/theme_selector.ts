@@ -18,6 +18,9 @@ const themes = [
 
 
 export class ThemeSelector extends SingletonComponent {
+    public targetSelector = '[data-theme-selector]';
+
+    targetElement: Element;
     selectorView: ThemeSelectorView;
     selectorNode: VNode;
     selectorElement: Element;
@@ -28,6 +31,7 @@ export class ThemeSelector extends SingletonComponent {
             document.body.className.replace(/theme-/, '')
         );
 
+        this.targetElement = element;
         this.selectorElement = create(this.selectorNode);
         this.targetElement.appendChild(this.selectorElement);
         this.bindSelectorEvent();
