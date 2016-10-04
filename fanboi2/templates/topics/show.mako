@@ -33,7 +33,7 @@
             <div class="form-item">
                 <button class="button green" type="submit">Post Reply</button>
                 <span class="form-item-inline">
-                    ${form.bumped} <label for="${form.bumped.id}">${form.bumped.label.text}</label>
+                    ${form.bumped(**{'data-state-tracker': "topic/%s/bump" % (topic.id,)})} <label for="${form.bumped.id}">${form.bumped.label.text}</label>
                 </span>
             </div>
         </div>
