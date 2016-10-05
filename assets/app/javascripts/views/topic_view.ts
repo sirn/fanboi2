@@ -1,5 +1,5 @@
 import {VNode, h} from 'virtual-dom';
-import {formatDate} from '../utils/date_formatter';
+import {formatDate} from '../utils/formatters';
 import {Topic} from '../models/topic';
 
 
