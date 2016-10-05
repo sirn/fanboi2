@@ -18,7 +18,10 @@ export class Model {
 
     private throwError(data: IModelData) {
         if (data['type'] == 'error') {
-            throw new ResourceError(data['message']);
+            throw new ResourceError(
+                'API returned an error.',
+                data
+            );
         }
     }
 
