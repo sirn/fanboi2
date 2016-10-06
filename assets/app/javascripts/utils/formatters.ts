@@ -13,6 +13,7 @@ const monthNames = [
     'Dec',
 ];
 
+
 export function formatDate(date: Date): string {
     let yyyy = date.getFullYear();
     let mmm = monthNames[date.getMonth()];

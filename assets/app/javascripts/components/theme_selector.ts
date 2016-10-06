@@ -1,5 +1,6 @@
 import Cookies = require('js-cookie');
 import {VNode, create, diff, patch, h} from 'virtual-dom';
+
 import {SingletonComponent} from './base';
 import {ThemeSelectorView, ITheme} from '../views/theme_selector_view';
 

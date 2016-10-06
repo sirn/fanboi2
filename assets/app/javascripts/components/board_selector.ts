@@ -1,7 +1,9 @@
 import {VNode, create, diff, h, patch} from 'virtual-dom';
+
 import {SingletonComponent} from './base';
-import {BoardSelectorView} from '../views/board_selector_view';
 import {Board} from '../models/board';
+import {BoardSelectorView} from '../views/board_selector_view';
+import {addClass} from '../utils/elements';
 
 
 const animationDuration = 200;
@@ -18,18 +20,16 @@ export class BoardSelector extends SingletonComponent {
     selectorElement: Element;
     selectorHeight: number;
     selectorState: boolean;
+    resizeTimer: number;
 
     protected bindOne(element: Element): void {
         let self = this;
-        let className = element.className.split(' ');
-
-        className.push('js-board-selector-wrapper');
-        element.className = className.join(' ');
-
         let buttonNode = h('div',
             {className: 'js-board-selector-button'},
             [h('a', {'href': '#'}, ['Boards'])]
         );
+
+        addClass(element, 'js-board-selector-wrapper');
 
         this.targetElement = element;
         this.buttonElement = create(buttonNode);
@@ -47,16 +47,19 @@ export class BoardSelector extends SingletonComponent {
         //
         // Do nothing if resize was called before board selector was attached.
         window.addEventListener('resize', function(e: Event) {
-            if (self.selectorElement) {
-                let selectorHeight = self.getSelectorHeight();
-                if (self.selectorHeight != selectorHeight) {
-                    self.selectorHeight = selectorHeight;
-                    if (self.selectorState) {
-                        self.showBoardSelector(false);
-                        this.selectorState = true;
+            clearTimeout(self.resizeTimer);
+            setTimeout(function(){
+                if (self.selectorElement) {
+                    let selectorHeight = self.getSelectorHeight();
+                    if (self.selectorHeight != selectorHeight) {
+                        self.selectorHeight = selectorHeight;
+                        if (self.selectorState) {
+                            self.showBoardSelector(false);
+                            this.selectorState = true;
+                        }
                     }
                 }
-            }
+            }, 100);
         });
     }
 

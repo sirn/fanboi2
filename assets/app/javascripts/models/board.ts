@@ -1,7 +1,7 @@
-import {request} from '../utils/request';
 import {Model, IModelData} from './base';
-import {CancellableToken} from '../utils/cancellable';
 import {Topic} from './topic';
+import {CancellableToken} from '../utils/cancellable';
+import {request} from '../utils/request';
 
 
 export class Board extends Model {

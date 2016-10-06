@@ -1,7 +1,7 @@
-import {request} from '../utils/request';
 import {Model, IModelData} from './base';
 import {CancellableToken} from '../utils/cancellable';
 import {ResourceError} from '../utils/errors';
+import {request} from '../utils/request';
 
 
 enum Statuses {

@@ -1,15 +1,14 @@
 import {VNode, create, diff, patch} from 'virtual-dom';
+
 import {DelegationComponent} from './base';
-import {CancellableToken, CancelToken} from '../utils/cancellable';
-
-import {BoardView} from '../views/board_view';
-import {TopicView} from '../views/topic_view';
-import {PostCollectionView} from '../views/post_collection_view';
-import {PopoverView} from '../views/popover_view';
-
 import {Board} from '../models/board';
-import {Topic} from '../models/topic';
 import {Post} from '../models/post';
+import {Topic} from '../models/topic';
+import {BoardView} from '../views/board_view';
+import {PopoverView} from '../views/popover_view';
+import {PostCollectionView} from '../views/post_collection_view';
+import {TopicView} from '../views/topic_view';
+import {CancellableToken, CancelToken} from '../utils/cancellable';
 
 
 class AnchorPopoverHandler {

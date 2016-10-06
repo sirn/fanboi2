@@ -1,7 +1,7 @@
-import {request, IRequestBody} from '../utils/request';
 import {Model, IModelData} from './base';
 import {Task} from './task';
 import {CancellableToken} from '../utils/cancellable';
+import {request, IRequestBody} from '../utils/request';
 
 
 export class Post extends Model {

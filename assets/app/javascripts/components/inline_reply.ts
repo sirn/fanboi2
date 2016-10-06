@@ -1,8 +1,10 @@
 import {create, h} from 'virtual-dom';
+
 import {SingletonComponent} from './base';
-import {ResourceError} from '../utils/errors';
-import {serializeForm} from '../utils/forms';
 import {Post} from '../models/post';
+import {addClass, removeClass, serializeForm} from '../utils/elements';
+import {ResourceError} from '../utils/errors';
+import {LoadingState} from '../utils/loading';
 
 
 export class InlineReply extends SingletonComponent {
@@ -11,11 +13,12 @@ export class InlineReply extends SingletonComponent {
     topicId: number;
     formElement: HTMLFormElement;
     buttonElement: Element;
-    loadingState: boolean;
+    loadingState: LoadingState;
 
     protected bindOne(element: Element) {
         let self = this;
 
+        this.loadingState = new LoadingState();
         this.formElement = <HTMLFormElement>element;
         this.buttonElement = element.querySelector('button');
         this.topicId = parseInt(
@@ -32,14 +35,12 @@ export class InlineReply extends SingletonComponent {
     private eventFormSubmitted(): void {
         let self = this;
 
-        if (!this.loadingState) {
-            let formData = serializeForm(this.formElement);
-
-            this.detachErrors();
-            this.updateLoadingState(true);
-
-            Post.createOne(this.topicId, formData).then(function(post: Post) {
-                self.updateLoadingState(false);
+        this.loadingState.bind(this.buttonElement, function() {
+            return Post.createOne(
+                self.topicId,
+                serializeForm(self.formElement)
+            ).then(function(post: Post) {
+                self.detachErrors();
                 self.formElement.reset();
                 self.formElement.dispatchEvent(new CustomEvent('reloadTopic', {
                     bubbles: true,
@@ -49,35 +50,17 @@ export class InlineReply extends SingletonComponent {
                     }
                 }));
             }).catch(function(error: ResourceError) {
-                self.updateLoadingState(false);
+                self.detachErrors();
                 self.attachErrors(error);
             });
-        }
-    }
-
-    private updateLoadingState(loadingState: boolean): void {
-        let loadingClass = 'js-button-loading';
-        let btnClasses = this.buttonElement.className.split(' ');
-        let loadingClassIdx = btnClasses.indexOf(loadingClass);
-
-        if (loadingClassIdx > 0) { btnClasses.splice(loadingClassIdx, 1); }
-        if (loadingState) { btnClasses.push(loadingClass); }
-
-        this.buttonElement.className = btnClasses.join(' ');
-        this.loadingState = loadingState;
+        });
     }
 
     private detachErrors(): void {
         let errorElements = this.formElement.querySelectorAll('.error');
         for (let i = 0, len = errorElements.length; i < len; i++) {
             let errorElement = errorElements[0];
-            let className = errorElement.className.split(' ');
-            let classErrorIdx = className.indexOf('error');
-
-            if (classErrorIdx > 0) {
-                className.splice(classErrorIdx, 1);
-                errorElement.className = className.join(' ');
-            }
+            removeClass(errorElement, 'error');
         }
 
         let msgElements = this.formElement.querySelectorAll('.form-item-error');
@@ -106,10 +89,7 @@ export class InlineReply extends SingletonComponent {
 
     private attachError(fieldElement: Element, message: string): void {
         let formItemElement = fieldElement.closest('.form-item');
-        let formItemClass = formItemElement.className.split(' ');
-
-        formItemClass.push('error');
-        formItemElement.className = formItemClass.join(' ');
+        addClass(formItemElement, 'error');
 
         let errorNode = h('span',
             {className: 'form-item-error'},

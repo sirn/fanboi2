@@ -1,7 +1,9 @@
 import {create} from 'virtual-dom';
+
 import {SingletonComponent} from './base';
-import {PostCollectionView} from '../views/post_collection_view';
 import {Post} from '../models/post';
+import {PostCollectionView} from '../views/post_collection_view';
+import {LoadingState} from '../utils/loading';
 
 
 export class TopicReloader extends SingletonComponent {
@@ -11,12 +13,13 @@ export class TopicReloader extends SingletonComponent {
     buttonElement: Element;
     topicId: number;
     lastPostNumber: number;
-    loadingState: boolean;
+    loadingState: LoadingState;
 
     protected bindOne(element: Element) {
         let self = this;
         let buttonSelector = '[data-topic-reloader-button]';
 
+        this.loadingState = new LoadingState();
         this.topicId = parseInt(element.getAttribute('data-topic-reloader'), 10);
         this.targetElement = element;
         this.refreshButtonState();
@@ -31,16 +34,11 @@ export class TopicReloader extends SingletonComponent {
     private eventButtonClicked(): void {
         let self = this;
 
-        if (!this.loadingState) {
-            let newPostsQuery = `${this.lastPostNumber + 1}-`;
-            this.updateLoadingState(true);
-
-            Post.queryAll(
-                this.topicId,
-                newPostsQuery
+        this.loadingState.bind(this.buttonElement, function() {
+            return Post.queryAll(
+                self.topicId,
+                `${self.lastPostNumber + 1}-`
             ).then(function(posts: Array<Post>) {
-                self.updateLoadingState(false);
-
                 if (posts && posts.length) {
                     let lastPost = posts[posts.length - 1];
                     self.refreshButtonState(lastPost.number);
@@ -49,7 +47,7 @@ export class TopicReloader extends SingletonComponent {
                     self.appendPosts(posts);
                 }
             });
-        }
+        });
     }
 
     private listenDocumentEvent(): void {
@@ -154,17 +152,5 @@ export class TopicReloader extends SingletonComponent {
                 lastElement.nextSibling
             );
         }
-    }
-
-    private updateLoadingState(loadingState: boolean): void {
-        let loadingClass = 'js-button-loading';
-        let btnClasses = this.buttonElement.className.split(' ');
-        let loadingClassIdx = btnClasses.indexOf(loadingClass);
-
-        if (loadingClassIdx > 0) { btnClasses.splice(loadingClassIdx, 1); }
-        if (loadingState) { btnClasses.push(loadingClass); }
-
-        this.buttonElement.className = btnClasses.join(' ');
-        this.loadingState = loadingState;
     }
 }
