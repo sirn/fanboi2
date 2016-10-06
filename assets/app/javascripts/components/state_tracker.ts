@@ -20,10 +20,12 @@ export class StateTracker extends CollectionComponent {
 
         if (lastState != null) {
             element.checked = lastState == 'true';
+            element.defaultChecked = element.checked;
         }
 
         element.addEventListener('change', function(e: Event): void {
             StateTracker.storeState(trackerName, element.checked);
+            element.defaultChecked = element.checked;
         });
     }
 

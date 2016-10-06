@@ -19,7 +19,7 @@ export class Model {
     private throwError(data: IModelData) {
         if (data['type'] == 'error') {
             throw new ResourceError(
-                'API returned an error.',
+                'An error object was returned from the API.',
                 data
             );
         }
@@ -28,7 +28,8 @@ export class Model {
     static assertType(data: IModelData, type: string) {
         if (data['type'] != type) {
             throw new ResourceError(
-                `Expected ${type} type but got ${data['type']}.`
+                `Expected ${type} type but got ${data['type']}.`,
+                data
             );
         }
     }

@@ -20,6 +20,7 @@ export class TopicReloader extends SingletonComponent {
         this.topicId = parseInt(element.getAttribute('data-topic-reloader'), 10);
         this.targetElement = element;
         this.refreshButtonState();
+        this.listenDocumentEvent();
 
         this.buttonElement.addEventListener('click', function(e: Event) {
             e.preventDefault();
@@ -49,6 +50,15 @@ export class TopicReloader extends SingletonComponent {
                 }
             });
         }
+    }
+
+    private listenDocumentEvent(): void {
+        let self = this;
+        document.addEventListener('reloadTopic', function(e: CustomEvent) {
+            if (e.detail.topicId == self.topicId) {
+                self.eventButtonClicked();
+            }
+        });
     }
 
     private refreshButtonState(newNum?: number): void {

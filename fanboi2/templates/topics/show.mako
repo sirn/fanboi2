@@ -20,12 +20,12 @@
     </div>
 % endif
 % if topic.status == 'open':
-    <form class="form" id="reply" action="${request.route_path('topic', board=board.slug, topic=topic.id)}" method="post">
+    <form class="form" id="reply" action="${request.route_path('topic', board=board.slug, topic=topic.id)}" method="post" data-inline-reply="${topic.id}">
         ${form.csrf_token}
         <div class="container">
             <div class="form-item${' error' if form.body.errors else ''}">
                 <label class="form-item-label" for="${form.body.id}">Reply</label>
-                ${form.body(class_='input block content', rows=4)}
+                ${form.body(class_='input block content', rows=4, **{'data-inline-reply-anchor': 'true'})}
                 % if form.body.errors:
                     <span class="form-item-error">${form.body.errors[0]}</span>
                 % endif
