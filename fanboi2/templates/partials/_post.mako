@@ -4,7 +4,7 @@
         <div class="post">
             <div class="container">
                 <div class="post-header">
-                    <span class="post-header-item number${' bumped' if post.bumped else ''}">${post.number}</span>
+                    <a href="${request.route_path('topic_scoped', board=post.topic.board.slug, topic=post.topic.id, query=post.number)}" class="post-header-item number${' bumped' if post.bumped else ''}">${post.number}</a>
                     <span class="post-header-item name">${post.name}</span>
                     <time class="post-header-item date" datetime="${formatters.format_isotime(request, post.created_at)}">Posted ${formatters.format_datetime(request, post.created_at)}</time>
                     % if post.ident:

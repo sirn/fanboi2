@@ -330,9 +330,21 @@ $color-text:             #333;
             border: 1px solid $color-gray;
             color: $color-gray;
 
+            &:hover {
+                background-color: $color-gray-darker;
+                border-color: $color-gray-darker;
+                color: #fff;
+            }
+
             &.bumped {
                 background-color: $color-gray;
                 color: #fff;
+
+                &:hover {
+                    background-color: $color-gray-darker;
+                    border-color: $color-gray-darker;
+                    color: #fff;
+                }
             }
         }
 

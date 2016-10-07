@@ -315,9 +315,21 @@ $color-text:             #cfcfcf;
             border: 1px solid $color-muted-dark;
             color: $color-muted-lighter;
 
+            &:hover {
+                background-color: $color-muted-light;
+                border-color: $color-muted-light;
+                color: $color-muted-darker;
+            }
+
             &.bumped {
                 background-color: $color-muted-dark;
                 color: $color-muted-lighter;
+
+                &:hover {
+                    background-color: $color-muted-light;
+                    border-color: $color-muted-light;
+                    color: $color-muted-darker;
+                }
             }
         }
 
