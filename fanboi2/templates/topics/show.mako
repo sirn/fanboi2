@@ -25,7 +25,7 @@
         <div class="container">
             <div class="form-item${' error' if form.body.errors else ''}">
                 <label class="form-item-label" for="${form.body.id}">Reply</label>
-                ${form.body(class_='input block content', rows=4, **{'data-topic-inline-reply-anchor': 'true'})}
+                ${form.body(class_='input block content', rows=4, **{'data-form-anchor': 'true'})}
                 % if form.body.errors:
                     <span class="form-item-error">${form.body.errors[0]}</span>
                 % endif
