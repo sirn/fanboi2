@@ -1,14 +1,19 @@
 import {create, h} from 'virtual-dom';
 
 import {SingletonComponent} from './base';
-import {Post} from '../models/post';
-import {addClass, removeClass, serializeForm} from '../utils/elements';
 import {ResourceError} from '../utils/errors';
 import {LoadingState} from '../utils/loading';
 
+import {
+    addClass,
+    removeClass,
+    dispatchCustomEvent,
+    serializeForm
+} from '../utils/elements';
 
-export class InlineReply extends SingletonComponent {
-    public targetSelector = '[data-inline-reply]';
+
+export class TopicInlineReply extends SingletonComponent {
+    public targetSelector = '[data-topic-inline-reply]';
 
     topicId: number;
     formElement: HTMLFormElement;
@@ -22,7 +27,7 @@ export class InlineReply extends SingletonComponent {
         this.formElement = <HTMLFormElement>element;
         this.buttonElement = element.querySelector('button');
         this.topicId = parseInt(
-            this.formElement.getAttribute('data-inline-reply'),
+            this.formElement.getAttribute('data-topic-inline-reply'),
             10
         );
 
@@ -36,22 +41,20 @@ export class InlineReply extends SingletonComponent {
         let self = this;
 
         this.loadingState.bind(this.buttonElement, function() {
-            return Post.createOne(
-                self.topicId,
-                serializeForm(self.formElement)
-            ).then(function(post: Post) {
-                self.detachErrors();
-                self.formElement.reset();
-                self.formElement.dispatchEvent(new CustomEvent('reloadTopic', {
-                    bubbles: true,
-                    detail: {
-                        topicId: self.topicId,
-                        caller: self
+            return new Promise(function(resolve) {
+                dispatchCustomEvent(self.formElement, 'newPost', {
+                    params: serializeForm(self.formElement),
+                    callback: function() {
+                        self.detachErrors();
+                        self.formElement.reset();
+                        resolve();
+                    },
+                    errorCallback: function(error: ResourceError) {
+                        self.detachErrors();
+                        self.attachErrors(error);
+                        resolve();
                     }
-                }));
-            }).catch(function(error: ResourceError) {
-                self.detachErrors();
-                self.attachErrors(error);
+                });
             });
         });
     }
@@ -81,7 +84,7 @@ export class InlineReply extends SingletonComponent {
                 }
             }
         } else {
-            let anchorSelector = '[data-inline-reply-anchor]';
+            let anchorSelector = '[data-topic-inline-reply-anchor]';
             let anchorElement = this.formElement.querySelector(anchorSelector);
             this.attachError(anchorElement, data.message);
         }

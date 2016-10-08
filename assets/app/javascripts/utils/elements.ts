@@ -39,6 +39,19 @@ export function removeClass(
 }
 
 
+export function dispatchCustomEvent(
+    element: Element,
+    eventName: string,
+    opts?: any,
+): void {
+    if (opts == null) { opts = {}; }
+    element.dispatchEvent(new CustomEvent(eventName, {
+        bubbles: true,
+        detail: opts
+    }))
+}
+
+
 export function serializeForm(form: HTMLFormElement): any {
     let formData: {[key: string]: any} = {};
 

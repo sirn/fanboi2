@@ -4,19 +4,24 @@ import {addClass, removeClass} from './elements';
 export class LoadingState {
     isLoading: boolean;
 
-    bind(buttonElement: Element, fn: (() => Promise<any>)): void {
+    bind(buttonElement: Element | null, fn: (() => Promise<any>)): void {
         let self = this;
         if (!this.isLoading) {
             this.isLoading = true;
-            addClass(buttonElement, 'js-button-loading');
+            if (buttonElement) {
+                addClass(buttonElement, 'js-button-loading');
+            }
+
             fn().
                 then(function() { self.unbind(buttonElement); }).
                 catch(function() { self.unbind(buttonElement); });
         }
     }
 
-    private unbind(buttonElement: Element) {
+    private unbind(buttonElement: Element | null) {
         this.isLoading = false;
-        removeClass(buttonElement, 'js-button-loading');
+        if (buttonElement) {
+            removeClass(buttonElement, 'js-button-loading');
+        }
     }
 }
