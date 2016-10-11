@@ -46,6 +46,7 @@ $post-date-size: round($font-size-small);
 
     &.number {
         border: 1px solid;
+        cursor: pointer;
         padding: ($post-item-spacing - 1) ($post-item-spacing - 1);
     }
 

@@ -28,7 +28,7 @@ export class TopicReloader extends SingletonComponent {
             self.updateButtonAlt(element);
             self.refreshButtonState(element, e.detail.lastPostNumber);
             self.updateButtonAlt(element);
-        }, true);
+        });
     }
 
     private updateButtonAlt(element: Element): void {

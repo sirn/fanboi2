@@ -25,10 +25,15 @@ export class DelegationComponent implements IComponent {
 export class SingletonComponent implements IComponent {
     public targetSelector: string;
 
-    constructor() {
+    constructor(context?: Element | Document) {
         let self = this;
+
+        if (context == null) {
+            context = document;
+        }
+
         setTimeout(function(): void {
-            let targetElement = document.querySelector(self.targetSelector);
+            let targetElement = context.querySelector(self.targetSelector);
             if (targetElement) {
                 self.bindOne(targetElement);
             }
@@ -44,10 +49,15 @@ export class SingletonComponent implements IComponent {
 export class CollectionComponent implements IComponent {
     public targetSelector: string;
 
-    constructor() {
+    constructor(context?: Element | Document) {
         let self = this;
+
+        if (context == null) {
+            context = document;
+        }
+
         setTimeout(function(): void {
-            let targetElements = document.querySelectorAll(self.targetSelector);
+            let targetElements = context.querySelectorAll(self.targetSelector);
             self.bindAll(targetElements);
         }, 1);
     }

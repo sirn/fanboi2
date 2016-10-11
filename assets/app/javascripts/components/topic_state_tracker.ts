@@ -5,23 +5,28 @@ import {dispatchCustomEvent} from '../utils/elements';
 export class TopicStateTracker extends CollectionComponent {
     public targetSelector = '[data-topic-state-tracker]';
 
-    trackerName: string;
-
     protected bindOne(element: Element): void {
-        this.trackerName = element.getAttribute('data-topic-state-tracker');
+        let trackerName = element.getAttribute('data-topic-state-tracker');
 
         if (element instanceof HTMLInputElement) {
             switch (element.type) {
             case 'checkbox':
-                this.bindCheckbox(element);
+                this.bindCheckbox(trackerName, element);
                 break;
             }
+        } else if (element instanceof HTMLTextAreaElement) {
+            this.bindTextarea(trackerName, element);
         }
     }
 
-    private bindCheckbox(element: HTMLInputElement): void {
+    private bindCheckbox(
+        trackerName: string,
+        element: HTMLInputElement
+    ): void {
+        let self = this;
+
         dispatchCustomEvent(element, 'readState', {
-            name: 'bump',
+            name: trackerName,
             callback: function(name: string, value: boolean | null) {
                 if (value != null) {
                     element.checked = value;
@@ -33,9 +38,36 @@ export class TopicStateTracker extends CollectionComponent {
         element.addEventListener('change', function(e: Event): void {
             element.defaultChecked = element.checked;
             dispatchCustomEvent(element, 'updateState', {
-                name: 'bump',
+                name: trackerName,
                 value: element.checked
             });
+        });
+    }
+
+    private bindTextarea(
+        trackerName: string,
+        element: HTMLTextAreaElement
+    ): void {
+        let self = this;
+        let throttleTimer: number;
+
+        dispatchCustomEvent(element, 'readState', {
+            name: trackerName,
+            callback: function(name: string, value: string | null) {
+                if (value != null) {
+                    element.value = value;
+                }
+            }
+        });
+
+        element.addEventListener('change', function(e: Event): void {
+            clearTimeout(throttleTimer);
+            throttleTimer = setTimeout(function(){
+                dispatchCustomEvent(element, 'updateState', {
+                    name: trackerName,
+                    value: element.value
+                });
+            }, 500);
         });
     }
 }

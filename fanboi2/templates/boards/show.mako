@@ -4,7 +4,7 @@
 <%inherit file='../partials/_layout.mako' />
 <%def name='title()'>${board.title}</%def>
 % for topic in topics:
-    <div class="topic">
+    <div class="topic" data-topic="${topic.id}">
         <div class="topic-header">
             <div class="container">
                 <h3 class="topic-header-title"><a href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='recent')}">${topic.title}</a></h3>

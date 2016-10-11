@@ -3,16 +3,9 @@ import {ITopicEventHandler} from './base';
 
 export class TopicState implements ITopicEventHandler {
     stateName: string;
-    state: any;
 
     constructor(public topicId: number, public element: Element) {
         this.stateName = `topic/${topicId}`;
-        this.state = {};
-
-        let stateString = localStorage.getItem(this.stateName);
-        if (stateString) {
-            this.state = JSON.parse(stateString);
-        }
     }
 
     bind(event: CustomEvent): void {
@@ -33,7 +26,8 @@ export class TopicState implements ITopicEventHandler {
         if (!name) { throw new Error('readState require a name'); }
         if (!callback) { throw new Error('readState require a callback'); }
 
-        callback(name, this.state[name]);
+        let state = this.readState();
+        callback(name, state[name]);
     }
 
     private bindUpdateState(e: CustomEvent): void {
@@ -43,11 +37,23 @@ export class TopicState implements ITopicEventHandler {
 
         if (!name) { throw new Error('updateState require a name'); }
 
-        this.state[name] = value;
-        localStorage.setItem(this.stateName, JSON.stringify(this.state));
+        let state = this.readState();
+        state[name] = value;
+        localStorage.setItem(this.stateName, JSON.stringify(state));
 
         if (callback) {
             callback(name, value);
         }
+    }
+
+    private readState(): any {
+        let state = {};
+        let stateString = localStorage.getItem(this.stateName);
+
+        if (stateString) {
+            state = JSON.parse(stateString);
+        }
+
+        return state;
     }
 }

@@ -9,24 +9,24 @@ import {TopicNewPost} from './topic/topic_new_post';
 export class TopicManager extends CollectionComponent {
     public targetSelector = '[data-topic]';
 
-    topicId: number;
-
     protected bindOne(element: Element): void {
-        this.topicId = parseInt(element.getAttribute('data-topic'), 10);
-        this.bindEvent(element, 'updateState', TopicState);
-        this.bindEvent(element, 'readState',   TopicState);
-        this.bindEvent(element, 'loadPosts',   TopicLoadPosts);
-        this.bindEvent(element, 'newPost',     TopicNewPost);
+        let topicId = parseInt(element.getAttribute('data-topic'), 10);
+        this.bindEvent(topicId, element, 'updateState', TopicState);
+        this.bindEvent(topicId, element, 'readState',   TopicState);
+        this.bindEvent(topicId, element, 'loadPosts',   TopicLoadPosts);
+        this.bindEvent(topicId, element, 'newPost',     TopicNewPost);
     }
 
     private bindEvent(
+        topicId: number,
         element: Element,
         eventName: string,
         eventHandler: ITopicEventConstructor
     ): void {
         let self = this;
-        let handler = new eventHandler(this.topicId, element);
+        let handler = new eventHandler(topicId, element);
         element.addEventListener(eventName, function(e: CustomEvent) {
+            e.stopPropagation();
             handler.bind(e);
         });
     }

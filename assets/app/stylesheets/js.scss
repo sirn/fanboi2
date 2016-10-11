@@ -96,34 +96,77 @@
     margin: 0 0 0 $spacing-horizontal-small;
 }
 
-/* JS Inline Quote
+/* JS Popover
  * ------------------------------------------------------------------------ */
 
 .js-popover {
     .js-board {
         .cascade {
-            padding: 10px;
+            padding: $spacing-vertical 0;
+            border-bottom: none;
+
+            @media (min-width: $bound-desktop) {
+                padding: 10px;
+            }
         }
     }
 
     .js-topic {
-        .topic-header {
-            padding: 10px;
-        }
-
         .topic-header-item:last-child {
             margin-bottom: 0;
+        }
+
+        @media (min-width: $bound-desktop) {
+            .topic-header {
+                padding: 10px;
+            }
         }
     }
 
     .js-post-collection {
-        @media (min-width: $bound-tablet) {
+        @media (min-width: $bound-desktop) {
             .post {
                 padding: 10px;
+            }
+        }
+    }
+
+    .js-post-form {
+        .form {
+            border-bottom: none;
+        }
+
+        @media (min-width: $bound-desktop) {
+            width: $bound-tablet;
+
+            .form {
+                padding: $spacing-vertical $spacing-horizontal 0;
             }
         }
     }
 }
 
 .js-popover-inner {
+    width: 100%;
+    z-index: 1;
+
+    @media (min-width: $bound-desktop) {
+        width: auto;
+    }
+}
+
+.js-popover-inner-title {
+    @include clearfix();
+    font-size: $font-size-small;
+    line-height: $font-size-small;
+}
+
+.js-popover-inner-title-label {
+    float: left;
+    padding: $spacing-vertical $spacing-horizontal;
+}
+
+.js-popover-inner-title-dismiss {
+    float: right;
+    padding: $spacing-vertical $spacing-horizontal;
 }

@@ -20,10 +20,10 @@ export class BoardSelector extends SingletonComponent {
     selectorElement: Element;
     selectorHeight: number;
     selectorState: boolean;
-    resizeTimer: number;
 
     protected bindOne(element: Element): void {
         let self = this;
+        let throttleTimer: number;
         let buttonNode = h('div',
             {className: 'js-board-selector-button'},
             [h('a', {'href': '#'}, ['Boards'])]
@@ -47,8 +47,8 @@ export class BoardSelector extends SingletonComponent {
         //
         // Do nothing if resize was called before board selector was attached.
         window.addEventListener('resize', function(e: Event) {
-            clearTimeout(self.resizeTimer);
-            setTimeout(function(){
+            clearTimeout(throttleTimer);
+            throttleTimer = setTimeout(function(){
                 if (self.selectorElement) {
                     let selectorHeight = self.getSelectorHeight();
                     if (self.selectorHeight != selectorHeight) {

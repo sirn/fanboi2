@@ -10,7 +10,6 @@ import {LoadingState} from '../utils/loading';
 export class TopicInlineReply extends SingletonComponent {
     public targetSelector = '[data-topic-inline-reply]';
 
-    topicId: number;
     formElement: HTMLFormElement;
     buttonElement: Element;
     loadingState: LoadingState;
@@ -21,10 +20,6 @@ export class TopicInlineReply extends SingletonComponent {
         this.loadingState = new LoadingState();
         this.formElement = <HTMLFormElement>element;
         this.buttonElement = element.querySelector('button');
-        this.topicId = parseInt(
-            this.formElement.getAttribute('data-topic-inline-reply'),
-            10
-        );
 
         this.formElement.addEventListener('submit', function(e: Event): void {
             e.preventDefault();

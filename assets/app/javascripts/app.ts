@@ -6,6 +6,7 @@ import {TopicManager} from './components/topic_manager';
 import {TopicReloader} from './components/topic_reloader';
 import {TopicStateTracker} from './components/topic_state_tracker';
 import {TopicInlineReply} from './components/topic_inline_reply';
+import {TopicQuickReply} from './components/topic_quick_reply';
 
 
 domready(function(): void {
@@ -18,4 +19,5 @@ domready(function(): void {
     new TopicReloader();
     new TopicStateTracker();
     new TopicInlineReply();
+    new TopicQuickReply();
 });

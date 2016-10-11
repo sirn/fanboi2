@@ -1,6 +1,7 @@
-import {VNode, create, diff, patch} from 'virtual-dom';
+import {VNode, create, diff, patch, h} from 'virtual-dom';
 
 import {DelegationComponent} from './base';
+import {TopicManager} from './topic_manager';
 import {Board} from '../models/board';
 import {Post} from '../models/post';
 import {Topic} from '../models/topic';
@@ -23,23 +24,59 @@ class AnchorPopoverHandler {
         this.cancellableToken = null;
         this.parentElement = parentElement;
         if (!this.parentElement) {
-            this.parentElement = document.body;
+            this.parentElement = element.closest('[data-topic]');
         }
     }
 
     attach(): Promise<void> {
         let self = this;
-        return this.render().then(function(node: VNode | void) {
-            if (node) {
-                let quoteNode = new PopoverView(
-                    self.targetElement,
-                    <VNode>node
-                ).render();
 
-                self.quoteElement = create(quoteNode);
-                self.parentElement.insertBefore(self.quoteElement, null);
+        let target = this.targetElement;
+        let boardSlug = target.getAttribute('data-anchor-board');
+        let topicId = parseInt(target.getAttribute('data-anchor-topic'), 10);
+        let postNumber = target.getAttribute('data-anchor');
+
+        return this.render(boardSlug, topicId, postNumber).then(
+            function(node: VNode | void) {
+                if (node) {
+                    let rebindTopic: boolean;
+                    let popoverNode: VNode;
+                    let popoverView = new PopoverView(self.targetElement, node);
+
+                    // Rebind [data-topic] when anchor is pointing to post from
+                    // another topic so that quick reply binds to correct
+                    // context.
+                    if (topicId && postNumber) {
+                        let localTopicElement = target.closest('[data-topic]');
+                        let localTopicId = parseInt(
+                            localTopicElement.getAttribute('data-topic'),
+                            10
+                        );
+
+                        if (topicId != localTopicId) {
+                            rebindTopic = true;
+                            popoverNode = popoverView.render({
+                                dataset: {
+                                    topic: topicId,
+                                }
+                            });
+                        }
+                    }
+
+                    if (!popoverNode) {
+                        rebindTopic = false;
+                        popoverNode = popoverView.render();
+                    }
+
+                    self.quoteElement = create(popoverNode);
+                    self.parentElement.insertBefore(self.quoteElement, null);
+
+                    if (rebindTopic) {
+                        new TopicManager(self.parentElement);
+                    }
+                }
             }
-        });
+        );
     }
 
     detach(): void {
@@ -53,12 +90,11 @@ class AnchorPopoverHandler {
         }
     }
 
-    private render(): Promise<VNode | void> {
-        let target = this.targetElement;
-        let boardSlug = target.getAttribute('data-anchor-board');
-        let topicId = parseInt(target.getAttribute('data-anchor-topic'), 10);
-        let postNumber = target.getAttribute('data-anchor');
-
+    private render(
+        boardSlug: string,
+        topicId?: number,
+        postNumber?: string,
+    ): Promise<VNode | void> {
         this.cancellableToken = new CancelToken();
 
         if (boardSlug && !topicId && !postNumber) {
@@ -102,7 +138,7 @@ export class AnchorPopover extends DelegationComponent {
 
     protected bindGlobal(): void {
         let self = this;
-        document.addEventListener('mouseover', function(e: Event): void {
+        document.body.addEventListener('mouseover', function(e: Event): void {
             let target = <Element>e.target;
             if (target.matches(self.targetSelector)) {
                 e.preventDefault();
@@ -164,7 +200,7 @@ export class AnchorPopover extends DelegationComponent {
         quoteElement: Element
     ): void {
         let self = this;
-        document.addEventListener('mouseover',
+        document.body.addEventListener('mouseover',
             function _bindQuoteDocument(e: Event): void {
                 e.preventDefault();
 
@@ -175,7 +211,7 @@ export class AnchorPopover extends DelegationComponent {
 
                 if (_n != quoteElement) {
                     handler.detach();
-                    document.removeEventListener(
+                    document.body.removeEventListener(
                         'mouseover',
                         <EventListener>_bindQuoteDocument
                     );

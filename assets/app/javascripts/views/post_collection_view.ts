@@ -42,6 +42,9 @@ export class PostCollectionView {
         if (post.bumped) { classList.push('bumped'); }
         return h('span', {
             className: classList.join(' '),
+            dataset: {
+                topicQuickReply: post.number
+            }
         }, [String(post.number)]);
     }
 

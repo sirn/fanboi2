@@ -2,17 +2,41 @@ import {VNode, h} from 'virtual-dom';
 
 
 export class PopoverView {
-    childNode: VNode;
-    targetElement: Element;
-
-    constructor(targetElement: Element, childNode: VNode) {
-        this.targetElement = targetElement;
-        this.childNode = childNode;
+    constructor(
+        public targetElement: Element,
+        public childNode: VNode,
+        public title?: string,
+        public dismissFn?: (() => void),
+    ) {
     }
 
-    render(): VNode {
+    render(args?: any): VNode {
+        let self = this;
         let pos = this.computePosition();
-        return h('div', {className: 'js-popover'}, [
+        let titleNode: VNode;
+
+        if (this.title != null) {
+            let dismissNode: VNode;
+
+            if (this.dismissFn != null) {
+                dismissNode = h('a', {
+                    onclick: function(): void { self.dismissFn(); },
+                    className: 'js-popover-inner-title-dismiss',
+                    href: '#',
+                }, [String('Close')]);
+            }
+
+            titleNode = h('div', {
+                className: 'js-popover-inner-title',
+            }, [
+                h('span', {
+                    className: 'js-popover-inner-title-label'
+                }, [this.title]),
+                dismissNode,
+            ]);
+        }
+
+        return h('div', PopoverView.getViewClassName(args), [
             h('div', {
                 className: 'js-popover-inner',
                 style: {
@@ -20,7 +44,7 @@ export class PopoverView {
                     top: `${pos.posX}px`,
                     left: `${pos.posY}px`,
                 }
-            }, [this.childNode])
+            }, [titleNode, this.childNode])
         ]);
     }
 
@@ -40,5 +64,23 @@ export class PopoverView {
             posX: (elemRect.bottom + 5) - bodyRect.top,
             posY: yRefRect.left - bodyRect.left,
         }
+    }
+
+    private static getViewClassName(args?: any): any {
+        let className = 'js-popover';
+
+        if (!args) {
+            args = {};
+        }
+
+        if (args.className) {
+            let classNames = args.className.split(' ');
+            classNames.push(className);
+            args.className = classNames.join(' ');
+        } else {
+            args.className = className;
+        }
+
+        return args;
     }
 }

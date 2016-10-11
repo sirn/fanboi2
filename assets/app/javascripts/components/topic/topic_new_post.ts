@@ -22,6 +22,7 @@ export class TopicNewPost implements ITopicEventHandler {
 
         this.loadingState.bind(null, function() {
             return Post.createOne(self.topicId, params).then(function(){
+                dispatchCustomEvent(self.element, 'postCreated');
                 dispatchCustomEvent(self.element, 'loadPosts', {
                     callback: function(lastPostNumber: number) {
                         if (callback) {
@@ -32,6 +33,9 @@ export class TopicNewPost implements ITopicEventHandler {
             }).catch(function(error: ResourceError) {
                 if (errCb) {
                     errCb(error);
+                    dispatchCustomEvent(self.element, 'postCreateError', {
+                        error: error
+                    });
                 }
             });
         });

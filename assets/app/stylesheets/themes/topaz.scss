@@ -459,4 +459,24 @@ $color-text:             #333;
     .js-popover-inner {
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .3);
     }
+
+    .js-popover-inner-title {
+        background-color: $color-tint-lighter;
+    }
+
+    .js-popover-inner-title-label {
+        color: $color-gray-dark;
+        font-weight: bold;
+    }
+
+    .js-popover-inner-title-dismiss {
+        background-color: $color-gray-darker;
+        color: #fff;
+        font-weight: bold;
+
+        &:hover {
+            color: $color-gray-darker;
+            background-color: $color-gray-lighter;
+        }
+    }
 }

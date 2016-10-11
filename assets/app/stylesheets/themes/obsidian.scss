@@ -420,4 +420,23 @@ $color-text:             #cfcfcf;
     .js-popover-inner {
         box-shadow: 0 0 1px 0 rgba(0, 0, 0, .5);
     }
+
+    .js-popover-inner-title {
+        background-color: $color-gray-darker;
+    }
+
+    .js-popover-inner-title-label {
+        color: $color-gray-light;
+        font-weight: bold;
+    }
+
+    .js-popover-inner-title-dismiss {
+        background-color: $color-muted-dark;
+        color: $color-gray-lighter;
+        font-weight: bold;
+
+        &:hover {
+            background-color: $color-muted;
+        }
+    }
 }
