@@ -9,15 +9,11 @@ export interface ITheme {
 
 
 export class ThemeSelectorView {
-    themeListNode: VNode[];
-
     constructor(public themes: ITheme[]) {}
 
     render(currentTheme?: string): VNode {
         return h('div', {className: 'js-theme-selector'}, [
-            h('span', {
-                className: 'js-theme-selector-title'
-            }, [String('Theme')]),
+            h('span', {className: 'js-theme-selector-title'}, ['Theme']),
             this.renderThemes(currentTheme),
         ]);
     }
@@ -25,7 +21,7 @@ export class ThemeSelectorView {
     private renderThemes(currentTheme?: string): VNode {
         return h('ul',
             {className: 'js-theme-selector-list'},
-            this.themes.map(function(theme: ITheme): VNode {
+            this.themes.map((theme: ITheme): VNode => {
                 return h('li', {className: 'js-theme-selector-list-item'}, [
                     h('a', {
                         href: '#',
@@ -34,7 +30,7 @@ export class ThemeSelectorView {
                             theme.identifier,
                             currentTheme
                         ),
-                    }, [String(theme.name)])
+                    }, [theme.name])
                 ]);
             })
         );

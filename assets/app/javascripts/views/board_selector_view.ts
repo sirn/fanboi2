@@ -4,34 +4,28 @@ import {BoardView} from './board_view';
 
 
 export class BoardSelectorView {
-    boards: Board[];
-    boardList: VNode[];
+    boardListNode: VNode[];
 
     constructor(boards: Board[]) {
-        this.boards = boards;
-        this.boardList = this.renderBoards();
+        this.boardListNode = BoardSelectorView.renderBoards(boards);
     }
 
-    render(args?: any): VNode {
+    render(args: any = {}): VNode {
         return h('div', BoardSelectorView.getViewClassName(args), [
             h('div', {className: 'js-board-selector-inner'},
-                this.boardList
+                this.boardListNode
             )
         ]);
     }
 
-    private renderBoards(): VNode[] {
-        return this.boards.map(function(board: Board): VNode {
+    private static renderBoards(boards: Board[]): VNode[] {
+        return boards.map((board: Board): VNode => {
             return new BoardView(board).render();
         })
     }
 
-    private static getViewClassName(args?: any): any {
-        let className = 'js-board-selector';
-
-        if (!args) {
-            args = {};
-        }
+    private static getViewClassName(args: any): any {
+        const className = 'js-board-selector';
 
         if (args.className) {
             let classNames = args.className.split(' ');

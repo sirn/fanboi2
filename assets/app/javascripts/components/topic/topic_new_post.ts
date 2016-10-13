@@ -13,27 +13,26 @@ export class TopicNewPost implements ITopicEventHandler {
     }
 
     bind(e: CustomEvent): void {
-        let self = this;
         let params: any = e.detail.params;
         let callback: ((lastPostNumber: number) => void) = e.detail.callback;
         let errCb: ((error: ResourceError) => void) = e.detail.errorCallback;
 
         if (!params) { throw new Error('newPost require a params'); }
 
-        this.loadingState.bind(null, function() {
-            return Post.createOne(self.topicId, params).then(function(){
-                dispatchCustomEvent(self.element, 'postCreated');
-                dispatchCustomEvent(self.element, 'loadPosts', {
-                    callback: function(lastPostNumber: number) {
+        this.loadingState.bind(() => {
+            return Post.createOne(this.topicId, params).then(() => {
+                dispatchCustomEvent(this.element, 'postCreated');
+                dispatchCustomEvent(this.element, 'loadPosts', {
+                    callback: (lastPostNumber: number) => {
                         if (callback) {
                             callback(lastPostNumber);
                         }
                     }
                 });
-            }).catch(function(error: ResourceError) {
+            }).catch((error: ResourceError) => {
                 if (errCb) {
                     errCb(error);
-                    dispatchCustomEvent(self.element, 'postCreateError', {
+                    dispatchCustomEvent(this.element, 'postCreateError', {
                         error: error
                     });
                 }

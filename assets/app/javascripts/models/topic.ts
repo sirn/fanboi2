@@ -47,9 +47,9 @@ export class Topic extends Model {
         slug: string,
         token?: CancellableToken
     ): Promise<Topic[]> {
-        return request('GET', `/api/1.0/boards/${slug}/topics/`, null, token).
-            then(function(resp: string): Array<Topic> {
-                return JSON.parse(resp).map(function(data: Object) {
+        return request('GET', `/api/1.0/boards/${slug}/topics/`, {}, token).
+            then((resp: string): Topic[] => {
+                return JSON.parse(resp).map((data: Object) => {
                     return new Topic(data);
                 });
             });
@@ -59,8 +59,8 @@ export class Topic extends Model {
         id: number,
         token?: CancellableToken
     ): Promise<Topic> {
-        return request('GET', `/api/1.0/topics/${id}/`, null, token).
-            then(function(resp: string) {
+        return request('GET', `/api/1.0/topics/${id}/`, {}, token).
+            then((resp: string) => {
                 return new Topic(JSON.parse(resp));
             });
     }

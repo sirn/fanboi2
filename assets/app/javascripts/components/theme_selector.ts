@@ -1,6 +1,5 @@
 import Cookies = require('js-cookie');
 import {VNode, create, diff, patch, h} from 'virtual-dom';
-
 import {SingletonComponent} from './base';
 import {ThemeSelectorView, ITheme} from '../views/theme_selector_view';
 
@@ -21,42 +20,39 @@ const themes = [
 export class ThemeSelector extends SingletonComponent {
     public targetSelector = '[data-theme-selector]';
 
-    targetElement: Element;
-    selectorView: ThemeSelectorView;
-    selectorNode: VNode;
-    selectorElement: Element;
-
-    protected bindOne(element: Element) {
-        this.selectorView = new ThemeSelectorView(themes);
-        this.selectorNode = this.selectorView.render(
+    protected bindOne($target: Element) {
+        let selectorView = new ThemeSelectorView(themes);
+        let selectorNode = selectorView.render(
             document.body.className.replace(/theme-/, '')
         );
 
-        this.targetElement = element;
-        this.selectorElement = create(this.selectorNode);
-        this.targetElement.appendChild(this.selectorElement);
-        this.bindSelectorEvent();
-    }
+        let $selector = create(selectorNode);
 
-    private bindSelectorEvent(): void {
-        let self = this;
+        $target.appendChild($selector);
+        $target.addEventListener('click', (e: Event) => {
+            let $click = e.target;
 
-        this.targetElement.addEventListener('click', function(e: Event) {
-            let target = <Element>e.target;
-            if (target.matches('[data-theme-selector-item]')) {
+            if (
+                $click instanceof Element &&
+                $click.matches('[data-theme-selector-item]')
+            ) {
+                let themeId = $click.getAttribute('data-theme-selector-item');
+
                 e.preventDefault();
 
-                let themeId = target.getAttribute('data-theme-selector-item');
-                document.body.className = `theme-${themeId}`;
-                Cookies.set('_theme', themeId, {
-                    expires: 365,
-                    path: '/'
-                });
+                if (themeId) {
+                  let viewNode = selectorView.render(themeId);
+                  let patches = diff(selectorNode, viewNode);
 
-                let viewNode = self.selectorView.render(themeId);
-                let patches = diff(self.selectorNode, viewNode);
-                self.selectorElement = patch(self.selectorElement, patches);
-                self.selectorNode = viewNode;
+                  $selector = patch($selector, patches);
+                  selectorNode = viewNode;
+
+                  document.body.className = `theme-${themeId}`;
+                  Cookies.set('_theme', themeId, {
+                      expires: 365,
+                      path: '/'
+                  });
+                }
             }
         });
     }

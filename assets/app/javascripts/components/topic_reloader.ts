@@ -6,45 +6,56 @@ import {LoadingState} from '../utils/loading';
 export class TopicReloader extends SingletonComponent {
     public targetSelector = '[data-topic-reloader]';
 
-    protected bindOne(element: Element) {
-        let self = this;
+    protected bindOne($target: Element) {
+        let $topic = $target.closest('[data-topic]');
         let loadingState = new LoadingState();
 
-        element.addEventListener('click', function(e: Event) {
+        $target.addEventListener('click', (e: Event) => {
             e.preventDefault();
-            loadingState.bind(element, function() {
-                return new Promise(function(resolve) {
-                    dispatchCustomEvent(element, 'loadPosts', {
-                        callback: function() {
+            loadingState.bind(() => {
+                return new Promise((resolve) => {
+                    dispatchCustomEvent($target, 'loadPosts', {
+                        callback: () => {
                             resolve();
                         }
                     });
                 });
-            });
+            }, $target);
         });
 
-        let topicElement = element.closest('[data-topic]');
-        topicElement.addEventListener('postsLoaded', function(e: CustomEvent) {
-            self.updateButtonAlt(element);
-            self.refreshButtonState(element, e.detail.lastPostNumber);
-            self.updateButtonAlt(element);
-        });
+        if ($topic) {
+          $topic.addEventListener('postsLoaded', (e: CustomEvent) => {
+              this.updateButtonAlt($target);
+              this.refreshButtonState($target, e.detail.lastPostNumber);
+              this.updateButtonAlt($target);
+          });
+        }
     }
 
-    private updateButtonAlt(element: Element): void {
-        let altLabel = element.getAttribute('data-topic-reloader-label');
-        let altClass = element.getAttribute('data-topic-reloader-class');
-        if (altLabel) { element.innerHTML = altLabel; }
-        if (altClass) { element.className = altClass; }
+    private updateButtonAlt($target: Element): void {
+        let altLabel = $target.getAttribute('data-topic-reloader-label');
+        let altClass = $target.getAttribute('data-topic-reloader-class');
+
+        if (altLabel) {
+            $target.innerHTML = altLabel;
+        }
+
+        if (altClass) {
+            $target.className = altClass;
+        }
     }
 
-    private refreshButtonState(element: Element, lastPostNumber: number): void {
-        element.setAttribute(
-            'href',
-            element.getAttribute('href').replace(
-                /^(\/\w+\/\d+)\/\d+\-\/$/,
-                `$1/${lastPostNumber}-/`
-            )
-        );
+    private refreshButtonState($target: Element, lastPostNumber: number): void {
+        let originalHref = $target.getAttribute('href');
+
+        if (originalHref) {
+          $target.setAttribute(
+              'href',
+              originalHref.replace(
+                  /^(\/\w+\/\d+)\/\d+\-\/$/,
+                  `$1/${lastPostNumber}-/`
+              )
+          );
+        }
     }
 }

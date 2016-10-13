@@ -10,9 +10,8 @@ export class DelegationComponent implements IComponent {
     public targetSelector: string;
 
     constructor() {
-        let self = this;
-        setTimeout(function(): void {
-            self.bindGlobal();
+        setTimeout((): void => {
+            this.bindGlobal();
         }, 1);
     }
 
@@ -25,17 +24,17 @@ export class DelegationComponent implements IComponent {
 export class SingletonComponent implements IComponent {
     public targetSelector: string;
 
-    constructor(context?: Element | Document) {
-        let self = this;
-
-        if (context == null) {
-            context = document;
+    constructor($context?: Element | Document) {
+        if (!$context) {
+            $context = document;
         }
 
-        setTimeout(function(): void {
-            let targetElement = context.querySelector(self.targetSelector);
-            if (targetElement) {
-                self.bindOne(targetElement);
+        setTimeout((): void => {
+            if ($context) {
+                let $element = $context.querySelector(this.targetSelector);
+                if ($element) {
+                    this.bindOne($element);
+                }
             }
         }, 1);
     }
@@ -49,26 +48,26 @@ export class SingletonComponent implements IComponent {
 export class CollectionComponent implements IComponent {
     public targetSelector: string;
 
-    constructor(context?: Element | Document) {
-        let self = this;
-
-        if (context == null) {
-            context = document;
+    constructor($context?: Element | Document) {
+        if (!$context) {
+            $context = document;
         }
 
-        setTimeout(function(): void {
-            let targetElements = context.querySelectorAll(self.targetSelector);
-            self.bindAll(targetElements);
+        setTimeout((): void => {
+            if ($context) {
+                let $elements = $context.querySelectorAll(this.targetSelector);
+                this.bindAll($elements);
+            }
         }, 1);
     }
 
-    protected bindAll(targetElements: NodeListOf<Element>): void {
-        for (let i = 0, len = targetElements.length; i < len; i++) {
-            this.bindOne(targetElements[i]);
+    protected bindAll($targets: NodeListOf<Element>): void {
+        for (let i = 0, len = $targets.length; i < len; i++) {
+            this.bindOne($targets[i]);
         }
     }
 
-    protected bindOne(element: Element): void {
+    protected bindOne($target: Element): void {
         throw new NotImplementedError;
     }
 }

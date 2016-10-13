@@ -5,67 +5,68 @@ import {dispatchCustomEvent} from '../utils/elements';
 export class TopicStateTracker extends CollectionComponent {
     public targetSelector = '[data-topic-state-tracker]';
 
-    protected bindOne(element: Element): void {
-        let trackerName = element.getAttribute('data-topic-state-tracker');
+    protected bindOne($target: Element): void {
+        let trackerName = $target.getAttribute('data-topic-state-tracker');
 
-        if (element instanceof HTMLInputElement) {
-            switch (element.type) {
+        if (!trackerName) {
+            throw new Error('State tracker name is empty when it should not.');
+        }
+
+        if ($target instanceof HTMLInputElement) {
+            switch ($target.type) {
             case 'checkbox':
-                this.bindCheckbox(trackerName, element);
+                this.bindCheckbox(trackerName, $target);
                 break;
             }
-        } else if (element instanceof HTMLTextAreaElement) {
-            this.bindTextarea(trackerName, element);
+        } else if ($target instanceof HTMLTextAreaElement) {
+            this.bindTextarea(trackerName, $target);
         }
     }
 
     private bindCheckbox(
         trackerName: string,
-        element: HTMLInputElement
+        $target: HTMLInputElement
     ): void {
-        let self = this;
-
-        dispatchCustomEvent(element, 'readState', {
+        dispatchCustomEvent($target, 'readState', {
             name: trackerName,
-            callback: function(name: string, value: boolean | null) {
-                if (value != null) {
-                    element.checked = value;
-                    element.defaultChecked = element.checked;
+            callback: (name: string, value?: boolean) => {
+                if (value != undefined) {
+                    $target.checked = value;
+                    $target.defaultChecked = $target.checked;
                 }
             }
         });
 
-        element.addEventListener('change', function(e: Event): void {
-            element.defaultChecked = element.checked;
-            dispatchCustomEvent(element, 'updateState', {
+        $target.addEventListener('change', (e: Event): void => {
+            $target.defaultChecked = $target.checked;
+            dispatchCustomEvent($target, 'updateState', {
                 name: trackerName,
-                value: element.checked
+                value: $target.checked
             });
         });
     }
 
     private bindTextarea(
         trackerName: string,
-        element: HTMLTextAreaElement
+        $target: HTMLTextAreaElement
     ): void {
-        let self = this;
         let throttleTimer: number;
 
-        dispatchCustomEvent(element, 'readState', {
+        dispatchCustomEvent($target, 'readState', {
             name: trackerName,
-            callback: function(name: string, value: string | null) {
-                if (value != null) {
-                    element.value = value;
+            callback: (name: string, value?: string) => {
+                if (value != undefined) {
+                    $target.value = value;
                 }
             }
         });
 
-        element.addEventListener('change', function(e: Event): void {
+        $target.addEventListener('change', (e: Event): void => {
             clearTimeout(throttleTimer);
-            throttleTimer = setTimeout(function(){
-                dispatchCustomEvent(element, 'updateState', {
+            throttleTimer = setTimeout(() => {
+                dispatchCustomEvent($target, 'updateState', {
                     name: trackerName,
-                    value: element.value
+                    value: $target.value
                 });
             }, 500);
         });

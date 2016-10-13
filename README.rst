@@ -84,13 +84,9 @@ Celery worker is required to be run if you want to enable posting features.
 Contributing
 ------------
 
-We use `git-flow <https://github.com/nvie/gitflow>`_ as primary branching model. All developments are done in the **develop** branch; **master** branch is the most stable and will be deployed immediately to the live site. You can install ``git-flow`` by following `git-flow installation instructions <https://github.com/nvie/gitflow/wiki/Installation>`_ (use the default values). Although using `git-flow` is not a requirement for pull request, it is recommended to do so:
-
-1. Fork this repo.
-2. Start a new feature with ``git flow feature start feature-name``.
-3. After you've done, open a pull request against **develop** branch of this repo.
-
 Please make sure that test coverage is 100% and everything passed. It's also a good idea to open a bug ticket for feature you want to implement before starting. We have development IRC channel at `irc.fanboi.ch#fanboi <irc://irc.fanboi.ch/#fanboi>`_. Although if you want to submit patch anonymously you can also create git patch and post it to `support board <https://fanboi.ch/meta/>`_ as well.
+
+After you have done, simply open a pull request against **master** branch.
 
 License
 -------

@@ -14,7 +14,7 @@ const monthNames = [
 ];
 
 
-export function formatDate(date: Date): string {
+export let formatDate = (date: Date): string => {
     let yyyy = date.getFullYear();
     let mmm = monthNames[date.getMonth()];
     let dd = `00${date.getDate()}`.slice(-2);
@@ -23,5 +23,6 @@ export function formatDate(date: Date): string {
     let ss = `00${date.getSeconds()}`.slice(-2);
     let dateFormatted = `${mmm} ${dd}, ${yyyy}`;
     let timeFormatted = `${hh}:${nn}:${ss}`;
+
     return `${dateFormatted} at ${timeFormatted}`;
 }

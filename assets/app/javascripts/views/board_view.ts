@@ -3,24 +3,25 @@ import {Board} from '../models/board';
 
 
 export class BoardView {
-    board: Board;
+    boardNode: VNode;
 
     constructor(board: Board) {
-        this.board = board;
+        this.boardNode = BoardView.renderBoard(board);
     }
 
     render(): VNode {
-        return h('div',
-            {className: 'js-board'},
-            [
-                h('div', {className: 'cascade'}, [
-                    h('div', {className: 'container'}, [
-                        BoardView.renderTitle(this.board),
-                        BoardView.renderDescription(this.board),
-                    ])
+        return this.boardNode;
+    }
+
+    private static renderBoard(board: Board): VNode {
+        return h('div', {className: 'js-board'}, [
+            h('div', {className: 'cascade'}, [
+                h('div', {className: 'container'}, [
+                    BoardView.renderTitle(board),
+                    BoardView.renderDescription(board),
                 ])
-            ]
-        );
+            ])
+        ]);
     }
 
     private static renderTitle(board: Board): VNode {
@@ -28,13 +29,11 @@ export class BoardView {
             h('a', {
                 className: 'cascade-header-link',
                 href: `/${board.slug}/`
-            }, String(board.title))
+            }, [board.title])
         ]);
     }
 
     private static renderDescription(board: Board): VNode {
-        return h('div', {className: 'cascade-body'}, [
-            String(board.description)
-        ]);
+        return h('div', {className: 'cascade-body'}, [board.description]);
     }
 }

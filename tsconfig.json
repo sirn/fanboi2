@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "strictNullChecks": true
   },
   "files": [
-    "typings/browser.d.ts",
+    "typings/index.d.ts",
     "assets/app/javascripts/app.ts"
   ]
 }

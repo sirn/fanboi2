@@ -13,117 +13,128 @@ export class TopicQuickReply extends DelegationComponent {
     public targetSelector = '[data-topic-quick-reply]';
 
     protected bindGlobal(): void {
-        let self = this;
+        document.body.addEventListener('click', (e: Event): void => {
+            let $target = e.target;
 
-        document.body.addEventListener('click', function(e: Event): void {
-            let element = <Element>e.target;
-            if (element.matches(self.targetSelector)) {
+            if (
+                $target instanceof Element &&
+                $target.matches(this.targetSelector)
+            ) {
+                let anchor = $target.getAttribute('data-topic-quick-reply');
+                let $topic = $target.closest('[data-topic]');
+                let $input: Element;
+
                 e.preventDefault();
 
-                let anchor = element.getAttribute('data-topic-quick-reply');
-                let topicElement = element.closest('[data-topic]');
-                let inputElement = topicElement.querySelector(
-                    '[data-topic-quick-reply-input]'
-                );
+                if (!anchor) {
+                    throw new Error('Reply anchor is empty when it should not.');
+                }
 
-                if (inputElement) {
-                    self.insertTextAtCursor(
-                        <HTMLTextAreaElement>inputElement,
-                        anchor
+                if ($topic) {
+                    $input = $topic.querySelector(
+                        '[data-topic-quick-reply-input]'
                     );
-                } else {
-                    self.attachForm(
-                        element,
-                        topicElement,
-                        anchor
-                    );
+
+                    if ($input instanceof HTMLTextAreaElement) {
+                        this.insertTextAtCursor($input, anchor);
+                    } else {
+                        this.attachForm($target, $topic, anchor);
+                    }
                 }
             }
         });
     }
 
     private insertTextAtCursor(
-        element: HTMLTextAreaElement,
+        $input: HTMLTextAreaElement,
         anchor: string
     ): void {
         let anchorText = `>>${anchor} `;
-        let startPos = element.selectionStart;
-        let endPos = element.selectionEnd;
-        let currentValue = element.value;
+        let startPos = $input.selectionStart;
+        let endPos = $input.selectionEnd;
+        let currentValue = $input.value;
 
-        element.value =
+        $input.value =
             currentValue.substring(0, startPos) +
             anchorText +
             currentValue.substring(endPos, currentValue.length);
 
-        element.focus();
-        element.dispatchEvent(new Event('change'));
-        element.selectionStart = startPos + anchorText.length;
+        $input.focus();
+        $input.dispatchEvent(new Event('change'));
+        $input.selectionStart = startPos + anchorText.length;
     }
 
     private attachForm(
-        element: Element,
-        topicElement: Element,
+        $target: Element,
+        $topic: Element,
         anchor: string
     ): void {
+        let $parent = $target.closest('.js-popover');
+        let $popover: Element;
+        let $textarea: Element;
+        let popoverView: PopoverView;
+        let popoverNode: VNode;
         let throttleTimer: number;
-        let parentElement = element.closest('.js-popover');
-        let title = "Quick Reply";
 
-        if (!parentElement) {
-            parentElement = topicElement;
+        if (!$parent) {
+            $parent = $topic;
         }
 
-        let postFormView = new PostForm().render();
-        let popoverView = new PopoverView(
-            element,
-            postFormView,
-            title,
+        let _removePopover = () => {
+            $topic.removeEventListener('postCreated', _removePopover);
+            document.body.removeEventListener('click', _clickRemovePopover);
+            window.removeEventListener('resize', _repositionPopover);
+
+            if ($parent) {
+              $parent.removeChild($popover);
+            }
+        }
+
+        popoverView = new PopoverView(
+            new PostForm().render(),
+            "Quick Reply",
             _removePopover
-        ).render();
+        );
 
-        let popoverElement = create(popoverView);
-        parentElement.insertBefore(popoverElement, null);
-
-        new TopicInlineReply(popoverElement);
-        new TopicStateTracker(popoverElement);
-
-        let textareaElement = popoverElement.querySelector('textarea');
-        this.insertTextAtCursor(textareaElement, anchor);
-
-        function _repositionPopover() {
+        let _repositionPopover = () => {
             clearTimeout(throttleTimer);
-            throttleTimer = setTimeout(function(){
-                if (popoverElement) {
-                    let newPopoverView = new PopoverView(
-                        element,
-                        postFormView,
-                        title,
-                        _removePopover
-                    ).render();
+            throttleTimer = setTimeout(() => {
+                if ($popover) {
+                    let newPopoverNode = popoverView.render($target);
+                    let patches = diff(popoverNode, newPopoverNode);
 
-                    let patches = diff(popoverView, newPopoverView);
-                    popoverElement = patch(popoverElement, patches);
-                    popoverView = newPopoverView;
+                    $popover = patch($popover, patches);
+                    popoverNode = newPopoverNode;
                 }
             }, 100);
         }
 
-        function _clickRemovePopover(e: Event) {
-            let _n = <Node>e.target;
-            while (_n && _n != popoverElement) { _n = _n.parentNode; }
-            if (_n != popoverElement) { _removePopover(); }
+        let _clickRemovePopover = (e: Event) => {
+            let _n = e.target;
+
+            while (_n instanceof Node && _n != $popover) {
+                _n = _n.parentNode;
+            }
+
+            if (_n != $popover) {
+                _removePopover();
+            }
         }
 
-        function _removePopover() {
-            topicElement.removeEventListener('postCreated', _removePopover);
-            document.body.removeEventListener('click', _clickRemovePopover);
-            window.removeEventListener('resize', _repositionPopover);
-            parentElement.removeChild(popoverElement);
+        popoverNode = popoverView.render($target);
+        $popover = create(popoverNode);
+        $parent.appendChild($popover);
+
+        new TopicInlineReply($popover);
+        new TopicStateTracker($popover);
+
+        $textarea = $popover.querySelector('textarea');
+        if ($textarea instanceof HTMLTextAreaElement) {
+            this.insertTextAtCursor($textarea, anchor);
         }
 
         document.body.addEventListener('click', _clickRemovePopover);
-        topicElement.addEventListener('postCreated', _removePopover);
+        $topic.addEventListener('postCreated', _removePopover);
         window.addEventListener('resize', _repositionPopover);
     }
 }

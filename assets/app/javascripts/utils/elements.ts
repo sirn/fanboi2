@@ -1,14 +1,12 @@
-export function addClass(
+export const addClass = (
     element: Element,
-    newClasses: string | string[]
-): void {
-    if (typeof(newClasses) == 'string') {
-        newClasses = newClasses.split(' ');
-    }
-
+    newClasses: string[]
+): void => {
     let classNames = element.className.split(' ');
+
     for (let i = 0, len = newClasses.length; i < len; i++) {
         let newClass = newClasses[i];
+
         if (classNames.indexOf(newClass) == -1) {
             classNames.push(newClass);
         }
@@ -18,18 +16,16 @@ export function addClass(
 }
 
 
-export function removeClass(
+export const removeClass = (
     element: Element,
-    removeClasses: string | string[]
-): void {
-    if (typeof(removeClasses) == 'string') {
-        removeClasses = removeClasses.split(' ');
-    }
-
+    removeClasses: string[]
+): void => {
     let classNames = element.className.split(' ');
+
     for (let i = 0, len = removeClasses.length; i < len; i++) {
         let removeClass = removeClasses[i];
         let removeClassIdx = classNames.indexOf(removeClass);
+
         if (removeClassIdx != -1) {
             classNames.splice(removeClassIdx, 1);
         }
@@ -39,14 +35,13 @@ export function removeClass(
 }
 
 
-export function dispatchCustomEvent(
+export const dispatchCustomEvent = (
     element: Element,
     eventName: string,
-    opts?: any,
-): void {
-    if (opts == null) { opts = {}; }
+    opts: any = {},
+): void => {
     element.dispatchEvent(new CustomEvent(eventName, {
         bubbles: true,
         detail: opts
-    }))
+    }));
 }

@@ -20,6 +20,7 @@ $post-date-size: round($font-size-small);
     border-bottom: 1px solid;
     margin: 0;
     overflow-x: auto;
+    overflow-y: hidden;
     position: relative;
 
     /* Extra padding values for date part. */

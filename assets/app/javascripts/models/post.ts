@@ -38,16 +38,14 @@ export class Post extends Model {
         query?: string,
         token?: CancellableToken
     ): Promise<Post[]> {
-        let entryPoint: string;
+        let entryPoint = `/api/1.0/topics/${topicId}/posts/`;
 
         if (query) {
-            entryPoint = `/api/1.0/topics/${topicId}/posts/${query}/`;
-        } else {
-            entryPoint = `/api/1.0/topics/${topicId}/posts/`;
+            entryPoint = `${entryPoint}${query}/`;
         }
 
-        return request('GET', entryPoint, null, token).then(function(resp) {
-            return JSON.parse(resp).map(function(data: Object): Post {
+        return request('GET', entryPoint, {}, token).then((resp) => {
+            return JSON.parse(resp).map((data: Object): Post => {
                 return new Post(data);
             });
         });
@@ -58,15 +56,17 @@ export class Post extends Model {
         params: IRequestBody,
         token?: CancellableToken
     ): Promise<Post> {
-        let self = this;
-        let entryPoint = `/api/1.0/topics/${topicId}/posts/`;
-
-        return request('POST', entryPoint, params, token).then(
-            function(resp: string) {
+        return request(
+            'POST',
+            `/api/1.0/topics/${topicId}/posts/`,
+            params,
+            token
+        ).then(
+            (resp: string) => {
                 let data: IModelData = JSON.parse(resp);
+
                 if (data['type'] == 'task') {
-                    let id = data['id'];
-                    return Task.waitFor(id, token).then(function(task: Task) {
+                    return Task.waitFor(data['id'], token).then((task: Task) => {
                         return new Post(task.data);
                     });
                 } else {

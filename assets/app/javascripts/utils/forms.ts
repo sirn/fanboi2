@@ -3,10 +3,10 @@ import {ResourceError} from './errors';
 import {addClass, removeClass} from './elements';
 
 
-export function serializeForm(form: HTMLFormElement): any {
+export let serializeForm = (form: HTMLFormElement): any => {
     let formData: {[key: string]: any} = {};
 
-    function _insertField(name: string, value: any) {
+    let _insertField = (name: string, value: any) => {
         if (name) {
             formData[name] = value;
         }
@@ -42,7 +42,7 @@ export function serializeForm(form: HTMLFormElement): any {
                 _insertField(field.name, fieldData);
                 break;
             default:
-                fieldData.push(field.name, field.value);
+                _insertField(field.name, field.value);
                 break;
             }
         } else if (field instanceof HTMLTextAreaElement) {
@@ -54,44 +54,53 @@ export function serializeForm(form: HTMLFormElement): any {
 }
 
 
-export function attachErrors(form: HTMLFormElement, error: ResourceError) {
+export let attachErrors = (form: HTMLFormElement, error: ResourceError) => {
     let data = error.object;
 
-    function _attachError(fieldElement: Element, message: string): void {
+    let _attachError = (fieldElement: Element, message: string): void => {
         let formItemElement = fieldElement.closest('.form-item');
-        let err = h('span', {className: 'form-item-error'}, [String(message)]);
-        addClass(formItemElement, 'error');
-        fieldElement.parentElement.insertBefore(
-            create(err),
-            fieldElement.nextSibling
-        );
+
+        if (!!formItemElement) {
+          let err = h('span', {className: 'form-item-error'}, [message]);
+
+          addClass(formItemElement, ['error']);
+          fieldElement.parentElement.insertBefore(
+              create(err),
+              fieldElement.nextSibling
+          );
+        }
     }
 
     if (data.status == 'params_invalid') {
         for (let field in <{[key: string]: string[]}>data.message) {
             if (data.message.hasOwnProperty(field)) {
-                let fieldElement = form[field];
-                let messages = data.message[field];
-                _attachError(fieldElement, messages[0]);
+                _attachError(
+                    form[field],
+                    data.message[field]
+                );
             }
         }
     } else {
-        let anchorElement = form.querySelector('[data-form-anchor]');
-        _attachError(anchorElement, data.message);
+        _attachError(
+            form.querySelector('[data-form-anchor]'),
+            data.message
+        );
     }
 }
 
 
-export function detachErrors(form: HTMLFormElement) {
+export let detachErrors = (form: HTMLFormElement) => {
     let errorElements = form.querySelectorAll('.error');
+    let msgElements = form.querySelectorAll('.form-item-error');
+
     for (let i = 0, len = errorElements.length; i < len; i++) {
-        let errorElement = errorElements[0];
-        removeClass(errorElement, 'error');
+        removeClass(
+            errorElements[0],
+            ['error']
+        );
     }
 
-    let msgElements = form.querySelectorAll('.form-item-error');
     for (let i = 0, len = msgElements.length; i < len; i++) {
-        let msgElement = msgElements[0];
-        msgElement.parentElement.removeChild(msgElement);
+        msgElements[0].parentElement.removeChild(msgElements[0]);
     }
 }

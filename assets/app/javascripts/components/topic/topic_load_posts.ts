@@ -25,27 +25,26 @@ export class TopicLoadPosts implements ITopicEventHandler {
     }
 
     bind(e: CustomEvent): void {
-        let self = this;
         let callback: ((lastPostNumber: number) => void) = e.detail.callback;
 
-        this.loadingState.bind(null, function(){
+        this.loadingState.bind(() => {
             return Post.queryAll(
-                self.topicId,
-                `${self.lastPostNumber + 1}-`
-            ).then(function(posts: Post[]) {
+                this.topicId,
+                `${this.lastPostNumber + 1}-`
+            ).then((posts: Post[]) => {
                 if (posts && posts.length) {
-                    self.lastPostNumber = posts[posts.length - 1].number;
-                    self.loadedPosts = self.loadedPosts.concat(posts);
-                    self.appendPosts();
-                    self.updateHistoryState();
+                    this.lastPostNumber = posts[posts.length - 1].number;
+                    this.loadedPosts = this.loadedPosts.concat(posts);
+                    this.appendPosts();
+                    this.updateHistoryState();
                 }
 
                 if (callback) {
-                    callback(self.lastPostNumber);
+                    callback(this.lastPostNumber);
                 }
 
-                dispatchCustomEvent(self.element, 'postsLoaded', {
-                    lastPostNumber: self.lastPostNumber
+                dispatchCustomEvent(this.element, 'postsLoaded', {
+                    lastPostNumber: this.lastPostNumber
                 });
             });
         });
@@ -75,7 +74,7 @@ export class TopicLoadPosts implements ITopicEventHandler {
     private updateHistoryState(): void {
         if (window.history.replaceState) {
             let path = window.location.pathname;
-            let newPath: string;
+            let newPath: string = '';
 
             if (path.match(/\/\d+\/?$/)) {
                 newPath = path.replace(
@@ -91,7 +90,7 @@ export class TopicLoadPosts implements ITopicEventHandler {
 
             if (newPath) {
                 window.history.replaceState(
-                    null,
+                    undefined,
                     `Posts up to ${this.lastPostNumber}`,
                     newPath
                 );

@@ -10,42 +10,39 @@ import {LoadingState} from '../utils/loading';
 export class TopicInlineReply extends SingletonComponent {
     public targetSelector = '[data-topic-inline-reply]';
 
-    formElement: HTMLFormElement;
-    buttonElement: Element;
-    loadingState: LoadingState;
+    protected bindOne($target: Element) {
+        let $form = $target;
 
-    protected bindOne(element: Element) {
-        let self = this;
+        if ($form instanceof HTMLFormElement) {
+            let $button = $target.querySelector('button');
+            let loadingState = new LoadingState();
 
-        this.loadingState = new LoadingState();
-        this.formElement = <HTMLFormElement>element;
-        this.buttonElement = element.querySelector('button');
-
-        this.formElement.addEventListener('submit', function(e: Event): void {
-            e.preventDefault();
-            self.eventFormSubmitted();
-        });
-    }
-
-    private eventFormSubmitted(): void {
-        let self = this;
-
-        this.loadingState.bind(this.buttonElement, function() {
-            return new Promise(function(resolve) {
-                dispatchCustomEvent(self.formElement, 'newPost', {
-                    params: serializeForm(self.formElement),
-                    callback: function() {
-                        detachErrors(self.formElement);
-                        self.formElement.reset();
-                        resolve();
-                    },
-                    errorCallback: function(error: ResourceError) {
-                        detachErrors(self.formElement);
-                        attachErrors(self.formElement, error);
-                        resolve();
-                    }
-                });
+            $form.addEventListener('submit', (e: Event): void => {
+                e.preventDefault();
+                loadingState.bind(() => {
+                    return new Promise((resolve) => {
+                        if ($form instanceof HTMLFormElement) {
+                            dispatchCustomEvent($form, 'newPost', {
+                                params: serializeForm($form),
+                                callback: () => {
+                                    if ($form instanceof HTMLFormElement) {
+                                        detachErrors($form);
+                                        $form.reset();
+                                        resolve();
+                                    }
+                                },
+                                errorCallback: (error: ResourceError) => {
+                                    if ($form instanceof HTMLFormElement) {
+                                        detachErrors($form);
+                                        attachErrors($form, error);
+                                        resolve();
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }, $button);
             });
-        });
+        }
     }
 }

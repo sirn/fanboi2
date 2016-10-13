@@ -29,7 +29,7 @@ var paths = {
         javascripts: {
             glob: 'assets/app/javascripts/**/*.ts',
             base: 'assets/app/javascripts/',
-            typings: 'typings/browser.d.ts',
+            typings: 'typings/index.d.ts',
             entry: 'assets/app/javascripts/app.ts'
         }
     },

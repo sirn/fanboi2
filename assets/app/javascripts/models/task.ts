@@ -43,8 +43,8 @@ export class Task extends Model {
         id: string,
         token?: CancellableToken
     ): Promise<Task> {
-        return request('GET', `/api/1.0/tasks/${id}/`, null, token).then(
-            function(resp: string) {
+        return request('GET', `/api/1.0/tasks/${id}/`, {}, token).then(
+            (resp: string) => {
                 return new Task(JSON.parse(resp));
             }
         );
@@ -54,7 +54,7 @@ export class Task extends Model {
         id: string,
         token?: CancellableToken
     ): Promise<Task> {
-        return Task.queryId(id, token).then(function(task: Task) {
+        return Task.queryId(id, token).then((task: Task) => {
             if (task.status == Statuses.Success) {
                 return task;
             } else if (task.status == Statuses.Failure) {

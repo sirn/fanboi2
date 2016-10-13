@@ -6,30 +6,29 @@ export interface IRequestBody {
 }
 
 
-export function request(
+export const request = (
     method: string,
     url: string,
-    params?: IRequestBody,
+    params: IRequestBody = {},
     token?: CancellableToken
-): Promise<string> {
+): Promise<string> => {
     let xhr = new XMLHttpRequest();
+    let body = JSON.stringify(params);
+
     xhr.open(method, url);
+    xhr.setRequestHeader('Content-Type', 'application/json');
 
-    let body: string = null;
-    if (params) {
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        body = JSON.stringify(params);
-    }
-
-    return new Promise(function(resolve, reject) {
-        xhr.onload = function() { resolve(xhr.responseText); }
+    return new Promise((resolve, reject) => {
+        xhr.onload = () => { resolve(xhr.responseText); }
         xhr.onerror = reject;
+
         if (token) {
-            token.cancel = function(): void {
+            token.cancel = (): void => {
                 xhr.abort();
                 reject(new Cancelled);
             }
         }
+
         xhr.send(body);
     });
 }

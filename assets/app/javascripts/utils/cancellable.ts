@@ -9,11 +9,9 @@ export interface CancellableToken {
 export class Cancelled implements Error {
     public name = 'Cancelled';
 
-    constructor(public message?: string) {
-        this.message = message;
-        if (!this.message) {
-            this.message = 'Promise was explicitly aborted by user.';
-        }
+    constructor(
+        public message: string = 'Promise was explicitly aborted by the user.'
+    ) {
     }
 }
 

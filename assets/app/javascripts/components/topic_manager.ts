@@ -9,23 +9,28 @@ import {TopicNewPost} from './topic/topic_new_post';
 export class TopicManager extends CollectionComponent {
     public targetSelector = '[data-topic]';
 
-    protected bindOne(element: Element): void {
-        let topicId = parseInt(element.getAttribute('data-topic'), 10);
-        this.bindEvent(topicId, element, 'updateState', TopicState);
-        this.bindEvent(topicId, element, 'readState',   TopicState);
-        this.bindEvent(topicId, element, 'loadPosts',   TopicLoadPosts);
-        this.bindEvent(topicId, element, 'newPost',     TopicNewPost);
+    protected bindOne($target: Element): void {
+        let topicIdAttr = $target.getAttribute('data-topic');
+
+        if (topicIdAttr) {
+          let topicId = parseInt(topicIdAttr, 10);
+
+          this.bindEvent($target, topicId, 'updateState', TopicState);
+          this.bindEvent($target, topicId, 'readState',   TopicState);
+          this.bindEvent($target, topicId, 'loadPosts',   TopicLoadPosts);
+          this.bindEvent($target, topicId, 'newPost',     TopicNewPost);
+        }
     }
 
     private bindEvent(
+        $target: Element,
         topicId: number,
-        element: Element,
         eventName: string,
         eventHandler: ITopicEventConstructor
     ): void {
-        let self = this;
-        let handler = new eventHandler(topicId, element);
-        element.addEventListener(eventName, function(e: CustomEvent) {
+        let handler = new eventHandler(topicId, $target);
+
+        $target.addEventListener(eventName, (e: CustomEvent) => {
             e.stopPropagation();
             handler.bind(e);
         });

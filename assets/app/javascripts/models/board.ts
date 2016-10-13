@@ -41,9 +41,9 @@ export class Board extends Model {
     static queryAll(
         token?: CancellableToken
     ): Promise<Board[]> {
-        return request('GET', '/api/1.0/boards/', null, token).
-            then(function(resp: string): Array<Board> {
-                return JSON.parse(resp).map(function(data: Object) {
+        return request('GET', '/api/1.0/boards/', {}, token).
+            then((resp: string): Board[] => {
+                return JSON.parse(resp).map((data: Object) => {
                     return new Board(data);
                 });
             });
@@ -53,8 +53,8 @@ export class Board extends Model {
         slug: string,
         token?: CancellableToken
     ): Promise<Board> {
-        return request('GET', `/api/1.0/boards/${slug}/`, null, token).
-            then(function(resp: string): Board {
+        return request('GET', `/api/1.0/boards/${slug}/`, {}, token).
+            then((resp: string): Board => {
                 return new Board(JSON.parse(resp));
             });
     }

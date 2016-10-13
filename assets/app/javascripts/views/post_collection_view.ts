@@ -4,28 +4,28 @@ import {Post} from '../models/post';
 
 
 export class PostCollectionView {
-    posts: Post[];
+    postsNode: VNode;
 
     constructor(posts: Post[]) {
-        this.posts = posts;
+        this.postsNode = PostCollectionView.renderPosts(posts);
     }
 
     render(): VNode {
-        return h('div',
-            {className: 'js-post-collection'},
-            this.posts.map(function(post: Post): VNode {
-                return PostCollectionView.renderPost(post);
-            })
-        );
+        return this.postsNode;
     }
 
-    private static renderPost(post: Post): VNode {
-        return h('div', {className: 'post'}, [
-            h('div', {className: 'container'}, [
-                PostCollectionView.renderHeader(post),
-                PostCollectionView.renderBody(post),
-            ])
-        ]);
+    private static renderPosts(posts: Post[]): VNode {
+        return h('div',
+            {className: 'js-post-collection'},
+            posts.map((post: Post): VNode => {
+                return h('div', {className: 'post'}, [
+                    h('div', {className: 'container'}, [
+                        PostCollectionView.renderHeader(post),
+                        PostCollectionView.renderBody(post),
+                    ])
+                ])
+            })
+        );
     }
 
     private static renderHeader(post: Post): VNode {
@@ -39,36 +39,41 @@ export class PostCollectionView {
 
     private static renderHeaderNumber(post: Post): VNode {
         let classList = ['post-header-item', 'number'];
-        if (post.bumped) { classList.push('bumped'); }
+
+        if (post.bumped) {
+            classList.push('bumped');
+        }
+
         return h('span', {
             className: classList.join(' '),
             dataset: {
                 topicQuickReply: post.number
             }
-        }, [String(post.number)]);
+        }, [post.number.toString()]);
     }
 
     private static renderHeaderName(post: Post): VNode {
         return h('span', {
             className: 'post-header-item name'
-        }, [String(post.name)]);
+        }, [post.name]);
     }
 
     private static renderHeaderDate(post: Post): VNode {
         let createdAt = new Date(post.createdAt);
         let formatter = formatDate(createdAt);
+
         return h('span', {
             className: 'post-header-item date'
-        }, [String(`Posted ${formatter}`)]);
+        }, [`Posted ${formatter}`]);
     }
 
     private static renderHeaderIdent(post: Post): VNode | string {
         if (post.ident) {
             return h('span', {
                 className: 'post-header-item ident'
-            }, [String(`ID:${post.ident}`)]);
+            }, [`ID:${post.ident}`]);
         } else {
-            return String(null);
+            return '';
         }
     }
 
