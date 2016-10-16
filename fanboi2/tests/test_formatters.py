@@ -171,10 +171,10 @@ class TestFormatters(unittest.TestCase):
         from markupsafe import Markup
         request = self._makeRequest()
         tests = [
-            ('**Hello, world!**', '<p><strong>Hello, world!</strong></p>'),
-            ('<b>Foobar</b>', '<p><b>Foobar</b></p>'),
-            ('Split\n\nParagraph', '<p>Split</p>\n<p>Paragraph</p>'),
-            ('Split\nlines', '<p>Split\nlines</p>'),
+            ('**Hello, world!**', '<p><strong>Hello, world!</strong></p>\n'),
+            ('<b>Foobar</b>', '<p><b>Foobar</b></p>\n'),
+            ('Split\n\nParagraph', '<p>Split</p>\n\n<p>Paragraph</p>\n'),
+            ('Split\nlines', '<p>Split\nlines</p>\n'),
         ]
         for source, target in tests:
             self.assertEqual(format_markdown(None, request, source),

@@ -29,16 +29,14 @@ requires = [
     'requests',
 
     # Frontend
-    'isodate',
     'MarkupSafe',
+    'isodate',
+    'misaka',
     'wtforms',
 
     # Tests
     'nose',
     'coverage',
-
-    # To be deprecate.
-    'Markdown==2.5.2',
 
     ]
 
