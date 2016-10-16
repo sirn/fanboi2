@@ -23,6 +23,7 @@ requires = [
     'psycopg2',
     'zope.sqlalchemy',
     'redis',
+    'hiredis',
     'dogpile.cache',
     'python3-memcached',
     'pytz',
