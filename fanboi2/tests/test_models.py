@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 class TestRedisProxy(unittest.TestCase):
 
     def _getTargetClass(self):
-        from fanboi2.models import RedisProxy
+        from fanboi2.models._redis_proxy import RedisProxy
         return RedisProxy
 
     def test_init(self):
@@ -34,7 +34,7 @@ class TestRedisProxy(unittest.TestCase):
 class TestIdentity(unittest.TestCase):
 
     def _getTargetClass(self):
-        from fanboi2.models import Identity
+        from fanboi2.models._identity import Identity
         return Identity
 
     def _makeOne(self):
@@ -78,14 +78,13 @@ class TestJsonType(unittest.TestCase):
         return JsonType
 
     def _makeOne(self):
-        from fanboi2.models import JsonType
         from sqlalchemy import MetaData, Table, Column, Integer, create_engine
         engine = create_engine(DATABASE_URI)
         metadata = MetaData(bind=engine)
         table = Table(
             'foo', metadata,
             Column('baz', Integer),
-            Column('bar', JsonType),
+            Column('bar', self._getTargetClass()),
         )
         metadata.drop_all()
         metadata.create_all()
@@ -119,7 +118,7 @@ class BaseModelTest(ModelMixin, unittest.TestCase):
 
     def _getTargetClass(self):
         from sqlalchemy import Column, Integer
-        from fanboi2.models import BaseModel
+        from fanboi2.models._base import BaseModel
         MockBase = declarative_base()
 
         class MockModel(BaseModel, MockBase):
@@ -145,7 +144,8 @@ class BoardModelTest(ModelMixin, unittest.TestCase):
         self.assertEqual([], list(board.topics))
 
     def test_settings(self):
-        from fanboi2.models import DBSession, DEFAULT_BOARD_CONFIG
+        from fanboi2.models import DBSession
+        from fanboi2.models.board import DEFAULT_BOARD_CONFIG
         board = self._makeBoard(title="Foobar", slug="Foo")
         self.assertEqual(board.settings, DEFAULT_BOARD_CONFIG)
         board.settings = {'name': 'Hamster'}
