@@ -95,7 +95,7 @@ class Topic(Base):
 
 @event.listens_for(DBSession, 'before_flush')
 def update_topic_status(session, context, instances):
-    for obj in filter(lambda obj: isinstance(obj, Post), session.new):
+    for obj in filter(lambda m: isinstance(m, Post), session.new):
         topic = obj.topic
         if topic.post_count is not None and \
                 topic.status == 'open' and \

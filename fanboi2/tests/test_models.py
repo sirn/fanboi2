@@ -1,3 +1,4 @@
+import transaction
 import unittest
 from fanboi2.models import DBSession
 from fanboi2.tests import DummyRedis, DATABASE_URI, ModelMixin
@@ -77,24 +78,30 @@ class TestJsonType(unittest.TestCase):
         from fanboi2.models import JsonType
         return JsonType
 
-    def _makeOne(self):
-        from sqlalchemy import MetaData, Table, Column, Integer, create_engine
+    def _makeMetaData(self):
+        from sqlalchemy import MetaData, create_engine
         engine = create_engine(DATABASE_URI)
         metadata = MetaData(bind=engine)
+        return metadata
+
+    def _makeOne(self, metadata):
+        from sqlalchemy import Table, Column, Integer
         table = Table(
             'foo', metadata,
             Column('baz', Integer),
             Column('bar', self._getTargetClass()),
         )
-        metadata.drop_all()
-        metadata.create_all()
         return table
 
     def test_compile(self):
         self.assertEqual(str(self._getTargetClass()()), "TEXT")
 
     def test_field(self):
-        table = self._makeOne()
+        metadata = self._makeMetaData()
+        table = self._makeOne(metadata)
+        metadata.drop_all()
+        metadata.create_all()
+
         table.insert().execute(baz=1, bar={"x": 1})
         table.insert().execute(baz=2, bar=None)
         table.insert().execute(baz=3)  # bar should have default {} type.
@@ -102,6 +109,8 @@ class TestJsonType(unittest.TestCase):
             [(1, {'x': 1}), (2, None), (3, {})],
             table.select().order_by(table.c.baz).execute().fetchall()
         )
+
+        metadata.drop_all()
 
 
 class TestSerializeModel(unittest.TestCase):
@@ -114,7 +123,7 @@ class TestSerializeModel(unittest.TestCase):
         self.assertIsNone(serialize_model('foo'))
 
 
-class BaseModelTest(ModelMixin, unittest.TestCase):
+class TestBaseModel(ModelMixin, unittest.TestCase):
 
     def _getTargetClass(self):
         from sqlalchemy import Column, Integer
@@ -135,6 +144,819 @@ class BaseModelTest(ModelMixin, unittest.TestCase):
     def test_tablename(self):
         model_class = self._getTargetClass()
         self.assertEqual(model_class.__tablename__, 'mock_model')
+
+
+class TestVersioned(unittest.TestCase):
+
+    def _makeBase(self):
+        from sqlalchemy.engine import create_engine
+        from sqlalchemy.ext.declarative import declarative_base
+        engine = create_engine(DATABASE_URI)
+        Base = declarative_base()
+        Base.metadata.bind = engine
+        return Base
+
+    def _makeSession(self, Base):
+        from sqlalchemy.orm import scoped_session, sessionmaker
+        from zope.sqlalchemy import ZopeTransactionExtension
+        return scoped_session(
+            sessionmaker(
+                bind=Base.metadata.bind,
+                extension=ZopeTransactionExtension()))
+
+    def _getTargetClass(self, mappers):
+        from fanboi2.models._versioned import make_versioned_class
+        return make_versioned_class(lambda m: mappers.append(m))
+
+    def _getSetupFunction(self, mappers):
+        from fanboi2.models._versioned import make_versioned
+        def _make_versioned(session):
+            make_versioned(session, lambda: mappers)
+        return _make_versioned
+
+    def _makeTable(self, Base):
+        Base.metadata.drop_all()
+        Base.metadata.create_all()
+
+    def _dropTable(self, Base):
+        Base.metadata.drop_all()
+
+    def test_versioned(self):
+        from sqlalchemy.sql import func
+        from sqlalchemy.sql.schema import Column
+        from sqlalchemy.sql.sqltypes import Integer, String, DateTime
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+            id = Column(Integer, primary_key=True)
+            body = Column(String)
+            created_at = Column(DateTime(timezone=True), default=func.now())
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        ThingHistory = Thing.__history_mapper__.class_
+        transaction.begin()
+
+        thing = Thing(body='Hello, world')
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+
+        thing.body = 'Hello, galaxy'
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(Session.query(ThingHistory).count(), 1)
+        thing_v1 = Session.query(ThingHistory).filter_by(version=1).one()
+        self.assertEqual(thing_v1.body, 'Hello, world')
+        self.assertEqual(thing_v1.change_type, 'update')
+        self.assertEqual(thing_v1.version, 1)
+        self.assertIsNotNone(thing_v1.changed_at)
+        self.assertIsNotNone(thing_v1.created_at)
+
+        thing.body = 'Hello, universe'
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 3)
+        self.assertEqual(Session.query(ThingHistory).count(), 2)
+        thing_v2 = Session.query(ThingHistory).filter_by(version=2).one()
+        self.assertEqual(thing_v2.body, 'Hello, galaxy')
+        self.assertEqual(thing_v2.change_type, 'update')
+        self.assertEqual(thing_v2.version, 2)
+        self.assertIsNotNone(thing_v2.changed_at)
+        self.assertIsNotNone(thing_v2.created_at)
+
+        transaction.abort()
+        self._dropTable(Base)
+
+    def test_versioned_column(self):
+        from sqlalchemy.sql.schema import Column
+        from sqlalchemy.sql.sqltypes import Integer, String
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+            id = Column(Integer, primary_key=True)
+            ref = Column(String, unique=True, info={"version_meta": True})
+
+        self._getSetupFunction(mappers)(Session)
+        thing_history_table = Thing.__history_mapper__.local_table
+        self.assertIsNone(getattr(thing_history_table.c, 'ref', None))
+
+    def test_versioned_null(self):
+        from sqlalchemy.sql.schema import Column
+        from sqlalchemy.sql.sqltypes import Integer, String
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+            id = Column(Integer, primary_key=True)
+            body = Column(String, nullable=True)
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        ThingHistory = Thing.__history_mapper__.class_
+        transaction.begin()
+
+        thing = Thing()
+        Session.add(thing)
+        Session.flush()
+        self.assertIsNone(thing.body)
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+
+        thing.body = 'Hello, world'
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(Session.query(ThingHistory).count(), 1)
+        thing_v1 = Session.query(ThingHistory).filter_by(version=1).one()
+        self.assertIsNone(thing_v1.body)
+        self.assertEqual(thing_v1.change_type, 'update')
+        self.assertEqual(thing_v1.version, 1)
+        self.assertIsNotNone(thing_v1.changed_at)
+
+        thing.body = None
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 3)
+        self.assertEqual(Session.query(ThingHistory).count(), 2)
+        thing_v2 = Session.query(ThingHistory).filter_by(version=2).one()
+        self.assertEqual('Hello, world', thing_v2.body)
+        self.assertEqual(thing_v2.change_type, 'update')
+        self.assertEqual(thing_v2.version, 2)
+        self.assertIsNotNone(thing_v2.changed_at)
+
+        transaction.abort()
+        self._dropTable(Base)
+
+    def test_versioned_bool(self):
+        from sqlalchemy.sql.schema import Column
+        from sqlalchemy.sql.sqltypes import Integer, Boolean
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+            id = Column(Integer, primary_key=True)
+            boolean = Column(Boolean, default=False)
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        ThingHistory = Thing.__history_mapper__.class_
+        transaction.begin()
+
+        thing = Thing()
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+
+        thing.boolean = True
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(Session.query(ThingHistory).count(), 1)
+        thing_v1 = Session.query(ThingHistory).filter_by(version=1).one()
+        self.assertEqual(thing_v1.boolean, False)
+        self.assertEqual(thing_v1.change_type, 'update')
+        self.assertEqual(thing_v1.version, 1)
+        self.assertIsNotNone(thing_v1.changed_at)
+
+        transaction.abort()
+        self._dropTable(Base)
+
+    def test_versioned_deferred(self):
+        from sqlalchemy.orm import deferred
+        from sqlalchemy.sql.schema import Column
+        from sqlalchemy.sql.sqltypes import Integer, String
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+            id = Column(Integer, primary_key=True)
+            name = Column(String, default=False)
+            data = deferred(Column(String))
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        ThingHistory = Thing.__history_mapper__.class_
+        transaction.begin()
+
+        thing = Thing(name='test', data='Hello, world')
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+
+        transaction.commit()
+        transaction.begin()
+
+        thing = Session.query(Thing).first()
+        thing.data = 'Hello, galaxy'
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(Session.query(ThingHistory).count(), 1)
+        thing_v1 = Session.query(ThingHistory).filter_by(version=1).one()
+        self.assertEqual(thing_v1.data, 'Hello, world')
+        self.assertEqual(thing_v1.change_type, 'update')
+        self.assertEqual(thing_v1.version, 1)
+        self.assertIsNotNone(thing_v1.changed_at)
+
+        transaction.abort()
+        self._dropTable(Base)
+
+    def test_versioned_inheritance(self):
+        from sqlalchemy.orm import column_property
+        from sqlalchemy.sql.schema import Column, ForeignKey
+        from sqlalchemy.sql.sqltypes import Integer, String
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+
+            id = Column(Integer, primary_key=True)
+            name = Column(String)
+            type = Column(String)
+
+            __mapper_args__ = {
+                'polymorphic_on': type,
+                'polymorphic_identity': 'base',
+            }
+
+        class ThingSeparatePk(Thing):
+            __tablename__ = 'thing_separate_pk'
+            __mapper_args__ = {'polymorphic_identity': 'separate_pk'}
+
+            id = column_property(Column(Integer, primary_key=True), Thing.id)
+            thing_id = Column(Integer, ForeignKey('thing.id'))
+            sub_data_1 = Column(String)
+
+        class ThingSamePk(Thing):
+            __tablename__ = 'thing_same_pk'
+            __mapper_args__ = {'polymorphic_identity': 'same_pk'}
+
+            id = Column(Integer, ForeignKey('thing.id'), primary_key=True)
+            sub_data_2 = Column(String)
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        ThingHistory = Thing.__history_mapper__.class_
+        ThingSeparatePkHistory = ThingSeparatePk.__history_mapper__.class_
+        ThingSamePkHistory = ThingSamePk.__history_mapper__.class_
+        transaction.begin()
+
+        thing = Thing(name='Foo')
+        thing_sp = ThingSeparatePk(name='Bar', sub_data_1='Hello, world')
+        thing_sm = ThingSamePk(name='Baz', sub_data_2='Hello, galaxy')
+        Session.add_all([thing, thing_sp, thing_sm])
+        Session.flush()
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(thing_sp.version, 1)
+        self.assertEqual(thing_sm.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+        self.assertEqual(Session.query(ThingSeparatePkHistory).count(), 0)
+        self.assertEqual(Session.query(ThingSamePkHistory).count(), 0)
+
+        thing.name = 'Hoge'
+        thing_sp.sub_data_1 = 'Hello, universe'
+        thing_sm.sub_data_2 = 'Hello, multiuniverse'
+        Session.add_all([thing, thing_sp, thing_sm])
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(thing_sp.version, 2)
+        self.assertEqual(thing_sm.version, 2)
+        self.assertEqual(Session.query(ThingHistory).count(), 3)
+        self.assertEqual(Session.query(ThingSeparatePkHistory).count(), 1)
+        self.assertEqual(Session.query(ThingSamePkHistory).count(), 1)
+
+        thing_sp.sub_data_1 = 'Hello, parallel universe'
+        Session.add(thing_sp)
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(thing_sp.version, 3)
+        self.assertEqual(thing_sm.version, 2)
+        self.assertEqual(Session.query(ThingHistory).count(), 4)
+        self.assertEqual(Session.query(ThingSeparatePkHistory).count(), 2)
+        self.assertEqual(Session.query(ThingSamePkHistory).count(), 1)
+
+        thing_sm.sub_data_2 = 'Hello, 42'
+        Session.add(thing_sm)
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(thing_sp.version, 3)
+        self.assertEqual(thing_sm.version, 3)
+        self.assertEqual(Session.query(ThingHistory).count(), 5)
+        self.assertEqual(Session.query(ThingSeparatePkHistory).count(), 2)
+        self.assertEqual(Session.query(ThingSamePkHistory).count(), 2)
+
+        transaction.abort()
+        self._dropTable(Base)
+
+    def test_versioned_inheritance_multi(self):
+        from sqlalchemy.orm import column_property
+        from sqlalchemy.sql.schema import Column, ForeignKey
+        from sqlalchemy.sql.sqltypes import Integer, String
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+
+            id = Column(Integer, primary_key=True)
+            name = Column(String)
+            type = Column(String)
+
+            __mapper_args__ = {
+                'polymorphic_on': type,
+                'polymorphic_identity': 'base',
+            }
+
+        class ThingSub(Thing):
+            __tablename__ = 'thing_sub'
+            __mapper_args__ = {'polymorphic_identity': 'sub'}
+
+            id = column_property(Column(Integer, primary_key=True), Thing.id)
+            base_id = Column(Integer, ForeignKey('thing.id'))
+            sub_data_1 = Column(String)
+
+        class ThingSubSub(ThingSub):
+            __tablename__ = 'thing_sub_sub'
+            __mapper_args__ = {'polymorphic_identity': 'sub_sub'}
+
+            id = Column(Integer, ForeignKey('thing_sub.id'), primary_key=True)
+            sub_data_2 = Column(String)
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        ThingHistory = Thing.__history_mapper__.class_
+        ThingSubHistory = ThingSub.__history_mapper__.class_
+        ThingSubSubHistory = ThingSubSub.__history_mapper__.class_
+        transaction.begin()
+
+        thing = Thing(name='Foo')
+        thing_sub = ThingSub(name='Bar', sub_data_1='Hello, world')
+        thing_sub_sub = ThingSubSub(name='Baz', sub_data_2='Hello, galaxy')
+        Session.add_all([thing, thing_sub, thing_sub_sub])
+        Session.flush()
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(thing_sub.version, 1)
+        self.assertEqual(thing_sub_sub.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+        self.assertEqual(Session.query(ThingSubHistory).count(), 0)
+        self.assertEqual(Session.query(ThingSubSubHistory).count(), 0)
+
+        thing.name = 'Hoge'
+        thing_sub.sub_data_1 = 'Hello, universe'
+        thing_sub_sub.sub_data_2 = 'Hello, multiuniverse'
+        Session.add_all([thing, thing_sub, thing_sub_sub])
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(thing_sub.version, 2)
+        self.assertEqual(thing_sub_sub.version, 2)
+        self.assertEqual(Session.query(ThingHistory).count(), 3)
+        self.assertEqual(Session.query(ThingSubHistory).count(), 2)
+        self.assertEqual(Session.query(ThingSubSubHistory).count(), 1)
+
+        thing_sub.sub_data_1 = 'Hello, parallel universe'
+        Session.add(thing_sub)
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(thing_sub.version, 3)
+        self.assertEqual(thing_sub_sub.version, 2)
+        self.assertEqual(Session.query(ThingHistory).count(), 4)
+        self.assertEqual(Session.query(ThingSubHistory).count(), 3)
+        self.assertEqual(Session.query(ThingSubSubHistory).count(), 1)
+
+        thing_sub_sub.sub_data_2 = 'Hello, 42'
+        Session.add(thing_sub_sub)
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(thing_sub.version, 3)
+        self.assertEqual(thing_sub_sub.version, 3)
+        self.assertEqual(Session.query(ThingHistory).count(), 5)
+        self.assertEqual(Session.query(ThingSubHistory).count(), 4)
+        self.assertEqual(Session.query(ThingSubSubHistory).count(), 2)
+
+        transaction.abort()
+        self._dropTable(Base)
+
+    def test_versioned_inheritance_single(self):
+        from sqlalchemy.sql.schema import Column
+        from sqlalchemy.sql.sqltypes import Integer, String
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+
+            id = Column(Integer, primary_key=True)
+            data = Column(String)
+            type = Column(String)
+
+            __mapper_args__ = {
+                'polymorphic_on': type,
+                'polymorphic_identity': 'base',
+            }
+
+        class ThingSub(Thing):
+            __mapper_args__ = {'polymorphic_identity': 'sub'}
+            sub_data = Column(String)
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        ThingHistory = Thing.__history_mapper__.class_
+        ThingSubHistory = ThingSub.__history_mapper__.class_
+        transaction.begin()
+
+        thing = Thing(data='Hello, world')
+        thing_sub = ThingSub(data='Hello, galaxy', sub_data='Hello, universe')
+        Session.add_all([thing, thing_sub])
+        Session.flush()
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(thing_sub.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+        self.assertEqual(Session.query(ThingSubHistory).count(), 0)
+
+        thing.data = 'Hello, multiuniverse'
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(thing_sub.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 1)
+        self.assertEqual(Session.query(ThingSubHistory).count(), 0)
+        thing_v1 = Session.query(ThingHistory).filter_by(version=1).one()
+        self.assertEqual(thing_v1.data, 'Hello, world')
+        self.assertEqual(thing_v1.change_type, 'update')
+        self.assertEqual(thing_v1.version, 1)
+
+        thing_sub.sub_data = 'Hello, parallel universe'
+        Session.add(thing_sub)
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(thing_sub.version, 2)
+        self.assertEqual(Session.query(ThingHistory).count(), 2)
+        self.assertEqual(Session.query(ThingSubHistory).count(), 1)
+        thing_sub_v1 = Session.query(ThingSubHistory).filter_by(version=1).one()
+        self.assertEqual(thing_sub_v1.sub_data, 'Hello, universe')
+        self.assertEqual(thing_sub_v1.change_type, 'update')
+        self.assertEqual(thing_sub_v1.version, 1)
+
+        transaction.abort()
+        self._dropTable(Base)
+
+    def test_versioned_unique(self):
+        from sqlalchemy.sql.schema import Column
+        from sqlalchemy.sql.sqltypes import Integer, String
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+
+            id = Column(Integer, primary_key=True)
+            name = Column(String, unique=True)
+            data = Column(String)
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        ThingHistory = Thing.__history_mapper__.class_
+        transaction.begin()
+
+        thing = Thing(name='Hello', data='Hello, world')
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+
+        thing.data = 'Hello, galaxy'
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(Session.query(ThingHistory).count(), 1)
+
+        thing.data = 'Hello, universe'
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 3)
+        self.assertEqual(Session.query(ThingHistory).count(), 2)
+
+        transaction.abort()
+        self._dropTable(Base)
+
+    def test_versioned_relationship(self):
+        from sqlalchemy.orm import relationship
+        from sqlalchemy.sql.schema import Column, ForeignKey
+        from sqlalchemy.sql.sqltypes import Integer, String
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Relate(Base):
+            __tablename__ = 'relate'
+            id = Column(Integer, primary_key=True)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+            id = Column(Integer, primary_key=True)
+            relate_id = Column(Integer, ForeignKey('relate.id'))
+            relate = relationship('Relate', backref='things')
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        ThingHistory = Thing.__history_mapper__.class_
+        transaction.begin()
+
+        thing = Thing()
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+
+        relate = Relate()
+        thing.relate = relate
+        Session.add_all([relate, thing])
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(Session.query(ThingHistory).count(), 1)
+        thing_v1 = Session.query(ThingHistory).filter_by(version=1).one()
+        self.assertIsNone(thing_v1.relate_id)
+        self.assertEqual(thing_v1.change_type, 'update')
+        self.assertEqual(thing_v1.version, 1)
+
+        thing.relate = None
+        Session.add(thing)
+        Session.flush()
+        self.assertIsNone(thing.relate_id)
+        self.assertEqual(thing.version, 3)
+        self.assertEqual(Session.query(ThingHistory).count(), 2)
+        thing_v2 = Session.query(ThingHistory).filter_by(version=2).one()
+        self.assertEqual(thing_v2.relate_id, relate.id)
+        self.assertEqual(thing_v2.change_type, 'update')
+        self.assertEqual(thing_v2.version, 2)
+
+        Session.delete(relate)
+        Session.flush()
+
+        transaction.abort()
+        self._dropTable(Base)
+
+    def test_versioned_relationship_cascade_null(self):
+        from sqlalchemy.orm import relationship
+        from sqlalchemy.sql.schema import Column, ForeignKey
+        from sqlalchemy.sql.sqltypes import Integer, String
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Relate(Base):
+            __tablename__ = 'relate'
+            id = Column(Integer, primary_key=True)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+            id = Column(Integer, primary_key=True)
+            relate_id = Column(Integer, ForeignKey('relate.id'))
+            relate = relationship('Relate', backref='things')
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        ThingHistory = Thing.__history_mapper__.class_
+        transaction.begin()
+
+        relate = Relate()
+        thing = Thing(relate=relate)
+        Session.add_all([relate, thing])
+        Session.flush()
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+
+        Session.delete(relate)
+        Session.flush()
+        self.assertIsNone(thing.relate_id)
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(Session.query(ThingHistory).count(), 1)
+        thing_v1 = Session.query(ThingHistory).filter_by(version=1).one()
+        self.assertEqual(thing_v1.relate_id, relate.id)
+        self.assertEqual(thing_v1.change_type, 'update.cascade')
+        self.assertEqual(thing_v1.version, 1)
+
+        transaction.abort()
+        self._dropTable(Base)
+
+    def test_versioned_relationship_cascade_all(self):
+        from sqlalchemy import inspect
+        from sqlalchemy.orm import relationship, backref
+        from sqlalchemy.sql.schema import Column, ForeignKey
+        from sqlalchemy.sql.sqltypes import Integer, String
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Relate(Base):
+            __tablename__ = 'relate'
+            id = Column(Integer, primary_key=True)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+            id = Column(Integer, primary_key=True)
+            relate_id = Column(Integer, ForeignKey('relate.id'))
+            relate = relationship(
+                'Relate',
+                backref=backref('things', cascade='all'))
+
+        class Entity(self._getTargetClass(mappers), Base):
+            __tablename__ = 'entity'
+            id = Column(Integer, primary_key=True)
+            thing_id = Column(Integer, ForeignKey('thing.id'))
+            thing = relationship(
+                'Thing',
+                backref=backref('entities', cascade='all'))
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        ThingHistory = Thing.__history_mapper__.class_
+        EntityHistory = Entity.__history_mapper__.class_
+        transaction.begin()
+
+        relate = Relate()
+        thing = Thing(relate=relate)
+        entity = Entity(thing=thing)
+        Session.add_all([relate, thing, entity])
+        Session.flush()
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(entity.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+        self.assertEqual(Session.query(EntityHistory).count(), 0)
+
+        Session.delete(relate)
+        Session.flush()
+        self.assertTrue(inspect(thing).deleted)
+        self.assertTrue(inspect(entity).deleted)
+        self.assertEqual(Session.query(ThingHistory).count(), 1)
+        self.assertEqual(Session.query(EntityHistory).count(), 1)
+        thing_v1 = Session.query(ThingHistory).filter_by(version=1).one()
+        self.assertEqual(thing_v1.relate_id, relate.id)
+        self.assertEqual(thing_v1.change_type, 'delete')
+        self.assertEqual(thing_v1.version, 1)
+        entity_v1 = Session.query(EntityHistory).filter_by(version=1).one()
+        self.assertEqual(entity_v1.thing_id, thing.id)
+        self.assertEqual(entity_v1.change_type, 'delete')
+        self.assertEqual(entity_v1.version, 1)
+
+        transaction.abort()
+        self._dropTable(Base)
+
+    def test_versioned_relationship_cascade_orphan(self):
+        from sqlalchemy import inspect
+        from sqlalchemy.orm import relationship, backref
+        from sqlalchemy.sql.schema import Column, ForeignKey
+        from sqlalchemy.sql.sqltypes import Integer, String
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Relate(Base):
+            __tablename__ = 'relate'
+            id = Column(Integer, primary_key=True)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+            id = Column(Integer, primary_key=True)
+            relate_id = Column(Integer, ForeignKey('relate.id'))
+            relate = relationship(
+                'Relate',
+                backref=backref('things', cascade='all,delete-orphan'))
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        ThingHistory = Thing.__history_mapper__.class_
+        transaction.begin()
+
+        relate = Relate()
+        thing = Thing(relate=relate)
+        Session.add_all([relate, thing])
+        Session.flush()
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+
+        thing.relate = None
+        Session.add(thing)
+        Session.flush()
+        self.assertTrue(inspect(thing).deleted)
+        self.assertEqual(Session.query(ThingHistory).count(), 1)
+        thing_v1 = Session.query(ThingHistory).filter_by(version=1).one()
+        self.assertEqual(thing_v1.relate_id, relate.id)
+        self.assertEqual(thing_v1.change_type, 'update')
+        self.assertEqual(thing_v1.version, 1)
+
+        transaction.abort()
+        self._dropTable(Base)
+
+    def test_versioned_deleted(self):
+        from sqlalchemy import inspect
+        from sqlalchemy.sql.schema import Column
+        from sqlalchemy.sql.sqltypes import Integer, String
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+            id = Column(Integer, primary_key=True)
+            data = Column(String)
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        ThingHistory = Thing.__history_mapper__.class_
+        transaction.begin()
+
+        thing = Thing(data='Hello, world')
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+
+        Session.delete(thing)
+        Session.flush()
+        self.assertTrue(inspect(thing).deleted)
+        self.assertEqual(Session.query(ThingHistory).count(), 1)
+        thing_v1 = Session.query(ThingHistory).filter_by(version=1).one()
+        self.assertEqual(thing_v1.data, 'Hello, world')
+        self.assertEqual(thing_v1.change_type, 'delete')
+        self.assertEqual(thing_v1.version, 1)
+
+        transaction.abort()
+        self._dropTable(Base)
+
+    def test_versioned_named_column(self):
+        from sqlalchemy import inspect
+        from sqlalchemy.sql.schema import Column
+        from sqlalchemy.sql.sqltypes import Integer, String
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+
+        class Thing(self._getTargetClass(mappers), Base):
+            __tablename__ = 'thing'
+            id = Column(Integer, primary_key=True)
+            data_ = Column('data', String)
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        ThingHistory = Thing.__history_mapper__.class_
+        transaction.begin()
+
+        thing = Thing(data_='Hello, world')
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+
+        thing.data_ = 'Hello, galaxy'
+        Session.add(thing)
+        Session.flush()
+        self.assertEqual(thing.version, 2)
+        self.assertEqual(Session.query(ThingHistory).count(), 1)
+        thing_v1 = Session.query(ThingHistory).filter_by(version=1).one()
+        self.assertEqual(thing_v1.data_, 'Hello, world')
+        self.assertEqual(thing_v1.change_type, 'update')
+        self.assertEqual(thing_v1.version, 1)
+
+        transaction.abort()
+        self._dropTable(Base)
 
 
 class BoardModelTest(ModelMixin, unittest.TestCase):
@@ -206,7 +1028,7 @@ class BoardModelTest(ModelMixin, unittest.TestCase):
                          list(board.topics))
 
 
-class TopicModelTest(ModelMixin, unittest.TestCase):
+class TestTopicModel(ModelMixin, unittest.TestCase):
 
     def test_relations(self):
         board = self._makeBoard(title="Foobar", slug="foo")
@@ -423,7 +1245,7 @@ class TopicModelTest(ModelMixin, unittest.TestCase):
             topic.scoped_posts("l5"))
 
 
-class PostModelTest(ModelMixin, unittest.TestCase):
+class TestPostModel(ModelMixin, unittest.TestCase):
 
     def test_relations(self):
         board = self._makeBoard(title="Foobar", slug="foo")

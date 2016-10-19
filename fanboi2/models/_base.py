@@ -7,6 +7,7 @@ from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import DateTime, Integer, Text
 from sqlalchemy.sql.type_api import TypeDecorator
 from zope.sqlalchemy import ZopeTransactionExtension
+from ._versioned import make_versioned_class
 
 
 RE_FIRST_CAP = re.compile('(.)([A-Z][a-z]+)')
@@ -44,6 +45,9 @@ class BaseModel(object):
     def __init__(self, **kwargs):
         for key, value in list(kwargs.items()):
             setattr(self, key, value)
+
+
+Versioned = make_versioned_class()
 
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))

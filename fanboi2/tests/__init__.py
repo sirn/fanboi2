@@ -100,8 +100,9 @@ class ModelMixin(_ModelInstanceSetup, unittest.TestCase):
 
     def tearDown(self):
         super(ModelMixin, self).tearDown()
-        redis_conn._redis = None
         transaction.abort()
+        Base.metadata.drop_all()
+        redis_conn._redis = None
 
 
 class RegistryMixin(unittest.TestCase):
