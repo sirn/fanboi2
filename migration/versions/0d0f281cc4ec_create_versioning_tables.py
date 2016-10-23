@@ -1,22 +1,23 @@
-"""Create initial tables
+"""create versioning tables
 
-Revision ID: 38f5ad30fe6f
-Revises: None
-Create Date: 2013-01-11 06:13:22.487819
+Revision ID: 0d0f281cc4ec
+Revises: 84a168aadc17
+Create Date: 2016-10-24 12:23:08.537936
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '38f5ad30fe6f'
-down_revision = None
+revision = '0d0f281cc4ec'
+down_revision = '84a168aadc17'
 
 from alembic import op
 from fanboi2.models import JsonType
+from sqlalchemy.dialects.postgresql import ENUM
 import sqlalchemy as sa
 
 
 def upgrade():
-    op.create_table('board',
+    op.create_table('board_history',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
@@ -25,22 +26,28 @@ def upgrade():
         sa.Column('agreements', sa.Text, nullable=True),
         sa.Column('description', sa.Text, nullable=True),
         sa.Column('settings', JsonType(), nullable=False),
-        sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('slug')
+        sa.Column('version', sa.Integer, nullable=False),
+        sa.Column('change_type', sa.String),
+        sa.Column('changed_at', sa.DateTime(timezone=True)),
+        sa.PrimaryKeyConstraint('id', 'version', name='pk_board'),
     )
-    op.create_table('topic',
+    op.create_table('topic_history',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('board_id', sa.Integer(), nullable=False),
         sa.Column('title', sa.Unicode(length=255), nullable=False),
         sa.Column('status',
-                  sa.Enum('open', 'locked', 'archived', name='topic_status'),
+                  ENUM('open', 'locked', 'archived',
+                       name='topic_status',
+                       create_type=False),
                   nullable=False),
-        sa.ForeignKeyConstraint(['board_id'], ['board.id'], ),
-        sa.PrimaryKeyConstraint('id')
+        sa.Column('version', sa.Integer, nullable=False),
+        sa.Column('change_type', sa.String),
+        sa.Column('changed_at', sa.DateTime(timezone=True)),
+        sa.PrimaryKeyConstraint('id', 'version', name='pk_topic')
     )
-    op.create_table('post',
+    op.create_table('post_history',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
@@ -50,13 +57,15 @@ def upgrade():
         sa.Column('number', sa.Integer(), nullable=False),
         sa.Column('name', sa.String(), nullable=False),
         sa.Column('body', sa.Text(), nullable=False),
-        sa.ForeignKeyConstraint(['topic_id'], ['topic.id'], ),
-        sa.UniqueConstraint('topic_id', 'number'),
-        sa.PrimaryKeyConstraint('id')
+        sa.Column('bumped', sa.Boolean(), nullable=False),
+        sa.Column('version', sa.Integer, nullable=False),
+        sa.Column('change_type', sa.String),
+        sa.Column('changed_at', sa.DateTime(timezone=True)),
+        sa.PrimaryKeyConstraint('id', 'version', name='pk_post')
     )
 
 
 def downgrade():
-    op.drop_table('post')
-    op.drop_table('topic')
-    op.drop_table('board')
+    op.drop_table('post_history')
+    op.drop_table('topic_history')
+    op.drop_table('board_history')

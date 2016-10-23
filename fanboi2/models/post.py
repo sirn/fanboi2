@@ -3,10 +3,10 @@ from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import func, select
 from sqlalchemy.sql.schema import Column, ForeignKey, UniqueConstraint
 from sqlalchemy.sql.sqltypes import Integer, String, Text, Boolean
-from ._base import Base
+from ._base import Base, Versioned
 
 
-class Post(Base):
+class Post(Versioned, Base):
     """Model class for posts. Each content in a :class:`Topic` and metadata
     regarding its poster are stored here. It has :attr:`number` which is a
     sequential number specifying its position within :class:`Topic`.
@@ -24,6 +24,7 @@ class Post(Base):
     topic = relationship('Topic',
                          backref=backref('posts',
                                          lazy='dynamic',
+                                         cascade='all,delete',
                                          order_by='Post.number'))
 
 

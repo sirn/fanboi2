@@ -4,11 +4,11 @@ from sqlalchemy.orm import backref, column_property, relationship
 from sqlalchemy.sql import desc, func, select
 from sqlalchemy.sql.schema import Column, ForeignKey
 from sqlalchemy.sql.sqltypes import Integer, Enum, Unicode
-from ._base import Base, DBSession
+from ._base import Base, DBSession, Versioned
 from .post import Post
 
 
-class Topic(Base):
+class Topic(Versioned, Base):
     """Model class for topic. This model only holds topic metadata such as
     title or its associated board. The actual content of a topic belongs
     to :class:`Post`.
@@ -22,6 +22,7 @@ class Topic(Base):
     board = relationship('Board',
                          backref=backref('topics',
                                          lazy='dynamic',
+                                         cascade='all,delete',
                                          order_by="desc(func.coalesce("
                                                   "Topic.bumped_at,"
                                                   "Topic.created_at))"))

@@ -2,7 +2,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import synonym
 from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import String, Text, Unicode
-from ._base import Base, JsonType
+from ._base import Base, JsonType, Versioned
 
 
 DEFAULT_BOARD_CONFIG = {
@@ -13,7 +13,7 @@ DEFAULT_BOARD_CONFIG = {
 }
 
 
-class Board(Base):
+class Board(Versioned, Base):
     """Model class for board. This model serve as a category to topic and
     also holds settings regarding how posts are created and displayed. It
     should always be accessed using :attr:`slug`.

@@ -959,14 +959,108 @@ class TestVersioned(unittest.TestCase):
         self._dropTable(Base)
 
 
-class BoardModelTest(ModelMixin, unittest.TestCase):
+class TestBoardModel(ModelMixin, unittest.TestCase):
 
     def test_relations(self):
         board = self._makeBoard(title="Foobar", slug="foo")
         self.assertEqual([], list(board.topics))
 
+    def test_relations_cascade(self):
+        from sqlalchemy import inspect
+        board1 = self._makeBoard(title="Foobar", slug="foo")
+        board2 = self._makeBoard(title="Lorem", slug="lorem")
+        topic1 = self._makeTopic(board=board1, title="Heavenly Moon")
+        topic2 = self._makeTopic(board=board1, title="Beastie Starter")
+        topic3 = self._makeTopic(board=board2, title="Evans")
+        post1 = self._makePost(topic=topic1, body='Foobar')
+        post2 = self._makePost(topic=topic1, body='Bazz')
+        post3 = self._makePost(topic=topic2, body='Hoge')
+        post4 = self._makePost(topic=topic3, body='Fuzz')
+        self.assertEqual({topic2, topic1}, set(board1.topics))
+        self.assertEqual({topic3}, set(board2.topics))
+        self.assertEqual({post2, post1}, set(topic1.posts))
+        self.assertEqual({post3}, set(topic2.posts))
+        self.assertEqual({post4}, set(topic3.posts))
+        DBSession.delete(board1)
+        DBSession.flush()
+        self.assertTrue(inspect(board1).deleted)
+        self.assertFalse(inspect(board2).deleted)
+        self.assertTrue(inspect(topic1).deleted)
+        self.assertTrue(inspect(topic2).deleted)
+        self.assertFalse(inspect(topic3).deleted)
+        self.assertTrue(inspect(post1).deleted)
+        self.assertTrue(inspect(post2).deleted)
+        self.assertTrue(inspect(post3).deleted)
+        self.assertFalse(inspect(post4).deleted)
+
+    def test_versioned(self):
+        from fanboi2.models import Board
+        BoardHistory = Board.__history_mapper__.class_
+        board = self._makeBoard(title='Foobar', slug='foo')
+        self.assertEqual(board.version, 1)
+        self.assertEqual(DBSession.query(BoardHistory).count(), 0)
+        board.title = 'Foobar and Baz'
+        DBSession.add(board)
+        DBSession.flush()
+        self.assertEqual(board.version, 2)
+        self.assertEqual(DBSession.query(BoardHistory).count(), 1)
+        board_v1 = DBSession.query(BoardHistory).filter_by(version=1).one()
+        self.assertEqual(board_v1.id, board.id)
+        self.assertEqual(board_v1.title, 'Foobar')
+        self.assertEqual(board_v1.change_type, 'update')
+        self.assertEqual(board_v1.version, 1)
+        self.assertIsNotNone(board_v1.changed_at)
+        self.assertIsNotNone(board_v1.created_at)
+        self.assertIsNone(board_v1.updated_at)
+
+    def test_versioned_deleted(self):
+        from sqlalchemy import inspect
+        from fanboi2.models import Board
+        BoardHistory = Board.__history_mapper__.class_
+        board = self._makeBoard(title='Foobar', slug='foo')
+        DBSession.delete(board)
+        DBSession.flush()
+        self.assertTrue(inspect(board).deleted)
+        self.assertEqual(DBSession.query(BoardHistory).count(), 1)
+        board_v1 = DBSession.query(BoardHistory).filter_by(version=1).one()
+        self.assertEqual(board_v1.id, board.id)
+        self.assertEqual(board_v1.title, 'Foobar')
+        self.assertEqual(board_v1.change_type, 'delete')
+        self.assertEqual(board_v1.version, 1)
+
+    def test_versioned_deleted_cascade(self):
+        from sqlalchemy import inspect
+        from fanboi2.models import Board, Topic, Post
+        BoardHistory = Board.__history_mapper__.class_
+        TopicHistory = Topic.__history_mapper__.class_
+        PostHistory = Post.__history_mapper__.class_
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Heavenly Moon')
+        post = self._makePost(topic=topic, body='Foobar')
+        self.assertEqual(DBSession.query(BoardHistory).count(), 0)
+        self.assertEqual(DBSession.query(TopicHistory).count(), 0)
+        self.assertEqual(DBSession.query(PostHistory).count(), 0)
+        DBSession.delete(board)
+        DBSession.flush()
+        self.assertEqual(DBSession.query(BoardHistory).count(), 1)
+        self.assertEqual(DBSession.query(TopicHistory).count(), 1)
+        self.assertEqual(DBSession.query(PostHistory).count(), 1)
+        board_v1 = DBSession.query(BoardHistory).filter_by(version=1).one()
+        self.assertEqual(board_v1.id, board.id)
+        self.assertEqual(board_v1.change_type, 'delete')
+        self.assertEqual(board_v1.version, 1)
+        topic_v1 = DBSession.query(TopicHistory).filter_by(version=1).one()
+        self.assertEqual(topic_v1.id, topic.id)
+        self.assertEqual(topic_v1.board_id, board.id)
+        self.assertEqual(topic_v1.change_type, 'delete')
+        self.assertEqual(topic_v1.version, 1)
+        post_v1 = DBSession.query(PostHistory).filter_by(version=1).one()
+        self.assertEqual(post_v1.id, post.id)
+        self.assertEqual(post_v1.topic_id, topic.id)
+        self.assertEqual(post_v1.change_type, 'delete')
+        self.assertEqual(post_v1.version, 1)
+
     def test_settings(self):
-        from fanboi2.models import DBSession
         from fanboi2.models.board import DEFAULT_BOARD_CONFIG
         board = self._makeBoard(title="Foobar", slug="Foo")
         self.assertEqual(board.settings, DEFAULT_BOARD_CONFIG)
@@ -981,12 +1075,9 @@ class BoardModelTest(ModelMixin, unittest.TestCase):
         from fanboi2.models import Topic
         board1 = self._makeBoard(title="Foobar", slug="foo")
         board2 = self._makeBoard(title="Lorem", slug="lorem")
-        topic1 = Topic(board=board1, title="Heavenly Moon")
-        topic2 = Topic(board=board1, title="Beastie Starter")
-        topic3 = Topic(board=board1, title="Evans")
-        DBSession.add(topic1)
-        DBSession.add(topic2)
-        DBSession.add(topic3)
+        topic1 = self._makeTopic(board=board1, title="Heavenly Moon")
+        topic2 = self._makeTopic(board=board1, title="Beastie Starter")
+        topic3 = self._makeTopic(board=board1, title="Evans")
         DBSession.flush()
         self.assertEqual({topic3, topic2, topic1}, set(board1.topics))
         self.assertEqual([], list(board2.topics))
@@ -995,34 +1086,29 @@ class BoardModelTest(ModelMixin, unittest.TestCase):
         from datetime import datetime, timedelta
         from fanboi2.models import Topic, Post
         board = self._makeBoard(title="Foobar", slug="foobar")
-        topic1 = Topic(board=board, title="First")
-        topic2 = Topic(board=board, title="Second")
-        topic3 = Topic(board=board, title="Third")
-        topic4 = Topic(board=board, title="Fourth")
-        topic5 = Topic(
+        topic1 = self._makeTopic(board=board, title="First")
+        topic2 = self._makeTopic(board=board, title="Second")
+        topic3 = self._makeTopic(board=board, title="Third")
+        topic4 = self._makeTopic(board=board, title="Fourth")
+        topic5 = self._makeTopic(
             board=board,
             title="Fifth",
             created_at=datetime.now() + timedelta(seconds=10))
-        DBSession.add(topic1)
-        DBSession.add(topic2)
-        DBSession.add(topic3)
-        DBSession.flush()
-        DBSession.add(Post(topic=topic1, ip_address="1.1.1.1", body="!!1"))
-        DBSession.add(Post(topic=topic4, ip_address="1.1.1.1", body="Baz"))
+        self._makePost(topic=topic1, ip_address="1.1.1.1", body="!!1")
+        self._makePost(topic=topic4, ip_address="1.1.1.1", body="Baz")
         mappings = ((topic3, 3, True), (topic2, 5, True), (topic4, 8, False))
         for obj, offset, bump in mappings:
-            DBSession.add(Post(
+            self._makePost(
                 topic=obj,
                 ip_address="1.1.1.1",
                 body="Foo",
                 created_at=datetime.now() + timedelta(seconds=offset),
-                bumped=bump))
-        DBSession.add(Post(
+                bumped=bump)
+        self._makePost(
             topic=topic5,
             ip_address="1.1.1.1",
             body="Hax",
-            bumped=False))
-        DBSession.flush()
+            bumped=False)
         DBSession.refresh(board)
         self.assertEqual([topic5, topic2, topic3, topic1, topic4],
                          list(board.topics))
@@ -1036,6 +1122,89 @@ class TestTopicModel(ModelMixin, unittest.TestCase):
         self.assertEqual(topic.board, board)
         self.assertEqual([], list(topic.posts))
         self.assertEqual([topic], list(board.topics))
+
+    def test_relations_cascade(self):
+        from sqlalchemy import inspect
+        from fanboi2.models import Post
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic1 = self._makeTopic(board=board, title='Shamshir Dance')
+        topic2 = self._makeTopic(board=board, title='Nyoah Sword Dance')
+        post1 = self._makePost(topic=topic1, body='Lorem ipsum')
+        post2 = self._makePost(topic=topic1, body='Dolor sit amet')
+        post3 = self._makePost(topic=topic2, body='Quas magnam et')
+        self.assertEqual({post2, post1}, set(topic1.posts))
+        self.assertEqual({post3}, set(topic2.posts))
+        DBSession.delete(topic1)
+        DBSession.flush()
+        self.assertTrue(inspect(topic1).deleted)
+        self.assertFalse(inspect(topic2).deleted)
+        self.assertTrue(inspect(post1).deleted)
+        self.assertTrue(inspect(post2).deleted)
+        self.assertFalse(inspect(post3).deleted)
+
+    def test_versioned(self):
+        from fanboi2.models import Topic
+        TopicHistory = Topic.__history_mapper__.class_
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Foobar')
+        self.assertEqual(topic.version, 1)
+        self.assertEqual(DBSession.query(TopicHistory).count(), 0)
+        topic.title = 'Foobar Baz'
+        DBSession.add(topic)
+        DBSession.flush()
+        self.assertEqual(topic.version, 2)
+        self.assertEqual(DBSession.query(TopicHistory).count(), 1)
+        topic_v1 = DBSession.query(TopicHistory).filter_by(version=1).one()
+        self.assertEqual(topic_v1.id, topic.id)
+        self.assertEqual(topic_v1.board_id, topic.board_id)
+        self.assertEqual(topic_v1.title, 'Foobar')
+        self.assertEqual(topic_v1.change_type, 'update')
+        self.assertEqual(topic_v1.version, 1)
+        self.assertIsNotNone(topic_v1.changed_at)
+        self.assertIsNotNone(topic_v1.created_at)
+        self.assertIsNone(topic_v1.updated_at)
+
+    def test_versioned_deleted(self):
+        from sqlalchemy import inspect
+        from fanboi2.models import Topic
+        TopicHistory = Topic.__history_mapper__.class_
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Foobar')
+        DBSession.delete(topic)
+        DBSession.flush()
+        self.assertTrue(inspect(topic).deleted)
+        self.assertEqual(DBSession.query(TopicHistory).count(), 1)
+        topic_v1 = DBSession.query(TopicHistory).filter_by(version=1).one()
+        self.assertEqual(topic_v1.id, topic.id)
+        self.assertEqual(topic_v1.board_id, topic.board_id)
+        self.assertEqual(topic_v1.title, 'Foobar')
+        self.assertEqual(topic_v1.change_type, 'delete')
+        self.assertEqual(topic_v1.version, 1)
+
+    def test_versioned_deleted_cascade(self):
+        from sqlalchemy import inspect
+        from fanboi2.models import Topic, Post
+        TopicHistory = Topic.__history_mapper__.class_
+        PostHistory = Post.__history_mapper__.class_
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Cosmic Agenda')
+        post = self._makePost(topic=topic, body='Foobar')
+        self.assertEqual(DBSession.query(TopicHistory).count(), 0)
+        self.assertEqual(DBSession.query(PostHistory).count(), 0)
+        DBSession.delete(topic)
+        DBSession.flush()
+        self.assertEqual(DBSession.query(TopicHistory).count(), 1)
+        self.assertEqual(DBSession.query(PostHistory).count(), 1)
+        topic_v1 = DBSession.query(TopicHistory).filter_by(version=1).one()
+        self.assertEqual(topic_v1.id, topic.id)
+        self.assertEqual(topic_v1.board_id, board.id)
+        self.assertEqual(topic_v1.change_type, 'delete')
+        self.assertEqual(topic_v1.version, 1)
+        post_v1 = DBSession.query(PostHistory).filter_by(version=1).one()
+        self.assertEqual(post_v1.id, post.id)
+        self.assertEqual(post_v1.topic_id, topic.id)
+        self.assertEqual(post_v1.change_type, 'delete')
+        self.assertEqual(post_v1.version, 1)
 
     def test_posts(self):
         board = self._makeBoard(title="Foobar", slug="foo")
@@ -1253,6 +1422,46 @@ class TestPostModel(ModelMixin, unittest.TestCase):
         post = self._makePost(topic=topic, body="Hello, world")
         self.assertEqual(post.topic, topic)
         self.assertEqual([post], list(topic.posts))
+
+    def test_versioned(self):
+        from fanboi2.models import Post
+        PostHistory = Post.__history_mapper__.class_
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Lorem ipsum dolor')
+        post = self._makePost(topic=topic, body='Foobar baz')
+        self.assertEqual(post.version, 1)
+        self.assertEqual(DBSession.query(PostHistory).count(), 0)
+        post.body = 'Foobar baz updated'
+        DBSession.add(post)
+        DBSession.flush()
+        self.assertEqual(post.version, 2)
+        self.assertEqual(DBSession.query(PostHistory).count(), 1)
+        post_v1 = DBSession.query(PostHistory).filter_by(version=1).one()
+        self.assertEqual(post_v1.id, post.id)
+        self.assertEqual(post_v1.topic_id, topic.id)
+        self.assertEqual(post_v1.body, 'Foobar baz')
+        self.assertEqual(post_v1.version, 1)
+        self.assertIsNotNone(post_v1.changed_at)
+        self.assertIsNotNone(post_v1.created_at)
+        self.assertIsNone(post_v1.updated_at)
+
+    def test_versioned_deleted(self):
+        from sqlalchemy import inspect
+        from fanboi2.models import Post
+        PostHistory = Post.__history_mapper__.class_
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Lorem ipsum dolor')
+        post = self._makePost(topic=topic, body='Foobar baz')
+        DBSession.delete(post)
+        DBSession.flush()
+        self.assertTrue(inspect(post).deleted)
+        self.assertEqual(DBSession.query(PostHistory).count(), 1)
+        post_v1 = DBSession.query(PostHistory).filter_by(version=1).one()
+        self.assertEqual(post_v1.id, post.id)
+        self.assertEqual(post_v1.topic_id, topic.id)
+        self.assertEqual(post_v1.body, 'Foobar baz')
+        self.assertEqual(post_v1.change_type, 'delete')
+        self.assertEqual(post_v1.version, 1)
 
     def test_number(self):
         board = self._makeBoard(title="Foobar", slug="foo")
