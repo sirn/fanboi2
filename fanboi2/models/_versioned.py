@@ -52,6 +52,8 @@ def _copy_history_column(column):
     new_column = column.copy()
     new_column.unique = False
     new_column.default = new_column.server_default = None
+    if new_column.primary_key:
+        new_column.autoincrement = False
     column.info['history_copy'] = new_column
     return new_column
 
@@ -117,17 +119,20 @@ def _history_mapper(model_mapper):
                    Integer,
                    primary_key=True,
                    autoincrement=False,
+                   nullable=False,
                    info=version_meta))
 
         new_columns.append(
             Column('change_type',
                    String,
+                   nullable=False,
                    info=version_meta))
 
         new_columns.append(
             Column('changed_at',
                    DateTime(timezone=True),
                    default=func.now(),
+                   nullable=False,
                    info=version_meta))
 
         if super_fks:

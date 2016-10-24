@@ -1,25 +1,25 @@
 """add versioning columns
 
 Revision ID: 84a168aadc17
-Revises: c71cae24d1
+Revises: c71cae24d11
 Create Date: 2016-10-24 11:56:06.244550
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '84a168aadc17'
-down_revision = 'c71cae24d1'
+down_revision = 'c71cae24d111'
 
 from alembic import op
 from sqlalchemy import sql
 import sqlalchemy as sa
 
 
-def _add_version_column(table):
-    op.add_column(table, sa.Column('version', sa.Integer))
-    version_column = sql.table(table, sql.column('version'))
-    op.execute(version_column.update().values(version=1))
-    op.alter_column(table, 'version', nullable=False)
+def _add_version_column(table_name):
+    op.add_column(table_name, sa.Column('version', sa.Integer))
+    table = sql.table(table_name, sql.column('version'))
+    op.execute(table.update().values(version=1))
+    op.alter_column(table_name, 'version', nullable=False)
 
 
 def upgrade():

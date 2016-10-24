@@ -80,7 +80,7 @@ class TestJsonType(unittest.TestCase):
 
     def _makeMetaData(self):
         from sqlalchemy import MetaData, create_engine
-        engine = create_engine(DATABASE_URI)
+        engine = create_engine(DATABASE_URI, echo=True)
         metadata = MetaData(bind=engine)
         return metadata
 
@@ -149,7 +149,7 @@ class TestVersioned(unittest.TestCase):
     def _makeBase(self):
         from sqlalchemy.engine import create_engine
         from sqlalchemy.ext.declarative import declarative_base
-        engine = create_engine(DATABASE_URI)
+        engine = create_engine(DATABASE_URI, echo=True)
         Base = declarative_base()
         Base.metadata.bind = engine
         return Base

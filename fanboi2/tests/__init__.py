@@ -87,7 +87,7 @@ class ModelMixin(_ModelInstanceSetup, unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super(ModelMixin, cls).setUpClass()
-        engine = create_engine(DATABASE_URI)
+        engine = create_engine(DATABASE_URI, echo=True)
         DBSession.configure(bind=engine)
         Base.metadata.bind = engine
 
