@@ -2,7 +2,7 @@ from sqlalchemy import event
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import func, select
 from sqlalchemy.sql.schema import Column, ForeignKey, UniqueConstraint
-from sqlalchemy.sql.sqltypes import Integer, String, Text, Boolean
+from sqlalchemy.sql.sqltypes import Integer, DateTime, String, Text, Boolean
 from ._base import Base, Versioned
 
 
@@ -12,8 +12,12 @@ class Post(Versioned, Base):
     sequential number specifying its position within :class:`Topic`.
     """
 
+    __tablename__ = 'post'
     __table_args__ = (UniqueConstraint('topic_id', 'number'),)
 
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     topic_id = Column(Integer, ForeignKey('topic.id'), nullable=False)
     ip_address = Column(String, nullable=False)
     ident = Column(String(32), nullable=True)

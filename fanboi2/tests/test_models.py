@@ -131,6 +131,8 @@ class TestBaseModel(ModelMixin, unittest.TestCase):
         MockBase = declarative_base()
 
         class MockModel(BaseModel, MockBase):
+            __tablename__ = 'mock'
+            id = Column(Integer, primary_key=True)
             y = Column(Integer)
             x = Column(Integer)
         return MockModel
@@ -140,10 +142,6 @@ class TestBaseModel(ModelMixin, unittest.TestCase):
         mock = model_class(x=1, y=2)
         self.assertEqual(mock.x, 1)
         self.assertEqual(mock.y, 2)
-
-    def test_tablename(self):
-        model_class = self._getTargetClass()
-        self.assertEqual(model_class.__tablename__, 'mock_model')
 
 
 class TestVersioned(unittest.TestCase):

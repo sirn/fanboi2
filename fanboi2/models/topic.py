@@ -3,7 +3,7 @@ from sqlalchemy import event
 from sqlalchemy.orm import backref, column_property, relationship
 from sqlalchemy.sql import desc, func, select
 from sqlalchemy.sql.schema import Column, ForeignKey
-from sqlalchemy.sql.sqltypes import Integer, Enum, Unicode
+from sqlalchemy.sql.sqltypes import Integer, DateTime, Enum, Unicode
 from ._base import Base, DBSession, Versioned
 from .post import Post
 
@@ -14,6 +14,11 @@ class Topic(Versioned, Base):
     to :class:`Post`.
     """
 
+    __tablename__ = 'topic'
+
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     board_id = Column(Integer, ForeignKey('board.id'), nullable=False)
     title = Column(Unicode(255), nullable=False)
     status = Column(Enum('open', 'locked', 'archived', name='topic_status'),

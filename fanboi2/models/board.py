@@ -1,7 +1,8 @@
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import synonym
+from sqlalchemy.sql import func
 from sqlalchemy.sql.schema import Column
-from sqlalchemy.sql.sqltypes import String, Text, Unicode
+from sqlalchemy.sql.sqltypes import Integer, DateTime, String, Text, Unicode
 from ._base import Base, JsonType, Versioned
 
 
@@ -19,6 +20,11 @@ class Board(Versioned, Base):
     should always be accessed using :attr:`slug`.
     """
 
+    __tablename__ = 'board'
+
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     slug = Column(String(64), unique=True, nullable=False)
     title = Column(Unicode(255), nullable=False)
     _settings = Column('settings', JsonType, nullable=False, default={})
