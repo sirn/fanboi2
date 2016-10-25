@@ -10,9 +10,9 @@
             <ul class="actions">
                 <li class="actions-item"><a class="button action" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='recent')}">Latest posts</a></li>
                 <li class="actions-item"><a class="button action" href="${request.route_path('topic', board=board.slug, topic=topic.id)}">All posts</a></li>
-                % if posts and topic.status == 'open' and posts[-1].number == topic.post_count:
-                    <li class="actions-item"><a class="button brand" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query="%s-" % topic.post_count)}" data-topic-reloader="true">Reload posts</a></li>
-                % elif posts and posts[-1].number != topic.post_count:
+                % if posts and topic.status == 'open' and posts[-1].number == topic.meta.post_count:
+                    <li class="actions-item"><a class="button brand" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query="%s-" % topic.meta.post_count)}" data-topic-reloader="true">Reload posts</a></li>
+                % elif posts and posts[-1].number != topic.meta.post_count:
                     <li class="actions-item"><a class="button action" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query="%s-" % posts[-1].number)}" data-topic-reloader="true" data-topic-reloader-label="Reload posts" data-topic-reloader-class="button brand">Newer posts</a></li>
                 % endif
             </ul>

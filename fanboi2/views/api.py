@@ -1,10 +1,10 @@
 import datetime
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql import or_, and_
+from sqlalchemy.sql import or_, and_, select
 from webob.multidict import MultiDict
 from fanboi2.errors import ParamsInvalidError, RateLimitedError, BaseError
 from fanboi2.forms import TopicForm, PostForm
-from fanboi2.models import DBSession, Board, Topic
+from fanboi2.models import DBSession, Board, Topic, TopicMeta
 from fanboi2.tasks import ResultProxy, add_topic, add_post, celery
 from fanboi2.utils import RateLimiter, serialize_request
 
@@ -64,10 +64,12 @@ def board_topics_get(request):
     :type request: pyramid.request.Request
     :rtype: sqlalchemy.orm.Query
     """
-    return board_get(request).topics. \
+    return board_get(request).topics.\
         filter(or_(Topic.status == "open",
                    and_(Topic.status != "open",
-                        Topic.posted_at >= datetime.datetime.now() -
+                            select([TopicMeta.posted_at]).\
+                            where(TopicMeta.topic_id==Topic.id).\
+                            as_scalar() >= datetime.datetime.now() -
                         datetime.timedelta(days=7))))
 
 

@@ -9,8 +9,8 @@
                 <a class="cascade-header-link" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='recent')}">${topic.title}</a>
             </div>
             <div class="cascade-body">
-                <p>Last posted ${formatters.format_datetime(request, topic.posted_at)}</p>
-                <p>Total of <strong>${topic.post_count} posts</strong></p>
+                <p>Last posted ${formatters.format_datetime(request, topic.meta.posted_at)}</p>
+                <p>Total of <strong>${topic.meta.post_count} posts</strong></p>
             </div>
         </div>
     </div>

@@ -52,25 +52,46 @@ class DummyRedis(object):
 
 class _ModelInstanceSetup(object):
 
-    def _makeBoard(self, **kwargs):
+    def _newBoard(self, **kwargs):
         from fanboi2.models import Board
-        board = Board(**kwargs)
+        return Board(**kwargs)
+
+    def _newTopic(self, **kwargs):
+        from fanboi2.models import Topic
+        return Topic(**kwargs)
+
+    def _newTopicMeta(self, **kwargs):
+        from fanboi2.models import TopicMeta
+        if not kwargs.get('post_count', None):
+            kwargs['post_count'] = 0
+        return TopicMeta(**kwargs)
+
+    def _newPost(self, **kwargs):
+        from fanboi2.models import Post
+        if not kwargs.get('ip_address', None):
+            kwargs['ip_address'] = '0.0.0.0'
+        return Post(**kwargs)
+
+    def _makeBoard(self, **kwargs):
+        board = self._newBoard(**kwargs)
         DBSession.add(board)
         DBSession.flush()
         return board
 
     def _makeTopic(self, **kwargs):
-        from fanboi2.models import Topic
-        topic = Topic(**kwargs)
+        topic = self._newTopic(**kwargs)
         DBSession.add(topic)
         DBSession.flush()
         return topic
 
+    def _makeTopicMeta(self, **kwargs):
+        topic_meta = self._newTopicMeta(**kwargs)
+        DBSession.add(topic_meta)
+        DBSession.flush()
+        return topic_meta
+
     def _makePost(self, **kwargs):
-        from fanboi2.models import Post
-        if not kwargs.get('ip_address', None):
-            kwargs['ip_address'] = '0.0.0.0'
-        post = Post(**kwargs)
+        post = self._newPost(**kwargs)
         DBSession.add(post)
         DBSession.flush()
         return post

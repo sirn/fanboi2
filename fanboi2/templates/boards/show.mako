@@ -8,8 +8,8 @@
         <div class="topic-header">
             <div class="container">
                 <h3 class="topic-header-title"><a href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='recent')}">${topic.title}</a></h3>
-                <p class="topic-header-item">Last posted <strong>${formatters.format_datetime(request, topic.posted_at)}</strong></p>
-                <p class="topic-header-item">Total of <strong>${topic.post_count} posts</strong></p>
+                <p class="topic-header-item">Last posted <strong>${formatters.format_datetime(request, topic.meta.posted_at)}</strong></p>
+                <p class="topic-header-item">Total of <strong>${topic.meta.post_count} posts</strong></p>
             </div>
         </div>
         <div class="topic-body">

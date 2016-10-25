@@ -116,10 +116,12 @@ class TestJsonType(unittest.TestCase):
 class TestSerializeModel(unittest.TestCase):
 
     def test_serialize(self):
-        from fanboi2.models import serialize_model, Board, Topic, Post
+        from fanboi2.models import serialize_model, \
+            Board, Topic, TopicMeta, Post
         self.assertEqual(serialize_model('board'), Board)
         self.assertEqual(serialize_model('topic'), Topic)
         self.assertEqual(serialize_model('post'), Post)
+        self.assertEqual(serialize_model('topic_meta'), TopicMeta)
         self.assertIsNone(serialize_model('foo'))
 
 
@@ -986,6 +988,9 @@ class TestBoardModel(ModelMixin, unittest.TestCase):
         self.assertTrue(inspect(topic1).deleted)
         self.assertTrue(inspect(topic2).deleted)
         self.assertFalse(inspect(topic3).deleted)
+        self.assertTrue(inspect(topic1.meta).deleted)
+        self.assertTrue(inspect(topic2.meta).deleted)
+        self.assertFalse(inspect(topic3.meta).deleted)
         self.assertTrue(inspect(post1).deleted)
         self.assertTrue(inspect(post2).deleted)
         self.assertTrue(inspect(post3).deleted)
@@ -1070,7 +1075,6 @@ class TestBoardModel(ModelMixin, unittest.TestCase):
         self.assertEqual(board.settings, new_settings)
 
     def test_topics(self):
-        from fanboi2.models import Topic
         board1 = self._makeBoard(title="Foobar", slug="foo")
         board2 = self._makeBoard(title="Lorem", slug="lorem")
         topic1 = self._makeTopic(board=board1, title="Heavenly Moon")
@@ -1082,7 +1086,6 @@ class TestBoardModel(ModelMixin, unittest.TestCase):
 
     def test_topics_sort(self):
         from datetime import datetime, timedelta
-        from fanboi2.models import Topic, Post
         board = self._makeBoard(title="Foobar", slug="foobar")
         topic1 = self._makeTopic(board=board, title="First")
         topic2 = self._makeTopic(board=board, title="Second")
@@ -1116,14 +1119,15 @@ class TestTopicModel(ModelMixin, unittest.TestCase):
 
     def test_relations(self):
         board = self._makeBoard(title="Foobar", slug="foo")
-        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
+        topic = self._newTopic(board=board, title="Lorem ipsum dolor")
+        topic_meta = self._makeTopicMeta(topic=topic, post_count=0)
         self.assertEqual(topic.board, board)
         self.assertEqual([], list(topic.posts))
         self.assertEqual([topic], list(board.topics))
+        self.assertEqual(topic.meta, topic_meta)
 
     def test_relations_cascade(self):
         from sqlalchemy import inspect
-        from fanboi2.models import Post
         board = self._makeBoard(title='Foobar', slug='foo')
         topic1 = self._makeTopic(board=board, title='Shamshir Dance')
         topic2 = self._makeTopic(board=board, title='Nyoah Sword Dance')
@@ -1136,6 +1140,8 @@ class TestTopicModel(ModelMixin, unittest.TestCase):
         DBSession.flush()
         self.assertTrue(inspect(topic1).deleted)
         self.assertFalse(inspect(topic2).deleted)
+        self.assertTrue(inspect(topic1.meta).deleted)
+        self.assertFalse(inspect(topic2.meta).deleted)
         self.assertTrue(inspect(post1).deleted)
         self.assertTrue(inspect(post2).deleted)
         self.assertFalse(inspect(post3).deleted)
@@ -1214,6 +1220,13 @@ class TestTopicModel(ModelMixin, unittest.TestCase):
         self.assertEqual([post1, post2, post3], list(topic1.posts))
         self.assertEqual([], list(topic2.posts))
 
+    def test_meta(self):
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Lorem ipsum dolor')
+        self.assertEqual(topic.meta.post_count, 0)
+        self.assertIsNone(topic.meta.posted_at)
+        self.assertIsNone(topic.meta.bumped_at)
+
     def test_auto_archive(self):
         board = self._makeBoard(title="Foobar", slug="foo", settings={
             'max_posts': 5,
@@ -1235,54 +1248,6 @@ class TestTopicModel(ModelMixin, unittest.TestCase):
         for i in range(3):
             post = self._makePost(topic=topic, body="Post %s" % i)
         self.assertEqual(topic.status, "locked")
-
-    def test_post_count(self):
-        board = self._makeBoard(title="Foobar", slug="foo")
-        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
-        self.assertEqual(topic.post_count, 0)
-        for x in range(3):
-            self._makePost(topic=topic, body="Hello, world!")
-        self.assertEqual(topic.post_count, 3)
-
-    def test_post_count_missing(self):
-        board = self._makeBoard(title="Foobar", slug="foo")
-        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
-        self.assertEqual(topic.post_count, 0)
-        for x in range(2):
-            self._makePost(topic=topic, body="Hello, world!")
-        post = self._makePost(topic=topic, body="Hello, world!")
-        self._makePost(topic=topic, body="Hello, world!")
-        self.assertEqual(topic.post_count, 4)
-        DBSession.delete(post)
-        DBSession.flush()
-        DBSession.expire(topic, ['post_count'])
-        self.assertEqual(topic.post_count, 4)
-
-    def test_posted_at(self):
-        from datetime import datetime, timezone
-        board = self._makeBoard(title="Foobar", slug="foo")
-        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
-        self.assertIsNone(topic.posted_at)
-        for x in range(2):
-            self._makePost(
-                topic=topic,
-                body="Hello, world!",
-                created_at=datetime(2013, 1, 2, 0, 4, 1, 0, timezone.utc))
-        post = self._makePost(topic=topic, body="Hello, world!")
-        self.assertEqual(topic.created_at, post.created_at)
-
-    def test_bumped_at(self):
-        from datetime import datetime, timezone
-        board = self._makeBoard(title="Foobar", slug="foo")
-        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
-        self.assertIsNone(topic.bumped_at)
-        post1 = self._makePost(
-            topic=topic,
-            body="Hello, world",
-            created_at=datetime(2013, 1, 2, 0, 4, 1, 0, timezone.utc))
-        post2 = self._makePost(topic=topic, body="Spam!", bumped=False)
-        self.assertEqual(topic.bumped_at, post1.created_at)
-        self.assertNotEqual(topic.bumped_at, post2.created_at)
 
     def test_scoped_posts(self):
         board = self._makeBoard(title="Foobar", slug="foobar")
@@ -1412,6 +1377,64 @@ class TestTopicModel(ModelMixin, unittest.TestCase):
             topic.scoped_posts("l5"))
 
 
+class TestTopicMetaModel(ModelMixin, unittest.TestCase):
+
+    def test_relations(self):
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._newTopic(board=board, title='Lorem ipsum dolor sit')
+        topic_meta = self._makeTopicMeta(topic=topic)
+        self.assertEqual(topic_meta.topic, topic)
+        self.assertEqual(topic_meta, topic.meta)
+
+    def test_post_count(self):
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
+        self.assertEqual(topic.meta.post_count, 0)
+        for x in range(3):
+            self._makePost(topic=topic, body="Hello, world!")
+        self.assertEqual(topic.meta.post_count, 3)
+
+    def test_post_count_deletion(self):
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
+        self.assertEqual(topic.meta.post_count, 0)
+        for x in range(2):
+            self._makePost(topic=topic, body="Hello, world!")
+        self._makePost(topic=topic, body="Hello, world!")
+        post = self._makePost(topic=topic, body="Hello, world!")
+        self.assertEqual(topic.meta.post_count, 4)
+        DBSession.delete(post)
+        DBSession.flush()
+        DBSession.expire(topic.meta)
+        self.assertEqual(topic.meta.post_count, 4)
+
+    def test_posted_at(self):
+        from datetime import datetime, timezone
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
+        self.assertIsNone(topic.meta.posted_at)
+        for x in range(2):
+            self._makePost(
+                topic=topic,
+                body="Hello, world!",
+                created_at=datetime(2013, 1, 2, 0, 4, 1, 0, timezone.utc))
+        post = self._makePost(topic=topic, body="Hello, world!")
+        self.assertEqual(topic.created_at, post.created_at)
+
+    def test_bumped_at(self):
+        from datetime import datetime, timezone
+        board = self._makeBoard(title="Foobar", slug="foo")
+        topic = self._makeTopic(board=board, title="Lorem ipsum dolor")
+        self.assertIsNone(topic.meta.bumped_at)
+        post1 = self._makePost(
+            topic=topic,
+            body="Hello, world",
+            created_at=datetime(2013, 1, 2, 0, 4, 1, 0, timezone.utc))
+        post2 = self._makePost(topic=topic, body="Spam!", bumped=False)
+        self.assertEqual(topic.meta.bumped_at, post1.created_at)
+        self.assertNotEqual(topic.meta.bumped_at, post2.created_at)
+
+
 class TestPostModel(ModelMixin, unittest.TestCase):
 
     def test_relations(self):
@@ -1470,7 +1493,6 @@ class TestPostModel(ModelMixin, unittest.TestCase):
         post3 = self._makePost(topic=topic2, body="Topic 2, post 1")
         post4 = self._makePost(topic=topic1, body="Topic 1, post 3")
         post5 = self._makePost(topic=topic2, body="Topic 2, post 2")
-        # Force update to ensure its number remain the same.
         post4.body = "Topic1, post 3, updated!"
         DBSession.add(post4)
         DBSession.flush()
@@ -1479,6 +1501,10 @@ class TestPostModel(ModelMixin, unittest.TestCase):
         self.assertEqual(post3.number, 1)
         self.assertEqual(post4.number, 3)
         self.assertEqual(post5.number, 2)
+        DBSession.delete(post5)
+        DBSession.flush()
+        post6 = self._makePost(topic=topic2, body="Topic 2, post 3")
+        self.assertEqual(post6.number, 3)
 
     def test_name(self):
         board = self._makeBoard(title="Foobar", slug="foo", settings={

@@ -1,11 +1,11 @@
 import re
-from sqlalchemy import event
-from sqlalchemy.orm import backref, column_property, relationship
+from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import desc, func, select
 from sqlalchemy.sql.schema import Column, ForeignKey
 from sqlalchemy.sql.sqltypes import Integer, DateTime, Enum, Unicode
-from ._base import Base, DBSession, Versioned
+from ._base import Base, Versioned
 from .post import Post
+from .topic_meta import TopicMeta
 
 
 class Topic(Versioned, Base):
@@ -24,13 +24,16 @@ class Topic(Versioned, Base):
     status = Column(Enum('open', 'locked', 'archived', name='topic_status'),
                     default='open',
                     nullable=False)
+
     board = relationship('Board',
                          backref=backref('topics',
                                          lazy='dynamic',
                                          cascade='all,delete',
-                                         order_by="desc(func.coalesce("
-                                                  "Topic.bumped_at,"
-                                                  "Topic.created_at))"))
+                                         order_by=desc(func.coalesce(
+                                             select([TopicMeta.bumped_at]).\
+                                                where(TopicMeta.topic_id==id).\
+                                                as_scalar(),
+                                             created_at))))
 
     QUERY = (
         ("single_post", re.compile("^(\d+)$")),
@@ -97,37 +100,3 @@ class Topic(Versioned, Base):
         return self.posts.order_by(False).\
             order_by(desc(Post.number)).\
             limit(count).all()[::-1]
-
-
-@event.listens_for(DBSession, 'before_flush')
-def update_topic_status(session, context, instances):
-    for obj in filter(lambda m: isinstance(m, Post), session.new):
-        topic = obj.topic
-        if topic.post_count is not None and \
-                topic.status == 'open' and \
-                topic.post_count >= (topic.board.settings['max_posts'] - 1):
-            topic.status = 'archived'
-            session.add(topic)
-
-
-Topic.post_count = column_property(
-    select([func.coalesce(func.max(Post.number), 0)]).
-    where(Post.topic_id == Topic.id)
-)
-
-
-Topic.posted_at = column_property(
-    select([Post.created_at]).
-        where(Post.topic_id == Topic.id).
-        order_by(desc(Post.created_at)).
-        limit(1)
-)
-
-
-Topic.bumped_at = column_property(
-    select([Post.created_at]).
-        where(Post.topic_id == Topic.id).
-        where(Post.bumped).
-        order_by(desc(Post.created_at)).
-        limit(1)
-)
