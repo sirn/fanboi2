@@ -147,7 +147,7 @@ def topic_show_get(request):
                 query='l10'))
         return render_to_response('topics/show_wait.mako', locals())
 
-    posts = topic_posts_get(request)
+    posts = topic_posts_get(request, topic=topic)
     if not topic.board_id == board.id or not posts:
         raise HTTPNotFound(request.path)
     form = SecurePostForm(request=request)

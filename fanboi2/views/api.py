@@ -134,7 +134,7 @@ def topic_get(request):
         one()
 
 
-def topic_posts_get(request):
+def topic_posts_get(request, topic=None):
     """Retrieve all posts in a single topic or by or by search criteria.
 
     :param request: A :class:`pyramid.request.Request` object.
@@ -142,7 +142,8 @@ def topic_posts_get(request):
     :type request: pyramid.request.Request
     :rtype: sqlalchemy.orm.Query
     """
-    topic = topic_get(request)
+    if topic is None:
+        topic = topic_get(request)
     if 'query' in request.matchdict:
         return topic.scoped_posts(request.matchdict['query'])
     return topic.posts
