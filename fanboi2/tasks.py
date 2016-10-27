@@ -93,6 +93,9 @@ def add_topic(request, board_id, title, body):
 
     with transaction.manager:
         board = DBSession.query(Board).get(board_id)
+        if board.status != 'open':
+            return 'failure', 'status_rejected', board.status
+
         post = Post(body=body, ip_address=request['remote_addr'])
         post.topic = Topic(board=board, title=title)
         DBSession.add(post)
@@ -125,6 +128,10 @@ def add_post(self, request, topic_id, body, bumped):
         topic = DBSession.query(Topic).get(topic_id)
         if topic.status != 'open':
             return 'failure', 'status_rejected', topic.status
+
+        board = topic.board
+        if not board.status in ('open', 'restricted'):
+            return 'failure', 'status_rejected', board.status
 
         post = Post(topic=topic, body=body, bumped=bumped)
         post.ip_address = request['remote_addr']

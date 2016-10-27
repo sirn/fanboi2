@@ -93,6 +93,57 @@ class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Topic).count(), 0)
         self.assertEqual(result.result, ('failure', 'dnsbl_rejected'))
 
+    def test_add_topic_board_restricted(self):
+        from fanboi2.models import Topic
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(
+                title='Foobar',
+                slug='foobar',
+                status='restricted')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 0)
+        self.assertEqual(result.result, (
+            'failure',
+            'status_rejected',
+            'restricted'))
+
+    def test_add_topic_board_locked(self):
+        from fanboi2.models import Topic
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(
+                title='Foobar',
+                slug='foobar',
+                status='locked')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 0)
+        self.assertEqual(result.result, (
+            'failure',
+            'status_rejected',
+            'locked'))
+
+    def test_add_topic_board_archived(self):
+        from fanboi2.models import Topic
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(
+                title='Foobar',
+                slug='foobar',
+                status='archived')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 0)
+        self.assertEqual(result.result, (
+            'failure',
+            'status_rejected',
+            'archived'))
+
 
 class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
 
@@ -150,6 +201,48 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
             'failure',
             'status_rejected',
             'locked'))
+
+    def test_add_post_board_locked(self):
+        import transaction
+        from fanboi2.models import Post
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(
+                title='Foobar',
+                slug='foobar',
+                status='locked')
+            topic = self._makeTopic(
+                board=board,
+                title='Hello, world!')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        result = self._makeOne(request, topic_id, 'Hi!', True)
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Post).count(), 0)
+        self.assertEqual(result.result, (
+            'failure',
+            'status_rejected',
+            'locked'))
+
+    def test_add_post_board_archived(self):
+        import transaction
+        from fanboi2.models import Post
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(
+                title='Foobar',
+                slug='foobar',
+                status='archived')
+            topic = self._makeTopic(
+                board=board,
+                title='Hello, world!')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        result = self._makeOne(request, topic_id, 'Hi!', True)
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Post).count(), 0)
+        self.assertEqual(result.result, (
+            'failure',
+            'status_rejected',
+            'archived'))
 
     def test_add_post_retry(self):
         import transaction

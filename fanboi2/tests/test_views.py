@@ -15,6 +15,7 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         board1 = self._makeBoard(title='Foobar', slug='foobar')
         board2 = self._makeBoard(title='Foobaz', slug='foobaz')
         board3 = self._makeBoard(title='Demo', slug='foodemo')
+        self._makeBoard(title='Archived', slug='archived', status='archived')
         request = self._GET()
         response = list(boards_get(request))
         self.assertSAEqual(response, [board3, board1, board2])
@@ -22,6 +23,17 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
     def test_board_get(self):
         from fanboi2.views.api import board_get
         board = self._makeBoard(title='Foobar', slug='foobar')
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        response = board_get(request)
+        self.assertSAEqual(response, board)
+
+    def test_board_get_archived(self):
+        from fanboi2.views.api import board_get
+        board = self._makeBoard(
+            title='Foobar',
+            slug='foobar',
+            status='archived')
         request = self._GET()
         request.matchdict['board'] = board.slug
         response = board_get(request)
@@ -410,13 +422,10 @@ class TestBoardViews(ViewMixin, unittest.TestCase):
         board1 = self._makeBoard(title='Foobar', slug='foobar')
         board2 = self._makeBoard(title='Foobaz', slug='foobaz')
         board3 = self._makeBoard(title='Demo', slug='foodemo')
+        self._makeBoard(title='Archived', slug='archived', status='archived')
         request = self._GET()
         response = root(request)
-        self.assertSAEqual(response['boards'], [
-            board3,
-            board1,
-            board2,
-        ])
+        self.assertSAEqual(response['boards'], [board3, board1, board2])
 
     def test_board_show(self):
         from fanboi2.views.boards import board_show
@@ -464,6 +473,17 @@ class TestBoardViews(ViewMixin, unittest.TestCase):
             topic9,
             topic10,
         ])
+
+    def test_board_show_archived(self):
+        from fanboi2.views.boards import board_show
+        board = self._makeBoard(
+            title='Foobar',
+            slug='foobar',
+            status='archived')
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        response = board_show(request)
+        self.assertSAEqual(response['board'], board)
 
     def test_board_show_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
@@ -538,6 +558,46 @@ class TestBoardViews(ViewMixin, unittest.TestCase):
         response = board_new_get(request)
         self.assertSAEqual(response['board'], board)
 
+    def test_board_new_get_restricted(self):
+        from pyramid.httpexceptions import HTTPNotFound
+        from fanboi2.views.boards import board_new_get
+        board = self._makeBoard(
+            title='Foobar',
+            slug='foobar',
+            status='restricted')
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        self._makeConfig(request, self._makeRegistry())
+        with self.assertRaises(HTTPNotFound):
+            board_new_get(request)
+
+    def test_board_new_get_locked(self):
+        from pyramid.httpexceptions import HTTPNotFound
+        from fanboi2.views.boards import board_new_get
+        board = self._makeBoard(
+            title='Foobar',
+            slug='foobar',
+            status='locked')
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        self._makeConfig(request, self._makeRegistry())
+        with self.assertRaises(HTTPNotFound):
+            board_new_get(request)
+
+    def test_board_new_get_archived(self):
+        from pyramid.httpexceptions import HTTPNotFound
+        from fanboi2.views.boards import board_new_get
+        board = self._makeBoard(
+            title='Foobar',
+            slug='foobar',
+            status='archived')
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        self._makeConfig(request, self._makeRegistry())
+        with self.assertRaises(HTTPNotFound):
+            board_new_get(request)
+
+
     # noinspection PyUnresolvedReferences
     @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_board_new_get_task(self, result_):
@@ -606,6 +666,25 @@ class TestBoardViews(ViewMixin, unittest.TestCase):
         request.params['task'] = 'dummy'
         config = self._makeConfig(request, self._makeRegistry())
         config.testing_add_renderer('boards/error_dnsbl.mako')
+
+        response = board_new_get(request)
+        result_.assert_called_with('dummy')
+        self.assertEqual(response.status, '422 Unprocessable Entity')
+
+    @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_board_new_get_status_rejected(self, result_):
+        from fanboi2.views.boards import board_new_get
+        board = self._makeBoard(title='Foobar', slug='foobar')
+        result_.return_value = DummyAsyncResult('dummy', 'success', [
+            'failure',
+            'status_rejected',
+            'restricted'])
+
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        request.params['task'] = 'dummy'
+        config = self._makeConfig(request, self._makeRegistry())
+        config.testing_add_renderer('boards/error_status.mako')
 
         response = board_new_get(request)
         result_.assert_called_with('dummy')

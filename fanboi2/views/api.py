@@ -40,7 +40,9 @@ def boards_get(request):
     :type request: pyramid.request.Request
     :rtype: sqlalchemy.orm.Query
     """
-    return DBSession.query(Board).order_by(Board.title)
+    return DBSession.query(Board).\
+        order_by(Board.title).\
+        filter(Board.status != 'archived')
 
 
 def board_get(request):

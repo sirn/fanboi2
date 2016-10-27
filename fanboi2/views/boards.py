@@ -59,6 +59,9 @@ def board_new_get(request):
     """
     board = board_get(request)
 
+    if board.status != 'open':
+        raise HTTPNotFound(request.path)
+
     if request.params.get('task'):
         try:
             task_result = celery.AsyncResult(request.params['task'])
@@ -69,6 +72,11 @@ def board_new_get(request):
             return response
         except DnsblRejectedError as e:
             response = render_to_response('boards/error_dnsbl.mako', locals())
+            response.status = e.http_status
+            return response
+        except StatusRejectedError as e:
+            status = e.status
+            response = render_to_response('boards/error_status.mako', locals())
             response.status = e.http_status
             return response
 

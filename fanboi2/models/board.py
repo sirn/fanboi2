@@ -2,7 +2,8 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import synonym
 from sqlalchemy.sql import func
 from sqlalchemy.sql.schema import Column
-from sqlalchemy.sql.sqltypes import Integer, DateTime, String, Text, Unicode
+from sqlalchemy.sql.sqltypes import Integer, DateTime, String, Text, \
+    Unicode, Enum
 from ._base import Base, JsonType, Versioned
 
 
@@ -30,6 +31,13 @@ class Board(Versioned, Base):
     _settings = Column('settings', JsonType, nullable=False, default={})
     agreements = Column(Text, nullable=True)
     description = Column(Text, nullable=True)
+    status = Column(Enum('open',
+                         'restricted',
+                         'locked',
+                         'archived',
+                         name='board_status'),
+                    default='open',
+                    nullable=False)
 
     def get_settings(self):
         settings = DEFAULT_BOARD_CONFIG.copy()

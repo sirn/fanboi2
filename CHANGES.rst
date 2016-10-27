@@ -3,8 +3,9 @@
 
 - [Add] Basic API for board, topic and post operations.
 - [Add] Dark theme ("Obsidian").
+- [Add] Board can now be locked or archived.
+- [Add] Board, topic and post will now create a history copy on change.
 - [Add] More random quotes.
-- [Add] Changes to board, topic or posts will now create a history copy.
 - [Fix] Imgur album now no longer matched in thumbnail extractor.
 - [Change] Rewrite all board templates.
 - [Change] Application settings can now be override via environment variables.

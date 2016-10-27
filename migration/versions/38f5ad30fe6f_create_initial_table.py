@@ -12,6 +12,7 @@ down_revision = None
 
 from alembic import op
 from fanboi2.models import JsonType
+from sqlalchemy.dialects.postgresql import ENUM
 import sqlalchemy as sa
 
 
@@ -60,3 +61,4 @@ def downgrade():
     op.drop_table('post')
     op.drop_table('topic')
     op.drop_table('board')
+    ENUM(name='topic_status').drop(op.get_bind(), checkfirst=True)
