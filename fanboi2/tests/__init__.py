@@ -1,3 +1,4 @@
+import logging
 import os
 import transaction
 import unittest
@@ -6,6 +7,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Query
 from webob.multidict import MultiDict
 from fanboi2.models import DBSession, Base, redis_conn
+
+
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 
 DATABASE_URI = os.environ.get(
@@ -108,7 +113,7 @@ class ModelMixin(_ModelInstanceSetup, unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super(ModelMixin, cls).setUpClass()
-        engine = create_engine(DATABASE_URI, echo=True)
+        engine = create_engine(DATABASE_URI)
         DBSession.configure(bind=engine)
         Base.metadata.bind = engine
 
