@@ -2,7 +2,8 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.renderers import render_to_response
 from sqlalchemy.orm.exc import NoResultFound
 from fanboi2.errors import RateLimitedError, ParamsInvalidError, \
-    SpamRejectedError, DnsblRejectedError, StatusRejectedError
+    SpamRejectedError, DnsblRejectedError, StatusRejectedError, \
+    BanRejectedError
 from fanboi2.forms import SecurePostForm, SecureTopicForm
 from fanboi2.tasks import celery
 from fanboi2.views.api import boards_get, board_get, board_topics_get,\
@@ -74,6 +75,10 @@ def board_new_get(request):
             response = render_to_response('boards/error_dnsbl.mako', locals())
             response.status = e.http_status
             return response
+        except BanRejectedError as e:
+            response = render_to_response('boards/error_ban.mako', locals())
+            response.status = e.http_status
+            return response
         except StatusRejectedError as e:
             status = e.status
             response = render_to_response('boards/error_status.mako', locals())
@@ -139,6 +144,10 @@ def topic_show_get(request):
             task = task_get(request, task_result)
         except SpamRejectedError as e:
             response = render_to_response('topics/error_spam.mako', locals())
+            response.status = e.http_status
+            return response
+        except BanRejectedError as e:
+            response = render_to_response('topics/error_ban.mako', locals())
             response.status = e.http_status
             return response
         except StatusRejectedError as e:

@@ -117,11 +117,14 @@ class TestSerializeModel(unittest.TestCase):
 
     def test_serialize(self):
         from fanboi2.models import serialize_model, \
-            Board, Topic, TopicMeta, Post
+            Board, Topic, TopicMeta, Post, Rule, RuleBan, RuleOverride
         self.assertEqual(serialize_model('board'), Board)
         self.assertEqual(serialize_model('topic'), Topic)
         self.assertEqual(serialize_model('post'), Post)
         self.assertEqual(serialize_model('topic_meta'), TopicMeta)
+        self.assertEqual(serialize_model('rule'), Rule)
+        self.assertEqual(serialize_model('rule_ban'), RuleBan)
+        self.assertEqual(serialize_model('rule_override'), RuleOverride)
         self.assertIsNone(serialize_model('foo'))
 
 
@@ -1617,3 +1620,96 @@ class TestPostModel(ModelMixin, unittest.TestCase):
         p1 = self._makePost(topic=topic1, body="Test", ip_address="10.0.1.1")
         p2 = self._makePost(topic=topic2, body="Test", ip_address="10.0.1.1")
         self.assertNotEqual(p1.ident, p2.ident)
+
+
+class TestRuleModel(ModelMixin, unittest.TestCase):
+
+    def test_inheritance(self):
+        from fanboi2.models import Rule
+        rule = self._makeRule(ip_address='127.0.0.1')
+        rule_ban = self._makeRuleBan(ip_address='127.0.0.1')
+        rule_override = self._makeRuleOverride(ip_address='127.0.0.1')
+        self.assertSAEqual(
+            DBSession.query(Rule).order_by(Rule.id).all(),
+            [rule, rule_ban, rule_override])
+
+    def test_listed(self):
+        from datetime import datetime, timedelta
+        from fanboi2.models import Rule
+        rule1 = self._makeRule(ip_address='10.0.1.0/24')
+        rule2 = self._makeRule(ip_address='10.0.2.0/24')
+        self._makeRule(ip_address='10.0.3.0/24', active=False)
+        self._makeRule(
+            ip_address='10.0.4.0/24',
+            active_until=datetime.now() - timedelta(days=1))
+
+        def _makeQuery(ip_address):
+            return DBSession.query(Rule).filter(Rule.listed(ip_address)).first()
+
+        self.assertEqual(rule1, _makeQuery('10.0.1.1'))
+        self.assertEqual(rule2, _makeQuery('10.0.2.1'))
+        self.assertEqual(None, _makeQuery('10.0.3.1'))
+        self.assertEqual(None, _makeQuery('10.0.4.1'))
+
+
+class TestRuleBanModel(ModelMixin, unittest.TestCase):
+
+    def test_inheritance(self):
+        rule_ban = self._makeRuleBan(ip_address='127.0.0.1')
+        self.assertEqual(rule_ban.type, 'ban')
+        self.assertEqual(rule_ban.ip_address, '127.0.0.1')
+
+    def test_listed(self):
+        from datetime import datetime, timedelta
+        from fanboi2.models import RuleBan
+        rule_ban1 = self._makeRuleBan(ip_address='10.0.1.0/24')
+        rule_ban2 = self._makeRuleBan(ip_address='10.0.2.0/24')
+        self._makeRule(ip_address='10.0.3.0/24')
+        self._makeRuleOverride(ip_address='10.0.4.0/24')
+        self._makeRuleBan(ip_address='10.0.5.0/24', active=False)
+        self._makeRuleBan(
+            ip_address='10.0.6.0/24',
+            active_until=datetime.now() - timedelta(days=1))
+
+        def _makeQuery(ip_address):
+            return DBSession.query(RuleBan).\
+                filter(RuleBan.listed(ip_address)).first()
+
+        self.assertEqual(rule_ban1, _makeQuery('10.0.1.1'))
+        self.assertEqual(rule_ban2, _makeQuery('10.0.2.1'))
+        self.assertEqual(None, _makeQuery('10.0.3.1'))
+        self.assertEqual(None, _makeQuery('10.0.4.1'))
+        self.assertEqual(None, _makeQuery('10.0.5.1'))
+        self.assertEqual(None, _makeQuery('10.0.6.1'))
+
+
+class TestRuleOverrideModel(ModelMixin, unittest.TestCase):
+
+    def test_inheritance(self):
+        rule_override = self._makeRuleOverride(ip_address='127.0.0.1')
+        self.assertEqual(rule_override.type, 'override')
+        self.assertEqual(rule_override.ip_address, '127.0.0.1')
+        self.assertEqual(rule_override.override, {})
+
+    def test_listed(self):
+        from datetime import datetime, timedelta
+        from fanboi2.models import RuleOverride
+        rule_override1 = self._makeRuleOverride(ip_address='10.0.1.0/24')
+        rule_override2 = self._makeRuleOverride(ip_address='10.0.2.0/24')
+        self._makeRule(ip_address='10.0.3.0/24')
+        self._makeRuleBan(ip_address='10.0.4.0/24')
+        self._makeRuleOverride(ip_address='10.0.5.0/24', active=False)
+        self._makeRuleOverride(
+            ip_address='10.0.6.0/24',
+            active_until=datetime.now() - timedelta(days=1))
+
+        def _makeQuery(ip_address):
+            return DBSession.query(RuleOverride).\
+                filter(RuleOverride.listed(ip_address)).first()
+
+        self.assertEqual(rule_override1, _makeQuery('10.0.1.1'))
+        self.assertEqual(rule_override2, _makeQuery('10.0.2.1'))
+        self.assertEqual(None, _makeQuery('10.0.3.1'))
+        self.assertEqual(None, _makeQuery('10.0.4.1'))
+        self.assertEqual(None, _makeQuery('10.0.5.1'))
+        self.assertEqual(None, _makeQuery('10.0.6.1'))

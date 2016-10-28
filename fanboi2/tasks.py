@@ -2,7 +2,8 @@ import transaction
 from celery import Celery, states
 from sqlalchemy.exc import IntegrityError
 from fanboi2.errors import serialize_error
-from fanboi2.models import DBSession, Post, Topic, Board, serialize_model
+from fanboi2.models import DBSession, Post, Topic, Board, \
+    RuleBan, RuleOverride, serialize_model
 from fanboi2.utils import akismet, dnsbl
 
 celery = Celery()
@@ -85,16 +86,30 @@ def add_topic(request, board_id, title, body):
     :type body: str
     :rtype: tuple
     """
-    if akismet.spam(request, body):
-        return 'failure', 'spam_rejected'
-
-    if dnsbl.listed(request['remote_addr']):
-        return 'failure', 'dnsbl_rejected'
-
     with transaction.manager:
+        if DBSession.query(RuleBan).\
+           filter(RuleBan.listed(request['remote_addr'])).\
+           count() > 0:
+            return 'failure', 'ban_rejected'
+
+        override = {}
+        rule_override = DBSession.query(RuleOverride).filter(
+            RuleOverride.listed(request['remote_addr'])).\
+            first()
+
+        if rule_override is not None:
+            override = rule_override.override
+
         board = DBSession.query(Board).get(board_id)
-        if board.status != 'open':
-            return 'failure', 'status_rejected', board.status
+        board_status = override.get('status', board.status)
+        if board_status != 'open':
+            return 'failure', 'status_rejected', board_status
+
+        if akismet.spam(request, body):
+            return 'failure', 'spam_rejected'
+
+        if dnsbl.listed(request['remote_addr']):
+            return 'failure', 'dnsbl_rejected'
 
         post = Post(body=body, ip_address=request['remote_addr'])
         post.topic = Topic(board=board, title=title)
@@ -121,20 +136,37 @@ def add_post(self, request, topic_id, body, bumped):
     :type bumped: bool
     :rtype: tuple
     """
-    if akismet.spam(request, body):
-        return 'failure', 'spam_rejected'
-
     with transaction.manager:
+        if DBSession.query(RuleBan).\
+           filter(RuleBan.listed(request['remote_addr'])).\
+           count() > 0:
+            return 'failure', 'ban_rejected'
+
         topic = DBSession.query(Topic).get(topic_id)
         if topic.status != 'open':
             return 'failure', 'status_rejected', topic.status
 
-        board = topic.board
-        if not board.status in ('open', 'restricted'):
-            return 'failure', 'status_rejected', board.status
+        override = {}
+        rule_override = DBSession.query(RuleOverride).filter(
+            RuleOverride.listed(request['remote_addr'])).\
+            first()
 
-        post = Post(topic=topic, body=body, bumped=bumped)
-        post.ip_address = request['remote_addr']
+        if rule_override is not None:
+            override = rule_override.override
+
+        board = topic.board
+        board_status = override.get('status', board.status)
+        if not board_status in ('open', 'restricted'):
+            return 'failure', 'status_rejected', board_status
+
+        if akismet.spam(request, body):
+            return 'failure', 'spam_rejected'
+
+        post = Post(
+            topic=topic,
+            body=body,
+            bumped=bumped,
+            ip_address=request['remote_addr'])
 
         try:
             DBSession.add(post)

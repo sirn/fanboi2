@@ -672,6 +672,24 @@ class TestBoardViews(ViewMixin, unittest.TestCase):
         self.assertEqual(response.status, '422 Unprocessable Entity')
 
     @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_board_new_get_ban_rejected(self, result_):
+        from fanboi2.views.boards import board_new_get
+        board = self._makeBoard(title='Foobar', slug='foobar')
+        result_.return_value = DummyAsyncResult('dummy', 'success', [
+            'failure',
+            'ban_rejected'])
+
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        request.params['task'] = 'dummy'
+        config = self._makeConfig(request, self._makeRegistry())
+        config.testing_add_renderer('boards/error_ban.mako')
+
+        response = board_new_get(request)
+        result_.assert_called_with('dummy')
+        self.assertEqual(response.status, '422 Unprocessable Entity')
+
+    @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_board_new_get_status_rejected(self, result_):
         from fanboi2.views.boards import board_new_get
         board = self._makeBoard(title='Foobar', slug='foobar')
@@ -868,6 +886,28 @@ class TestBoardViews(ViewMixin, unittest.TestCase):
         request.params['task'] = 'dummy'
         config = self._makeConfig(request, self._makeRegistry())
         config.testing_add_renderer('topics/error_spam.mako')
+
+        response = topic_show_get(request)
+        result_.assert_called_with('dummy')
+        self.assertEqual(response.status, '422 Unprocessable Entity')
+
+    @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
+    def test_topic_show_get_ban_rejected(self, result_):
+        from fanboi2.views.boards import topic_show_get
+        board = self._makeBoard(title='Foobar', slug='foobar')
+        topic = self._makeTopic(board=board, title='Foobar')
+        self._makePost(topic=topic, body='Lorem ipsum')
+        self._makePost(topic=topic, body='Dolor sit amet')
+        result_.return_value = DummyAsyncResult('dummy', 'success', [
+            'failure',
+            'ban_rejected'])
+
+        request = self._GET()
+        request.matchdict['board'] = board.slug
+        request.matchdict['topic'] = topic.id
+        request.params['task'] = 'dummy'
+        config = self._makeConfig(request, self._makeRegistry())
+        config.testing_add_renderer('topics/error_ban.mako')
 
         response = topic_show_get(request)
         result_.assert_called_with('dummy')

@@ -3,6 +3,8 @@
 
 - [Add] Basic API for board, topic and post operations.
 - [Add] Dark theme ("Obsidian").
+- [Add] Banning rules allowing an IP address to be blocked.
+- [Add] Overriding rules allowing board status to be overridden per IP address.
 - [Add] Board can now be locked or archived.
 - [Add] Board, topic and post will now create a history copy on change.
 - [Add] More random quotes.

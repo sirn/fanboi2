@@ -5,9 +5,9 @@ from ._base import Base
 
 
 class TopicMeta(Base):
-    """Model class that topic metadata. This model holds data that are related
-    to internal workings of the topic model that are not part of the
-    versionable records.
+    """Model class that provides topic metadata. This model holds data that
+    are related to internal workings of the topic model that are not part of
+    the versionable records.
     """
 
     __tablename__ = 'topic_meta'

@@ -8,6 +8,7 @@ def serialize_error(type, *args):
         'params_invalid': ParamsInvalidError,
         'spam_rejected': SpamRejectedError,
         'dnsbl_rejected': DnsblRejectedError,
+        'ban_rejected': BanRejectedError,
         'status_rejected': StatusRejectedError,
     }.get(type, BaseError)(*args)
 
@@ -115,12 +116,30 @@ class DnsblRejectedError(BaseError):
     """
 
     def message(self, request):
-        return 'The IP address is blocked in one of DNSBL databases ' +\
+        return 'The IP address is being listed in one of DNSBL databases ' +\
                'and therefore rejected.'
 
     @property
     def name(self):
         return 'dnsbl_rejected'
+
+    @property
+    def http_status(self):
+        return '422 Unprocessable Entity'
+
+
+class BanRejectedError(BaseError):
+    """An :class:`Exception` class that will be raised if user request was
+    blocked due user IP address being listed in the ban list.
+    """
+
+    def message(self, request):
+        return 'The IP address is being listed in the ban list ' +\
+               'and therefore rejected.'
+
+    @property
+    def name(self):
+        return 'ban_rejected'
 
     @property
     def http_status(self):

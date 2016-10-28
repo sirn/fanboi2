@@ -51,6 +51,15 @@ class TestSerializeError(RegistryMixin, unittest.TestCase):
         self.assertEqual(error.name, 'dnsbl_rejected')
         self.assertEqual(error.http_status, '422 Unprocessable Entity')
 
+    def test_ban_rejected(self):
+        from fanboi2.errors import serialize_error, BanRejectedError
+        error = serialize_error('ban_rejected')
+        request = self._makeRequest()
+        self.assertIsInstance(error, BanRejectedError)
+        self.assertIsNotNone(error.message(request))
+        self.assertEqual(error.name, 'ban_rejected')
+        self.assertEqual(error.http_status, '422 Unprocessable Entity')
+
     def test_status_rejected(self):
         from fanboi2.errors import serialize_error, StatusRejectedError
         error = serialize_error('status_rejected', 'locked')

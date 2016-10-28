@@ -8,6 +8,9 @@ from .board import Board
 from .topic import Topic
 from .topic_meta import TopicMeta
 from .post import Post
+from .rule import Rule
+from .rule_ban import RuleBan
+from .rule_override import RuleOverride
 
 
 _MODELS = {
@@ -15,6 +18,9 @@ _MODELS = {
     'topic': Topic,
     'topic_meta': TopicMeta,
     'post': Post,
+    'rule': Rule,
+    'rule_ban': RuleBan,
+    'rule_override': RuleOverride,
 }
 
 def serialize_model(type_):

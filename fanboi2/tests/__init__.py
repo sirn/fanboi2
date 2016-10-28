@@ -77,6 +77,18 @@ class _ModelInstanceSetup(object):
             kwargs['ip_address'] = '0.0.0.0'
         return Post(**kwargs)
 
+    def _newRule(self, **kwargs):
+        from fanboi2.models import Rule
+        return Rule(**kwargs)
+
+    def _newRuleBan(self, **kwargs):
+        from fanboi2.models import RuleBan
+        return RuleBan(**kwargs)
+
+    def _newRuleOverride(self, **kwargs):
+        from fanboi2.models import RuleOverride
+        return RuleOverride(**kwargs)
+
     def _makeBoard(self, **kwargs):
         board = self._newBoard(**kwargs)
         DBSession.add(board)
@@ -101,6 +113,23 @@ class _ModelInstanceSetup(object):
         DBSession.flush()
         return post
 
+    def _makeRule(self, **kwargs):
+        rule = self._newRule(**kwargs)
+        DBSession.add(rule)
+        DBSession.flush()
+        return rule
+
+    def _makeRuleBan(self, **kwargs):
+        rule_ban = self._newRuleBan(**kwargs)
+        DBSession.add(rule_ban)
+        DBSession.flush()
+        return rule_ban
+
+    def _makeRuleOverride(self, **kwargs):
+        rule_override = self._newRuleOverride(**kwargs)
+        DBSession.add(rule_override)
+        DBSession.flush()
+        return rule_override
 
 class ModelMixin(_ModelInstanceSetup, unittest.TestCase):
 
@@ -129,6 +158,12 @@ class ModelMixin(_ModelInstanceSetup, unittest.TestCase):
         transaction.abort()
         Base.metadata.drop_all()
         redis_conn._redis = None
+
+    def assertSAEqual(self, first, second, msg=None):
+        if isinstance(first, Query):
+            return self.assertListEqual(list(first), second, msg)
+        else:
+            return self.assertEqual(first, second, msg)
 
 
 class RegistryMixin(unittest.TestCase):
@@ -231,9 +266,3 @@ class ViewMixin(ModelMixin, RegistryMixin, unittest.TestCase):
         request.content_type = 'application/json'
         request.json_body = data
         return request
-
-    def assertSAEqual(self, first, second, msg=None):
-        if isinstance(first, Query):
-            return self.assertListEqual(list(first), second, msg)
-        else:
-            return self.assertEqual(first, second, msg)
