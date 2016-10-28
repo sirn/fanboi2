@@ -772,6 +772,72 @@ class TestVersioned(unittest.TestCase):
         transaction.abort()
         self._dropTable(Base)
 
+    def test_versioned_relationship_cascade_null_parent(self):
+        from sqlalchemy import inspect
+        from sqlalchemy.orm import relationship
+        from sqlalchemy.sql.schema import Column, ForeignKey
+        from sqlalchemy.sql.sqltypes import Integer, String
+
+        mappers = []
+        Base = self._makeBase()
+        Session = self._makeSession(Base)
+        Versioned = self._getTargetClass(mappers)
+
+        class Relate(Versioned, Base):
+            __tablename__ = 'relate'
+            id = Column(Integer, primary_key=True)
+
+        class Thing(Versioned, Base):
+            __tablename__ = 'thing'
+            id = Column(Integer, primary_key=True)
+            relate_id = Column(Integer, ForeignKey('relate.id'))
+            relate = relationship('Relate', backref='things')
+
+        class Child(Versioned, Base):
+            __tablename__ = 'child'
+            id = Column(Integer, primary_key=True)
+            thing_id = Column(Integer, ForeignKey('thing.id'))
+            thing = relationship('Thing', backref='children')
+
+        self._getSetupFunction(mappers)(Session)
+        self._makeTable(Base)
+        RelateHistory = Relate.__history_mapper__.class_
+        ThingHistory = Thing.__history_mapper__.class_
+        ChildHistory = Child.__history_mapper__.class_
+        transaction.begin()
+
+        relate = Relate()
+        thing = Thing(relate=relate)
+        child = Child(thing=thing)
+        Session.add_all([relate, thing, child])
+        Session.flush()
+        self.assertEqual(relate.version, 1)
+        self.assertEqual(thing.version, 1)
+        self.assertEqual(child.version, 1)
+        self.assertEqual(Session.query(RelateHistory).count(), 0)
+        self.assertEqual(Session.query(ThingHistory).count(), 0)
+        self.assertEqual(Session.query(ChildHistory).count(), 0)
+
+        Session.delete(thing)
+        Session.flush()
+        self.assertTrue(inspect(thing).deleted)
+        self.assertEqual(relate.version, 1)
+        self.assertEqual(child.version, 2)
+        self.assertEqual(Session.query(RelateHistory).count(), 0)
+        self.assertEqual(Session.query(ThingHistory).count(), 1)
+        self.assertEqual(Session.query(ChildHistory).count(), 1)
+        thing_v1 = Session.query(ThingHistory).filter_by(version=1).one()
+        self.assertEqual(thing_v1.relate_id, relate.id)
+        self.assertEqual(thing_v1.change_type, 'delete')
+        self.assertEqual(thing_v1.version, 1)
+        child_v1 = Session.query(ChildHistory).filter_by(version=1).one()
+        self.assertEqual(child_v1.thing_id, thing.id)
+        self.assertEqual(child_v1.change_type, 'update.cascade')
+        self.assertEqual(child_v1.version, 1)
+
+        transaction.abort()
+        self._dropTable(Base)
+
     def test_versioned_relationship_cascade_all(self):
         from sqlalchemy import inspect
         from sqlalchemy.orm import relationship, backref
@@ -1187,16 +1253,19 @@ class TestTopicModel(ModelMixin, unittest.TestCase):
 
     def test_versioned_deleted_cascade(self):
         from sqlalchemy import inspect
-        from fanboi2.models import Topic, Post
+        from fanboi2.models import Board, Topic, Post
+        BoardHistory = Board.__history_mapper__.class_
         TopicHistory = Topic.__history_mapper__.class_
         PostHistory = Post.__history_mapper__.class_
         board = self._makeBoard(title='Foobar', slug='foo')
         topic = self._makeTopic(board=board, title='Cosmic Agenda')
         post = self._makePost(topic=topic, body='Foobar')
+        self.assertEqual(DBSession.query(BoardHistory).count(), 0)
         self.assertEqual(DBSession.query(TopicHistory).count(), 0)
         self.assertEqual(DBSession.query(PostHistory).count(), 0)
         DBSession.delete(topic)
         DBSession.flush()
+        self.assertEqual(DBSession.query(BoardHistory).count(), 0)
         self.assertEqual(DBSession.query(TopicHistory).count(), 1)
         self.assertEqual(DBSession.query(PostHistory).count(), 1)
         topic_v1 = DBSession.query(TopicHistory).filter_by(version=1).one()

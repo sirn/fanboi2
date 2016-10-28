@@ -363,6 +363,13 @@ def _create_history_deleted(session, objs):
                not prop.cascade.delete and \
                not prop.passive_deletes == 'all' and \
                _is_versioned_object(prop.mapper.class_):
+                skip_history = False
+                for c in prop.local_columns:
+                    if c.foreign_keys:
+                        skip_history = True
+                        break
+                if skip_history:
+                    continue
                 related = getattr(obj, prop.key)
                 try:
                     for target_obj in related:
