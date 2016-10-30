@@ -14,7 +14,7 @@ def page_show(request):
 
 
 def includeme(config):  # pragma: no cover
-    config.add_route('page', '/{page:\w+}/')
+    config.add_route('page', '/{page:.*}/')
     config.add_view(
         page_show,
         request_method='GET',

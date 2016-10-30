@@ -283,11 +283,11 @@ def includeme(config):  # pragma: no cover
                     renderer='json')
 
     _map_api_route('api_pages', '/1.0/pages/', {'GET': pages_get})
-    _map_api_route('api_page', '/1.0/pages/{page:\w+}/', {'GET': page_get})
+    _map_api_route('api_page', '/1.0/pages/{page:.*}/', {'GET': page_get})
 
     _map_api_route('api_boards', '/1.0/boards/', {'GET': boards_get})
-    _map_api_route('api_board', '/1.0/boards/{board:\w+}/', {'GET': board_get})
-    _map_api_route('api_board_topics', '/1.0/boards/{board:\w+}/topics/', {
+    _map_api_route('api_board', '/1.0/boards/{board}/', {'GET': board_get})
+    _map_api_route('api_board_topics', '/1.0/boards/{board}/topics/', {
         'GET': board_topics_get,
         'POST': board_topics_post})
 

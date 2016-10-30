@@ -234,11 +234,11 @@ def includeme(config):  # pragma: no cover
                     renderer=renderer)
 
     _map_view('root', '/', 'root.mako', {'GET': root})
-    _map_view('board', '/{board:\w+}/', 'boards/show.mako', {'GET': board_show})
-    _map_view('board_all', '/{board:\w+}/all/', 'boards/all.mako', {
+    _map_view('board', '/{board}/', 'boards/show.mako', {'GET': board_show})
+    _map_view('board_all', '/{board}/all/', 'boards/all.mako', {
         'GET': board_all})
 
-    _map_view('board_new', '/{board:\w+}/new/', 'boards/new.mako', {
+    _map_view('board_new', '/{board}/new/', 'boards/new.mako', {
         'GET': board_new_get,
         'POST': board_new_post})
 

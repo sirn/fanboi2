@@ -20,7 +20,7 @@ def _get_internal_page(slug):
 
 def global_css(context, request):
     """Returns a string of inline global custom CSS for site-wide CSS override.
-    This custom CSS is the content of ``internal:global_css`` page.
+    This custom CSS is the content of ``internal:global/css`` page.
 
     :param context: A :class:`mako.runtime.Context` object.
     :param request: A :class:`pyramid.request.Request` object.
@@ -29,14 +29,14 @@ def global_css(context, request):
     :type request: pyramid.request.Request
     :rtype: Markup or None
     """
-    page = _get_internal_page('global_css')
+    page = _get_internal_page('global/css')
     if page:
         return Markup(page)
 
 
 def global_appendix(context, request):
     """Returns a HTML of global appendix content. This appendix content is the
-    content of ``internal:global_appendix`` page.
+    content of ``internal:global/appendix`` page.
 
     :param context: A :class:`mako.runtime.Context` object.
     :param request: A :class:`pyramid.request.Request` object.
@@ -45,6 +45,6 @@ def global_appendix(context, request):
     :type request: pyramid.request.Request
     :rtype: Markup or None
     """
-    page = _get_internal_page('global_appendix')
+    page = _get_internal_page('global/appendix')
     if page:
         return format_markdown(context, request, page)

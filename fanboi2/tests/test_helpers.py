@@ -12,7 +12,7 @@ class TestPartials(ModelMixin, RegistryMixin, unittest.TestCase):
         self._makePage(
             body='body { color: #000; }',
             formatter='none',
-            slug='global_css',
+            slug='global/css',
             namespace='internal',
             title='Global CSS')
         self.assertEqual(
@@ -32,7 +32,7 @@ class TestPartials(ModelMixin, RegistryMixin, unittest.TestCase):
         self._makePage(
             body='* Hello',
             formatter='markdown',
-            slug='global_appendix',
+            slug='global/appendix',
             namespace='internal',
             title='Global Appendix')
         self.assertEqual(

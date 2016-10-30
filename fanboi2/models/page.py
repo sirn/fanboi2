@@ -5,8 +5,8 @@ from ._base import Base, Versioned
 
 
 INTERNAL_PAGES = (
-    ('global_css', 'none'),
-    ('global_appendix', 'markdown'),
+    ('global/css', 'none'),
+    ('global/appendix', 'markdown'),
 )
 
 
