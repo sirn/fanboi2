@@ -1,4 +1,5 @@
-<%namespace name="formatters" module="fanboi2.formatters" />
+<%namespace name="formatters" module="fanboi2.helpers.formatters" />
+<%namespace name="partials" module="fanboi2.helpers.partials" />
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,6 +20,13 @@
     % if hasattr(self, 'header'):
         ${self.header()}
     % endif
+
+    <% global_css = partials.global_css(request) %>
+    % if global_css:
+        <style>
+            ${global_css}
+        </style>
+    % endif
 </head>
 <body id="${request.route_name}" class="${formatters.user_theme(request)}"${' ' + self.body_args() if hasattr(self, 'body_args') else ''}>
 
@@ -29,6 +37,15 @@
 </header>
 
 ${self.body()}
+
+<% global_appendix = partials.global_appendix(request) %>
+% if global_appendix:
+    <section class="appendix">
+        <div class="container">
+            ${global_appendix}
+        </div>
+    </section>
+% endif
 
 <footer class="footer">
     <div class="container">

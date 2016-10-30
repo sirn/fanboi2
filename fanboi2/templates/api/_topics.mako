@@ -1,9 +1,9 @@
-<%namespace name='formatters' module='fanboi2.formatters' />
+<%namespace name='formatters' module='fanboi2.helpers.formatters' />
 <div class="api-section" id="api-board-topics-new">
     <div class="api-request">
         <div class="container">
             <h2 class="api-request-title">Creating new topic in a board <span class="api-request-name">#api-board-topics-new</span></h2>
-            <div class="api-request-endpoint"><span class="api-request-verb verb-post">POST</span> ${formatters.unquoted_path(request, 'api_board_topics', board='{api_board.slug}')}</div>
+            <div class="api-request-endpoint"><span class="api-request-verb verb-post">POST</span> ${formatters.unquoted_path(request, 'api_board_topics', board='{api-board.slug}')}</div>
             <div class="api-request-body">
                 <p>Use this endpoint to create a new topic in a specific board. Please note that this API will <em>enqueue</em> the topic with the global posting queue and will not guarantee that the topic will be successfully posted. To retrieve the status of topic creation, please see <a href="#api-task">#api-task</a>.</p>
                 <table class="api-table">
@@ -41,7 +41,7 @@
     <div class="api-request">
         <div class="container">
             <h2 class="api-request-title">Retrieving topics associated to a board <span class="api-request-name">#api-board-topics</span></h2>
-            <div class="api-request-endpoint"><span class="api-request-verb verb-get">GET</span> ${formatters.unquoted_path(request, 'api_board_topics', board='{api_board.slug}')}</div>
+            <div class="api-request-endpoint"><span class="api-request-verb verb-get">GET</span> ${formatters.unquoted_path(request, 'api_board_topics', board='{api-board.slug}')}</div>
             <div class="api-request-body">
                 <p>Use this endpoint to retrieve a list of topics associated to the specific board. By default this API will return the same data as board's "All topics" page which includes open topic and topic that are closed (locked and archived) within 1 week of last posted date. It is also possible to include recent posts with <em>query string</em> but doing so with this API is not recommended.</p>
                 <table class="api-table">
@@ -75,7 +75,7 @@
     <div class="api-request">
         <div class="container">
             <h2 class="api-request-title">Retrieving a topic <span class="api-request-name">#api-topic</span></h2>
-            <div class="api-request-endpoint"><span class="api-request-verb verb-get">GET</span> ${formatters.unquoted_path(request, 'api_topic', topic='{api_topic.id}')}</div>
+            <div class="api-request-endpoint"><span class="api-request-verb verb-get">GET</span> ${formatters.unquoted_path(request, 'api_topic', topic='{api-topic.id}')}</div>
             <div class="api-request-body">
                 <p>Use this endpoint to retrieve any individual topic. This endpoint by default will not include any posts but it is possible to instruct the API to include them using <em>query string</em>. Posts retrieved as part of this API is limited to the recent 30 posts. For retrieving a full list of posts, see <a href="#api-topic-posts">#api-topic-posts</a> and <a href="#api-topic-posts-scoped">#api-topic-posts-scoped</a>.</p>
                 <table class="api-table">

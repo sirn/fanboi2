@@ -270,6 +270,26 @@ def format_post(context, request, post, shorten=None):
     return Markup(text)
 
 
+def format_page(context, request, page):
+    """Format a :class:`fanboi2.models.Page` object content based on the
+    formatter specified in such page.
+
+    :param context: A :class:`mako.runtime.Context` object.
+    :param request: A :class:`pyramid.request.Request` object.
+    :param page: A :class:`fanboi2.models.Page` object.
+
+    :type context: mako.runtime.Context or None
+    :type request: pyramid.request.Request
+    :type page: fanboi2.models.Page
+    :rtype: Markup
+    """
+    if page.formatter == 'markdown':
+        return format_markdown(context, request, page.body)
+    elif page.formatter == 'html':
+        return Markup(page.body)
+    return Markup(html.escape(page.body))
+
+
 def format_datetime(context, request, dt):
     """Format datetime into a human-readable format.
 

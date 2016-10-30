@@ -3,6 +3,49 @@ from fanboi2.tests import ModelMixin, RegistryMixin
 from pyramid import testing
 
 
+class TestPartials(ModelMixin, RegistryMixin, unittest.TestCase):
+
+    def test_global_css(self):
+        from fanboi2.helpers.partials import global_css
+        from markupsafe import Markup
+        request = self._makeRequest()
+        self._makePage(
+            body='body { color: #000; }',
+            formatter='none',
+            slug='global_css',
+            namespace='internal',
+            title='Global CSS')
+        self.assertEqual(
+            global_css(None, request),
+            Markup('body { color: #000; }'))
+
+    def test_global_css_not_found(self):
+        from fanboi2.helpers.partials import global_css
+        from markupsafe import Markup
+        request = self._makeRequest()
+        self.assertIsNone(global_css(None, request))
+
+    def test_global_appendix(self):
+        from fanboi2.helpers.partials import global_appendix
+        from markupsafe import Markup
+        request = self._makeRequest()
+        self._makePage(
+            body='* Hello',
+            formatter='markdown',
+            slug='global_appendix',
+            namespace='internal',
+            title='Global Appendix')
+        self.assertEqual(
+            global_appendix(None, request),
+            Markup('<ul>\n<li>Hello</li>\n</ul>\n'))
+
+    def test_global_appendix_not_found(self):
+        from fanboi2.helpers.partials import global_appendix
+        from markupsafe import Markup
+        request = self._makeRequest()
+        self.assertIsNone(global_appendix(None, request))
+
+
 class TestFormatters(unittest.TestCase):
 
     def _makeRequest(self, **kwargs):
@@ -14,7 +57,7 @@ class TestFormatters(unittest.TestCase):
         return testing.DummyRequest(**kwargs)
 
     def test_url_fix(self):
-        from fanboi2.formatters import url_fix
+        from fanboi2.helpers.formatters import url_fix
         tests = [
             ('http://example.com/',
              'http://example.com/'),
@@ -33,7 +76,7 @@ class TestFormatters(unittest.TestCase):
             self.assertEqual(url_fix(source), target)
 
     def test_extract_thumbnail(self):
-        from fanboi2.formatters import extract_thumbnail
+        from fanboi2.helpers.formatters import extract_thumbnail
         text = """
         Inline page: http://imgur.com/image1
         Inline image: http://i.imgur.com/image2.jpg
@@ -62,7 +105,7 @@ class TestFormatters(unittest.TestCase):
         ))
 
     def test_post_markup(self):
-        from fanboi2.formatters import PostMarkup
+        from fanboi2.helpers.formatters import PostMarkup
         from markupsafe import Markup
         markup = PostMarkup('<p>foo</p>')
         markup.shortened = True
@@ -73,7 +116,7 @@ class TestFormatters(unittest.TestCase):
         self.assertEqual(len(markup), 3)
 
     def test_format_text(self):
-        from fanboi2.formatters import format_text
+        from fanboi2.helpers.formatters import format_text
         from markupsafe import Markup
         tests = [
             ('Hello, world!', '<p>Hello, world!</p>'),
@@ -91,7 +134,7 @@ class TestFormatters(unittest.TestCase):
             self.assertEqual(format_text(source), Markup(target))
 
     def test_format_text_autolink(self):
-        from fanboi2.formatters import format_text
+        from fanboi2.helpers.formatters import format_text
         from markupsafe import Markup
         text = ('Hello from autolink:\n\n'
                 'Boom: http://example.com/"<script>alert("Hi")</script><a\n'
@@ -117,8 +160,8 @@ class TestFormatters(unittest.TestCase):
                    'https://www.example.com/test</a> foobar</p>'))
 
     def test_format_text_shorten(self):
-        from fanboi2.formatters import format_text
-        from fanboi2.formatters import PostMarkup
+        from fanboi2.helpers.formatters import format_text
+        from fanboi2.helpers.formatters import PostMarkup
         from markupsafe import Markup
         tests = (
             ('Hello, world!', '<p>Hello, world!</p>', 13, False),
@@ -134,7 +177,7 @@ class TestFormatters(unittest.TestCase):
             self.assertEqual(result.shortened, shortened)
 
     def test_format_text_thumbnail(self):
-        from fanboi2.formatters import format_text
+        from fanboi2.helpers.formatters import format_text
         from markupsafe import Markup
         text = ("New product! https://imgur.com/foobar1\n\n"
                 "http://i.imgur.com/foobar2.png\n"
@@ -167,7 +210,7 @@ class TestFormatters(unittest.TestCase):
                    '</p>'))
 
     def test_format_markdown(self):
-        from fanboi2.formatters import format_markdown
+        from fanboi2.helpers.formatters import format_markdown
         from markupsafe import Markup
         request = self._makeRequest()
         tests = [
@@ -181,13 +224,13 @@ class TestFormatters(unittest.TestCase):
                              Markup(target))
 
     def test_format_markdown_empty(self):
-        from fanboi2.formatters import format_markdown
+        from fanboi2.helpers.formatters import format_markdown
         request = self._makeRequest()
         self.assertIsNone(format_markdown(None, request, None))
 
     def test_format_datetime(self):
         from datetime import datetime, timezone
-        from fanboi2.formatters import format_datetime
+        from fanboi2.helpers.formatters import format_datetime
         request = self._makeRequest()
         d1 = datetime(2013, 1, 2, 0, 4, 1, 0, timezone.utc)
         d2 = datetime(2012, 12, 31, 16, 59, 59, 0, timezone.utc)
@@ -198,7 +241,7 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_isotime(self):
         from datetime import datetime, timezone, timedelta
-        from fanboi2.formatters import format_isotime
+        from fanboi2.helpers.formatters import format_isotime
         ict = timezone(timedelta(hours=7))
         request = self._makeRequest()
         d1 = datetime(2013, 1, 2, 7, 4, 1, 0, ict)
@@ -209,22 +252,22 @@ class TestFormatters(unittest.TestCase):
                          "2012-12-31T16:59:59Z")
 
     def test_user_theme(self):
-        from fanboi2.formatters import user_theme
+        from fanboi2.helpers.formatters import user_theme
         request = self._makeRequest(cookies={'_theme': 'debug'})
         self.assertEqual(user_theme(None, request), 'theme-debug')
 
     def test_user_theme_empty(self):
-        from fanboi2.formatters import user_theme
+        from fanboi2.helpers.formatters import user_theme
         request = self._makeRequest()
         self.assertEqual(user_theme(None, request), 'theme-topaz')
 
     def test_user_theme_invalid(self):
-        from fanboi2.formatters import user_theme
+        from fanboi2.helpers.formatters import user_theme
         request = self._makeRequest(cookies={'_theme': 'bogus'})
         self.assertEqual(user_theme(None, request), 'theme-topaz')
 
     def test_user_theme_alternative(self):
-        from fanboi2.formatters import user_theme
+        from fanboi2.helpers.formatters import user_theme
         request = self._makeRequest(cookies={'_foo': 'debug'})
         self.assertEqual(user_theme(None, request, '_foo'), 'theme-debug')
 
@@ -232,7 +275,7 @@ class TestFormatters(unittest.TestCase):
 class TestFormattersWithRegistry(RegistryMixin):
 
     def test_format_unquoted_path(self):
-        from fanboi2.formatters import unquoted_path
+        from fanboi2.helpers.formatters import unquoted_path
         request = self._makeRequest()
         config = self._makeConfig()
         config.add_route('board', '/test/{board}')
@@ -244,7 +287,7 @@ class TestFormattersWithRegistry(RegistryMixin):
 class TestFormattersWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
 
     def test_format_post(self):
-        from fanboi2.formatters import format_post
+        from fanboi2.helpers.formatters import format_post
         from markupsafe import Markup
         request = self._makeRequest()
         config = self._makeConfig(request)
@@ -263,7 +306,7 @@ class TestFormattersWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
         post9 = self._makePost(topic=topic, body=">>>/demo/\n>>>/demo/1/")
         post10 = self._makePost(topic=topic, body=">>>/demo//100-/")
         post11 = self._makePost(topic=topic, body=">>>//123-/100-/")
-        tests = [
+        tests = (
             (post1, "<p>Hogehoge<br>Hogehoge</p>"),
             (post2, "<p><a data-anchor-topic=\"1\" " +
                     "data-anchor=\"1\" " +
@@ -314,12 +357,12 @@ class TestFormattersWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
                      "href=\"/demo\" " +
                      "class=\"anchor\">&gt;&gt;&gt;/demo/</a>/100-/</p>"),
             (post11, "<p>&gt;&gt;&gt;//123-/100-/</p>")
-        ]
+        )
         for source, target in tests:
             self.assertEqual(format_post(None, request, source), Markup(target))
 
     def test_format_post_shorten(self):
-        from fanboi2.formatters import format_post
+        from fanboi2.helpers.formatters import format_post
         from markupsafe import Markup
         request = self._makeRequest()
         config = self._makeConfig(request)
@@ -331,3 +374,30 @@ class TestFormattersWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
                          Markup("<p>Hello</p>\n<p class=\"shortened\">"
                                 "Post shortened. <a href=\"/foobar/1/1-\" "
                                 "class=\"anchor\">See full post</a>.</p>"))
+
+    def test_format_page(self):
+        from fanboi2.helpers.formatters import format_page
+        from markupsafe import Markup
+        request = self._makeRequest()
+        page1 = self._makePage(
+            body='**Markdown**',
+            formatter='markdown',
+            slug='page1',
+            title='Page 1')
+        page2 = self._makePage(
+            body='<em>**HTML**</em>',
+            formatter='html',
+            slug='page2',
+            title='Page 2')
+        page3 = self._makePage(
+            body='<em>**Plain**</em>',
+            formatter='none',
+            slug='page3',
+            title='Page 3')
+        tests = (
+            (page1, '<p><strong>Markdown</strong></p>\n'),
+            (page2, '<em>**HTML**</em>'),
+            (page3, '&lt;em&gt;**Plain**&lt;/em&gt;'),
+        )
+        for source, target in tests:
+            self.assertEqual(format_page(None, request, source), Markup(target))

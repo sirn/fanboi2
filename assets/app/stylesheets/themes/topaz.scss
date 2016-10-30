@@ -44,6 +44,16 @@ $color-text:             #333;
         border-color: $color-brand;
     }
 
+    .appendix {
+        background-color: $color-gray-lighter;
+        border-color: $color-tint;
+        color: $color-gray-dark;
+
+        a {
+            font-weight: bold;
+        }
+    }
+
     .footer {
         color: $color-gray-dark;
     }

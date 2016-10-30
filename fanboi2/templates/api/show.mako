@@ -9,4 +9,5 @@
 <%include file='_boards.mako' />
 <%include file='_topics.mako' />
 <%include file='_posts.mako' />
+<%include file='_pages.mako' />
 <%include file='_other.mako' />

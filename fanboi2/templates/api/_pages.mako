@@ -1,25 +1,11 @@
 <%namespace name='formatters' module='fanboi2.helpers.formatters' />
-<div class="api-section" id="api-topic-posts-new">
+<div class="api-section" id="api-pages">
     <div class="api-request">
         <div class="container">
-            <h2 class="api-request-title">Creating new post in a topic <span class="api-request-name">#api-topic-posts-new</span></h2>
-            <div class="api-request-endpoint"><span class="api-request-verb verb-post">POST</span> ${formatters.unquoted_path(request, 'api_topic_posts', topic='{api-topic.id}')}</div>
+            <h2 class="api-request-title">Retrieving pages <span class="api-request-name">#api-pages</span></h2>
+            <div class="api-request-endpoint"><span class="api-request-verb verb-get">GET</span> ${formatters.unquoted_path(request, 'api_pages')}</div>
             <div class="api-request-body">
-                <p>Use this endpoint to create a new post in a specific topic (i.e. post a reply). Please note that this API will <em>enqueue</em> the post with the global posting queue and will not guarantee that the post will be successful. To retrieve the status of the post, please see <a href="#api-task">#api-task</a>.</p>
-                <table class="api-table">
-                    <thead class="api-table-header">
-                        <tr class="api-table-row">
-                            <th class="api-table-item title">Parameters</th>
-                            <th class="api-table-item title">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="api-table-body">
-                        <tr class="api-table-row">
-                            <th class="api-table-item title">body</th>
-                            <td class="api-table-item">Content of the topic. From 2 to 4,000 characters.</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <p>Use this endpoint to retrieve a list of all pages. Usually these pages will contain static content, such as guidelines or help.
             </div>
         </div>
     </div>
@@ -27,19 +13,19 @@
         <div class="container">
             <h3 class="api-response-title">Response</h3>
             <div class="api-response-body">
-                <p>Either an <a href="#api-task">#api-task</a> or an <a herf="#api-error">#api-error</a>.</p>
+                <p><code>Array</code> containing <a href="#api-page">#api-page</a>.</p>
             </div>
         </div>
     </div>
 </div>
 
-<div class="api-section" id="api-topic-posts">
+<div class="api-section" id="api-page">
     <div class="api-request">
         <div class="container">
-            <h2 class="api-request-title">Retrieving posts associated to a topic <span class="api-request-name">#api-topic-posts</span></h2>
-            <div class="api-request-endpoint"><span class="api-request-verb verb-get">GET</span> ${formatters.unquoted_path(request, 'api_topic_posts', topic='{api-topic.id}')}</div>
+            <h2 class="api-request-title">Retrieving a page <span class="api-request-name">#api-page</span></h2>
+            <div class="api-request-endpoint"><span class="api-request-verb verb-get">GET</span> ${formatters.unquoted_path(request, 'api_page', page='{api-page.slug}')}</div>
             <div class="api-request-body">
-                <p>Use this endpoint to retrieve a list of posts associated to the specific topic. By default this API will returns all posts. For a more specific query scope, please see <a href="#api-topic-posts-scoped">#api-topic-posts-scoped</a>.</p>
+                <p>Use this endpoint to retrieve any individual page.</p>
             </div>
         </div>
     </div>
@@ -60,15 +46,15 @@
                             <th class="api-table-item title">type</th>
                             <td class="api-table-item type">String</td>
                             <td class="api-table-item">
-                                <p>The type of API object. The value is always "post".</p>
-                                <pre class="codeblock">"type":"post"</pre>
+                                <p>The type of API object. The value is always "page".</p>
+                                <pre class="codeblock">"type":"page"</pre>
                             </td>
                         </tr>
                         <tr class="api-table-row">
                             <th class="api-table-item title">id</th>
                             <td class="api-table-item type">Integer</td>
                             <td class="api-table-item">
-                                <p>Internal ID for the post.</p>
+                                <p>Internal ID for the page.</p>
                                 <pre class="codeblock">"id":1</pre>
                             </td>
                         </tr>
@@ -76,7 +62,7 @@
                             <th class="api-table-item title">body</th>
                             <td class="api-table-item type">String</td>
                             <td class="api-table-item">
-                                <p>The post body entered by the user in new topic or reply form.</p>
+                                <p>The page body.</p>
                                 <pre class="codeblock">"body":"..."</pre>
                             </td>
                         </tr>
@@ -84,56 +70,53 @@
                             <th class="api-table-item title">body_formatted</th>
                             <td class="api-table-item type">String</td>
                             <td class="api-table-item">
-                                <p>Same as <strong>body</strong> but format it to HTML using internal formatter.</p>
-                                <pre class="codeblock">"body_formatted":"&lt;p&gt;...&lt;/p&gt;"</pre>
+                                <p>Same as <strong>body</strong> but format it using specified <strong>formatter</strong>. Note that this field is meant to be rendered in a HTML viewer and will escape the body in case the formatter is "none". If the content will not be displayed in a HTML viewer in case the formatter is "none", <strong>body</strong> must be used instead.</p>
+                                <pre class="codeblock">"body_formatted":"&lt;p&gt;&lt;em&gt;Hello, world&lt;/em&gt;&lt;/p&gt;\n"</pre>
                             </td>
                         </tr>
                         <tr class="api-table-row">
-                            <th class="api-table-item title">bumped</th>
-                            <td class="api-table-item type">Boolean</td>
-                            <td class="api-table-item">
-                                <p>Boolean flag whether the post bumped the topic to top of the board.</p>
-                                <pre class="codeblock">"bumped":true</pre>
-                            </td>
-                        </tr>
-                        <tr class="api-table-row">
-                            <th class="api-table-item title">created_at</th>
+                            <th class="api-table-item title">formatter</th>
                             <td class="api-table-item type">String</td>
                             <td class="api-table-item">
-                                <p><a href="http://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>-formatted datetime of when the post was created.</p>
-                                <pre class="codeblock">"created_at":"2013-02-06T16:45:20.275693-08:00"</pre>
+                                <p>Name of a formatter to format this page's body. Available values are:</p>
+                                <ul>
+                                    <li><strong>markdown</strong> — render this page using Markdown formatter (see also <a href="http://misaka.61924.nl/">Misaka</a>).</li>
+                                    <li><strong>html</strong> — render this page as HTML without any escaping.</li>
+                                    <li><strong>none</strong> — render this page as text or escape HTML as appropriate.</li>
+                                </ul>
+                                <pre class="codeblock">"formatter":"markdown"</pre>
                             </td>
                         </tr>
                         <tr class="api-table-row">
-                            <th class="api-table-item title">ident</th>
+                            <th class="api-table-item title">namespace</th>
                             <td class="api-table-item type">String</td>
                             <td class="api-table-item">
-                                <p>Unique ID for each user that was generated when the board has <strong>use_ident</strong> enabled.</p>
-                                <pre class="codeblock">"ident":"7xFKuAP5G"</pre>
+                                <p>Namespace of this page, usually "public".</p>
+                                <pre class="codeblock">"namespace":"public"</pre>
                             </td>
                         </tr>
                         <tr class="api-table-row">
-                            <th class="api-table-item title">name</th>
+                            <th class="api-table-item title">slug</th>
                             <td class="api-table-item type">String</td>
                             <td class="api-table-item">
-                                <p>The name entered for this post.</p>
-                                <pre class="codeblock">"name":"Nameless Fanboi"</pre>
+                                <p>The identity of this page.</p>
+                                <pre class="codeblock">"slug":"hello"</pre>
                             </td>
                         </tr>
                         <tr class="api-table-row">
-                            <th class="api-table-item title">number</th>
-                            <td class="api-table-item type">Integer</td>
+                            <th class="api-table-item title">title</th>
+                            <td class="api-table-item type">String</td>
                             <td class="api-table-item">
-                                <p>Order of the post within the topic.</p>
-                                <pre class="codeblock">"number":1</pre>
+                                <p>The title of this page.</p>
+                                <pre class="codeblock">"title":"Hello, world!"</pre>
                             </td>
                         </tr>
                         <tr class="api-table-row">
-                            <th class="api-table-item title">topic_id</th>
-                            <td class="api-table-item type">Integer</td>
+                            <th class="api-table-item title">updated_at</th>
+                            <td class="api-table-item type">String</td>
                             <td class="api-table-item">
-                                <p>Internal ID of a topic the post is associated with.</p>
-                                <pre class="codeblock">"topic_id":1</pre>
+                                <p><a href="http://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>-formatted datetime of when the post was updated.</p>
+                                <pre class="codeblock">"updated_at":"2016-10-29T14:59:12.451212-08:00"</pre>
                             </td>
                         </tr>
                         <tr class="api-table-row">
@@ -141,7 +124,7 @@
                             <td class="api-table-item type">String</td>
                             <td class="api-table-item">
                                 <p>The path to this resource.</p>
-                                <pre class="codeblock">"path":"/api/1.0/topics/1/posts/"</pre>
+                                <pre class="codeblock">"page":"/api/1.0/pages/hello/"</pre>
                             </td>
                         </tr>
                     </tbody>

@@ -1,4 +1,4 @@
-<%namespace name='formatters' module='fanboi2.formatters' />
+<%namespace name='formatters' module='fanboi2.helpers.formatters' />
 <%namespace name='post' file='../partials/_post.mako' />
 <%include file='_subheader.mako' />
 <%inherit file='../partials/_layout.mako' />

@@ -77,6 +77,10 @@ class _ModelInstanceSetup(object):
             kwargs['ip_address'] = '0.0.0.0'
         return Post(**kwargs)
 
+    def _newPage(self, **kwargs):
+        from fanboi2.models import Page
+        return Page(**kwargs)
+
     def _newRule(self, **kwargs):
         from fanboi2.models import Rule
         return Rule(**kwargs)
@@ -112,6 +116,12 @@ class _ModelInstanceSetup(object):
         DBSession.add(post)
         DBSession.flush()
         return post
+
+    def _makePage(self, **kwargs):
+        page = self._newPage(**kwargs)
+        DBSession.add(page)
+        DBSession.flush()
+        return page
 
     def _makeRule(self, **kwargs):
         rule = self._newRule(**kwargs)

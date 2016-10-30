@@ -169,6 +169,7 @@ def main(global_config, **settings):  # pragma: no cover
     config.add_request_method(tagged_static_path)
 
     config.include('fanboi2.serializers')
+    config.include('fanboi2.views.pages', route_prefix='/pages')
     config.include('fanboi2.views.api', route_prefix='/api')
     config.include('fanboi2.views.boards', route_prefix='/')
     config.add_static_view('static', 'static', cache_max_age=3600)

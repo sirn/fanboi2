@@ -1,4 +1,4 @@
-<%namespace name="formatters" module="fanboi2.formatters" />
+<%namespace name="formatters" module="fanboi2.helpers.formatters" />
 <%include file='_subheader.mako' />
 <%inherit file='../partials/_layout.mako' />
 <%def name='title()'>New topic - ${board.title}</%def>

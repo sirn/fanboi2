@@ -1,6 +1,6 @@
 import datetime
 import pytz
-from fanboi2.formatters import format_post
+from fanboi2.helpers.formatters import format_post, format_page
 
 
 def _datetime_adapter(obj, request):
@@ -92,7 +92,7 @@ def _post_serializer(obj, request):
     :type request: pyramid.request.Request
     :rtype: dict
     """
-    result = {
+    return {
         'type': 'post',
         'id': obj.id,
         'body': obj.body,
@@ -109,7 +109,33 @@ def _post_serializer(obj, request):
             query=obj.number,
         ),
     }
-    return result
+
+
+def _page_serializer(obj, request):
+    """Serialize :class:`fanboi2.models.Page` into a :type:`dict`.
+
+    :param obj: A :class:`fanboi2.models.Page` object.
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type obj: fanboi2.models.Page
+    :type request: pyramid.request.Request
+    :rtype: dict
+    """
+    return {
+        'type': 'page',
+        'id': obj.id,
+        'body': obj.body,
+        'body_formatted': format_page(None, request, obj),
+        'formatter': obj.formatter,
+        'namespace': obj.namespace,
+        'slug': obj.slug,
+        'title': obj.title,
+        'updated_at': obj.updated_at or obj.created_at,
+        'path': request.route_path(
+            'api_page',
+            page=obj.slug,
+        ),
+    }
 
 
 def _result_proxy_serializer(obj, request):
@@ -173,7 +199,7 @@ def initialize_renderer():
     from celery.result import AsyncResult
     from pyramid.renderers import JSON
     from sqlalchemy.orm import Query
-    from fanboi2.models import Board, Topic, Post
+    from fanboi2.models import Board, Topic, Post, Page
     from fanboi2.errors import BaseError
     from fanboi2.tasks import ResultProxy
     json_renderer = JSON()
@@ -182,6 +208,7 @@ def initialize_renderer():
     json_renderer.add_adapter(Board, _board_serializer)
     json_renderer.add_adapter(Topic, _topic_serializer)
     json_renderer.add_adapter(Post, _post_serializer)
+    json_renderer.add_adapter(Page, _page_serializer)
     json_renderer.add_adapter(ResultProxy, _result_proxy_serializer)
     json_renderer.add_adapter(AsyncResult, _async_result_serializer)
     json_renderer.add_adapter(BaseError, _base_error_serializer)

@@ -382,6 +382,49 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         self.assertTrue(time_.called)
         self.assertEqual(DBSession.query(Post).count(), post_count)
 
+    def test_pages_get(self):
+        from fanboi2.views.api import pages_get
+        page1 = self._makePage(title='Foo', body='Foo', slug='foo')
+        page2 = self._makePage(title='Bar', body='Bar', slug='bar')
+        page3 = self._makePage(title='Baz', body='Baz', slug='baz')
+        self._makePage(
+            title='Hoge',
+            body='Hoge',
+            slug='hoge',
+            namespace='internal')
+        request = self._GET()
+        response = list(pages_get(request))
+        self.assertSAEqual(response, [page2, page3, page1])
+
+    def test_page_get(self):
+        from fanboi2.views.api import page_get
+        page = self._makePage(title='Foo', body='Foo', slug='foo')
+        request = self._GET()
+        request.matchdict['page'] = page.slug
+        response = page_get(request)
+        self.assertSAEqual(response, page)
+
+    def test_page_get_internal(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from fanboi2.views.api import page_get
+        page = self._makePage(
+            title='Foo',
+            body='Foo',
+            slug='foo',
+            namespace='internal')
+        request = self._GET()
+        request.matchdict['page'] = page.slug
+        with self.assertRaises(NoResultFound):
+            page_get(request)
+
+    def test_page_get_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from fanboi2.views.api import page_get
+        request = self._GET()
+        request.matchdict['page'] = 'notexists'
+        with self.assertRaises(NoResultFound):
+            page_get(request)
+
     def test_error_not_found(self):
         from pyramid.httpexceptions import HTTPNotFound
         from fanboi2.views.api import error_not_found
@@ -412,7 +455,6 @@ class TestApiViews(ViewMixin, ModelMixin, TaskMixin, unittest.TestCase):
         from fanboi2.views.api import _api_routes_only
         request = self._makeRequest(path='/foobar/api')
         self.assertFalse(_api_routes_only(None, request))
-
 
 
 class TestBoardViews(ViewMixin, unittest.TestCase):
@@ -1075,3 +1117,35 @@ class TestBoardViews(ViewMixin, unittest.TestCase):
         config.testing_add_renderer('not_found.mako')
         response = error_not_found(HTTPNotFound(), request)
         self.assertEqual(response.status, '404 Not Found')
+
+
+class TestPagesView(ViewMixin, unittest.TestCase):
+
+    def test_page_show(self):
+        from fanboi2.views.pages import page_show
+        page = self._makePage(title='Hello', slug='hello', body='Hello')
+        request = self._GET()
+        request.matchdict['page'] = page.slug
+        response = page_show(request)
+        self.assertSAEqual(response['page'], page)
+
+    def test_page_get_internal(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from fanboi2.views.pages import page_show
+        page = self._makePage(
+            title='Hello',
+            body='Hello',
+            slug='hello',
+            namespace='internal')
+        request = self._GET()
+        request.matchdict['page'] = page.slug
+        with self.assertRaises(NoResultFound):
+            page_show(request)
+
+    def test_page_show_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from fanboi2.views.pages import page_show
+        request = self._GET()
+        request.matchdict['page'] = 'notexists'
+        with self.assertRaises(NoResultFound):
+            page_show(request)

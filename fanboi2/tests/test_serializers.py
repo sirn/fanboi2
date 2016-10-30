@@ -138,6 +138,23 @@ class TestJSONRendererWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
         self.assertIn('number', response)
         self.assertNotIn('ip_address', response)
 
+    def test_page(self):
+        page = self._makePage(title='Test', body='**Test**', slug='test')
+        request = self._makeRequest()
+        config = self._makeConfig(request, self._makeRegistry())
+        config.add_route('api_page', '/page/{page}')
+        response = self._makeOne(page, request=request)
+        self.assertEqual(response['type'], 'page')
+        self.assertEqual(response['body'], '**Test**')
+        self.assertEqual(
+            response['body_formatted'],
+            '<p><strong>Test</strong></p>\n')
+        self.assertEqual(response['formatter'], 'markdown')
+        self.assertEqual(response['slug'], 'test')
+        self.assertEqual(response['title'], 'Test')
+        self.assertEqual(response['path'], '/page/test')
+        self.assertIn('updated_at', response)
+
 
 class TestJSONRendererWithTask(
         TaskMixin,

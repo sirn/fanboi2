@@ -1,4 +1,4 @@
-<%namespace name='formatters' module='fanboi2.formatters' />
+<%namespace name='formatters' module='fanboi2.helpers.formatters' />
 <div class="api-section" id="api-task">
     <div class="api-request">
         <div class="container">

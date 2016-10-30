@@ -4,7 +4,7 @@ from sqlalchemy.sql import or_, and_, select
 from webob.multidict import MultiDict
 from fanboi2.errors import ParamsInvalidError, RateLimitedError, BaseError
 from fanboi2.forms import TopicForm, PostForm
-from fanboi2.models import DBSession, Board, Topic, TopicMeta
+from fanboi2.models import DBSession, Board, Topic, TopicMeta, Page
 from fanboi2.tasks import ResultProxy, add_topic, add_post, celery
 from fanboi2.utils import RateLimiter, serialize_request
 
@@ -184,6 +184,38 @@ def topic_posts_post(request, board=None, topic=None, form=None):
     raise ParamsInvalidError(form.errors)
 
 
+def pages_get(request, namespace=None):
+    """Retrieve a list of all pages.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: sqlalchemy.orm.Query
+    """
+    if namespace is None:
+        namespace = 'public'
+    return DBSession.query(Page).\
+        order_by(Page.title).\
+        filter_by(namespace=namespace)
+
+
+def page_get(request, namespace=None):
+    """Retrieve a page.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: sqlalchemy.orm.Query
+    """
+    if namespace is None:
+        namespace = 'public'
+    return DBSession.query(Page).\
+        filter_by(
+            namespace=namespace,
+            slug=request.matchdict['page']).\
+        one()
+
+
 def error_not_found(exc, request):
     """Handle any exception that should cause the app to treat it as
     NotFound resources, such as :class:`pyramid.httpexceptions.HTTPNotFound`
@@ -249,6 +281,9 @@ def includeme(config):  # pragma: no cover
                     request_method=method,
                     route_name=name,
                     renderer='json')
+
+    _map_api_route('api_pages', '/1.0/pages/', {'GET': pages_get})
+    _map_api_route('api_page', '/1.0/pages/{page:\w+}/', {'GET': page_get})
 
     _map_api_route('api_boards', '/1.0/boards/', {'GET': boards_get})
     _map_api_route('api_board', '/1.0/boards/{board:\w+}/', {'GET': board_get})

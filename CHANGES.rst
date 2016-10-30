@@ -7,6 +7,7 @@
 - [Add] Overriding rules allowing board status to be overridden per IP address.
 - [Add] Board can now be locked or archived.
 - [Add] Board, topic and post will now create a history copy on change.
+- [Add] Custom pages for guidelines or site customization ("internal pages").
 - [Add] More random quotes.
 - [Fix] Imgur album now no longer matched in thumbnail extractor.
 - [Change] Rewrite all board templates.

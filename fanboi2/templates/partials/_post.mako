@@ -1,4 +1,4 @@
-<%namespace name="formatters" module="fanboi2.formatters" />
+<%namespace name="formatters" module="fanboi2.helpers.formatters" />
 <%def name="render_posts(topic, posts, shorten=None)">
     % for post in posts:
         <div class="post">

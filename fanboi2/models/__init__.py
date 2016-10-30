@@ -8,6 +8,7 @@ from .board import Board
 from .topic import Topic
 from .topic_meta import TopicMeta
 from .post import Post
+from .page import Page
 from .rule import Rule
 from .rule_ban import RuleBan
 from .rule_override import RuleOverride

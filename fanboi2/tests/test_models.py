@@ -1622,6 +1622,51 @@ class TestPostModel(ModelMixin, unittest.TestCase):
         self.assertNotEqual(p1.ident, p2.ident)
 
 
+class TestPageModel(ModelMixin, unittest.TestCase):
+
+    def test_versioned(self):
+        from fanboi2.models import Page
+        PageHistory = Page.__history_mapper__.class_
+        page = self._makePage(title='Foo', slug='foo', body='Foobar')
+        self.assertEqual(page.version, 1)
+        self.assertEqual(DBSession.query(PageHistory).count(), 0)
+        page.body = 'Foobar baz updated'
+        DBSession.add(page)
+        DBSession.flush()
+        self.assertEqual(page.version, 2)
+        self.assertEqual(DBSession.query(PageHistory).count(), 1)
+        page_v1 = DBSession.query(PageHistory).filter_by(version=1).one()
+        self.assertEqual(page_v1.id, page.id)
+        self.assertEqual(page_v1.title, 'Foo')
+        self.assertEqual(page_v1.slug, 'foo')
+        self.assertEqual(page_v1.body, 'Foobar')
+        self.assertEqual(page_v1.version, 1)
+        self.assertEqual(page_v1.change_type, 'update')
+        self.assertIsNotNone(page_v1.changed_at)
+        self.assertIsNotNone(page_v1.created_at)
+        self.assertIsNone(page_v1.updated_at)
+
+    def test_versioned_deleted(self):
+        from sqlalchemy import inspect
+        from fanboi2.models import Page
+        PageHistory = Page.__history_mapper__.class_
+        page = self._makePage(title='Foo', slug='foo', body='Foobar')
+        DBSession.delete(page)
+        DBSession.flush()
+        self.assertTrue(inspect(page).deleted)
+        self.assertEqual(DBSession.query(PageHistory).count(), 1)
+        page_v1 = DBSession.query(PageHistory).filter_by(version=1).one()
+        self.assertEqual(page_v1.id, page.id)
+        self.assertEqual(page_v1.title, 'Foo')
+        self.assertEqual(page_v1.slug, 'foo')
+        self.assertEqual(page_v1.body, 'Foobar')
+        self.assertEqual(page_v1.version, 1)
+        self.assertEqual(page_v1.change_type, 'delete')
+        self.assertIsNotNone(page_v1.changed_at)
+        self.assertIsNotNone(page_v1.created_at)
+        self.assertIsNone(page_v1.updated_at)
+
+
 class TestRuleModel(ModelMixin, unittest.TestCase):
 
     def test_inheritance(self):
