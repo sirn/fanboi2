@@ -4,7 +4,7 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "pxfs/freebsd-10.3"
   config.vm.synced_folder ".", "/vagrant", :nfs => true, :mount_options => ['actimeo=2']
-  config.vm.network :forwarded_port, :guest => 6543, :host => 6543
+  config.vm.network :forwarded_port, :guest => 6543, :host => 6543, auto_correct: true
   config.ssh.shell = "sh"
 
   config.vm.provision :shell, :privileged => true, :inline => <<-EOF
