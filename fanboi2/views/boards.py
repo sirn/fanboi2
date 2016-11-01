@@ -150,6 +150,10 @@ def topic_show_get(request):
             response = render_to_response('topics/error_spam.mako', locals())
             response.status = e.http_status
             return response
+        except DnsblRejectedError as e:
+            response = render_to_response('topics/error_dnsbl.mako', locals())
+            response.status = e.http_status
+            return response
         except BanRejectedError as e:
             response = render_to_response('topics/error_ban.mako', locals())
             response.status = e.http_status

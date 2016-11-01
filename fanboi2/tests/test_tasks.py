@@ -329,6 +329,21 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Post).count(), 0)
         self.assertEqual(result.result, ('failure', 'spam_rejected'))
 
+    @unittest.mock.patch('fanboi2.utils.Dnsbl.listed')
+    def test_add_post_dnsbl(self, dnsbl):
+        import transaction
+        from fanboi2.models import Post
+        dnsbl.return_value = True
+        request = {'remote_addr': '8.8.8.8'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            topic = self._makeTopic(board=board, title='Hello, world!')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        result = self._makeOne(request, topic_id, 'Hi!', True)
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Post).count(), 0)
+        self.assertEqual(result.result, ('failure', 'dnsbl_rejected'))
+
     @unittest.mock.patch('fanboi2.utils.ProxyDetector.detect')
     def test_add_post_proxy(self, proxy):
         import transaction

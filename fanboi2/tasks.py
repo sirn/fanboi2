@@ -165,6 +165,9 @@ def add_post(self, request, topic_id, body, bumped):
         if akismet.spam(request, body):
             return 'failure', 'spam_rejected'
 
+        if dnsbl.listed(request['remote_addr']):
+            return 'failure', 'dnsbl_rejected'
+
         if proxy_detector.detect(request['remote_addr']):
             return 'failure', 'proxy_rejected'
 
