@@ -76,7 +76,7 @@ export class TopicLoadPosts implements ITopicEventHandler {
             let path = window.location.pathname;
             let newPath: string = '';
 
-            if (path.match(/\/\d+\/?$/)) {
+            if (path.match(/\/\d+\/\d+\/?$/)) {
                 newPath = path.replace(
                     /\/(\d+)\/?$/,
                     `/$1-${this.lastPostNumber}/`
