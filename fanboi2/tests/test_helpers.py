@@ -1,9 +1,9 @@
 import unittest
-from fanboi2.tests import ModelMixin, RegistryMixin
+from fanboi2.tests import ModelMixin, RegistryMixin, CacheMixin
 from pyramid import testing
 
 
-class TestPartials(ModelMixin, RegistryMixin, unittest.TestCase):
+class TestPartials(CacheMixin, ModelMixin, RegistryMixin, unittest.TestCase):
 
     def test_global_css(self):
         from fanboi2.helpers.partials import global_css
@@ -16,13 +16,13 @@ class TestPartials(ModelMixin, RegistryMixin, unittest.TestCase):
             namespace='internal',
             title='Global CSS')
         self.assertEqual(
-            global_css(None, request),
+            global_css(None, request, self._getRegion()),
             Markup('body { color: #000; }'))
 
     def test_global_css_not_found(self):
         from fanboi2.helpers.partials import global_css
         request = self._makeRequest()
-        self.assertIsNone(global_css(None, request))
+        self.assertIsNone(global_css(None, request, self._getRegion()))
 
     def test_global_appendix(self):
         from fanboi2.helpers.partials import global_appendix
@@ -35,13 +35,13 @@ class TestPartials(ModelMixin, RegistryMixin, unittest.TestCase):
             namespace='internal',
             title='Global Appendix')
         self.assertEqual(
-            global_appendix(None, request),
+            global_appendix(None, request, self._getRegion()),
             Markup('<ul>\n<li>Hello</li>\n</ul>\n'))
 
     def test_global_appendix_not_found(self):
         from fanboi2.helpers.partials import global_appendix
         request = self._makeRequest()
-        self.assertIsNone(global_appendix(None, request))
+        self.assertIsNone(global_appendix(None, request, self._getRegion()))
 
     def test_global_footer(self):
         from fanboi2.helpers.partials import global_footer
@@ -54,13 +54,13 @@ class TestPartials(ModelMixin, RegistryMixin, unittest.TestCase):
             namespace='internal',
             title='Global Footer')
         self.assertEqual(
-            global_footer(None, request),
+            global_footer(None, request, self._getRegion()),
             Markup('<script></script>'))
 
     def test_global_footer_not_found(self):
         from fanboi2.helpers.partials import global_footer
         request = self._makeRequest()
-        self.assertIsNone(global_footer(None, request))
+        self.assertIsNone(global_footer(None, request, self._getRegion()))
 
 
 class TestFormatters(unittest.TestCase):
