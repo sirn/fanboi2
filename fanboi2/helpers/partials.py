@@ -48,3 +48,19 @@ def global_appendix(context, request):
     page = _get_internal_page('global/appendix')
     if page:
         return format_markdown(context, request, page)
+
+
+def global_footer(context, request):
+    """Returns a HTML of global footer content. This footer content is the
+    content of ``internal:global/footer`` page.
+
+    :param context: A :class:`mako.runtime.Context` object.
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type context: mako.runtime.Context or None
+    :type request: pyramid.request.Request
+    :rtype: Markup or None
+    """
+    page = _get_internal_page('global/footer')
+    if page:
+        return Markup(page)

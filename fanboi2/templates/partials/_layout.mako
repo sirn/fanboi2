@@ -62,5 +62,10 @@ ${self.body()}
 <script type="text/javascript" src="${request.tagged_static_path('fanboi2:static/vendor.js')}"></script>
 <script type="text/javascript" src="${request.tagged_static_path('fanboi2:static/app.js')}"></script>
 
+<% global_footer = partials.global_footer(request) %>
+% if global_footer:
+    ${global_footer}
+% endif
+
 </body>
 </html>

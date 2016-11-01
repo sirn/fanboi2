@@ -21,7 +21,6 @@ class TestPartials(ModelMixin, RegistryMixin, unittest.TestCase):
 
     def test_global_css_not_found(self):
         from fanboi2.helpers.partials import global_css
-        from markupsafe import Markup
         request = self._makeRequest()
         self.assertIsNone(global_css(None, request))
 
@@ -41,9 +40,27 @@ class TestPartials(ModelMixin, RegistryMixin, unittest.TestCase):
 
     def test_global_appendix_not_found(self):
         from fanboi2.helpers.partials import global_appendix
-        from markupsafe import Markup
         request = self._makeRequest()
         self.assertIsNone(global_appendix(None, request))
+
+    def test_global_footer(self):
+        from fanboi2.helpers.partials import global_footer
+        from markupsafe import Markup
+        request = self._makeRequest()
+        self._makePage(
+            body='<script></script>',
+            formatter='html',
+            slug='global/footer',
+            namespace='internal',
+            title='Global Footer')
+        self.assertEqual(
+            global_footer(None, request),
+            Markup('<script></script>'))
+
+    def test_global_footer_not_found(self):
+        from fanboi2.helpers.partials import global_footer
+        request = self._makeRequest()
+        self.assertIsNone(global_footer(None, request))
 
 
 class TestFormatters(unittest.TestCase):
