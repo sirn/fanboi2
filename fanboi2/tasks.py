@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from fanboi2.errors import serialize_error
 from fanboi2.models import DBSession, Post, Topic, Board, \
     RuleBan, RuleOverride, serialize_model
-from fanboi2.utils import akismet, dnsbl
+from fanboi2.utils import akismet, dnsbl, proxy_detector
 
 celery = Celery()
 
@@ -111,6 +111,9 @@ def add_topic(request, board_id, title, body):
         if dnsbl.listed(request['remote_addr']):
             return 'failure', 'dnsbl_rejected'
 
+        if proxy_detector.detect(request['remote_addr']):
+            return 'failure', 'proxy_rejected'
+
         post = Post(body=body, ip_address=request['remote_addr'])
         post.topic = Topic(board=board, title=title)
         DBSession.add(post)
@@ -161,6 +164,9 @@ def add_post(self, request, topic_id, body, bumped):
 
         if akismet.spam(request, body):
             return 'failure', 'spam_rejected'
+
+        if proxy_detector.detect(request['remote_addr']):
+            return 'failure', 'proxy_rejected'
 
         post = Post(
             topic=topic,

@@ -1,8 +1,7 @@
 import os
 import sys
-from fanboi2 import configure_components
 from fanboi2.tasks import celery
-from pyramid.paster import get_appsettings
+from pyramid.paster import bootstrap
 
 
 def main(argv=sys.argv):
@@ -11,5 +10,5 @@ def main(argv=sys.argv):
         sys.stderr.write("Configuration file not present.\n")
         sys.exit(1)
 
-    configure_components(get_appsettings(argv[1]))
+    bootstrap(argv[1])
     celery.start(argv[:1] + argv[2:])  # Remove argv[1].

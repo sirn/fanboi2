@@ -10,6 +10,7 @@ def serialize_error(type, *args):
         'dnsbl_rejected': DnsblRejectedError,
         'ban_rejected': BanRejectedError,
         'status_rejected': StatusRejectedError,
+        'proxy_rejected': ProxyRejectedError,
     }.get(type, BaseError)(*args)
 
 
@@ -164,6 +165,24 @@ class StatusRejectedError(BaseError):
     @property
     def name(self):
         return 'status_rejected'
+
+    @property
+    def http_status(self):
+        return '422 Unprocessable Entity'
+
+
+class ProxyRejectedError(BaseError):
+    """An :class:`Exception` class that will be raised if user request was
+    identified to be an open proxy or public VPN service.
+    """
+
+    def message(self, request):
+        return 'The IP address has been identified as an open proxy ' +\
+               'or VPN service and therefore rejected.'
+
+    @property
+    def name(self):
+        return 'proxy_rejected'
 
     @property
     def http_status(self):

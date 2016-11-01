@@ -29,7 +29,7 @@ class DummyRedis(object):
         self._expire = {}
 
     def get(self, key):
-        return self._store.get(key, None)
+        return self._store.get(key)
 
     def set(self, key, value):
         try:
@@ -67,13 +67,13 @@ class _ModelInstanceSetup(object):
 
     def _newTopicMeta(self, **kwargs):
         from fanboi2.models import TopicMeta
-        if not kwargs.get('post_count', None):
+        if not kwargs.get('post_count'):
             kwargs['post_count'] = 0
         return TopicMeta(**kwargs)
 
     def _newPost(self, **kwargs):
         from fanboi2.models import Post
-        if not kwargs.get('ip_address', None):
+        if not kwargs.get('ip_address'):
             kwargs['ip_address'] = '0.0.0.0'
         return Post(**kwargs)
 
@@ -276,3 +276,11 @@ class ViewMixin(ModelMixin, RegistryMixin, unittest.TestCase):
         request.content_type = 'application/json'
         request.json_body = data
         return request
+
+
+class CacheMixin(unittest.TestCase):
+
+    def _getRegion(self, store=None):
+        from dogpile.cache import make_region
+        return make_region().configure('dogpile.cache.memory', arguments={
+            'cache_dict': store if store is not None else {}})

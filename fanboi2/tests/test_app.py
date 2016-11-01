@@ -179,6 +179,11 @@ class TestNormalizeSettings(unittest.TestCase):
         self.assertEqual(result['app.secret'], '')
         self.assertEqual(result['app.akismet_key'], '')
         self.assertEqual(result['app.dnsbl_providers'], [])
+        self.assertEqual(result['app.proxy_detect.providers'], [])
+        self.assertEqual(result['app.proxy_detect.blackbox.url'], '')
+        self.assertEqual(result['app.proxy_detect.getipintel.url'], '')
+        self.assertEqual(result['app.proxy_detect.getipintel.email'], '')
+        self.assertEqual(result['app.proxy_detect.getipintel.flags'], '')
 
     def test_settings(self):
         r = self._makeOne({
@@ -192,6 +197,11 @@ class TestNormalizeSettings(unittest.TestCase):
             'app.secret': 'APP_SECRET',
             'app.akismet_key': 'TEST_KEY',
             'app.dnsbl_providers': '1.example.com\n2.example.com 3.example.com',
+            'app.proxy_detect.providers': 'blackbox getipintel',
+            'app.proxy_detect.blackbox.url': 'http://www.example.com/foo',
+            'app.proxy_detect.getipintel.url': 'http://www.example.com/bar',
+            'app.proxy_detect.getipintel.email': 'test@example.com',
+            'app.proxy_detect.getipintel.flags': 'm',
         })
 
         self.assertEqual(r['sqlalchemy.url'], 'postgresql://localhost:5432/foo')
@@ -208,6 +218,26 @@ class TestNormalizeSettings(unittest.TestCase):
             '2.example.com',
             '3.example.com',
         ])
+        self.assertEqual(r['app.proxy_detect.providers'], [
+            'blackbox',
+            'getipintel',
+        ])
+        self.assertEqual(
+            r['app.proxy_detect.blackbox.url'],
+            'http://www.example.com/foo'
+        )
+        self.assertEqual(
+            r['app.proxy_detect.getipintel.url'],
+            'http://www.example.com/bar'
+        )
+        self.assertEqual(
+            r['app.proxy_detect.getipintel.email'],
+            'test@example.com'
+        )
+        self.assertEqual(
+            r['app.proxy_detect.getipintel.flags'],
+            'm'
+        )
 
     def test_environ(self):
         r = self._makeOne({}, environ={
@@ -221,6 +251,11 @@ class TestNormalizeSettings(unittest.TestCase):
             'APP_SECRET': 'APP_SECRET',
             'APP_AKISMET_KEY': 'TEST_KEY',
             'APP_DNSBL_PROVIDERS': '1.example.com\n2.example.com 3.example.com',
+            'APP_PROXY_DETECT_PROVIDERS': 'blackbox getipintel',
+            'APP_PROXY_DETECT_BLACKBOX_URL': 'http://www.example.com/foo',
+            'APP_PROXY_DETECT_GETIPINTEL_URL': 'http://www.example.com/bar',
+            'APP_PROXY_DETECT_GETIPINTEL_EMAIL': 'test@example.com',
+            'APP_PROXY_DETECT_GETIPINTEL_FLAGS': 'm',
         })
 
         self.assertEqual(r['sqlalchemy.url'], 'postgresql://localhost:5432/foo')
@@ -237,6 +272,26 @@ class TestNormalizeSettings(unittest.TestCase):
             '2.example.com',
             '3.example.com',
         ])
+        self.assertEqual(r['app.proxy_detect.providers'], [
+            'blackbox',
+            'getipintel',
+        ])
+        self.assertEqual(
+            r['app.proxy_detect.blackbox.url'],
+            'http://www.example.com/foo'
+        )
+        self.assertEqual(
+            r['app.proxy_detect.getipintel.url'],
+            'http://www.example.com/bar'
+        )
+        self.assertEqual(
+            r['app.proxy_detect.getipintel.email'],
+            'test@example.com'
+        )
+        self.assertEqual(
+            r['app.proxy_detect.getipintel.flags'],
+            'm'
+        )
 
     def test_override(self):
         r = self._makeOne({
@@ -250,6 +305,11 @@ class TestNormalizeSettings(unittest.TestCase):
             'app.secret': 'APP_SECRET',
             'app.akismet_key': 'TEST_KEY',
             'app.dnsbl_providers': '1.example.com\n2.example.com 3.example.com',
+            'app.proxy_detect.providers': 'blackbox',
+            'app.proxy_detect.blackbox.url': 'http://www.example.com/foo',
+            'app.proxy_detect.getipintel.url': 'http://www.example.com/bar',
+            'app.proxy_detect.getipintel.email': 'test@example.com',
+            'app.proxy_detect.getipintel.flags': 'm',
         }, environ={
             'SQLALCHEMY_URL': 'postgresql://localhost:5432/baz',
             'REDIS_URL': 'redis://127.0.0.2:6379/0',
@@ -261,6 +321,11 @@ class TestNormalizeSettings(unittest.TestCase):
             'APP_SECRET': 'APP_SECRET_2',
             'APP_AKISMET_KEY': 'TEST_KEY_2',
             'APP_DNSBL_PROVIDERS': '4.example.com\n5.example.com 6.example.com',
+            'APP_PROXY_DETECT_PROVIDERS': 'blackbox getipintel',
+            'APP_PROXY_DETECT_BLACKBOX_URL': 'http://www.example.com/bax',
+            'APP_PROXY_DETECT_GETIPINTEL_URL': 'http://www.example.com/buz',
+            'APP_PROXY_DETECT_GETIPINTEL_EMAIL': 'fuzz@example.com',
+            'APP_PROXY_DETECT_GETIPINTEL_FLAGS': 'f',
         })
 
         self.assertEqual(r['sqlalchemy.url'], 'postgresql://localhost:5432/baz')
@@ -277,3 +342,23 @@ class TestNormalizeSettings(unittest.TestCase):
             '5.example.com',
             '6.example.com',
         ])
+        self.assertEqual(r['app.proxy_detect.providers'], [
+            'blackbox',
+            'getipintel',
+        ])
+        self.assertEqual(
+            r['app.proxy_detect.blackbox.url'],
+            'http://www.example.com/bax'
+        )
+        self.assertEqual(
+            r['app.proxy_detect.getipintel.url'],
+            'http://www.example.com/buz'
+        )
+        self.assertEqual(
+            r['app.proxy_detect.getipintel.email'],
+            'fuzz@example.com'
+        )
+        self.assertEqual(
+            r['app.proxy_detect.getipintel.flags'],
+            'f'
+        )

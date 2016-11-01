@@ -69,3 +69,12 @@ class TestSerializeError(RegistryMixin, unittest.TestCase):
         self.assertIsNotNone(error.message(request))
         self.assertEqual(error.name, 'status_rejected')
         self.assertEqual(error.http_status, '422 Unprocessable Entity')
+
+    def test_proxy_rejected(self):
+        from fanboi2.errors import serialize_error, ProxyRejectedError
+        error = serialize_error('proxy_rejected')
+        request = self._makeRequest()
+        self.assertIsInstance(error, ProxyRejectedError)
+        self.assertIsNotNone(error.message(request))
+        self.assertEqual(error.name, 'proxy_rejected')
+        self.assertEqual(error.http_status, '422 Unprocessable Entity')

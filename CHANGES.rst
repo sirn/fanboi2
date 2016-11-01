@@ -4,6 +4,7 @@
 - [Add] Basic API for board, topic and post operations.
 - [Add] Dark theme ("Obsidian").
 - [Add] Banning rules allowing an IP address to be blocked.
+- [Add] Proxy detection allowing open proxies and public VPNs to be blocked.
 - [Add] Overriding rules allowing board status to be overridden per IP address.
 - [Add] Board can now be locked or archived.
 - [Add] Board, topic and post will now create a history copy on change.
@@ -15,8 +16,9 @@
 - [Change] Codebase now comes with type annotation for IDE.
 - [Change] Codebase now uses `Python 3.5 <https://docs.python.org/3.5/whatsnew/changelog.html#python-3-5-2>`_.
 - [Change] Replaced `Jinja2 <http://jinja.pocoo.org/>`_ templates with `Mako <http://www.makotemplates.org/>`_ templates.
-- [Change] Pyramid views are now organized into modules.
+- [Change] Views, models, utils and formatters are now organized into modules.
 - [Change] Views now use function dispatching instead of class-based dispatching.
+- [Change] Celery worker now load full Pyramid environment again to simplify initialization.
 - [Change] Vagrant now use `FreeBSD 10.3 <https://www.freebsd.org/>`_ instead of `Ubuntu 12.04 <http://releases.ubuntu.com/precise/>`_ to match the new production stack.
 - [Remove] Get rid of all usage of ``pyramid.threadlocal``.
 - [Remove] Production provisioning is now private.

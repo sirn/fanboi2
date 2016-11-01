@@ -10,7 +10,7 @@ from sqlalchemy.engine import engine_from_config
 from fanboi2.cache import cache_region
 from fanboi2.models import DBSession, Base, redis_conn, identity
 from fanboi2.tasks import celery, configure_celery
-from fanboi2.utils import akismet, dnsbl
+from fanboi2.utils import akismet, dnsbl, proxy_detector
 
 
 def remote_addr(request):
@@ -106,8 +106,31 @@ def normalize_settings(settings, _environ=os.environ):
     app_akismet_key = _cget('APP_AKISMET_KEY', 'app.akismet_key')
     app_dnsbl_providers = _cget('APP_DNSBL_PROVIDERS', 'app.dnsbl_providers')
 
+    app_proxy_detect_providers = _cget(
+        'APP_PROXY_DETECT_PROVIDERS',
+        'app.proxy_detect.providers')
+
+    app_proxy_detect_blackbox_url = _cget(
+        'APP_PROXY_DETECT_BLACKBOX_URL',
+        'app.proxy_detect.blackbox.url')
+
+    app_proxy_detect_getipintel_url = _cget(
+        'APP_PROXY_DETECT_GETIPINTEL_URL',
+        'app.proxy_detect.getipintel.url')
+
+    app_proxy_detect_getipintel_email = _cget(
+        'APP_PROXY_DETECT_GETIPINTEL_EMAIL',
+        'app.proxy_detect.getipintel.email')
+
+    app_proxy_detect_getipintel_flags = _cget(
+        'APP_PROXY_DETECT_GETIPINTEL_FLAGS',
+        'app.proxy_detect.getipintel.flags')
+
     if app_dnsbl_providers is not None:
         app_dnsbl_providers = aslist(app_dnsbl_providers)
+
+    if app_proxy_detect_providers is not None:
+        app_proxy_detect_providers = aslist(app_proxy_detect_providers)
 
     _settings = copy.deepcopy(settings)
     _settings.update({
@@ -121,31 +144,14 @@ def normalize_settings(settings, _environ=os.environ):
         'app.secret': app_secret,
         'app.akismet_key': app_akismet_key,
         'app.dnsbl_providers': app_dnsbl_providers,
+        'app.proxy_detect.providers': app_proxy_detect_providers,
+        'app.proxy_detect.blackbox.url': app_proxy_detect_blackbox_url,
+        'app.proxy_detect.getipintel.url': app_proxy_detect_getipintel_url,
+        'app.proxy_detect.getipintel.email': app_proxy_detect_getipintel_email,
+        'app.proxy_detect.getipintel.flags': app_proxy_detect_getipintel_flags,
     })
 
     return _settings
-
-
-def configure_components(settings):  # pragma: no cover
-    """Configure the application components e.g. database connection.
-
-    :param settings: A configuration :type:`dict`.
-
-    :type settings: dict
-    :rtype: None
-    """
-    engine = engine_from_config(settings, 'sqlalchemy.')
-    DBSession.configure(bind=engine)
-    Base.metadata.bind = engine
-
-    cache_region.configure_from_config(settings, 'dogpile.')
-    cache_region.invalidate()
-
-    redis_conn.from_url(settings['redis.url'])
-    celery.config_from_object(configure_celery(settings))
-    identity.configure_tz(settings['app.timezone'])
-    akismet.configure_key(settings['app.akismet_key'])
-    dnsbl.configure_providers(settings['app.dnsbl_providers'])
 
 
 def main(global_config, **settings):  # pragma: no cover
@@ -158,11 +164,23 @@ def main(global_config, **settings):  # pragma: no cover
     :type settings: dict
     :rtype: pyramid.router.Router
     """
-    settings = normalize_settings(settings)
-    config = Configurator(settings=settings)
-    configure_components(settings)
+    config = Configurator(settings=normalize_settings(settings))
     config.include('pyramid_mako')
     config.include('pyramid_beaker')
+
+    engine = engine_from_config(config.registry.settings, 'sqlalchemy.')
+    DBSession.configure(bind=engine)
+    Base.metadata.bind = engine
+
+    cache_region.configure_from_config(config.registry.settings, 'dogpile.')
+    redis_conn.from_url(config.registry.settings['redis.url'])
+    celery.config_from_object(configure_celery(config.registry.settings))
+    identity.configure_tz(config.registry.settings['app.timezone'])
+    akismet.configure_key(config.registry.settings['app.akismet_key'])
+    dnsbl.configure_providers(config.registry.settings['app.dnsbl_providers'])
+    proxy_detector.configure_from_config(
+        config.registry.settings,
+        'app.proxy_detect.')
 
     config.set_request_property(remote_addr)
     config.set_request_property(route_name)

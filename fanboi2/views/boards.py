@@ -3,7 +3,7 @@ from pyramid.renderers import render_to_response
 from sqlalchemy.orm.exc import NoResultFound
 from fanboi2.errors import RateLimitedError, ParamsInvalidError, \
     SpamRejectedError, DnsblRejectedError, StatusRejectedError, \
-    BanRejectedError
+    BanRejectedError, ProxyRejectedError
 from fanboi2.forms import SecurePostForm, SecureTopicForm
 from fanboi2.tasks import celery
 from fanboi2.views.api import boards_get, board_get, board_topics_get,\
@@ -84,6 +84,10 @@ def board_new_get(request):
             response = render_to_response('boards/error_status.mako', locals())
             response.status = e.http_status
             return response
+        except ProxyRejectedError as e:
+            response = render_to_response('boards/error_proxy.mako', locals())
+            response.status = e.http_status
+            return response
 
         if task.success():
             topic = task.object
@@ -153,6 +157,10 @@ def topic_show_get(request):
         except StatusRejectedError as e:
             status = e.status
             response = render_to_response('topics/error_status.mako', locals())
+            response.status = e.http_status
+            return response
+        except ProxyRejectedError as e:
+            response = render_to_response('topics/error_proxy.mako', locals())
             response.status = e.http_status
             return response
 

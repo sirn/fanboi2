@@ -179,6 +179,19 @@ class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Topic).count(), 0)
         self.assertEqual(result.result, ('failure', 'dnsbl_rejected'))
 
+    @unittest.mock.patch('fanboi2.utils.ProxyDetector.detect')
+    def test_add_topic_proxy(self, proxy):
+        from fanboi2.models import Topic
+        proxy.return_value = True
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 0)
+        self.assertEqual(result.result, ('failure', 'proxy_rejected'))
+
 
 class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
 
@@ -315,6 +328,21 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertTrue(result.successful())
         self.assertEqual(DBSession.query(Post).count(), 0)
         self.assertEqual(result.result, ('failure', 'spam_rejected'))
+
+    @unittest.mock.patch('fanboi2.utils.ProxyDetector.detect')
+    def test_add_post_proxy(self, proxy):
+        import transaction
+        from fanboi2.models import Post
+        proxy.return_value = True
+        request = {'remote_addr': '8.8.8.8'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            topic = self._makeTopic(board=board, title='Hello, world!')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        result = self._makeOne(request, topic_id, 'Hi!', True)
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Post).count(), 0)
+        self.assertEqual(result.result, ('failure', 'proxy_rejected'))
 
     def test_add_post_retry(self):
         import transaction

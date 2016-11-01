@@ -1,12 +1,8 @@
 import unittest
+from fanboi2.tests import CacheMixin
 
 
-class TestCache(unittest.TestCase):
-
-    def _getRegion(self, store=None):
-        from dogpile.cache import make_region
-        return make_region().configure('dogpile.cache.memory', arguments={
-            'cache_dict': store if store is not None else {}})
+class TestCache(CacheMixin, unittest.TestCase):
 
     def test_key_mangler(self):
         from fanboi2.cache import _key_mangler

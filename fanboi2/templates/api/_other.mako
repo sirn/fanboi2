@@ -123,9 +123,13 @@
                                     <li><strong>unknown</strong> — an unknown error occurred.</li>
                                     <li><strong>rate_limited</strong> — this IP address has been rate-limited.</li>
                                     <li><strong>params_invalid</strong> — required parameters are missing from the request.</li>
+                                </ul>
+                                <p>In case of post rejection, the following statuses are returned:</p>
+                                <ul>
                                     <li><strong>spam_rejected</strong> — the post or topic has been identified as spam.</li>
                                     <li><strong>dnsbl_rejected</strong> — the IP address is listed in one of DNSBL databases.</li>
                                     <li><strong>ban_rejected</strong> — the IP address is listed in the ban list.</li>
+                                    <li><strong>proxy_rejected</strong> — the IP address has been identified as an open proxy or public VPN.</li>
                                     <li><strong>status_rejected</strong> — this board or topic disallows posting.</li>
                                 </ul>
                                 <pre class="codeblock">"status":"rate_limited"</pre>

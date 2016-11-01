@@ -31,6 +31,11 @@ app.timezone = Asia/Bangkok
 app.secret = DEVELOPMENT_USE_ONLY_CHANGE_ME_IN_PROD
 app.akismet_key =
 app.dnsbl_providers =
+app.proxy_detect.providers =
+app.proxy_detect.blackbox.url =
+app.proxy_detect.getipintel.url =
+app.proxy_detect.getipintel.email =
+app.proxy_detect.getipintel.flags =
 
 [server:main]
 use = egg:waitress#main
