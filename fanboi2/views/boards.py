@@ -6,8 +6,10 @@ from fanboi2.errors import RateLimitedError, ParamsInvalidError, \
     BanRejectedError, ProxyRejectedError
 from fanboi2.forms import SecurePostForm, SecureTopicForm
 from fanboi2.tasks import celery
-from fanboi2.views.api import boards_get, board_get, board_topics_get,\
-    topic_get, topic_posts_get, topic_posts_post, board_topics_post, task_get
+from fanboi2.views.api import _get_override, \
+    boards_get, board_get, board_topics_get, board_topics_post, \
+    topic_get, topic_posts_get, topic_posts_post, \
+    task_get
 
 
 def root(request):
@@ -32,6 +34,7 @@ def board_show(request):
     """
     board = board_get(request)
     topics = board_topics_get(request).limit(10)
+    override = _get_override(request)
     return locals()
 
 
@@ -45,6 +48,7 @@ def board_all(request):
     """
     board = board_get(request)
     topics = board_topics_get(request).all()
+    override = _get_override(request)
     return locals()
 
 
@@ -59,8 +63,9 @@ def board_new_get(request):
     :rtype: dict | pyramid.response.Response
     """
     board = board_get(request)
+    override = _get_override(request)
 
-    if board.status != 'open':
+    if override.get('status', board.status) != 'open':
         raise HTTPNotFound(request.path)
 
     if request.params.get('task'):
@@ -111,6 +116,7 @@ def board_new_post(request):
     """
     board = board_get(request)
     form = SecureTopicForm(request.params, request=request)
+    override = _get_override(request)
 
     try:
         task = board_topics_post(request, board=board, form=form)
@@ -141,6 +147,7 @@ def topic_show_get(request):
     """
     board = board_get(request)
     topic = topic_get(request)
+    override = _get_override(request)
 
     if request.params.get('task'):
         try:
@@ -193,6 +200,7 @@ def topic_show_post(request):
     """
     board = board_get(request)
     topic = topic_get(request)
+    override = _get_override(request)
 
     if not topic.board_id == board.id:
         raise HTTPNotFound(request.path)

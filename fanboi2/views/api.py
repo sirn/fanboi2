@@ -4,7 +4,8 @@ from sqlalchemy.sql import or_, and_, select
 from webob.multidict import MultiDict
 from fanboi2.errors import ParamsInvalidError, RateLimitedError, BaseError
 from fanboi2.forms import TopicForm, PostForm
-from fanboi2.models import DBSession, Board, Topic, TopicMeta, Page
+from fanboi2.models import DBSession, Board, Topic, TopicMeta, \
+    Page, RuleOverride
 from fanboi2.tasks import ResultProxy, add_topic, add_post, celery
 from fanboi2.utils import RateLimiter, serialize_request
 
@@ -25,6 +26,24 @@ def _get_params(request):
         except ValueError:  # pragma: no cover
             pass
     return params
+
+
+def _get_override(request):
+    """Returns a :type:`dict` of an override rule for the given IP address
+    presented in request. If no override present for a user, an empty
+    dict is returned.
+
+    :param request: A :class:`pyramid.request.Request` object.
+
+    :type request: pyramid.request.Request
+    :rtype: dict
+    """
+    rule_override = DBSession.query(RuleOverride).filter(
+        RuleOverride.listed(request.remote_addr)).\
+        first()
+    if rule_override is not None:
+        return rule_override.override
+    return {}
 
 
 def root(request):

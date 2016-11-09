@@ -7,7 +7,7 @@
             <ul class="actions">
                 <li class="actions-item"><a class="button${' brand' if request.route_name == 'board' else ''} static" href="${request.route_path('board', board=board.slug)}">Recent topics</a></li>
                 <li class="actions-item"><a class="button${' brand' if request.route_name == 'board_all' else ''} static" href="${request.route_path('board_all', board=board.slug)}">All topics</a></li>
-                % if board.status == 'open':
+                % if override.get('status', board.status) == 'open':
                     <li class="actions-item"><a class="button${' brand' if request.route_name == 'board_new' else ''} static" href="${request.route_path('board_new', board=board.slug)}">New topic</a></li>
                 % endif
             </ul>

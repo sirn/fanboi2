@@ -43,7 +43,7 @@
             </div>
         </div>
     </div>
-% elif board.status == 'locked':
+% elif override.get('status', board.status) == 'locked':
     <div class="sheet">
         <div class="container">
             <h2 class="sheet-title">Board locked</h2>
@@ -53,7 +53,7 @@
             </div>
         </div>
     </div>
-% elif board.status == 'archived':
+% elif override.get('status', board.status) == 'archived':
     <div class="sheet">
         <div class="container">
             <h2 class="sheet-title">Board archived</h2>

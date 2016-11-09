@@ -639,6 +639,21 @@ class TestBoardViews(ViewMixin, unittest.TestCase):
         with self.assertRaises(HTTPNotFound):
             board_new_get(request)
 
+    def test_board_new_get_overridden(self):
+        from fanboi2.views.boards import board_new_get
+        board = self._makeBoard(
+            title='Foobar',
+            slug='foobar',
+            status='restricted')
+        self._makeRuleOverride(
+            ip_address='10.0.1.0/24',
+            override={'status': 'open'})
+        request = self._GET()
+        request.remote_addr = '10.0.1.1'
+        request.matchdict['board'] = board.slug
+        self._makeConfig(request, self._makeRegistry())
+        response = board_new_get(request)
+        self.assertSAEqual(response['board'], board)
 
     # noinspection PyUnresolvedReferences
     @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
