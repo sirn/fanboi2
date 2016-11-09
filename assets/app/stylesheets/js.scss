@@ -62,6 +62,11 @@
         height: $icon-height;
         width: $icon-width;
     }
+
+    @media (min-width: $bound-tablet) {
+        left: auto;
+        right: $spacing-horizontal;
+    }
 }
 
 .js-board-selector {
