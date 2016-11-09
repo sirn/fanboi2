@@ -59,7 +59,7 @@ qualname = fanboi2
 [logger_sqlalchemy]
 level = WARN
 handlers =
-qualname = sqlalchemy.engine
+qualname = sqlalchemy.engine.base.Engine
 
 [handler_console]
 class = StreamHandler
