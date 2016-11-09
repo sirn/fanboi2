@@ -166,12 +166,6 @@ body {
         right: 0;
         top: 0;
     }
-
-    @media (min-width: $bound-tablet) {
-        &:before {
-            display: none;
-        }
-    }
 }
 
 .cascade-body {
