@@ -50,7 +50,7 @@
 
     @include retina-background("burger", "png", $icon-width, $icon-height);
     height: $icon-height;
-    right: $spacing-horizontal;
+    left: $spacing-horizontal;
     position: absolute;
     text-indent: -10000em;
     top: 0;
