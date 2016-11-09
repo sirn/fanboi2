@@ -65,7 +65,7 @@
 
     @media (min-width: $bound-tablet) {
         left: auto;
-        right: $spacing-horizontal;
+        right: ($spacing-horizontal * 2) + $icon-width;
     }
 }
 
@@ -78,6 +78,11 @@
  * ------------------------------------------------------------------------ */
 
 .js-theme-selector {
+    margin: 0 0 $spacing-vertical-small;
+
+    @media (min-width: $bound-tablet) {
+        margin: 0;
+    }
 }
 
 .js-theme-selector-title {

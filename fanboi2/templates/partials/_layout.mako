@@ -30,9 +30,10 @@
 </head>
 <body id="${request.route_name}" class="${formatters.user_theme(request)}"${' ' + self.body_args() if hasattr(self, 'body_args') else ''}>
 
-<header class="header" data-board-selector="true">
+<header id="top" class="header" data-board-selector="true">
     <div class="container">
         <h1 class="header-brand"><a href="/">Fanboi Channel</a></h1>
+        <div class="header-scroll-button"><a href="#bottom">Scroll to bottom</a></div>
     </div>
 </header>
 
@@ -47,8 +48,11 @@ ${self.body()}
     </section>
 % endif
 
-<footer class="footer">
+<footer id="bottom" class="footer">
     <div class="container">
+        <div class="footer-scroll-button">
+          <a href="#top">Scroll to top</a>
+        </div>
         <div class="footer-lines" data-theme-selector="true">
             <p class="footer-lines-item">All contents are responsibility of its posters.</p>
         </div>

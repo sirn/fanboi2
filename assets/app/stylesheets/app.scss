@@ -64,6 +64,26 @@ body {
     }
 }
 
+.header-scroll-button {
+    $icon-width: 20px;
+    $icon-height: 20px;
+
+    @include retina-background("arrow", "png", $icon-width, $icon-height);
+    height: $icon-height;
+    position: absolute;
+    right: $spacing-horizontal;
+    text-indent: -10000em;
+    top: 0;
+    width: $icon-width;
+
+    a {
+        display: block;
+        float: left;
+        height: $icon-height;
+        width: $icon-width;
+    }
+}
+
 /* Site appendix
  * ------------------------------------------------------------------------ */
 
@@ -96,18 +116,43 @@ body {
 
 .footer {
     padding: $spacing-vertical 0;
+
+    .container {
+        position: relative;
+    }
+}
+
+.footer-scroll-button {
+    $icon-width: 20px;
+    $icon-height: 20px;
+
+    @include retina-background("arrow_up", "png", $icon-width, $icon-height);
+    top: -2px; /* To centerize with responsibility line. */
+    height: $icon-height;
+    position: absolute;
+    right: $spacing-horizontal;
+    text-indent: -10000em;
+    width: $icon-width;
+
+    a {
+        display: block;
+        float: left;
+        height: $icon-height;
+        width: $icon-width;
+    }
+
+    @media (min-width: $bound-desktop) {
+        right: 0;
+    }
 }
 
 .footer-lines {
     font-size: $font-size-small;
     line-height: $font-size-small;
-    margin: 0 0 $spacing-vertical-small;
-    text-align: center;
+    text-align: left;
 
     @media (min-width: $bound-tablet) {
         float: left;
-        margin: 0;
-        text-align: left;
     }
 }
 
@@ -119,26 +164,26 @@ body {
 
 .footer-links {
     display: block;
-    font-size: $font-size-smaller;
-    line-height: $font-size-smaller;
+    font-size: $font-size-small;
+    line-height: $font-size-small;
     list-style: none;
     margin: 0;
     padding: 0;
-    text-align: center;
+    text-align: left;
 
     @media (min-width: $bound-tablet) {
         float: right;
-        font-size: $font-size-small;
-        line-height: $font-size-small;
+        margin-right: 20px + $spacing-horizontal-small;
         text-align: right;
     }
 }
 
 .footer-links-item {
     display: inline;
-    margin: 0 $spacing-vertical-smaller;
+    margin: 0 $spacing-horizontal-smaller 0 0;
 
     @media (min-width: $bound-tablet) {
+        margin: 0 $spacing-horizontal-smaller $spacing-vertical-smaller;
         display: block;
     }
 }
