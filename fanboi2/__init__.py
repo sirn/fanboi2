@@ -16,7 +16,8 @@ from fanboi2.utils import akismet, dnsbl, proxy_detector
 def remote_addr(request):
     """Similar to Pyramid's :attr:`request.remote_addr` but will fallback
     to ``HTTP_X_FORWARDED_FOR`` when ``REMOTE_ADDR`` is either a private
-    address or a loopback address.
+    address or a loopback address. If multiple forwarded IPs are given
+    in ``HTTP_X_FORWARDED_FOR``, only the first one will be returned.
 
     :param request: A :class:`pyramid.request.Request` object.
 
@@ -25,7 +26,9 @@ def remote_addr(request):
     """
     ipaddr = ip_address(request.environ.get('REMOTE_ADDR', '255.255.255.255'))
     if ipaddr.is_private:
-        return request.environ.get('HTTP_X_FORWARDED_FOR', str(ipaddr))
+        return request.environ.get('HTTP_X_FORWARDED_FOR', str(ipaddr)).\
+            split(",")[0].\
+            strip()
     return str(ipaddr)
 
 

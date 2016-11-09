@@ -20,7 +20,7 @@ class TestRemoteAddr(unittest.TestCase):
         self.assertEqual(self._getFunction()(request), "171.100.10.1")
 
     def test_private_fallback(self):
-        request = self._makeRequest("10.0.1.1", "171.100.10.1")
+        request = self._makeRequest("10.0.1.1", "171.100.10.1, 127.0.0.1")
         self.assertEqual(self._getFunction()(request), "171.100.10.1")
 
     def test_loopback_fallback(self):
