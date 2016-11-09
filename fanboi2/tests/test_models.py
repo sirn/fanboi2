@@ -1683,9 +1683,10 @@ class TestRuleModel(ModelMixin, unittest.TestCase):
         from fanboi2.models import Rule
         rule1 = self._makeRule(ip_address='10.0.1.0/24')
         rule2 = self._makeRule(ip_address='10.0.2.0/24')
-        self._makeRule(ip_address='10.0.3.0/24', active=False)
+        rule3 = self._makeRule(ip_address='10.0.3.1')
+        self._makeRule(ip_address='10.0.4.0/24', active=False)
         self._makeRule(
-            ip_address='10.0.4.0/24',
+            ip_address='10.0.5.0/24',
             active_until=datetime.now() - timedelta(days=1))
 
         def _makeQuery(ip_address):
@@ -1693,8 +1694,9 @@ class TestRuleModel(ModelMixin, unittest.TestCase):
 
         self.assertEqual(rule1, _makeQuery('10.0.1.1'))
         self.assertEqual(rule2, _makeQuery('10.0.2.1'))
-        self.assertEqual(None, _makeQuery('10.0.3.1'))
+        self.assertEqual(rule3, _makeQuery('10.0.3.1'))
         self.assertEqual(None, _makeQuery('10.0.4.1'))
+        self.assertEqual(None, _makeQuery('10.0.5.1'))
 
 
 class TestRuleBanModel(ModelMixin, unittest.TestCase):
@@ -1709,11 +1711,12 @@ class TestRuleBanModel(ModelMixin, unittest.TestCase):
         from fanboi2.models import RuleBan
         rule_ban1 = self._makeRuleBan(ip_address='10.0.1.0/24')
         rule_ban2 = self._makeRuleBan(ip_address='10.0.2.0/24')
-        self._makeRule(ip_address='10.0.3.0/24')
-        self._makeRuleOverride(ip_address='10.0.4.0/24')
-        self._makeRuleBan(ip_address='10.0.5.0/24', active=False)
+        rule_ban3 = self._makeRuleBan(ip_address='10.0.3.1')
+        self._makeRule(ip_address='10.0.4.0/24')
+        self._makeRuleOverride(ip_address='10.0.5.0/24')
+        self._makeRuleBan(ip_address='10.0.6.0/24', active=False)
         self._makeRuleBan(
-            ip_address='10.0.6.0/24',
+            ip_address='10.0.7.0/24',
             active_until=datetime.now() - timedelta(days=1))
 
         def _makeQuery(ip_address):
@@ -1722,10 +1725,11 @@ class TestRuleBanModel(ModelMixin, unittest.TestCase):
 
         self.assertEqual(rule_ban1, _makeQuery('10.0.1.1'))
         self.assertEqual(rule_ban2, _makeQuery('10.0.2.1'))
-        self.assertEqual(None, _makeQuery('10.0.3.1'))
+        self.assertEqual(rule_ban3, _makeQuery('10.0.3.1'))
         self.assertEqual(None, _makeQuery('10.0.4.1'))
         self.assertEqual(None, _makeQuery('10.0.5.1'))
         self.assertEqual(None, _makeQuery('10.0.6.1'))
+        self.assertEqual(None, _makeQuery('10.0.7.1'))
 
 
 class TestRuleOverrideModel(ModelMixin, unittest.TestCase):
@@ -1741,11 +1745,12 @@ class TestRuleOverrideModel(ModelMixin, unittest.TestCase):
         from fanboi2.models import RuleOverride
         rule_override1 = self._makeRuleOverride(ip_address='10.0.1.0/24')
         rule_override2 = self._makeRuleOverride(ip_address='10.0.2.0/24')
-        self._makeRule(ip_address='10.0.3.0/24')
-        self._makeRuleBan(ip_address='10.0.4.0/24')
-        self._makeRuleOverride(ip_address='10.0.5.0/24', active=False)
+        rule_override3 = self._makeRuleOverride(ip_address='10.0.3.1')
+        self._makeRule(ip_address='10.0.4.0/24')
+        self._makeRuleBan(ip_address='10.0.5.0/24')
+        self._makeRuleOverride(ip_address='10.0.6.0/24', active=False)
         self._makeRuleOverride(
-            ip_address='10.0.6.0/24',
+            ip_address='10.0.7.0/24',
             active_until=datetime.now() - timedelta(days=1))
 
         def _makeQuery(ip_address):
@@ -1754,7 +1759,8 @@ class TestRuleOverrideModel(ModelMixin, unittest.TestCase):
 
         self.assertEqual(rule_override1, _makeQuery('10.0.1.1'))
         self.assertEqual(rule_override2, _makeQuery('10.0.2.1'))
-        self.assertEqual(None, _makeQuery('10.0.3.1'))
+        self.assertEqual(rule_override3, _makeQuery('10.0.3.1'))
         self.assertEqual(None, _makeQuery('10.0.4.1'))
         self.assertEqual(None, _makeQuery('10.0.5.1'))
         self.assertEqual(None, _makeQuery('10.0.6.1'))
+        self.assertEqual(None, _makeQuery('10.0.7.1'))

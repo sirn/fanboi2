@@ -27,7 +27,7 @@ class Rule(Base):
     @classmethod
     def listed(cls, ip_address):
         return and_(
-            cls.ip_address.op('>>')(ip_address),
             cls.active == True,
+            cls.ip_address.op('>>=')(ip_address),
             or_(cls.active_until == None,
                 cls.active_until >= func.now()))
