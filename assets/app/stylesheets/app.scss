@@ -164,7 +164,7 @@ body {
 
 .footer-links {
     display: block;
-    font-size: $font-size-small;
+    font-size: $font-size-smaller;
     line-height: $font-size-small;
     list-style: none;
     margin: 0;
@@ -173,6 +173,7 @@ body {
 
     @media (min-width: $bound-tablet) {
         float: right;
+        font-size: $font-size-small;
         margin-right: 20px + $spacing-horizontal-small;
         text-align: right;
     }
@@ -183,7 +184,7 @@ body {
     margin: 0 $spacing-horizontal-smaller 0 0;
 
     @media (min-width: $bound-tablet) {
-        margin: 0 $spacing-horizontal-smaller $spacing-vertical-smaller;
+        margin: 0 0 $spacing-vertical-smaller;
         display: block;
     }
 }
