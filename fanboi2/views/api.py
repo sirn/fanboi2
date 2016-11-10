@@ -218,20 +218,24 @@ def pages_get(request, namespace=None):
         filter_by(namespace=namespace)
 
 
-def page_get(request, namespace=None):
+def page_get(request, page=None, namespace=None):
     """Retrieve a page.
 
     :param request: A :class:`pyramid.request.Request` object.
+    :param page: Page name to retrieve.
+    :param namespace: Page namespace to retrieve from.
 
     :type request: pyramid.request.Request
+    :type page: str
+    :type namespace: str
     :rtype: sqlalchemy.orm.Query
     """
     if namespace is None:
         namespace = 'public'
+    if page is None:
+        page = request.matchdict['page']
     return DBSession.query(Page).\
-        filter_by(
-            namespace=namespace,
-            slug=request.matchdict['page']).\
+        filter_by(namespace=namespace, slug=page).\
         one()
 
 

@@ -1226,3 +1226,21 @@ class TestPagesView(ViewMixin, unittest.TestCase):
         request.matchdict['page'] = 'notexists'
         with self.assertRaises(NoResultFound):
             page_show(request)
+
+    def test_page_robots(self):
+        from fanboi2.views.pages import robots_show
+        page = self._makePage(
+            title='Robots',
+            slug='global/robots',
+            namespace='internal',
+            body='Hi')
+        request = self._GET()
+        response = robots_show(request)
+        self.assertSAEqual(response.body, b'Hi')
+
+    def test_page_robots_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from fanboi2.views.pages import robots_show
+        request = self._GET()
+        with self.assertRaises(NoResultFound):
+            robots_show(request)

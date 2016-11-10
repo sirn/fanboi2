@@ -188,6 +188,7 @@ def main(global_config, **settings):  # pragma: no cover
     config.set_request_property(remote_addr)
     config.set_request_property(route_name)
     config.add_request_method(tagged_static_path)
+    config.add_route('robots', '/robots.txt')
 
     config.include('fanboi2.serializers')
     config.include('fanboi2.views.pages', route_prefix='/pages')

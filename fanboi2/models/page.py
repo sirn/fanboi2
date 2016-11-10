@@ -6,6 +6,7 @@ from ._base import Base, Versioned
 
 INTERNAL_PAGES = (
     ('global/css', 'none'),
+    ('global/robots', 'none'),
     ('global/appendix', 'markdown'),
     ('global/footer', 'html'),
 )
