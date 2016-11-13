@@ -28,18 +28,23 @@ def _get_params(request):
     return params
 
 
-def _get_override(request):
+def _get_override(request, board=None):
     """Returns a :type:`dict` of an override rule for the given IP address
     presented in request. If no override present for a user, an empty
     dict is returned.
 
     :param request: A :class:`pyramid.request.Request` object.
+    :param board: A :class:`fanboi2.models.Board` object to scope.
 
     :type request: pyramid.request.Request
+    :type board: fanboi2.models.Board
     :rtype: dict
     """
+    scopes = None
+    if board is not None:
+        scopes = ('board:%s' % (board.slug,),)
     rule_override = DBSession.query(RuleOverride).filter(
-        RuleOverride.listed(request.remote_addr)).\
+        RuleOverride.listed(request.remote_addr, scopes=scopes)).\
         first()
     if rule_override is not None:
         return rule_override.override

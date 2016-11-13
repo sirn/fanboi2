@@ -90,6 +90,54 @@ class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(topic.posts[0].body, 'Hello, world!')
         self.assertEqual(result.result, ('topic', topic.id))
 
+    def test_add_topic_overridden_scoped(self):
+        import transaction
+        from fanboi2.models import Topic
+        request = {'remote_addr': '10.0.1.1'}
+        with transaction.manager:
+            self._makeRuleOverride(
+                ip_address='10.0.1.0/24',
+                scope='board:foobar',
+                override={'status': 'open'})
+            board = self._makeBoard(
+                title='Foobar',
+                slug='foobar',
+                status='restricted')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        topic = DBSession.query(Topic).first()
+        print(result.result)
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 1)
+        self.assertEqual(DBSession.query(Topic).get(result.get()[1]), topic)
+        self.assertEqual(topic.title, 'Foobar')
+        self.assertEqual(topic.posts[0].body, 'Hello, world!')
+        self.assertEqual(result.result, ('topic', topic.id))
+
+    def test_add_topic_overridden_other_scoped(self):
+        import transaction
+        from fanboi2.models import Topic
+        request = {'remote_addr': '10.0.1.1'}
+        with transaction.manager:
+            self._makeRuleOverride(
+                ip_address='10.0.1.0/24',
+                scope='board:other',
+                override={'status': 'open'})
+            board = self._makeBoard(
+                title='Foobar',
+                slug='foobar',
+                status='restricted')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        topic = DBSession.query(Topic).first()
+        print(result.result)
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 0)
+        self.assertEqual(result.result, (
+            'failure',
+            'status_rejected',
+            'restricted'))
+
     def test_add_topic_ban(self):
         from fanboi2.models import Topic
         request = {'remote_addr': '10.0.1.1'}
@@ -238,6 +286,54 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(post.body, 'Hi!')
         self.assertEqual(post.bumped, True)
         self.assertEqual(result.result, ('post', post.id))
+
+    def test_add_post_overridden_scoped(self):
+        import transaction
+        from fanboi2.models import Post
+        request = {'remote_addr': '10.0.1.1'}
+        with transaction.manager:
+            self._makeRuleOverride(
+                ip_address='10.0.1.0/24',
+                scope='board:foobar',
+                override={'status': 'open'})
+            board = self._makeBoard(
+                title='Foobar',
+                slug='foobar',
+                status='locked')
+            topic = self._makeTopic(board=board, title='Hello, world!')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        result = self._makeOne(request, topic_id, 'Hi!', True)
+        post = DBSession.query(Post).first()
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Post).count(), 1)
+        self.assertEqual(DBSession.query(Post).get(result.get()[1]), post)
+        self.assertEqual(post.body, 'Hi!')
+        self.assertEqual(post.bumped, True)
+        self.assertEqual(result.result, ('post', post.id))
+
+    def test_add_post_overridden_other_scoped(self):
+        import transaction
+        from fanboi2.models import Post
+        request = {'remote_addr': '10.0.1.1'}
+        with transaction.manager:
+            self._makeRuleOverride(
+                ip_address='10.0.1.0/24',
+                scope='board:other',
+                override={'status': 'open'})
+            board = self._makeBoard(
+                title='Foobar',
+                slug='foobar',
+                status='locked')
+            topic = self._makeTopic(board=board, title='Hello, world!')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        result = self._makeOne(request, topic_id, 'Hi!', True)
+        post = DBSession.query(Post).first()
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Post).count(), 0)
+        self.assertEqual(result.result, (
+            'failure',
+            'status_rejected',
+            'locked'))
 
     def test_add_post_ban(self):
         import transaction

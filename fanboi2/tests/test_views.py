@@ -655,6 +655,40 @@ class TestBoardViews(ViewMixin, unittest.TestCase):
         response = board_new_get(request)
         self.assertSAEqual(response['board'], board)
 
+    def test_board_new_get_overridden_scoped(self):
+        from fanboi2.views.boards import board_new_get
+        board = self._makeBoard(
+            title='Foobar',
+            slug='foobar',
+            status='restricted')
+        self._makeRuleOverride(
+            ip_address='10.0.1.0/24',
+            scope='board:foobar',
+            override={'status': 'open'})
+        request = self._GET()
+        request.remote_addr = '10.0.1.1'
+        request.matchdict['board'] = board.slug
+        self._makeConfig(request, self._makeRegistry())
+        response = board_new_get(request)
+        self.assertSAEqual(response['board'], board)
+
+    def test_board_new_get_overridden_other_scoped(self):
+        from fanboi2.views.boards import board_new_get
+        board = self._makeBoard(
+            title='Foobar',
+            slug='foobar',
+            status='restricted')
+        self._makeRuleOverride(
+            ip_address='10.0.1.0/24',
+            scope='board:other',
+            override={'status': 'open'})
+        request = self._GET()
+        request.remote_addr = '10.0.1.1'
+        request.matchdict['board'] = board.slug
+        self._makeConfig(request, self._makeRegistry())
+        with self.assertRaises(HTTPNotFound):
+            board_new_get(request)
+
     # noinspection PyUnresolvedReferences
     @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
     def test_board_new_get_task(self, result_):

@@ -93,14 +93,16 @@ def add_topic(request, board_id, title, body):
             return 'failure', 'ban_rejected'
 
         override = {}
+        board = DBSession.query(Board).get(board_id)
         rule_override = DBSession.query(RuleOverride).filter(
-            RuleOverride.listed(request['remote_addr'])).\
+            RuleOverride.listed(
+                request['remote_addr'],
+                scopes=('board:%s' % (board.slug,),))).\
             first()
 
         if rule_override is not None:
             override = rule_override.override
 
-        board = DBSession.query(Board).get(board_id)
         board_status = override.get('status', board.status)
         if board_status != 'open':
             return 'failure', 'status_rejected', board_status
@@ -150,14 +152,16 @@ def add_post(self, request, topic_id, body, bumped):
             return 'failure', 'status_rejected', topic.status
 
         override = {}
+        board = topic.board
         rule_override = DBSession.query(RuleOverride).filter(
-            RuleOverride.listed(request['remote_addr'])).\
+            RuleOverride.listed(
+                request['remote_addr'],
+                scopes=('board:%s' % (board.slug,),))).\
             first()
 
         if rule_override is not None:
             override = rule_override.override
 
-        board = topic.board
         board_status = override.get('status', board.status)
         if not board_status in ('open', 'restricted'):
             return 'failure', 'status_rejected', board_status

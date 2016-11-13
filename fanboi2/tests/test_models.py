@@ -1684,19 +1684,24 @@ class TestRuleModel(ModelMixin, unittest.TestCase):
         rule1 = self._makeRule(ip_address='10.0.1.0/24')
         rule2 = self._makeRule(ip_address='10.0.2.0/24')
         rule3 = self._makeRule(ip_address='10.0.3.1')
-        self._makeRule(ip_address='10.0.4.0/24', active=False)
+        rule4 = self._makeRule(ip_address='10.0.4.0/24', scope='foo:bar')
+        self._makeRule(ip_address='10.0.5.0/24', active=False)
         self._makeRule(
-            ip_address='10.0.5.0/24',
+            ip_address='10.0.6.0/24',
             active_until=datetime.now() - timedelta(days=1))
 
-        def _makeQuery(ip_address):
-            return DBSession.query(Rule).filter(Rule.listed(ip_address)).first()
+        def _makeQuery(ip_address, **kwargs):
+            return DBSession.query(Rule).filter(
+                Rule.listed(ip_address, **kwargs)).first()
 
         self.assertEqual(rule1, _makeQuery('10.0.1.1'))
         self.assertEqual(rule2, _makeQuery('10.0.2.1'))
         self.assertEqual(rule3, _makeQuery('10.0.3.1'))
+        self.assertEqual(rule3, _makeQuery('10.0.3.1', scopes=['foo:bar']))
+        self.assertEqual(rule4, _makeQuery('10.0.4.1', scopes=['foo:bar']))
         self.assertEqual(None, _makeQuery('10.0.4.1'))
         self.assertEqual(None, _makeQuery('10.0.5.1'))
+        self.assertEqual(None, _makeQuery('10.0.6.1'))
 
 
 class TestRuleBanModel(ModelMixin, unittest.TestCase):
@@ -1712,24 +1717,30 @@ class TestRuleBanModel(ModelMixin, unittest.TestCase):
         rule_ban1 = self._makeRuleBan(ip_address='10.0.1.0/24')
         rule_ban2 = self._makeRuleBan(ip_address='10.0.2.0/24')
         rule_ban3 = self._makeRuleBan(ip_address='10.0.3.1')
-        self._makeRule(ip_address='10.0.4.0/24')
-        self._makeRuleOverride(ip_address='10.0.5.0/24')
-        self._makeRuleBan(ip_address='10.0.6.0/24', active=False)
+        rule_ban4 = self._makeRuleBan(
+            ip_address='10.0.4.0/24',
+            scope='foo:bar')
+        self._makeRule(ip_address='10.0.5.0/24')
+        self._makeRuleOverride(ip_address='10.0.6.0/24')
+        self._makeRuleBan(ip_address='10.0.7.0/24', active=False)
         self._makeRuleBan(
-            ip_address='10.0.7.0/24',
+            ip_address='10.0.8.0/24',
             active_until=datetime.now() - timedelta(days=1))
 
-        def _makeQuery(ip_address):
+        def _makeQuery(ip_address, **kwargs):
             return DBSession.query(RuleBan).\
-                filter(RuleBan.listed(ip_address)).first()
+                filter(RuleBan.listed(ip_address, **kwargs)).first()
 
         self.assertEqual(rule_ban1, _makeQuery('10.0.1.1'))
         self.assertEqual(rule_ban2, _makeQuery('10.0.2.1'))
         self.assertEqual(rule_ban3, _makeQuery('10.0.3.1'))
+        self.assertEqual(rule_ban3, _makeQuery('10.0.3.1', scopes=['foo:bar']))
+        self.assertEqual(rule_ban4, _makeQuery('10.0.4.1', scopes=['foo:bar']))
         self.assertEqual(None, _makeQuery('10.0.4.1'))
         self.assertEqual(None, _makeQuery('10.0.5.1'))
         self.assertEqual(None, _makeQuery('10.0.6.1'))
         self.assertEqual(None, _makeQuery('10.0.7.1'))
+        self.assertEqual(None, _makeQuery('10.0.8.1'))
 
 
 class TestRuleOverrideModel(ModelMixin, unittest.TestCase):
@@ -1746,20 +1757,30 @@ class TestRuleOverrideModel(ModelMixin, unittest.TestCase):
         rule_override1 = self._makeRuleOverride(ip_address='10.0.1.0/24')
         rule_override2 = self._makeRuleOverride(ip_address='10.0.2.0/24')
         rule_override3 = self._makeRuleOverride(ip_address='10.0.3.1')
-        self._makeRule(ip_address='10.0.4.0/24')
-        self._makeRuleBan(ip_address='10.0.5.0/24')
-        self._makeRuleOverride(ip_address='10.0.6.0/24', active=False)
+        rule_override4 = self._makeRuleOverride(
+            ip_address='10.0.4.0/24',
+            scope='foo:bar')
+        self._makeRule(ip_address='10.0.5.0/24')
+        self._makeRuleBan(ip_address='10.0.6.0/24')
+        self._makeRuleOverride(ip_address='10.0.7.0/24', active=False)
         self._makeRuleOverride(
-            ip_address='10.0.7.0/24',
+            ip_address='10.0.8.0/24',
             active_until=datetime.now() - timedelta(days=1))
 
-        def _makeQuery(ip_address):
+        def _makeQuery(ip_address, **kwargs):
             return DBSession.query(RuleOverride).\
-                filter(RuleOverride.listed(ip_address)).first()
+                filter(RuleOverride.listed(ip_address, **kwargs)).first()
 
         self.assertEqual(rule_override1, _makeQuery('10.0.1.1'))
         self.assertEqual(rule_override2, _makeQuery('10.0.2.1'))
         self.assertEqual(rule_override3, _makeQuery('10.0.3.1'))
+        self.assertEqual(
+            rule_override3,
+            _makeQuery('10.0.3.1', scopes=['foo:bar']))
+        self.assertEqual(
+            rule_override4,
+            _makeQuery('10.0.4.1', scopes=['foo:bar']))
+        self.assertEqual(None, _makeQuery('10.0.4.1'))
         self.assertEqual(None, _makeQuery('10.0.4.1'))
         self.assertEqual(None, _makeQuery('10.0.5.1'))
         self.assertEqual(None, _makeQuery('10.0.6.1'))

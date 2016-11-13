@@ -34,7 +34,7 @@ def board_show(request):
     """
     board = board_get(request)
     topics = board_topics_get(request).limit(10)
-    override = _get_override(request)
+    override = _get_override(request, board=board)
     return locals()
 
 
@@ -48,7 +48,7 @@ def board_all(request):
     """
     board = board_get(request)
     topics = board_topics_get(request).all()
-    override = _get_override(request)
+    override = _get_override(request, board=board)
     return locals()
 
 
@@ -63,7 +63,7 @@ def board_new_get(request):
     :rtype: dict | pyramid.response.Response
     """
     board = board_get(request)
-    override = _get_override(request)
+    override = _get_override(request, board=board)
 
     if override.get('status', board.status) != 'open':
         raise HTTPNotFound(request.path)
@@ -116,7 +116,7 @@ def board_new_post(request):
     """
     board = board_get(request)
     form = SecureTopicForm(request.params, request=request)
-    override = _get_override(request)
+    override = _get_override(request, board=board)
 
     try:
         task = board_topics_post(request, board=board, form=form)
@@ -147,7 +147,7 @@ def topic_show_get(request):
     """
     board = board_get(request)
     topic = topic_get(request)
-    override = _get_override(request)
+    override = _get_override(request, board=board)
 
     if request.params.get('task'):
         try:
@@ -200,7 +200,7 @@ def topic_show_post(request):
     """
     board = board_get(request)
     topic = topic_get(request)
-    override = _get_override(request)
+    override = _get_override(request, board=board)
 
     if not topic.board_id == board.id:
         raise HTTPNotFound(request.path)

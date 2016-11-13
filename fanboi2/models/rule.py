@@ -12,6 +12,7 @@ class Rule(Base):
 
     id = Column(Integer, primary_key=True)
     type = Column(String, nullable=False)
+    scope = Column(String)
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     ip_address = Column(INET, nullable=False)
@@ -25,8 +26,12 @@ class Rule(Base):
     }
 
     @classmethod
-    def listed(cls, ip_address):
+    def listed(cls, ip_address, scopes=None):
+        scope_q = cls.scope == None
+        if scopes is not None:
+            scope_q = or_(scope_q, cls.scope.in_(scopes))
         return and_(
+            scope_q,
             cls.active == True,
             cls.ip_address.op('>>=')(ip_address),
             or_(cls.active_until == None,
