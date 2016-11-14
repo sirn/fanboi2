@@ -15,8 +15,18 @@ RE_THUMBNAILS = (
     (re.compile(
         r"https?://(?:(?:\w+\.)?imgur\.com)/((?!a/|gallery/)\w+)",
         re.ASCII),
-     '//i.imgur.com/{}s.jpg',
+     '//i.imgur.com/{}b.jpg',
      '//imgur.com/{}'),
+    (re.compile(
+        r"https?://(?:www\.)?youtube\.com/watch\S+v=([a-zA-Z0-9_\-]+)",
+        re.ASCII),
+     '//i1.ytimg.com/vi/{}/mqdefault.jpg',
+     '//www.youtube.com/watch?v={}'),
+    (re.compile(
+        r"https?://youtu\.be/([a-zA-Z0-9_\-]+)",
+        re.ASCII),
+     '//i1.ytimg.com/vi/{}/mqdefault.jpg',
+     '//www.youtube.com/watch?v={}'),
 )
 
 RE_LINK = re.compile(r"""

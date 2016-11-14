@@ -104,11 +104,17 @@ $post-date-size: round($font-size-small);
         height: $thumbnail-height;
         margin: 0 $thumbnail-gap-vertical $thumbnail-gap-horizontal 0;
         overflow: hidden;
+        position: relative;
+        text-align: center;
         width: $thumbnail-width;
 
         img {
+            left: 50%;
             max-height: $thumbnail-height;
-            max-width: $thumbnail-width;
+            object-fit: cover;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
         }
     }
 

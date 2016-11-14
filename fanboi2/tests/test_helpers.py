@@ -112,14 +112,40 @@ class TestFormatters(unittest.TestCase):
         https://imgur.com/image5
         https://i.imgur.com/image7.jpg
         https://imgur.com/a/demo
+
+        Foobar Baz
+
+        http://www.youtube.com/watch?v=video1
+        http://www.youtube.com/watch?v=ほげ
+        https://www.youtube.com/watch?v=video2&feature=youtu.be
+        https://www.youtube.com/watch?v=video3
+        https://www.youtube.com/user/caseyneistat
+        http://youtu.be/video4
+        https://youtu.be/video5
         """
         self.assertTupleEqual(tuple(extract_thumbnail(text)), (
-            ('//i.imgur.com/image1s.jpg', '//imgur.com/image1'),
-            ('//i.imgur.com/image2s.jpg', '//imgur.com/image2'),
-            ('//i.imgur.com/image3s.jpg', '//imgur.com/image3'),
-            ('//i.imgur.com/image4s.jpg', '//imgur.com/image4'),
-            ('//i.imgur.com/image5s.jpg', '//imgur.com/image5'),
-            ('//i.imgur.com/image7s.jpg', '//imgur.com/image7'),
+            ('//i.imgur.com/image1b.jpg',
+             '//imgur.com/image1'),
+            ('//i.imgur.com/image2b.jpg',
+             '//imgur.com/image2'),
+            ('//i.imgur.com/image3b.jpg',
+             '//imgur.com/image3'),
+            ('//i.imgur.com/image4b.jpg',
+             '//imgur.com/image4'),
+            ('//i.imgur.com/image5b.jpg',
+             '//imgur.com/image5'),
+            ('//i.imgur.com/image7b.jpg',
+             '//imgur.com/image7'),
+            ('//i1.ytimg.com/vi/video1/mqdefault.jpg',
+             '//www.youtube.com/watch?v=video1'),
+            ('//i1.ytimg.com/vi/video2/mqdefault.jpg',
+             '//www.youtube.com/watch?v=video2'),
+            ('//i1.ytimg.com/vi/video3/mqdefault.jpg',
+             '//www.youtube.com/watch?v=video3'),
+            ('//i1.ytimg.com/vi/video4/mqdefault.jpg',
+             '//www.youtube.com/watch?v=video4'),
+            ('//i1.ytimg.com/vi/video5/mqdefault.jpg',
+             '//www.youtube.com/watch?v=video5'),
         ))
 
     def test_post_markup(self):
@@ -200,6 +226,8 @@ class TestFormatters(unittest.TestCase):
         text = ("New product! https://imgur.com/foobar1\n\n"
                 "http://i.imgur.com/foobar2.png\n"
                 "http://imgur.com/foobar3.jpg\n"
+                "http://youtu.be/test1\n"
+                "http://www.youtube.com/watch?v=test2\n"
                 "Buy today get TWO for FREE!!1")
         self.assertEqual(
             format_text(text),
@@ -212,18 +240,32 @@ class TestFormatters(unittest.TestCase):
                    '<a href="http://imgur.com/foobar3.jpg" class="link" '
                    'target="_blank" rel="nofollow">'
                    'http://imgur.com/foobar3.jpg</a><br>'
+                   '<a href="http://youtu.be/test1" class="link" '
+                   'target="_blank" rel="nofollow">'
+                   'http://youtu.be/test1</a><br>'
+                   '<a href="http://www.youtube.com/watch?v=test2" '
+                   'class="link" target="_blank" rel="nofollow">'
+                   'http://www.youtube.com/watch?v=test2</a><br>'
                    'Buy today get TWO for FREE!!1</p>\n'
                    '<p class="thumbnails"><a href="//imgur.com/foobar1" '
                    'class="thumbnail" target="_blank">'
-                   '<img src="//i.imgur.com/foobar1s.jpg">'
+                   '<img src="//i.imgur.com/foobar1b.jpg">'
                    '</a>'
                    '<a href="//imgur.com/foobar2" '
                    'class="thumbnail" target="_blank">'
-                   '<img src="//i.imgur.com/foobar2s.jpg">'
+                   '<img src="//i.imgur.com/foobar2b.jpg">'
                    '</a>'
                    '<a href="//imgur.com/foobar3" '
                    'class="thumbnail" target="_blank">'
-                   '<img src="//i.imgur.com/foobar3s.jpg">'
+                   '<img src="//i.imgur.com/foobar3b.jpg">'
+                   '</a>'
+                   '<a href="//www.youtube.com/watch?v=test2" '
+                   'class="thumbnail" target="_blank">'
+                   '<img src="//i1.ytimg.com/vi/test2/mqdefault.jpg">'
+                   '</a>'
+                   '<a href="//www.youtube.com/watch?v=test1" '
+                   'class="thumbnail" target="_blank">'
+                   '<img src="//i1.ytimg.com/vi/test1/mqdefault.jpg">'
                    '</a>'
                    '</p>'))
 
