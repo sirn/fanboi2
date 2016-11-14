@@ -673,6 +673,7 @@ class TestBoardViews(ViewMixin, unittest.TestCase):
         self.assertSAEqual(response['board'], board)
 
     def test_board_new_get_overridden_other_scoped(self):
+        from pyramid.httpexceptions import HTTPNotFound
         from fanboi2.views.boards import board_new_get
         board = self._makeBoard(
             title='Foobar',

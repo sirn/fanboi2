@@ -87,17 +87,17 @@ def add_topic(request, board_id, title, body):
     :rtype: tuple
     """
     with transaction.manager:
+        board = DBSession.query(Board).get(board_id)
+        scope = 'board:%s' % (board.slug,)
+
         if DBSession.query(RuleBan).\
-           filter(RuleBan.listed(request['remote_addr'])).\
+           filter(RuleBan.listed(request['remote_addr'], scopes=(scope,))).\
            count() > 0:
             return 'failure', 'ban_rejected'
 
         override = {}
-        board = DBSession.query(Board).get(board_id)
         rule_override = DBSession.query(RuleOverride).filter(
-            RuleOverride.listed(
-                request['remote_addr'],
-                scopes=('board:%s' % (board.slug,),))).\
+            RuleOverride.listed(request['remote_addr'], scopes=(scope,))).\
             first()
 
         if rule_override is not None:
@@ -142,21 +142,21 @@ def add_post(self, request, topic_id, body, bumped):
     :rtype: tuple
     """
     with transaction.manager:
+        topic = DBSession.query(Topic).get(topic_id)
+        board = topic.board
+        scope = 'board:%s' % (board.slug,)
+
         if DBSession.query(RuleBan).\
-           filter(RuleBan.listed(request['remote_addr'])).\
+           filter(RuleBan.listed(request['remote_addr'], scopes=(scope,))).\
            count() > 0:
             return 'failure', 'ban_rejected'
 
-        topic = DBSession.query(Topic).get(topic_id)
         if topic.status != 'open':
             return 'failure', 'status_rejected', topic.status
 
         override = {}
-        board = topic.board
         rule_override = DBSession.query(RuleOverride).filter(
-            RuleOverride.listed(
-                request['remote_addr'],
-                scopes=('board:%s' % (board.slug,),))).\
+            RuleOverride.listed(request['remote_addr'], scopes=(scope,))).\
             first()
 
         if rule_override is not None:

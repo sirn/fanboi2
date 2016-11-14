@@ -150,6 +150,34 @@ class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Topic).count(), 0)
         self.assertEqual(result.result, ('failure', 'ban_rejected'))
 
+    def test_add_topic_ban_scoped(self):
+        from fanboi2.models import Topic
+        request = {'remote_addr': '10.0.1.1'}
+        with transaction.manager:
+            self._makeRuleBan(ip_address='10.0.1.0/24', scope='board:foobar')
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 0)
+        self.assertEqual(result.result, ('failure', 'ban_rejected'))
+
+    def test_add_topic_ban_other_scoped(self):
+        from fanboi2.models import Topic
+        request = {'remote_addr': '10.0.1.1'}
+        with transaction.manager:
+            self._makeRuleBan(ip_address='10.0.1.0/24', scope='board:other')
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        topic = DBSession.query(Topic).first()
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 1)
+        self.assertEqual(DBSession.query(Topic).get(result.get()[1]), topic)
+        self.assertEqual(topic.title, 'Foobar')
+        self.assertEqual(topic.posts[0].body, 'Hello, world!')
+        self.assertEqual(result.result, ('topic', topic.id))
+
     def test_add_topic_board_restricted(self):
         from fanboi2.models import Topic
         request = {'remote_addr': '127.0.0.1'}
@@ -348,6 +376,38 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertTrue(result.successful())
         self.assertEqual(DBSession.query(Post).count(), 0)
         self.assertEqual(result.result, ('failure', 'ban_rejected'))
+
+    def test_add_post_ban_scoped(self):
+        import transaction
+        from fanboi2.models import Post
+        request = {'remote_addr': '10.0.1.1'}
+        with transaction.manager:
+            self._makeRuleBan(ip_address='10.0.1.0/24', scope='board:foobar')
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            topic = self._makeTopic(board=board, title='Hello, world!')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        result = self._makeOne(request, topic_id, 'Hi!', True)
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Post).count(), 0)
+        self.assertEqual(result.result, ('failure', 'ban_rejected'))
+
+    def test_add_post_ban_other_scoped(self):
+        import transaction
+        from fanboi2.models import Post
+        request = {'remote_addr': '10.0.1.1'}
+        with transaction.manager:
+            self._makeRuleBan(ip_address='10.0.1.0/24', scope='board:other')
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            topic = self._makeTopic(board=board, title='Hello, world!')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        result = self._makeOne(request, topic_id, 'Hi!', True)
+        post = DBSession.query(Post).first()
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Post).count(), 1)
+        self.assertEqual(DBSession.query(Post).get(result.get()[1]), post)
+        self.assertEqual(post.body, 'Hi!')
+        self.assertEqual(post.bumped, True)
+        self.assertEqual(result.result, ('post', post.id))
 
     def test_add_post_locked(self):
         import transaction
