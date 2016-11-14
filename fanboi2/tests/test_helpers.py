@@ -105,6 +105,7 @@ class TestFormatters(unittest.TestCase):
         http://<script></script>.imgur.com/image6.gif
         http://imgur.com/ほげ
         http://imgur.com/a/demo
+        http://imgur.com/gallery/demo
 
         Lorem ipsum dolor sit amet.
 

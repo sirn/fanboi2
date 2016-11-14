@@ -12,7 +12,9 @@ from markupsafe import Markup
 
 RE_PARAGRAPH = re.compile(r'(?:(?P<newline>\r\n|\n|\r)(?P=newline)+)')
 RE_THUMBNAILS = (
-    (re.compile(r"https?://(?:(?:\w+\.)?imgur\.com)/((?<!a/)\w{2,})", re.ASCII),
+    (re.compile(
+        r"https?://(?:(?:\w+\.)?imgur\.com)/((?!a/|gallery/)\w+)",
+        re.ASCII),
      '//i.imgur.com/{}s.jpg',
      '//imgur.com/{}'),
 )
