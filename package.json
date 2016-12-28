@@ -25,7 +25,8 @@
     "postcss-round-subpixels": "^1.0.0",
     "postcss-urlrev": "^1.1.2",
     "tsify": "^1.0.7",
-    "typescript": "^2.0.3",
+    "typescript": "~2.0.3",
+    "typings": "^2.1.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
     "virtual-dom": "^2.1.1"

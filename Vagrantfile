@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
     pkg install -y ca_root_nss
     pkg install -y git-lite
     pkg install -y postgresql95-server
-    pkg install -y node npm
+    pkg install -y node
     pkg install -y redis
     pkg install -y memcached
     pkg install -y bzip2 sqlite3
@@ -40,14 +40,17 @@ Vagrant.configure("2") do |config|
   config.vm.provision :shell, :privileged => false, :inline => <<-EOF
     virtualenv -p python3.5 $HOME/python3.5
 
-    npm config set prefix $HOME/nodejs
-    npm install -g gulp
-    npm install -g typings
+    cd $HOME
+    curl -sL https://yarnpkg.com/latest.tar.gz | tar xvfz -
+    mv dist yarn
 
     echo 'EDITOR=vi; export EDITOR' > $HOME/.profile
     echo 'PAGER=more; export PAGER' >> $HOME/.profile
     echo 'ENV=$HOME/.shrc; export ENV' >> $HOME/.profile
-    echo 'PATH="$HOME/nodejs/bin:$HOME/python3.5/bin:$HOME/bin:$PATH"; export PATH' >> $HOME/.profile
+    echo 'PATH="$HOME/yarn/bin:$PATH"' >> $HOME/.profile
+    echo 'PATH="$HOME/python3.5/bin:$PATH"' >> $HOME/.profile
+    echo 'PATH="$HOME/bin:$PATH"' >> $HOME/.profile
+    echo 'export PATH' >> $HOME/.profile
 
     psql template1 -c "CREATE DATABASE fanboi2_development;"
     psql template1 -c "CREATE DATABASE fanboi2_test;"
@@ -59,8 +62,8 @@ Vagrant.configure("2") do |config|
     $HOME/python3.5/bin/pip3 install -e .
     $HOME/python3.5/bin/alembic upgrade head
 
-    npm install --no-bin-link
-    $HOME/nodejs/bin/typings install
-    $HOME/nodejs/bin/gulp
+    $HOME/yarn/bin/yarn
+    $HOME/yarn/bin/yarn run typings install
+    $HOME/yarn/bin/yarn run gulp
   EOF
 end
