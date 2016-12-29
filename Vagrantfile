@@ -40,9 +40,8 @@ Vagrant.configure("2") do |config|
   config.vm.provision :shell, :privileged => false, :inline => <<-EOF
     virtualenv -p python3.5 $HOME/python3.5
 
-    cd $HOME
-    curl -sL https://yarnpkg.com/latest.tar.gz | tar xvfz -
-    mv dist yarn
+    mkdir $HOME/yarn
+    curl -sL https://yarnpkg.com/latest.tar.gz | tar -xvzf - -C $HOME/yarn --strip 1
 
     echo 'EDITOR=vi; export EDITOR' > $HOME/.profile
     echo 'PAGER=more; export PAGER' >> $HOME/.profile
