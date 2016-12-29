@@ -64,7 +64,7 @@ class TestJSONRendererWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
         self.assertEqual(response[1]['title'], board2.title)
 
     def test_board(self):
-        board = self._makeBoard(title='Foobar', slug='foo')
+        board = self._makeBoard(title='Foobar', slug='foo', status='open')
         request = self._makeRequest()
         config = self._makeConfig(request, self._makeRegistry())
         config.add_route('api_board', '/board/{board}/')
@@ -72,10 +72,11 @@ class TestJSONRendererWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
         self.assertEqual(response['type'], 'board')
         self.assertEqual(response['title'], 'Foobar')
         self.assertEqual(response['slug'], 'foo')
+        self.assertEqual(response['status'], 'open')
         self.assertEqual(response['path'], '/board/foo/')
-        self.assertIn('id', response)
         self.assertIn('agreements', response)
         self.assertIn('description', response)
+        self.assertIn('id', response)
         self.assertIn('settings', response)
         self.assertNotIn('topics', response)
 

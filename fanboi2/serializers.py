@@ -47,6 +47,7 @@ def _board_serializer(obj, request):
         'description': obj.description,
         'settings': obj.settings,
         'slug': obj.slug,
+        'status': obj.status,
         'title': obj.title,
         'path': request.route_path('api_board', board=obj.slug),
     }
