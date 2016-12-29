@@ -10,13 +10,20 @@
                     <thead class="api-table-header">
                         <tr class="api-table-row">
                             <th class="api-table-item title">Parameters</th>
+                            <th class="api-table-item title">Type</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>
                     <tbody class="api-table-body">
                         <tr class="api-table-row">
                             <th class="api-table-item title">body</th>
+                            <td class="api-table-item type">String</td>
                             <td class="api-table-item">Content of the topic. From 2 to 4,000 characters.</td>
+                        </tr>
+                        <tr class="api-table-row">
+                            <th class="api-table-item title">bumped</th>
+                            <td class="api-table-item type">Boolean</td>
+                            <td class="api-table-item">A flag whether the post should bump the topic to top of the board.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -92,7 +99,7 @@
                             <th class="api-table-item title">bumped</th>
                             <td class="api-table-item type">Boolean</td>
                             <td class="api-table-item">
-                                <p>Boolean flag whether the post bumped the topic to top of the board.</p>
+                                <p>A flag whether the post bumped the topic to top of the board.</p>
                                 <pre class="codeblock">"bumped":true</pre>
                             </td>
                         </tr>
