@@ -222,6 +222,10 @@ $color-text:             #333;
         color: $color-gray-darker;
     }
 
+    .content {
+        h1, h2, h3, h4, h5 { color: $color-brand; }
+    }
+
     /* api.scss
      * -------------------------------------------------------------------- */
 

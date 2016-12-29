@@ -448,3 +448,24 @@ textarea.input {
     word-break: break-all;
     word-wrap: break-word;
 }
+
+/* Content
+ * ------------------------------------------------------------------------ */
+
+.content {
+    font-size: $font-size;
+    line-height: $line-height-content;
+
+    h1 { font-size: $font-size-larger; }
+    h2 { font-size: $font-size-large; }
+    h3, h4, h5 { font-size: $font-size; }
+
+    h1, h2, h3, h4, h5, p, ul, ol {
+        margin: 0 0 $spacing-vertical;
+        padding: 0;
+    }
+
+    ul, ol {
+        padding: 0 $spacing-horizontal-larger 0;
+    }
+}

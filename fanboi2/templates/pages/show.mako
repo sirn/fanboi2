@@ -4,7 +4,7 @@
 <%def name='title()'>${page.title}</%def>
 <div class="sheet">
     <div class="container">
-         <div class="sheet-body">
+         <div class="sheet-body content">
               ${formatters.format_page(request, page)}
          </div>
     </div>
