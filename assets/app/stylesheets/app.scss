@@ -92,7 +92,6 @@ body {
     font-size: $font-size-small;
     line-height: $line-height-content;
     padding: $spacing-vertical-large 0;
-    text-align: center;
 
     ul {
         display: block;
@@ -104,10 +103,6 @@ body {
     li {
         display: block;
         margin: 0 0 0 $spacing-horizontal-small;
-    }
-
-    @media (min-width: $bound-tablet) {
-        text-align: left;
     }
 }
 
