@@ -104,3 +104,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 .. _Vagrant: https://www.vagrantup.com/
 .. _Yarn: https://yarnpkg.com/
+.. _Gulp: http://gulpjs.com/
+.. _Typings: https://github.com/typings/typings

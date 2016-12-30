@@ -2,7 +2,7 @@
   "author": "Kridsada Thanabulpong",
   "name": "fanboi2",
   "description": "Assets for Fanboi2 board app",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "repository": "https://github.com/pxfs/fanboi2.git",
   "license": "BSD-3-Clause",
   "dependencies": {

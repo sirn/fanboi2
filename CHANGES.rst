@@ -1,5 +1,13 @@
-0.10.0
+0.10.1
 ======
+
+- [Add] A ``board`` query string for expanding board from topic API.
+- [Add] A ``topic`` query string for expanding post from post API.
+- [Change] Switch to `Yarn <https://yarnpkg.com/>`_ for assets package management.
+- [Change] Stylings of appendix section is now consistent with the footer.
+
+0.10.0
+------
 
 - [Add] Basic API for board, topic and post operations.
 - [Add] Dark theme ("Obsidian").
