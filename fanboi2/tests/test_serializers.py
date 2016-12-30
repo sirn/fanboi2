@@ -82,11 +82,23 @@ class TestJSONRendererWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
 
     def test_board_with_topics(self):
         board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Heavenly Moon')
         request = self._makeRequest(params={'topics': True})
         config = self._makeConfig(request, self._makeRegistry())
         config.add_route('api_board', '/board/{board}/')
+        config.add_route('api_topic', '/board/{topic}/')
         response = self._makeOne(board, request=request)
         self.assertIn('topics', response)
+
+    def test_board_with_topics_board(self):
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Heavenly Moon')
+        request = self._makeRequest(params={'topics': True, 'board': True})
+        config = self._makeConfig(request, self._makeRegistry())
+        config.add_route('api_board', '/board/{board}/')
+        config.add_route('api_topic', '/board/{topic}/')
+        response = self._makeOne(board, request=request)
+        self.assertNotIn('topics', response)
 
     def test_topic(self):
         board = self._makeBoard(title='Foobar', slug='foo')
@@ -106,6 +118,28 @@ class TestJSONRendererWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
         self.assertIn('status', response)
         self.assertNotIn('posts', response)
 
+    def test_topic_with_board(self):
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Heavenly Moon')
+        request = self._makeRequest(params={'board': True})
+        config = self._makeConfig(request, self._makeRegistry())
+        config.add_route('api_topic', '/topic/{topic}/')
+        config.add_route('api_board', '/board/{board}/')
+        response = self._makeOne(topic, request=request)
+        self.assertEqual(response['board_id'], board.id)
+        self.assertIn('board', response)
+
+    def test_topic_with_board_topics(self):
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Heavenly Moon')
+        request = self._makeRequest(params={'board': True, 'topics': True})
+        config = self._makeConfig(request, self._makeRegistry())
+        config.add_route('api_topic', '/topic/{topic}/')
+        config.add_route('api_board', '/board/{board}/')
+        response = self._makeOne(topic, request=request)
+        self.assertIn('board', response)
+        self.assertNotIn('topics', response['board'])
+
     def test_topic_with_posts(self):
         board = self._makeBoard(title='Foobar', slug='foo')
         topic = self._makeTopic(board=board, title='Heavenly Moon')
@@ -116,6 +150,17 @@ class TestJSONRendererWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
         self.assertEqual(response['title'], 'Heavenly Moon')
         self.assertEqual(response['board_id'], board.id)
         self.assertIn('posts', response)
+
+    def test_topic_with_posts_topic(self):
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Heavenly Moon')
+        request = self._makeRequest(params={'posts': True, 'topic': True})
+        config = self._makeConfig(request, self._makeRegistry())
+        config.add_route('api_topic', '/topic/{topic}/')
+        response = self._makeOne(topic, request=request)
+        self.assertEqual(response['title'], 'Heavenly Moon')
+        self.assertEqual(response['board_id'], board.id)
+        self.assertNotIn('posts', response)
 
     def test_post(self):
         board = self._makeBoard(title='Foobar', slug='foo')
@@ -138,6 +183,42 @@ class TestJSONRendererWithModel(ModelMixin, RegistryMixin, unittest.TestCase):
         self.assertIn('name', response)
         self.assertIn('number', response)
         self.assertNotIn('ip_address', response)
+
+    def test_post_with_topic(self):
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Baz')
+        post = self._makePost(topic=topic, body='Hello, world!')
+        request = self._makeRequest(params={'topic': True})
+        config = self._makeConfig(request, self._makeRegistry())
+        config.add_route('api_topic', '/topic/{topic}/')
+        config.add_route('api_topic_posts_scoped', '/topic/{topic}/{query}/')
+        response = self._makeOne(post, request=request)
+        self.assertIn('topic', response)
+
+    def test_post_with_topic_board(self):
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Baz')
+        post = self._makePost(topic=topic, body='Hello, world!')
+        request = self._makeRequest(params={'topic': True, 'board': True})
+        config = self._makeConfig(request, self._makeRegistry())
+        config.add_route('api_board', '/board/{board}/')
+        config.add_route('api_topic', '/topic/{topic}/')
+        config.add_route('api_topic_posts_scoped', '/topic/{topic}/{query}/')
+        response = self._makeOne(post, request=request)
+        self.assertIn('topic', response)
+        self.assertIn('board', response['topic'])
+
+    def test_post_with_topic_posts(self):
+        board = self._makeBoard(title='Foobar', slug='foo')
+        topic = self._makeTopic(board=board, title='Baz')
+        post = self._makePost(topic=topic, body='Hello, world!')
+        request = self._makeRequest(params={'topic': True, 'posts': True})
+        config = self._makeConfig(request, self._makeRegistry())
+        config.add_route('api_topic', '/topic/{topic}/')
+        config.add_route('api_topic_posts_scoped', '/topic/{topic}/{query}/')
+        response = self._makeOne(post, request=request)
+        self.assertIn('topic', response)
+        self.assertNotIn('posts', response['topic'])
 
     def test_page(self):
         page = self._makePage(title='Test', body='**Test**', slug='test')

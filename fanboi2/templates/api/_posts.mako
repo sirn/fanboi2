@@ -47,6 +47,24 @@
             <div class="api-request-endpoint"><span class="api-request-verb verb-get">GET</span> ${formatters.unquoted_path(request, 'api_topic_posts', topic='{api-topic.id}')}</div>
             <div class="api-request-body">
                 <p>Use this endpoint to retrieve a list of posts associated to the specific topic. By default this API will returns all posts. For a more specific query scope, please see <a href="#api-topic-posts-scoped">#api-topic-posts-scoped</a>.</p>
+                <table class="api-table">
+                    <thead class="api-table-header">
+                        <tr class="api-table-row">
+                            <th class="api-table-item title">Query string</th>
+                            <th class="api-table-item title">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="api-table-body">
+                        <tr class="api-table-row">
+                            <th class="api-table-item title">?topic=1</th>
+                            <td class="api-table-item">Include the topic in a <code>topic</code> object.</td>
+                        </tr>
+                        <tr class="api-table-row">
+                            <th class="api-table-item title">?board=1</th>
+                            <td class="api-table-item">Include the board in a <code>boards</code> object. Only if <code>topic</code> is present.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -188,6 +206,24 @@
                         <tr class="api-table-row">
                             <th class="api-table-item title">recent</th>
                             <td class="api-table-item">Alias for <strong>l30</strong>.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="api-table">
+                    <thead class="api-table-header">
+                        <tr class="api-table-row">
+                            <th class="api-table-item title">Query string</th>
+                            <th class="api-table-item title">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="api-table-body">
+                        <tr class="api-table-row">
+                            <th class="api-table-item title">?topic=1</th>
+                            <td class="api-table-item">Include the topic in a <code>topic</code> object.</td>
+                        </tr>
+                        <tr class="api-table-row">
+                            <th class="api-table-item title">?board=1</th>
+                            <td class="api-table-item">Include the board in a <code>boards</code> object. Only if <code>topic</code> is present.</td>
                         </tr>
                     </tbody>
                 </table>

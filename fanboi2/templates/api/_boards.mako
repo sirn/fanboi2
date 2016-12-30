@@ -116,6 +116,20 @@
                             </td>
                         </tr>
                         <tr class="api-table-row">
+                            <th class="api-table-item title">status</th>
+                            <td class="api-table-item type">String</td>
+                            <td class="api-table-item">
+                                <p>Status string whether the board is still active or not. Available values are:</p>
+                                <ul>
+                                    <li><strong>open</strong> — the board is postable.</li>
+                                    <li><strong>restricted</strong> — the board is postable but no new topics can be made.</li>
+                                    <li><strong>locked</strong> — the board could not be posted.</li>
+                                    <li><strong>archived</strong> — the board could not be posted and is no longer listed in board list.</li>
+                                </ul>
+                                <pre class="codeblock">"status":"open"</pre>
+                            </td>
+                        </tr>
+                        <tr class="api-table-row">
                             <th class="api-table-item title">title</th>
                             <td class="api-table-item type">String</td>
                             <td class="api-table-item">

@@ -56,6 +56,10 @@
                     </thead>
                     <tbody class="api-table-body">
                         <tr class="api-table-row">
+                            <th class="api-table-item title">?board=1</th>
+                            <td class="api-table-item">Include the board in a <code>board</code> object.</td>
+                        </tr>
+                        <tr class="api-table-row">
                             <th class="api-table-item title">?posts=1</th>
                             <td class="api-table-item">Include the recent 30 posts in a <code>posts</code> object.</td>
                         </tr>
@@ -89,6 +93,10 @@
                         </tr>
                     </thead>
                     <tbody class="api-table-body">
+                        <tr class="api-table-row">
+                            <th class="api-table-item title">?board=1</th>
+                            <td class="api-table-item">Include the board in a <code>board</code> object.</td>
+                        </tr>
                         <tr class="api-table-row">
                             <th class="api-table-item title">?posts=1</th>
                             <td class="api-table-item">Include the recent 30 posts in a <code>posts</code> object.</td>

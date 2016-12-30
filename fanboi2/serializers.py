@@ -51,7 +51,7 @@ def _board_serializer(obj, request):
         'title': obj.title,
         'path': request.route_path('api_board', board=obj.slug),
     }
-    if request.params.get('topics'):
+    if request.params.get('topics') and not 'board' in request.params:
         result['topics'] = obj.topics.limit(10)
     return result
 
@@ -78,7 +78,9 @@ def _topic_serializer(obj, request):
         'title': obj.title,
         'path': request.route_path('api_topic', topic=obj.id),
     }
-    if request.params.get('posts'):
+    if request.params.get('board'):
+        result['board'] = obj.board
+    if request.params.get('posts') and not 'topic' in request.params:
         result['posts'] = obj.recent_posts()
     return result
 
@@ -93,7 +95,7 @@ def _post_serializer(obj, request):
     :type request: pyramid.request.Request
     :rtype: dict
     """
-    return {
+    result = {
         'type': 'post',
         'id': obj.id,
         'body': obj.body,
@@ -110,6 +112,9 @@ def _post_serializer(obj, request):
             query=obj.number,
         ),
     }
+    if request.params.get('topic'):
+        result['topic'] = obj.topic
+    return result
 
 
 def _page_serializer(obj, request):
