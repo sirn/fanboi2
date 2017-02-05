@@ -1,5 +1,10 @@
+Next
+====
+
+- [Add] Allow post filter to be configured per country.
+
 0.10.1
-======
+------
 
 - [Add] A ``board`` query string for expanding board from topic API.
 - [Add] A ``topic`` query string for expanding post from post API.

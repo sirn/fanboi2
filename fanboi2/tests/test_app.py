@@ -184,6 +184,8 @@ class TestNormalizeSettings(unittest.TestCase):
         self.assertEqual(result['app.proxy_detect.getipintel.url'], '')
         self.assertEqual(result['app.proxy_detect.getipintel.email'], '')
         self.assertEqual(result['app.proxy_detect.getipintel.flags'], '')
+        self.assertEqual(result['app.geoip2_database'], '')
+        self.assertEqual(result['app.checklist'], [])
 
     def test_settings(self):
         r = self._makeOne({
@@ -202,6 +204,8 @@ class TestNormalizeSettings(unittest.TestCase):
             'app.proxy_detect.getipintel.url': 'http://www.example.com/bar',
             'app.proxy_detect.getipintel.email': 'test@example.com',
             'app.proxy_detect.getipintel.flags': 'm',
+            'app.geoip2_database': '/var/geoip2/database',
+            'app.checklist': 'country:th/\ncountry:jp/proxy_detect */*',
         })
 
         self.assertEqual(r['sqlalchemy.url'], 'postgresql://localhost:5432/foo')
@@ -234,10 +238,13 @@ class TestNormalizeSettings(unittest.TestCase):
             r['app.proxy_detect.getipintel.email'],
             'test@example.com'
         )
-        self.assertEqual(
-            r['app.proxy_detect.getipintel.flags'],
-            'm'
-        )
+        self.assertEqual(r['app.proxy_detect.getipintel.flags'], 'm')
+        self.assertEqual(r['app.geoip2_database'], '/var/geoip2/database')
+        self.assertEqual(r['app.checklist'], [
+            'country:th/',
+            'country:jp/proxy_detect',
+            '*/*',
+        ])
 
     def test_environ(self):
         r = self._makeOne({}, environ={
@@ -256,6 +263,8 @@ class TestNormalizeSettings(unittest.TestCase):
             'APP_PROXY_DETECT_GETIPINTEL_URL': 'http://www.example.com/bar',
             'APP_PROXY_DETECT_GETIPINTEL_EMAIL': 'test@example.com',
             'APP_PROXY_DETECT_GETIPINTEL_FLAGS': 'm',
+            'APP_GEOIP2_DATABASE': '/var/geoip2/database',
+            'APP_CHECKLIST': 'country:th/\ncountry:jp/proxy_detect */*',
         })
 
         self.assertEqual(r['sqlalchemy.url'], 'postgresql://localhost:5432/foo')
@@ -288,10 +297,13 @@ class TestNormalizeSettings(unittest.TestCase):
             r['app.proxy_detect.getipintel.email'],
             'test@example.com'
         )
-        self.assertEqual(
-            r['app.proxy_detect.getipintel.flags'],
-            'm'
-        )
+        self.assertEqual(r['app.proxy_detect.getipintel.flags'], 'm')
+        self.assertEqual(r['app.geoip2_database'], '/var/geoip2/database')
+        self.assertEqual(r['app.checklist'], [
+            'country:th/',
+            'country:jp/proxy_detect',
+            '*/*',
+        ])
 
     def test_override(self):
         r = self._makeOne({
@@ -310,6 +322,8 @@ class TestNormalizeSettings(unittest.TestCase):
             'app.proxy_detect.getipintel.url': 'http://www.example.com/bar',
             'app.proxy_detect.getipintel.email': 'test@example.com',
             'app.proxy_detect.getipintel.flags': 'm',
+            'app.geoip2_database': '/var/geoip2/database1',
+            'app.checklist': '*/*',
         }, environ={
             'SQLALCHEMY_URL': 'postgresql://localhost:5432/baz',
             'REDIS_URL': 'redis://127.0.0.2:6379/0',
@@ -326,6 +340,8 @@ class TestNormalizeSettings(unittest.TestCase):
             'APP_PROXY_DETECT_GETIPINTEL_URL': 'http://www.example.com/buz',
             'APP_PROXY_DETECT_GETIPINTEL_EMAIL': 'fuzz@example.com',
             'APP_PROXY_DETECT_GETIPINTEL_FLAGS': 'f',
+            'APP_GEOIP2_DATABASE': '/var/geoip2/database2',
+            'APP_CHECKLIST': 'country:th/\ncountry:jp/proxy_detect */*',
         })
 
         self.assertEqual(r['sqlalchemy.url'], 'postgresql://localhost:5432/baz')
@@ -358,7 +374,10 @@ class TestNormalizeSettings(unittest.TestCase):
             r['app.proxy_detect.getipintel.email'],
             'fuzz@example.com'
         )
-        self.assertEqual(
-            r['app.proxy_detect.getipintel.flags'],
-            'f'
-        )
+        self.assertEqual(r['app.proxy_detect.getipintel.flags'], 'f')
+        self.assertEqual(r['app.geoip2_database'], '/var/geoip2/database2')
+        self.assertEqual(r['app.checklist'], [
+            'country:th/',
+            'country:jp/proxy_detect',
+            '*/*',
+        ])

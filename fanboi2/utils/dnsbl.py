@@ -2,7 +2,7 @@ import socket
 from ipaddress import ip_interface, ip_network
 
 
-class Dnsbl(object) :
+class Dnsbl(object):
     """Utility class for checking IP address against DNSBL providers."""
 
     def __init__(self):

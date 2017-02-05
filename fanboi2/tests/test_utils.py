@@ -84,6 +84,145 @@ class TestDnsBl(unittest.TestCase):
         self.assertEqual(dnsbl.listed('10.0.100.2'), False)
 
 
+class TestGeoIP(unittest.TestCase):
+
+    def _makeOne(self, providers=None):
+        from fanboi2.utils import GeoIP
+        geoip = GeoIP()
+        return geoip
+
+    def _makeGeoIP2(self, country_code=None):
+        class MockGeoIP2Response(object):
+            @property
+            def country_code(self):
+                return country_code
+
+        class MockGeoIP2(object):
+            def country(self, ip_address):
+                return MockGeoIP2Response()
+
+        return MockGeoIP2()
+
+    @unittest.mock.patch('geoip2.database.Reader')
+    def test_init(self, reader):
+        reader.return_value = self._makeGeoIP2()
+        geoip = self._makeOne()
+        geoip.configure_geoip2('/tmp/some/path')
+
+    @unittest.mock.patch('geoip2.database.Reader')
+    def test_init_no_path(self, reader):
+        geoip = self._makeOne()
+        geoip.configure_geoip2(None)
+        assert not reader.called
+
+    @unittest.mock.patch('geoip2.database.Reader')
+    def test_init_file_not_found(self, reader):
+        reader.side_effect = FileNotFoundError
+        geoip = self._makeOne()
+        geoip.configure_geoip2('/tmp/some/path')
+        assert not geoip.geoip2
+
+    @unittest.mock.patch('geoip2.database.Reader')
+    def test_init_invalid_database(self, reader):
+        from maxminddb.errors import InvalidDatabaseError
+        reader.side_effect = InvalidDatabaseError
+        geoip = self._makeOne()
+        geoip.configure_geoip2('/tmp/some/path')
+        assert not geoip.geoip2
+
+    @unittest.mock.patch('geoip2.database.Reader')
+    def test_country_code(self, reader):
+        reader.return_value = self._makeGeoIP2(country_code='TH')
+        geoip = self._makeOne()
+        geoip.configure_geoip2('/tmp/some/path')
+        self.assertEqual(geoip.country_code('127.0.0.1'), 'TH')
+
+    @unittest.mock.patch('geoip2.database.Reader')
+    def test_country_code_not_inited(self, reader):
+        reader.return_value = self._makeGeoIP2()
+        geoip = self._makeOne()
+        self.assertIsNone(geoip.country_code('127.0.0.1'))
+
+    @unittest.mock.patch('geoip2.database.Reader')
+    def test_country_code_address_not_found(self, reader):
+        from geoip2.errors import AddressNotFoundError
+        class MockNotFoundGeoIP2(object):
+            def country(self, ip_address):
+                raise AddressNotFoundError
+        reader.return_value = MockNotFoundGeoIP2()
+        geoip = self._makeOne()
+        geoip.configure_geoip2('/tmp/some/path')
+        self.assertIsNone(geoip.country_code('127.0.0.1'))
+
+    @unittest.mock.patch('geoip2.database.Reader')
+    def test_country_code_not_found(self, reader):
+        reader.return_value = self._makeGeoIP2()
+        geoip = self._makeOne()
+        geoip.configure_geoip2('/tmp/some/path')
+        self.assertIsNone(geoip.country_code('127.0.0.1'))
+
+
+class TestChecklist(unittest.TestCase):
+
+    def _makeOne(self, data=None):
+        from fanboi2.utils import Checklist
+        checklist = Checklist()
+        checklist.configure_checklist(data)
+        return checklist
+
+    def test_init(self):
+        checklist = self._makeOne(['scope1/', 'scope2/foo,bar', '*/*'])
+        self.assertDictEqual(checklist.data, {
+            'scope1': [],
+            'scope2': ['foo', 'bar'],
+            '*': ['*'],
+        })
+
+    def test_init_none(self):
+        checklist = self._makeOne(None)
+        self.assertDictEqual(checklist.data, {})
+
+    def test_init_empty(self):
+        checklist = self._makeOne('')
+        self.assertDictEqual(checklist.data, {})
+
+    def test_fetch(self):
+        checklist = self._makeOne(['scope1/', 'scope2/foo,bar', '*/*'])
+        self.assertListEqual(checklist.fetch('scope1'), [])
+        self.assertListEqual(checklist.fetch('scope2'), ['foo', 'bar'])
+        self.assertListEqual(checklist.fetch('scope3'), ['*'])
+
+    def test_fetch_empty(self):
+        checklist = self._makeOne([])
+        self.assertListEqual(checklist.fetch('scope1'), ['*'])
+        self.assertListEqual(checklist.fetch('scope2'), ['*'])
+        self.assertListEqual(checklist.fetch('scope3'), ['*'])
+
+    def test_enabled(self):
+        checklist = self._makeOne(['scope1/', 'scope2/foo,bar', '*/*'])
+        self.assertFalse(checklist.enabled('scope1', 'foo'))
+        self.assertFalse(checklist.enabled('scope1', 'bar'))
+        self.assertFalse(checklist.enabled('scope1', 'baz'))
+        self.assertTrue(checklist.enabled('scope2', 'foo'))
+        self.assertTrue(checklist.enabled('scope2', 'bar'))
+        self.assertFalse(checklist.enabled('scope2', 'baz'))
+        self.assertTrue(checklist.enabled('scope3', 'foo'))
+        self.assertTrue(checklist.enabled('scope3', 'bar'))
+        self.assertTrue(checklist.enabled('scope3', 'baz'))
+
+    def test_enabled_empty(self):
+        checklist = self._makeOne([])
+        self.assertTrue(checklist.enabled('scope1', 'foo'))
+        self.assertTrue(checklist.enabled('scope1', 'bar'))
+        self.assertTrue(checklist.enabled('scope1', 'baz'))
+        self.assertTrue(checklist.enabled('scope2', 'foo'))
+        self.assertTrue(checklist.enabled('scope2', 'bar'))
+        self.assertTrue(checklist.enabled('scope2', 'baz'))
+        self.assertTrue(checklist.enabled('scope3', 'foo'))
+        self.assertTrue(checklist.enabled('scope3', 'bar'))
+        self.assertTrue(checklist.enabled('scope3', 'baz'))
+
+
 class TestAkismet(RegistryMixin, unittest.TestCase):
 
     def _makeOne(self, key='hogehoge'):

@@ -28,6 +28,7 @@ requires = [
     'python3-memcached',
     'pytz',
     'requests',
+    'geoip2',
 
     # Frontend
     'MarkupSafe',

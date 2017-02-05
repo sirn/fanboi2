@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from fanboi2.errors import serialize_error
 from fanboi2.models import DBSession, Post, Topic, Board, \
     RuleBan, RuleOverride, serialize_model
-from fanboi2.utils import akismet, dnsbl, proxy_detector
+from fanboi2.utils import akismet, dnsbl, proxy_detector, geoip, checklist
 
 celery = Celery()
 
@@ -86,18 +86,22 @@ def add_topic(request, board_id, title, body):
     :type body: str
     :rtype: tuple
     """
+    ip_address = request['remote_addr']
+    country_code = geoip.country_code(ip_address)
+    country_scope = 'country:%s' % (str(country_code).lower())
+
     with transaction.manager:
         board = DBSession.query(Board).get(board_id)
-        scope = 'board:%s' % (board.slug,)
+        board_scope = 'board:%s' % (board.slug,)
 
         if DBSession.query(RuleBan).\
-           filter(RuleBan.listed(request['remote_addr'], scopes=(scope,))).\
+           filter(RuleBan.listed(ip_address, scopes=(board_scope,))).\
            count() > 0:
             return 'failure', 'ban_rejected'
 
         override = {}
         rule_override = DBSession.query(RuleOverride).filter(
-            RuleOverride.listed(request['remote_addr'], scopes=(scope,))).\
+            RuleOverride.listed(ip_address, scopes=(board_scope,))).\
             first()
 
         if rule_override is not None:
@@ -107,16 +111,19 @@ def add_topic(request, board_id, title, body):
         if board_status != 'open':
             return 'failure', 'status_rejected', board_status
 
-        if akismet.spam(request, body):
+        if checklist.enabled(country_scope, 'akismet') and \
+           akismet.spam(request, body):
             return 'failure', 'spam_rejected'
 
-        if dnsbl.listed(request['remote_addr']):
+        if checklist.enabled(country_scope, 'dnsbl') and \
+           dnsbl.listed(ip_address):
             return 'failure', 'dnsbl_rejected'
 
-        if proxy_detector.detect(request['remote_addr']):
+        if checklist.enabled(country_scope, 'proxy_detect') and \
+           proxy_detector.detect(ip_address):
             return 'failure', 'proxy_rejected'
 
-        post = Post(body=body, ip_address=request['remote_addr'])
+        post = Post(body=body, ip_address=ip_address)
         post.topic = Topic(board=board, title=title)
         DBSession.add(post)
         DBSession.flush()
@@ -141,13 +148,17 @@ def add_post(self, request, topic_id, body, bumped):
     :type bumped: bool
     :rtype: tuple
     """
+    ip_address = request['remote_addr']
+    country_code = geoip.country_code(ip_address)
+    country_scope = 'country:%s' % (str(country_code).lower())
+
     with transaction.manager:
         topic = DBSession.query(Topic).get(topic_id)
         board = topic.board
-        scope = 'board:%s' % (board.slug,)
+        board_scope = 'board:%s' % (board.slug,)
 
         if DBSession.query(RuleBan).\
-           filter(RuleBan.listed(request['remote_addr'], scopes=(scope,))).\
+           filter(RuleBan.listed(ip_address, scopes=(board_scope,))).\
            count() > 0:
             return 'failure', 'ban_rejected'
 
@@ -156,7 +167,7 @@ def add_post(self, request, topic_id, body, bumped):
 
         override = {}
         rule_override = DBSession.query(RuleOverride).filter(
-            RuleOverride.listed(request['remote_addr'], scopes=(scope,))).\
+            RuleOverride.listed(ip_address, scopes=(board_scope,))).\
             first()
 
         if rule_override is not None:
@@ -166,20 +177,23 @@ def add_post(self, request, topic_id, body, bumped):
         if not board_status in ('open', 'restricted'):
             return 'failure', 'status_rejected', board_status
 
-        if akismet.spam(request, body):
+        if checklist.enabled(country_scope, 'akismet') and \
+           akismet.spam(request, body):
             return 'failure', 'spam_rejected'
 
-        if dnsbl.listed(request['remote_addr']):
+        if checklist.enabled(country_scope, 'dnsbl') and \
+           dnsbl.listed(ip_address):
             return 'failure', 'dnsbl_rejected'
 
-        if proxy_detector.detect(request['remote_addr']):
+        if checklist.enabled(country_scope, 'proxy_detect') and \
+           proxy_detector.detect(ip_address):
             return 'failure', 'proxy_rejected'
 
         post = Post(
             topic=topic,
             body=body,
             bumped=bumped,
-            ip_address=request['remote_addr'])
+            ip_address=ip_address)
 
         try:
             DBSession.add(post)

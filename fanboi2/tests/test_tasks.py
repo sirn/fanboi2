@@ -242,6 +242,24 @@ class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Topic).count(), 0)
         self.assertEqual(result.result, ('failure', 'spam_rejected'))
 
+    @unittest.mock.patch('fanboi2.utils.Akismet.spam')
+    @unittest.mock.patch('fanboi2.utils.Checklist.enabled')
+    def test_add_topic_spam_disabled(self, checklist, akismet):
+        import transaction
+        from fanboi2.models import Topic
+        def disable_akismet(scope, target):
+            return target != 'akismet'
+        checklist.side_effect = disable_akismet
+        akismet.return_value = True
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 1)
+        akismet.assert_not_called()
+
     @unittest.mock.patch('fanboi2.utils.Dnsbl.listed')
     def test_add_topic_dnsbl(self, dnsbl):
         from fanboi2.models import Topic
@@ -255,6 +273,24 @@ class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Topic).count(), 0)
         self.assertEqual(result.result, ('failure', 'dnsbl_rejected'))
 
+    @unittest.mock.patch('fanboi2.utils.Dnsbl.listed')
+    @unittest.mock.patch('fanboi2.utils.Checklist.enabled')
+    def test_add_topic_dnsbl_disabled(self, checklist, dnsbl):
+        import transaction
+        from fanboi2.models import Topic
+        def disable_dnsbl(scope, target):
+            return target != 'dnsbl'
+        checklist.side_effect = disable_dnsbl
+        dnsbl.return_value = True
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 1)
+        dnsbl.assert_not_called()
+
     @unittest.mock.patch('fanboi2.utils.ProxyDetector.detect')
     def test_add_topic_proxy(self, proxy):
         from fanboi2.models import Topic
@@ -267,6 +303,24 @@ class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertTrue(result.successful())
         self.assertEqual(DBSession.query(Topic).count(), 0)
         self.assertEqual(result.result, ('failure', 'proxy_rejected'))
+
+    @unittest.mock.patch('fanboi2.utils.ProxyDetector.detect')
+    @unittest.mock.patch('fanboi2.utils.Checklist.enabled')
+    def test_add_topic_proxy_disabled(self, checklist, proxy):
+        import transaction
+        from fanboi2.models import Topic
+        def disable_proxy_detect(scope, target):
+            return target != 'proxy_detect'
+        checklist.side_effect = disable_proxy_detect
+        proxy.return_value = True
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            board_id = board.id  # board is not bound outside transaction!
+        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Topic).count(), 1)
+        proxy.assert_not_called()
 
 
 class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
@@ -485,8 +539,28 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(DBSession.query(Post).count(), 0)
         self.assertEqual(result.result, ('failure', 'spam_rejected'))
 
+    @unittest.mock.patch('fanboi2.utils.Akismet.spam')
+    @unittest.mock.patch('fanboi2.utils.Checklist.enabled')
+    def test_add_post_spam_disabled(self, checklist, akismet):
+        import transaction
+        from fanboi2.models import Post
+        def disable_akismet(scope, target):
+            return target != 'akismet'
+        checklist.side_effect = disable_akismet
+        akismet.return_value = True
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            topic = self._makeTopic(board=board, title='Hello, world!')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        result = self._makeOne(request, topic_id, 'Hi!', True)
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Post).count(), 1)
+        akismet.assert_not_called()
+
     @unittest.mock.patch('fanboi2.utils.Dnsbl.listed')
-    def test_add_post_dnsbl(self, dnsbl):
+    @unittest.mock.patch('fanboi2.utils.Checklist.enabled')
+    def test_add_post_dnsbl(self, checklist, dnsbl):
         import transaction
         from fanboi2.models import Post
         dnsbl.return_value = True
@@ -499,6 +573,25 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertTrue(result.successful())
         self.assertEqual(DBSession.query(Post).count(), 0)
         self.assertEqual(result.result, ('failure', 'dnsbl_rejected'))
+
+    @unittest.mock.patch('fanboi2.utils.Dnsbl.listed')
+    @unittest.mock.patch('fanboi2.utils.Checklist.enabled')
+    def test_add_post_dnsbl_disabled(self, checklist, dnsbl):
+        import transaction
+        from fanboi2.models import Post
+        def disable_dnsbl(scope, target):
+            return target != 'dnsbl'
+        checklist.side_effect = disable_dnsbl
+        dnsbl.return_value = True
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            topic = self._makeTopic(board=board, title='Hello, world!')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        result = self._makeOne(request, topic_id, 'Hi!', True)
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Post).count(), 1)
+        dnsbl.assert_not_called()
 
     @unittest.mock.patch('fanboi2.utils.ProxyDetector.detect')
     def test_add_post_proxy(self, proxy):
@@ -514,6 +607,25 @@ class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertTrue(result.successful())
         self.assertEqual(DBSession.query(Post).count(), 0)
         self.assertEqual(result.result, ('failure', 'proxy_rejected'))
+
+    @unittest.mock.patch('fanboi2.utils.ProxyDetector.detect')
+    @unittest.mock.patch('fanboi2.utils.Checklist.enabled')
+    def test_add_post_proxy_disabled(self, checklist, proxy):
+        import transaction
+        from fanboi2.models import Post
+        def disable_proxy_detect(scope, target):
+            return target != 'proxy_detect'
+        checklist.side_effect = disable_proxy_detect
+        proxy.return_value = True
+        request = {'remote_addr': '127.0.0.1'}
+        with transaction.manager:
+            board = self._makeBoard(title='Foobar', slug='foobar')
+            topic = self._makeTopic(board=board, title='Hello, world!')
+            topic_id = topic.id  # topic is not bound outside transaction!
+        result = self._makeOne(request, topic_id, 'Hi!', True)
+        self.assertTrue(result.successful())
+        self.assertEqual(DBSession.query(Post).count(), 1)
+        proxy.assert_not_called()
 
     def test_add_post_retry(self):
         import transaction

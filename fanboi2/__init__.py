@@ -10,7 +10,7 @@ from sqlalchemy.engine import engine_from_config
 from fanboi2.cache import cache_region
 from fanboi2.models import DBSession, Base, redis_conn, identity
 from fanboi2.tasks import celery, configure_celery
-from fanboi2.utils import akismet, dnsbl, proxy_detector
+from fanboi2.utils import akismet, dnsbl, geoip, proxy_detector, checklist
 
 
 def remote_addr(request):
@@ -129,11 +129,17 @@ def normalize_settings(settings, _environ=os.environ):
         'APP_PROXY_DETECT_GETIPINTEL_FLAGS',
         'app.proxy_detect.getipintel.flags')
 
+    app_geoip2_database = _cget('APP_GEOIP2_DATABASE', 'app.geoip2_database')
+    app_checklist = _cget('APP_CHECKLIST', 'app.checklist')
+
     if app_dnsbl_providers is not None:
         app_dnsbl_providers = aslist(app_dnsbl_providers)
 
     if app_proxy_detect_providers is not None:
         app_proxy_detect_providers = aslist(app_proxy_detect_providers)
+
+    if app_checklist is not None:
+        app_checklist = aslist(app_checklist)
 
     _settings = copy.deepcopy(settings)
     _settings.update({
@@ -152,6 +158,8 @@ def normalize_settings(settings, _environ=os.environ):
         'app.proxy_detect.getipintel.url': app_proxy_detect_getipintel_url,
         'app.proxy_detect.getipintel.email': app_proxy_detect_getipintel_email,
         'app.proxy_detect.getipintel.flags': app_proxy_detect_getipintel_flags,
+        'app.geoip2_database': app_geoip2_database,
+        'app.checklist': app_checklist,
     })
 
     return _settings
@@ -181,6 +189,8 @@ def main(global_config, **settings):  # pragma: no cover
     identity.configure_tz(config.registry.settings['app.timezone'])
     akismet.configure_key(config.registry.settings['app.akismet_key'])
     dnsbl.configure_providers(config.registry.settings['app.dnsbl_providers'])
+    geoip.configure_geoip2(config.registry.settings['app.geoip2_database'])
+    checklist.configure_checklist(config.registry.settings['app.checklist'])
     proxy_detector.configure_from_config(
         config.registry.settings,
         'app.proxy_detect.')
