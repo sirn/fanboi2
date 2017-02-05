@@ -2,6 +2,7 @@ Next
 ====
 
 - [Add] Allow post filter to be configured per country.
+- [Fix] CSRF check now use constant-time comparison to prevent timing attack.
 
 0.10.1
 ------
