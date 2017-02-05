@@ -92,10 +92,15 @@ class TestGeoIP(unittest.TestCase):
         return geoip
 
     def _makeGeoIP2(self, country_code=None):
+        class MockGeoIP2CountryResponse(object):
+            @property
+            def iso_code(self):
+                return country_code
+
         class MockGeoIP2Response(object):
             @property
-            def country_code(self):
-                return country_code
+            def country(self):
+                return MockGeoIP2CountryResponse()
 
         class MockGeoIP2(object):
             def country(self, ip_address):

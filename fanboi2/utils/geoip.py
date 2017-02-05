@@ -45,4 +45,4 @@ class GeoIP(object):
             except AddressNotFoundError:
                 pass
         if response is not None:
-            return response.country_code
+            return response.country.iso_code
