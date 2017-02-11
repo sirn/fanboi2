@@ -2,6 +2,7 @@ import os
 import sys
 import transaction
 import sqlalchemy as sa
+from zope.sqlalchemy import mark_changed
 from fanboi2.models import DBSession, TopicMeta, Post
 from pyramid.paster import bootstrap
 
@@ -19,10 +20,10 @@ def main(argv=sys.argv):
                    where(Post.topic_id == TopicMeta.topic_id).\
                    where(Post.bumped).\
                    order_by(sa.desc(Post.created_at)).\
-                   limit(1)).\
-                returning(TopicMeta.topic_id,
-                          TopicMeta.bumped_at)
+                   limit(1))
 
     with transaction.manager:
-        for topic_id, bumped_at in DBSession.execute(query):
-            print("Topic %s set bumped_at to %s" % (topic_id, bumped_at))
+        session = DBSession()
+        results = session.execute(query)
+        mark_changed(session)
+        print("Successfully synced topic.")
