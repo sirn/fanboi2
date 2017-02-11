@@ -1,5 +1,6 @@
 import os
 import sys
+import transaction
 import sqlalchemy as sa
 from fanboi2.models import DBSession, TopicMeta, Post
 from pyramid.paster import bootstrap
@@ -21,7 +22,7 @@ def main(argv=sys.argv):
                    limit(1)).\
                 returning(TopicMeta.topic_id,
                           TopicMeta.bumped_at)
-    res = DBSession.execute(query)
 
-    for topic_id, bumped_at in res:
-        print("Topic %s set bumped_at to %s" % (topic_id, bumped_at))
+    with transaction.manager:
+        for topic_id, bumped_at in DBSession.execute(query):
+            print("Topic %s set bumped_at to %s" % (topic_id, bumped_at))

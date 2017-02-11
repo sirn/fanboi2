@@ -2,7 +2,9 @@ Next
 ====
 
 - [Add] Allow post filter to be configured per country.
+- [Add] A ``fb2_topic_sync`` script for syncing topic's bumped timestamp.
 - [Fix] CSRF check now use constant-time comparison to prevent timing attack.
+- [Change] Requires minimum of 5 characters for post body.
 
 0.10.1
 ------
