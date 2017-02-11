@@ -23,7 +23,7 @@
                         <tr class="api-table-row">
                             <th class="api-table-item title">body</th>
                             <th class="api-table-item type">String</th>
-                            <td class="api-table-item">Content of the topic. From 2 to 4,000 characters.</td>
+                            <td class="api-table-item">Content of the topic. From 5 to 4,000 characters.</td>
                         </tr>
                     </tbody>
                 </table>

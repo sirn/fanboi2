@@ -77,7 +77,7 @@ class TopicForm(Form):
     :class:`Post`.
     """
     title = TextField('Title', validators=[Required(), Length(5, 200)])
-    body = TextAreaField('Body', validators=[Required(), Length(2, 4000)])
+    body = TextAreaField('Body', validators=[Required(), Length(5, 4000)])
 
 
 class SecureTopicForm(SecureForm, TopicForm, Form):
@@ -88,7 +88,7 @@ class PostForm(Form):
     """A :class:`Form` for replying to a topic. The :attr:`body` field should
     be populated to :class:`Post`.
     """
-    body = TextAreaField('Body', validators=[Required(), Length(2, 4000)])
+    body = TextAreaField('Body', validators=[Required(), Length(5, 4000)])
     bumped = BooleanField('Bump this topic', default=True)
 
 

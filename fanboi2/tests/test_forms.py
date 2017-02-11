@@ -160,7 +160,7 @@ class TestTopicForm(FormMixin, unittest.TestCase):
 
     def test_title_length_shorter(self):
         request = self._makeRequest()
-        form = self._makeOne({'title': 'Foob'}, request=request)
+        form = self._makeOne({'title': 'F'*4}, request=request)
         self.assertFalse(form.validate())
         self.assertListEqual(form.title.errors, [
             'Field must be between 5 and 200 characters long.'
@@ -182,10 +182,10 @@ class TestTopicForm(FormMixin, unittest.TestCase):
 
     def test_body_length_shorter(self):
         request = self._makeRequest()
-        form = self._makeOne({'body': 'F'}, request=request)
+        form = self._makeOne({'body': 'F'*4}, request=request)
         self.assertFalse(form.validate())
         self.assertListEqual(form.body.errors, [
-            'Field must be between 2 and 4000 characters long.'
+            'Field must be between 5 and 4000 characters long.'
         ])
 
     def test_body_length_longer(self):
@@ -193,7 +193,7 @@ class TestTopicForm(FormMixin, unittest.TestCase):
         form = self._makeOne({'body': 'F'*4001}, request=request)
         self.assertFalse(form.validate())
         self.assertListEqual(form.body.errors, [
-            'Field must be between 2 and 4000 characters long.'
+            'Field must be between 5 and 4000 characters long.'
         ])
 
 
@@ -239,10 +239,10 @@ class TestPostForm(FormMixin, unittest.TestCase):
 
     def test_body_length_shorter(self):
         request = self._makeRequest()
-        form = self._makeOne({'body': 'F'}, request=request)
+        form = self._makeOne({'body': 'F'*4}, request=request)
         self.assertFalse(form.validate())
         self.assertListEqual(form.body.errors, [
-            'Field must be between 2 and 4000 characters long.'
+            'Field must be between 5 and 4000 characters long.'
         ])
 
     def test_body_length_longer(self):
@@ -250,7 +250,7 @@ class TestPostForm(FormMixin, unittest.TestCase):
         form = self._makeOne({'body': 'F'*4001}, request=request)
         self.assertFalse(form.validate())
         self.assertListEqual(form.body.errors, [
-            'Field must be between 2 and 4000 characters long.'
+            'Field must be between 5 and 4000 characters long.'
         ])
 
 
