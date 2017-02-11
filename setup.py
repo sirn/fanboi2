@@ -65,8 +65,9 @@ setup(name='fanboi2',
       entry_points={
           "paste.app_factory": ["main = fanboi2:main"],
           "console_scripts": [
-              "fb2_create_board = fanboi2.scripts.create_board:main",
-              "fb2_update_board = fanboi2.scripts.update_board:main",
+              "fb2_board_create = fanboi2.scripts.board_create:main",
+              "fb2_board_update = fanboi2.scripts.board_update:main",
+              "fb2_topic_sync = fanboi2.scripts.topic_sync:main",
               "fb2_celery = fanboi2.scripts.celery:main",
           ]
       })

@@ -66,12 +66,12 @@ Management Scripts
 
 After you've setup the environment, the first thing you want to do is to create a new board::
 
-    $ fb2_create_board development.ini --title Lounge --slug lounge
-    $ fb2_create_board development.ini --title Demo --slug demo
+    $ fb2_board_create development.ini --title Lounge --slug lounge
+    $ fb2_board_create development.ini --title Demo --slug demo
 
 Above commands will create a board named "Lounge" and "Demo" at ``/lounge`` and ``/demo`` respectively. Now if you want to update something such as description, you can now do::
 
-    $ fb2_update_board development.ini -s lounge -f description
+    $ fb2_board_update development.ini -s lounge -f description
 
 Slug is used here to identify which board to edit. All database fields in board are editable this way. Some field, such as ``settings`` must be a **valid JSON**. Both commands also accepts ``--help`` which will display some available options. Apart from the above two scripts, there are many other commands you might be interested in, such as:
 

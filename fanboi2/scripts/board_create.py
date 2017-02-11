@@ -11,12 +11,16 @@ USAGE = "Usage: %prog config arguments"
 
 
 def main(argv=sys.argv):
-    config_uri = argv[1]
-    argv = argv[2:]
-
     parser = optparse.OptionParser(usage=USAGE, description=DESCRIPTION)
     parser.add_option('-t', '--title', dest='title', type='string')
     parser.add_option('-s', '--slug', dest='slug', type='string')
+
+    if not argv or len(argv) < 2:
+        parser.print_help()
+        sys.exit(1)
+
+    config_uri = argv[1]
+    argv = argv[2:]
 
     options, args = parser.parse_args(argv)
     if options.title is None:
