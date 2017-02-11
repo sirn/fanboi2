@@ -3,19 +3,20 @@
 
 Vagrant.configure("2") do |config|
   config.vm.box = "pxfs/freebsd-10.3"
-  config.vm.synced_folder ".", "/vagrant", :nfs => true, :mount_options => ['actimeo=2']
-  config.vm.network :forwarded_port, :guest => 6543, :host => 6543, auto_correct: true
+  config.vm.synced_folder ".", "/vagrant", nfs: true, mount_options: ['actimeo=2']
+  config.vm.network :forwarded_port, guest: 6543, host: 6543
+  config.vm.network :forwarded_port, guest: 9000, host: 9000
   config.ssh.shell = "sh"
 
-  config.vm.provision :shell, :privileged => true, :inline => <<-EOF
+  config.vm.provision :shell, privileged: true, inline: <<-EOF
     pkg install -y ca_root_nss
     pkg install -y git-lite
     pkg install -y postgresql95-server
     pkg install -y node
     pkg install -y redis
     pkg install -y memcached
-    pkg install -y bzip2 sqlite3
-    pkg install -y python35
+    pkg install -y bzip2 sqlite3 gmake
+    pkg install -y python27 python35
 
     sysrc postgresql_enable=YES
     sysrc redis_enable=YES
@@ -37,7 +38,7 @@ Vagrant.configure("2") do |config|
     /usr/local/bin/pip3.5 install virtualenv
   EOF
 
-  config.vm.provision :shell, :privileged => false, :inline => <<-EOF
+  config.vm.provision :shell, privileged: false, inline: <<-EOF
     virtualenv -p python3.5 $HOME/python3.5
 
     mkdir $HOME/yarn
@@ -61,7 +62,7 @@ Vagrant.configure("2") do |config|
     $HOME/python3.5/bin/pip3 install -e .
     $HOME/python3.5/bin/alembic upgrade head
 
-    $HOME/yarn/bin/yarn
+    env PYTHON=/usr/local/bin/python2.7 $HOME/yarn/bin/yarn
     $HOME/yarn/bin/yarn run typings install
     $HOME/yarn/bin/yarn run gulp
   EOF

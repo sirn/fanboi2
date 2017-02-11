@@ -37,7 +37,7 @@ app.proxy_detect.getipintel.url =
 app.proxy_detect.getipintel.email =
 app.proxy_detect.getipintel.flags =
 app.geoip2_database =
-app.checklist = *:*
+app.checklist = */*
 
 [server:main]
 use = egg:waitress#main
