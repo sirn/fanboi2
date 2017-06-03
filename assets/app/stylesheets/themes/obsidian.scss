@@ -1,6 +1,6 @@
 @import "../variables";
 
-$color-gray-base:        #181c1e;
+$color-gray-base:        #161b1e;
 $color-gray-darker:      lighten($color-gray-base, 3.0%);
 $color-gray-dark:        lighten($color-gray-base, 5.0%);
 $color-gray:             lighten($color-gray-base, 8.0%);
@@ -428,7 +428,8 @@ $color-text:             #cfcfcf;
     }
 
     .js-popover-inner {
-        box-shadow: 0 0 1px 0 rgba(0, 0, 0, .5);
+        box-shadow: 0 0 5px 0 rgba(0, 0, 0, .6);
+        border-color: $color-gray;
     }
 
     .js-popover-inner-title {

@@ -1,13 +1,13 @@
 @import "../variables";
 
-$color-gray-base:        #212628;
+$color-gray-base:        #1b2326;
 $color-gray-darker:      lighten($color-gray-base, 22.0%);
 $color-gray-dark:        lighten($color-gray-base, 33.0%);
 $color-gray:             lighten($color-gray-base, 44.0%);
 $color-gray-light:       lighten($color-gray-base, 70.0%);
 $color-gray-lighter:     lighten($color-gray-base, 80.0%);
 
-$color-tint-base:        #f5f7f8;
+$color-tint-base:        #f2f5f7;
 $color-tint-darker:      darken($color-tint-base, 28%);
 $color-tint-dark:        darken($color-tint-base, 10%);
 $color-tint:             darken($color-tint-base, 6%);
@@ -472,6 +472,7 @@ $color-text:             #333;
 
     .js-popover-inner {
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .3);
+        border-color: #fff;
     }
 
     .js-popover-inner-title {
