@@ -16,7 +16,7 @@ Vagrant.configure("2") do |config|
     pkg install -y redis
     pkg install -y memcached
     pkg install -y bzip2 sqlite3 gmake
-    pkg install -y python27 python35
+    pkg install -y python27 python36
 
     sysrc postgresql_enable=YES
     sysrc redis_enable=YES
@@ -34,12 +34,12 @@ Vagrant.configure("2") do |config|
     sh -c 'echo "host all all ::1/128 trust" >> /usr/local/pgsql/data/pg_hba.conf'
     service postgresql restart
 
-    fetch -o - https://bootstrap.pypa.io/get-pip.py | /usr/local/bin/python3.5 -
-    /usr/local/bin/pip3.5 install virtualenv
+    fetch -o - https://bootstrap.pypa.io/get-pip.py | /usr/local/bin/python3.6 -
+    /usr/local/bin/pip3.6 install virtualenv
   EOF
 
   config.vm.provision :shell, privileged: false, inline: <<-EOF
-    virtualenv -p python3.5 $HOME/python3.5
+    virtualenv -p python3.6 $HOME/python3.6
 
     mkdir $HOME/yarn
     curl -sL https://yarnpkg.com/latest.tar.gz | tar -xvzf - -C $HOME/yarn --strip 1
@@ -48,7 +48,7 @@ Vagrant.configure("2") do |config|
     echo 'PAGER=more; export PAGER' >> $HOME/.profile
     echo 'ENV=$HOME/.shrc; export ENV' >> $HOME/.profile
     echo 'PATH="$HOME/yarn/bin:$PATH"' >> $HOME/.profile
-    echo 'PATH="$HOME/python3.5/bin:$PATH"' >> $HOME/.profile
+    echo 'PATH="$HOME/python3.6/bin:$PATH"' >> $HOME/.profile
     echo 'PATH="$HOME/bin:$PATH"' >> $HOME/.profile
     echo 'export PATH' >> $HOME/.profile
 
@@ -59,8 +59,8 @@ Vagrant.configure("2") do |config|
     cp examples/development.ini.sample development.ini
     cp examples/alembic.ini.sample alembic.ini
 
-    $HOME/python3.5/bin/pip3 install -e .
-    $HOME/python3.5/bin/alembic upgrade head
+    $HOME/python3.6/bin/pip3 install -e .
+    $HOME/python3.6/bin/alembic upgrade head
 
     env PYTHON=/usr/local/bin/python2.7 $HOME/yarn/bin/yarn
     $HOME/yarn/bin/yarn run typings install

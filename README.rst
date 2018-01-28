@@ -34,7 +34,7 @@ The Adventurous Way
 
 If you don't really want to use Vagrant, you can also install everything using your preferred methods:
 
-1. `Python 3.5 <https://www.python.org/downloads/>`_.
+1. `Python 3.6 <https://www.python.org/downloads/>`_.
 2. `PostgreSQL 9.5 <http://www.postgresql.org/>`_.
 3. `Redis 3.0 <http://redis.io/>`_.
 4. `Memcached 1.4 <http://www.memcached.org/>`_.
@@ -44,7 +44,7 @@ After the package above are up and running, you may now setup the application::
 
     $ cp examples/development.ini.sample development.ini
     $ cp examples/alembic.ini.sample alembic.ini
-    $ python3.5 setup.py develop
+    $ python3.6 setup.py develop
     $ alembic upgrade head
     $ pserve development.ini
 
