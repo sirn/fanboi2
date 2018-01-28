@@ -85,14 +85,14 @@ Celery worker is required to be run if you want to enable posting features.
 Contributing
 ------------
 
-Please make sure that test coverage is 100% and everything passed. It's also a good idea to open a bug ticket for feature you want to implement before starting. We have development IRC channel at `irc.fanboi.ch#fanboi <irc://irc.fanboi.ch/#fanboi>`_. Although if you want to submit patch anonymously you can also create git patch and post it to `support board <https://fanboi.ch/meta/>`_ as well.
+It's a good idea to open a bug ticket for feature you want to implement before starting and please make sure the code is tested. We have development IRC channel at `irc.fanboi.ch#fanboi <irc://irc.fanboi.ch/#fanboi>`_. Although if you want to submit patch anonymously you can also create git patch and post it to `support board <https://fanboi.ch/meta/>`_ as well.
 
 After you have done, simply open a pull request against **master** branch.
 
 License
 -------
 
-Copyright (c) 2013-2017, Kridsada Thanabulpong. All rights reserved.
+Copyright (c) 2013-2018, Kridsada Thanabulpong. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
