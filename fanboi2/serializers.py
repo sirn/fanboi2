@@ -1,6 +1,24 @@
+import re
 import datetime
 import pytz
-from fanboi2.helpers.formatters import format_post, format_page
+
+from .helpers.formatters import format_post, format_page
+from .interfaces import ISettingQueryService
+
+
+TRUTHY_RE = re.compile('^Y|y|T|t|[1-9]')
+
+
+def _truthy(request, key):
+    """Check that ``key`` in the request params is truty value.
+
+    :param request: A :class:`pyramid.request.Request` object.
+    :param key: A :type:`str` to lookup for.
+    """
+    if key not in request.params:
+        return False
+    val = str(request.params.get(key, 'false'))
+    return bool(TRUTHY_RE.match(val))
 
 
 def _datetime_adapter(obj, request):
@@ -8,13 +26,9 @@ def _datetime_adapter(obj, request):
 
     :param obj: A :class:`datetime.datetime` object.
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type obj: datetime.datetime
-    :type request: pyramid.request.Request
     """
-    settings = request.registry.settings
-    assert isinstance(settings, dict)
-    tz = pytz.timezone(settings['app.timezone'])
+    setting_query_svc = request.find_service(ISettingQueryService)
+    tz = pytz.timezone(setting_query_svc.value_from_key('app.time_zone'))
     return obj.astimezone(tz).isoformat()
 
 
@@ -23,9 +37,6 @@ def _sqlalchemy_query_adapter(obj, request):
 
     :param obj: An iterable SQLAlchemy's :class:`sqlalchemy.orm.Query` object.
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type obj: sqlalchemy.orm.Query
-    :type request: pyramid.request.Request
     """
     return [item for item in obj]
 
@@ -35,10 +46,6 @@ def _board_serializer(obj, request):
 
     :param obj: A :class:`fanboi2.models.Board` object.
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type obj: fanboi2.models.Board
-    :type request: pyramid.request.Request
-    :rtype: dict
     """
     result = {
         'type': 'board',
@@ -51,7 +58,7 @@ def _board_serializer(obj, request):
         'title': obj.title,
         'path': request.route_path('api_board', board=obj.slug),
     }
-    if request.params.get('topics') and not 'board' in request.params:
+    if _truthy(request, 'topics') and not _truthy(request, 'board'):
         result['topics'] = obj.topics.limit(10)
     return result
 
@@ -61,10 +68,6 @@ def _topic_serializer(obj, request):
 
     :param obj: A :class:`fanboi2.models.Topic` object.
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type obj: fanboi2.models.Topic
-    :type request: pyramid.request.Request
-    :rtype: dict
     """
     result = {
         'type': 'topic',
@@ -78,9 +81,9 @@ def _topic_serializer(obj, request):
         'title': obj.title,
         'path': request.route_path('api_topic', topic=obj.id),
     }
-    if request.params.get('board'):
+    if _truthy(request, 'board'):
         result['board'] = obj.board
-    if request.params.get('posts') and not 'topic' in request.params:
+    if _truthy(request, 'posts') and not _truthy(request, 'topic'):
         result['posts'] = obj.recent_posts()
     return result
 
@@ -112,7 +115,7 @@ def _post_serializer(obj, request):
             query=obj.number,
         ),
     }
-    if request.params.get('topic'):
+    if _truthy(request, 'topic'):
         result['topic'] = obj.topic
     return result
 
@@ -122,10 +125,6 @@ def _page_serializer(obj, request):
 
     :param obj: A :class:`fanboi2.models.Page` object.
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type obj: fanboi2.models.Page
-    :type request: pyramid.request.Request
-    :rtype: dict
     """
     return {
         'type': 'page',
@@ -149,10 +148,6 @@ def _result_proxy_serializer(obj, request):
 
     :param obj: A :class:`fanboi2.tasks.ResultProxy` object.
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type obj: fanboi2.tasks.ResultProxy
-    :type request: pyramid.request.Request
-    :rtype: dict
     """
     result = {
         'type': 'task',
@@ -161,7 +156,7 @@ def _result_proxy_serializer(obj, request):
         'path': request.route_path('api_task', task=obj.id),
     }
     if obj.success():
-        result['data'] = obj.object
+        result['data'] = obj.deserialize(request)
     return result
 
 
@@ -170,10 +165,6 @@ def _async_result_serializer(obj, request):
 
     :param obj: A :class:`celery.result.AsyncResult` object.
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type obj: celery.result.AsyncResult
-    :type request: pyramid.request.Request
-    :rtype: dict
     """
     return {
         'type': 'task',
@@ -189,10 +180,6 @@ def _base_error_serializer(obj, request):
 
     :param obj: A :class:`fanboi2.errors.BaseError` object.
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type obj: fanboi2.errors.BaseError
-    :type request: pyramid.request.Request
-    :rtype: dict
     """
     return {
         'type': 'error',

@@ -3,20 +3,20 @@
 Revision ID: 28d3c8870c89
 Revises: 0d0f281cc4ec
 Create Date: 2016-10-25 11:52:14.806880
-
 """
-
-# revision identifiers, used by Alembic.
-revision = '28d3c8870c89'
-down_revision = '0d0f281cc4ec'
-
 from alembic import op
 from sqlalchemy import sql
 import sqlalchemy as sa
 
 
+revision = '28d3c8870c89'
+down_revision = '0d0f281cc4ec'
+
+
+# flake8: noqa E131
 def upgrade():
-    op.create_table('topic_meta',
+    op.create_table(
+        'topic_meta',
         sa.Column('topic_id',
                   sa.Integer(),
                   autoincrement=False,
@@ -24,9 +24,8 @@ def upgrade():
         sa.Column('post_count', sa.Integer(), nullable=False),
         sa.Column('posted_at', sa.DateTime(timezone=True)),
         sa.Column('bumped_at', sa.DateTime(timezone=True)),
-        sa.ForeignKeyConstraint(['topic_id'], ['topic.id'], ),
-        sa.PrimaryKeyConstraint('topic_id'),
-    )
+        sa.ForeignKeyConstraint(['topic_id'], ['topic.id']),
+        sa.PrimaryKeyConstraint('topic_id'))
 
     topic_meta_table = sql.table(
         'topic_meta',
@@ -60,9 +59,7 @@ def upgrade():
                 [
                     topic_table.c.id,
                     sa.select([
-                            sa.func.coalesce(
-                                sa.func.max(post_table.c.number),
-                                0).
+                            sa.func.coalesce(sa.func.max(post_table.c.number), 0).
                             label('post_count')]).
                         where(post_table.c.topic_id == topic_table.c.id).
                         label('post_count_q'),

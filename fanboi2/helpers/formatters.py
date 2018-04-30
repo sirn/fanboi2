@@ -1,13 +1,16 @@
 import html
-import isodate
-import misaka
-import pytz
 import re
 import urllib
 import urllib.parse as urlparse
 from collections import OrderedDict
 from html.parser import HTMLParser
+
+import isodate
+import misaka
+import pytz
 from markupsafe import Markup
+
+from ..interfaces import ISettingQueryService
 
 
 RE_PARAGRAPH = re.compile(r'(?:(?P<newline>\r\n|\n|\r)(?P=newline)+)')
@@ -64,13 +67,10 @@ def extract_thumbnail(text):
     links creation.
 
     :param text: A :type:`str` to extract URL from.
-
-    :type text: str
-    :rtype: list
     """
     thumbnails = OrderedDict()
-    for re, thumb, url in RE_THUMBNAILS:
-        for item in re.findall(text):
+    for r, thumb, url in RE_THUMBNAILS:
+        for item in r.findall(text):
             try:
                 if not isinstance(item, tuple):
                     item = [item]
@@ -96,9 +96,6 @@ def url_fix(string):
     Ported from ``werkzeug.urls.url_fix``.
 
     :param string: A :type:`str` containing URL to fix.
-
-    :type string: str
-    :rtype: str
     """
     scheme, netloc, path, qs, anchor = urlparse.urlsplit(string)
     path = urlparse.quote(path, '/%')
@@ -116,10 +113,6 @@ def format_text(text, shorten=None):
     :param shorten: An :type:`int` that specifies approximate length of text
                     to be displayed. The full post will be shown if
                     :type:`None` is given.
-
-    :type text: str
-    :type shorten: int or None
-    :rtype: PostMarkup
     """
     output = []
     thumbs = []
@@ -170,11 +163,6 @@ def format_markdown(context, request, text):
     :param context: A :class:`mako.runtime.Context` object.
     :param request: A :class:`pyramid.request.Request` object.
     :param text: A :type:`str` containing unformatted Markdown text.
-
-    :type context: mako.runtime.Context or None
-    :type request: pyramid.request.Request
-    :type text: str or None
-    :rtype: Markup
     """
     if text is not None:
         return Markup(misaka.html(str(text)))
@@ -220,14 +208,7 @@ def format_post(context, request, post, shorten=None):
     :param context: A :class:`mako.runtime.Context` object.
     :param request: A :class:`pyramid.request.Request` object.
     :param post: A :class:`fanboi2.models.Post` object.
-    :param shorten: An :type:`int` or :type:`None` that gets passed to
-                    :func:`format_text`.
-
-    :type context: mako.runtime.Context or None
-    :type request: pyramid.request.Request
-    :type post: fanboi2.models.Post
-    :type shorten: int or None
-    :rtype: Markup
+    :param shorten: An :type:`int` or :type:`None`.
     """
     text = format_text(post.body, shorten)
 
@@ -289,11 +270,6 @@ def format_page(context, request, page):
     :param context: A :class:`mako.runtime.Context` object.
     :param request: A :class:`pyramid.request.Request` object.
     :param page: A :class:`fanboi2.models.Page` object.
-
-    :type context: mako.runtime.Context or None
-    :type request: pyramid.request.Request
-    :type page: fanboi2.models.Page
-    :rtype: Markup
     """
     if page.formatter == 'markdown':
         return format_markdown(context, request, page.body)
@@ -308,16 +284,10 @@ def format_datetime(context, request, dt):
     :param context: A :class:`mako.runtime.Context` object.
     :param request: A :class:`pyramid.request.Request` object.
     :param dt: A :class:`datetime.datetime` object.
-
-    :type context: mako.runtime.Context or None
-    :type request: pyramid.request.Request
-    :type dt: datetime.datetime
-    :rtype: str
     """
-    settings = request.registry.settings
-    assert isinstance(settings, dict)
-    timezone = pytz.timezone(settings['app.timezone'])
-    return dt.astimezone(timezone).strftime('%b %d, %Y at %H:%M:%S')
+    setting_query_svc = request.find_service(ISettingQueryService)
+    tz = pytz.timezone(setting_query_svc.value_from_key('app.time_zone'))
+    return dt.astimezone(tz).strftime('%b %d, %Y at %H:%M:%S')
 
 
 def format_isotime(context, request, dt):
@@ -326,11 +296,6 @@ def format_isotime(context, request, dt):
     :param context: A :class:`mako.runtime.Context` object.
     :param request: A :class:`pyramid.request.Request` object.
     :param dt: A :class:`datetime.datetime` object.
-
-    :type context: mako.runtime.Context or None
-    :type request: pyramid.request.Request
-    :type dt: datetime.datetime
-    :rtype: str
     """
     return isodate.datetime_isoformat(dt.astimezone(pytz.utc))
 
@@ -340,10 +305,6 @@ def unquoted_path(context, request, *args, **kwargs):
 
     :param context: A :class:`mako.runtime.Context` object.
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type context: mako.runtime.Context or None
-    :type request: pyramid.request.Request
-    :rtype: str
     """
     return urllib.parse.unquote(request.route_path(*args, **kwargs))
 
@@ -362,10 +323,6 @@ def user_theme(context, request, cookie='_theme'):
 
     :param context: A :class:`mako.runtime.Context` object.
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type context: mako.runtime.Context or None
-    :type request: pyramid.request.Request
-    :rtype: str
     """
     user_theme = request.cookies.get(cookie)
     if user_theme is None or user_theme not in THEMES:

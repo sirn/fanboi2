@@ -52,16 +52,23 @@ Vagrant.configure("2") do |config|
     echo 'PATH="$HOME/bin:$PATH"' >> $HOME/.profile
     echo 'export PATH' >> $HOME/.profile
 
-    psql template1 -c "CREATE DATABASE fanboi2_development;"
+    psql template1 -c "CREATE DATABASE fanboi2_dev;"
     psql template1 -c "CREATE DATABASE fanboi2_test;"
 
-    cd /vagrant
-    cp examples/development.ini.sample development.ini
-    cp examples/alembic.ini.sample alembic.ini
+    echo 'CELERY_BROKER_URL="redis://127.0.0.1:6379/1"; export CELERY_BROKER_URL' >> $HOME/.profile
+    echo 'DATABASE_URL="postgresql://vagrant:@127.0.0.1:5432/fanboi2_dev"; export DATABASE_URL' >> $HOME/.profile
+    echo 'MEMCACHED_URL="127.0.0.1:11211"; export MEMCACHED_URL' >> $HOME/.profile
+    echo 'REDIS_URL="redis://127.0.0.1:6379/0"; export REDIS_URL' >> $HOME/.profile
+    echo 'SERVER_DEV=true; export SERVER_DEV' >> $HOME/.profile
+    echo 'SERVER_HOST="0.0.0.0"; export SERVER_HOST' >> $HOME/.profile
+    echo 'SERVER_PORT=6543; export SERVER_PORT' >> $HOME/.profile
+    echo "SESSION_SECRET=$(openssl rand -hex 32); export SESSION_SECRET" >> $HOME/.profile
 
+    cd /vagrant
     $HOME/python3.6/bin/pip3 install -e .
     $HOME/python3.6/bin/alembic upgrade head
 
+    cd /vagrant/assets
     env PYTHON=/usr/local/bin/python2.7 $HOME/yarn/bin/yarn
     $HOME/yarn/bin/yarn run typings install
     $HOME/yarn/bin/yarn run gulp

@@ -3,17 +3,16 @@
 Revision ID: bfbd6a58775c
 Revises: 28d3c8870c89
 Create Date: 2016-10-28 10:28:22.055645
-
 """
-
-# revision identifiers, used by Alembic.
-revision = 'bfbd6a58775c'
-down_revision = '28d3c8870c89'
 
 from alembic import op
 from sqlalchemy import sql
 from sqlalchemy.dialects.postgresql import ENUM
 import sqlalchemy as sa
+
+
+revision = 'bfbd6a58775c'
+down_revision = '28d3c8870c89'
 
 
 def _add_status_column(table_name, column):

@@ -1,13 +1,10 @@
 import unittest
-from fanboi2.tests import CacheMixin
 
 
-class TestCache(CacheMixin, unittest.TestCase):
+class TestCache(unittest.TestCase):
 
     def test_key_mangler(self):
-        from fanboi2.cache import _key_mangler
-        store = {}
-        region = self._getRegion(store)
-        region.key_mangler = _key_mangler
-        region.set("Foobar", 1)
-        self.assertIn("89d5739baabbbe65be35cbe61c88e06d", store)
+        from ..cache import key_mangler
+        self.assertEqual(
+            key_mangler("Foobar"),
+            "e811818f80d9c3c22d577ba83d6196788e553bb408535bb42105cdff726a60ab")

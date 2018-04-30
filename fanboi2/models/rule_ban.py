@@ -1,6 +1,6 @@
-from sqlalchemy.orm import column_property
 from sqlalchemy.sql.schema import Column, ForeignKey
-from sqlalchemy.sql.sqltypes import Integer, String
+from sqlalchemy.sql.sqltypes import Integer
+
 from .rule import Rule
 
 

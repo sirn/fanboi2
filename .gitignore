@@ -14,28 +14,20 @@ tmp/
 *.dump
 
 # Assets
-typings/*
-!typings/vendor/
+/assets/*/
+!/assets/app/
+!/assets/vendor/
+!/assets/legacy/
 
-# IDE stuff
-out/
-fanboi2.iml
-.idea
-
-# Testing leftovers
+# Development
+/out/
+/venv/
+*.iml
+*.ini
+!alembic.ini
+*.gz
+.dir-locals.el
 .coverage
 .noseids
-
-# Assets
-node_modules/
-results/
-logs/
-*.min.js
-
-# Vagrant stuff
+.idea
 .vagrant
-*.gz
-
-# User settings
-development.ini
-alembic.ini

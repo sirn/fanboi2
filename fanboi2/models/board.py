@@ -2,9 +2,10 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import synonym
 from sqlalchemy.sql import func
 from sqlalchemy.sql.schema import Column
-from sqlalchemy.sql.sqltypes import Integer, DateTime, String, Text, \
-    Unicode, Enum
-from ._base import Base, JsonType, Versioned
+from sqlalchemy.sql.sqltypes import DateTime, Enum, Integer, String
+from sqlalchemy.sql.sqltypes import Text, Unicode, JSON
+
+from ._base import Base, Versioned
 
 
 DEFAULT_BOARD_CONFIG = {
@@ -13,6 +14,14 @@ DEFAULT_BOARD_CONFIG = {
     'max_posts': 1000,
     'post_delay': 10,
 }
+
+
+BoardStatusEnum = Enum(
+    'open',
+    'restricted',
+    'locked',
+    'archived',
+    name='board_status')
 
 
 class Board(Versioned, Base):
@@ -28,18 +37,14 @@ class Board(Versioned, Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     slug = Column(String(64), unique=True, nullable=False)
     title = Column(Unicode(255), nullable=False)
-    _settings = Column('settings', JsonType, nullable=False, default={})
+    _settings = Column('settings', JSON, nullable=False, default={})
     agreements = Column(Text, nullable=True)
     description = Column(Text, nullable=True)
-    status = Column(Enum('open',
-                         'restricted',
-                         'locked',
-                         'archived',
-                         name='board_status'),
-                    default='open',
-                    nullable=False)
+    status = Column(BoardStatusEnum, default='open', nullable=False)
 
     def get_settings(self):
+        if self._settings is None:
+            return DEFAULT_BOARD_CONFIG
         settings = DEFAULT_BOARD_CONFIG.copy()
         settings.update(self._settings)
         return settings
@@ -49,5 +54,7 @@ class Board(Versioned, Base):
 
     @declared_attr
     def settings(cls):
-        return synonym('_settings', descriptor=property(cls.get_settings,
-                                                        cls.set_settings))
+        return synonym('_settings',
+                       descriptor=property(
+                           cls.get_settings,
+                           cls.set_settings))

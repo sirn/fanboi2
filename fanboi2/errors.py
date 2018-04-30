@@ -1,19 +1,3 @@
-def serialize_error(type, *args):
-    """Serialize the given error type string into an error class.
-    If :param:`attrs` is provided, it will be passed to the class on
-    initialization.
-    """
-    return {
-        'rate_limited': RateLimitedError,
-        'params_invalid': ParamsInvalidError,
-        'spam_rejected': SpamRejectedError,
-        'dnsbl_rejected': DnsblRejectedError,
-        'ban_rejected': BanRejectedError,
-        'status_rejected': StatusRejectedError,
-        'proxy_rejected': ProxyRejectedError,
-    }.get(type, BaseError)(*args)
-
-
 class BaseError(Exception):
     """A base :class:`Exception` class that provides hint for reporting
     errors as JSON response.
@@ -26,23 +10,17 @@ class BaseError(Exception):
         serializable types.
 
         :param request: A :class:`pyramid.request.Request` object.
-        :type request: pyramid.request.Request
-        :rtype: object
         """
         return 'An exception error occurred.'
 
     @property
     def name(self):
-        """The short globally recognizable name of this error.
-        :rtype: str
-        """
+        """The short globally recognizable name of this error."""
         return 'unknown'
 
     @property
     def http_status(self):
-        """The HTTP status code to response as.
-        :rtype: str
-        """
+        """The HTTP status code to response as."""
         return '500 Internal Server Error'
 
 
@@ -52,7 +30,6 @@ class RateLimitedError(BaseError):
     be accessed from :property:`timeleft`.
 
     :param timeleft: An :type:`int` in seconds until user is unblocked.
-    :type timeleft: int
     """
 
     def __init__(self, timeleft):
@@ -76,7 +53,6 @@ class ParamsInvalidError(BaseError):
     inside :property:`messages`.
 
     :param messages: An :type:`dict` of :type:`list` of field errors.
-    :type messages: str
     """
 
     def __init__(self, messages):
@@ -94,31 +70,32 @@ class ParamsInvalidError(BaseError):
         return '400 Bad Request'
 
 
-class SpamRejectedError(BaseError):
+class AkismetRejectedError(BaseError):
     """An :class:`Exception` class that will be raised if user request was
     blocked due user request failed a spam check.
     """
 
     def message(self, request):
-        return 'The request has been identified as spam and therefore rejected.'
+        return 'The request has been identified as spam ' +\
+            'by Akismet and therefore rejected.'
 
     @property
     def name(self):
-        return 'spam_rejected'
+        return 'akismet_rejected'
 
     @property
     def http_status(self):
         return '422 Unprocessable Entity'
 
 
-class DnsblRejectedError(BaseError):
+class DNSBLRejectedError(BaseError):
     """An :class:`Exception` class that will be raised if user request was
     blocked due user IP address failed an DNSBL check.
     """
 
     def message(self, request):
         return 'The IP address is being listed in one of DNSBL databases ' +\
-               'and therefore rejected.'
+            'and therefore rejected.'
 
     @property
     def name(self):
@@ -136,7 +113,7 @@ class BanRejectedError(BaseError):
 
     def message(self, request):
         return 'The IP address is being listed in the ban list ' +\
-               'and therefore rejected.'
+            'and therefore rejected.'
 
     @property
     def name(self):
@@ -153,7 +130,6 @@ class StatusRejectedError(BaseError):
     the lock could be retrieved from :property:`status`.
 
     :param status: A :type:`str` of the status that caused the block.
-    :type status: str
     """
 
     def __init__(self, status):
@@ -178,7 +154,7 @@ class ProxyRejectedError(BaseError):
 
     def message(self, request):
         return 'The IP address has been identified as an open proxy ' +\
-               'or VPN service and therefore rejected.'
+            'or VPN service and therefore rejected.'
 
     @property
     def name(self):
@@ -187,3 +163,19 @@ class ProxyRejectedError(BaseError):
     @property
     def http_status(self):
         return '422 Unprocessable Entity'
+
+
+_ERRORS = {
+    'rate_limited': RateLimitedError,
+    'params_invalid': ParamsInvalidError,
+    'akismet_rejected': AkismetRejectedError,
+    'dnsbl_rejected': DNSBLRejectedError,
+    'ban_rejected': BanRejectedError,
+    'status_rejected': StatusRejectedError,
+    'proxy_rejected': ProxyRejectedError,
+}
+
+
+def deserialize_error(type_):
+    """Deserialize the given error type string into an error class."""
+    return _ERRORS.get(type_, BaseError)

@@ -1,4 +1,5 @@
 from collections import OrderedDict
+
 from sqlalchemy import event
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import attributes, object_mapper, mapper
@@ -17,10 +18,6 @@ def _is_fk_column(column, table):
 
     :param column: SQLAlchemy column.
     :param table: SQLAlchemy table.
-
-    :type column: sqlalchemy.sql.schema.Column
-    :type table: sqlalchemy.sql.schema.Table
-    :rtype: bool
     """
     for fk in column.foreign_keys:
         if fk.references(table):
@@ -32,9 +29,6 @@ def _is_versioning_column(column):
     """Returns :type:`True` if column belongs to versioning table.
 
     :param column: SQLAlchemy column to check.
-
-    :type column: sqlalchemy.sql.schema.Column
-    :rtype: bool
     """
     return "version_meta" in column.info
 
@@ -45,9 +39,6 @@ def _copy_history_column(column):
     and its unique constraint removed.
 
     :param column: SQLAlchemy column to copy.
-
-    :type column: sqlalchemy.sql.schema.Column
-    :rtype: sqlalchemy.sql.schema.Column
     """
     new_column = column.copy()
     new_column.unique = False
@@ -62,9 +53,6 @@ def _history_mapper(model_mapper):
     """Configure SQLAlchemy mapper and enable history support.
 
     :param model_mapper: SQLAlchemy mapper object for a model.
-
-    :type model_mapper: sqlalchemy.orm.mapper.Mapper
-    :rtype: sqlalchemy.orm.mapper.Mapper
     """
     model_class = model_mapper.class_
     model_table = model_mapper.local_table
@@ -179,23 +167,15 @@ def _history_mapper(model_mapper):
         model_mapper.add_property('version', model_table.c.version)
 
 
-def make_versioned(session, retrieve=None):
-    """Enable the versioned mapper. If ``retrieve`` is given, the function
-    will be used for retrieving a list of mapper objects (see also
-    :func:`make_versioned_class`).
+def setup_versioned(retrieve=None):
+    """Enable the versioned for the mapper. If ``retrieve`` is given
+    the function will be used for retrieving a list of mapper objects
+    (see also :func:`make_versioned_class`).
 
-    :param session: SQLAlchemy session object.
     :param retrieve: Function for retrieve a list of mapper objects.
-
-    :type session: sqlalchemy.orm.session.Session
-    :type retrieve: function | None
-
-    :rtype: sqlalchemy.orm.session.Session
     """
-    _make_history_event(session)
-
     if retrieve is None:
-        retrieve = lambda: _versioned_mappers
+        retrieve = lambda: _versioned_mappers  # noqa: E731
 
     for model_mapper in retrieve():
         _history_mapper(model_mapper)
@@ -204,15 +184,12 @@ def make_versioned(session, retrieve=None):
 def make_versioned_class(register=None):
     """Factory for creating a Versioned mixin. If ``register`` is given, the
     function will be used for registering the mapper object (see also
-    :func:`make_versioned`).
+    :func:`setup_versioned`).
 
     :param register: Function for registering a mapper object.
-    :type register: function | None
-
-    :rtype: class
     """
     if register is None:
-        register = lambda m: _versioned_mappers.append(m)
+        register = lambda m: _versioned_mappers.append(m)  # noqa: E731
 
     class _Versioned(object):
         """Mixin for enabling versioning for a model."""
@@ -232,9 +209,6 @@ def _is_versioned_object(obj):
     """Returns `True` if object is version-enabled.
 
     :param obj: SQLAlchemy model object.
-
-    :type obj: sqlalchemy.ext.declarative.api.Base
-    :rtype: bool
     """
     return hasattr(obj, '__history_mapper__')
 
@@ -246,11 +220,6 @@ def _create_version(obj, session, type_=None, force=False):
     :param session: SQLAlchemy session object.
     :param type_: Type of a change.
     :param force: Flag to always create version.
-
-    :type obj: sqlalchemy.ext.declarative.api.Base
-    :type session: sqlalchemy.orm.scoping.scoped_session
-    :type type_: string
-    :type force: bool
     """
     obj_mapper = object_mapper(obj)
     history_mapper = obj.__history_mapper__
@@ -282,14 +251,16 @@ def _create_version(obj, session, type_=None, force=False):
             if prop.key not in obj_state.dict:
                 getattr(obj, prop.key)
 
-            added_, unchanged_, deleted_ = attributes.get_history(obj, prop.key)
+            added_, unchanged_, deleted_ = attributes.get_history(
+                obj,
+                prop.key)
 
             if deleted_:
                 attr[prop.key] = deleted_[0]
                 obj_changed = True
             elif unchanged_:
                 attr[prop.key] = unchanged_[0]
-            elif added_:
+            elif added_:  # pragma: no cover
                 obj_changed = True
 
     if not obj_changed:
@@ -306,7 +277,7 @@ def _create_version(obj, session, type_=None, force=False):
                 if obj_changed is True:
                     break
 
-    if not obj_changed and not force:
+    if not obj_changed and not force:  # pragma: no cover
         return
 
     attr['version'] = obj.version
@@ -324,8 +295,6 @@ def _create_history_dirty(session, objs):
 
     :param session: SQLAlchemy sesion object.
     :param objs: Dirty objects usually obtained by ``session.dirty``
-    :type session: sqlalchemy.orm.session.Session
-    :type objs: list[sqlalchemy.ext.declarative.api.Base]
     """
     for obj in objs:
         if _is_versioned_object(obj):
@@ -339,8 +308,6 @@ def _create_history_deleted(session, objs):
 
     :param session: SQLAlchemy sesion object.
     :param objs: Dirty objects usually obtained by ``session.deleted``
-    :type session: sqlalchemy.orm.session.Session
-    :type objs: list[sqlalchemy.ext.declarative.api.Base]
     """
     for obj in objs:
         if _is_versioned_object(obj):
@@ -352,7 +319,7 @@ def _create_history_deleted(session, objs):
         related = None
 
         def _create_cascade_version(target_obj):
-            if not target_obj in objs:
+            if target_obj not in objs:
                 _create_version(target_obj,
                                 session,
                                 type_='update.cascade',
@@ -374,16 +341,14 @@ def _create_history_deleted(session, objs):
                 try:
                     for target_obj in related:
                         _create_cascade_version(target_obj)
-                except TypeError:
+                except TypeError:  # pragma: no cover
                     _create_cascade_version(related)
 
 
-def _make_history_event(session):
+def make_history_event(session):
     """Registers an event for recording versioned object.
 
     :param session: SQLAlchemy session object.
-    :type session: sqlalchemy.orm.session.Session
-    :rtype: sqlalchemy.orm.session.Session
     """
     @event.listens_for(session, 'before_flush')
     def update_history(session_, context, instances):
