@@ -1,69 +1,89 @@
-from sqlalchemy import event
-from sqlalchemy.sql import desc, func, select
-from ._base import DBSession, Base, JsonType
-from ._identity import Identity
-from ._redis_proxy import RedisProxy
-from ._versioned import make_versioned
+import logging
+
+from sqlalchemy.engine import engine_from_config
+from sqlalchemy.orm import sessionmaker
+import zope.sqlalchemy
+
+from ._base import Base
+from ._versioned import make_history_event, setup_versioned
 from .board import Board
-from .topic import Topic
-from .topic_meta import TopicMeta
-from .post import Post
 from .page import Page
+from .post import Post
 from .rule import Rule
 from .rule_ban import RuleBan
-from .rule_override import RuleOverride
+from .setting import Setting
+from .topic import Topic
+from .topic_meta import TopicMeta
+
+
+__all__ = [
+    'Base',
+    'Board',
+    'Page',
+    'Post',
+    'Rule',
+    'RuleBan',
+    'Setting',
+    'Topic',
+    'TopicMeta',
+]
 
 
 _MODELS = {
     'board': Board,
-    'topic': Topic,
-    'topic_meta': TopicMeta,
+    'page': Page,
     'post': Post,
     'rule': Rule,
     'rule_ban': RuleBan,
-    'rule_override': RuleOverride,
+    'setting': Setting,
+    'topic': Topic,
+    'topic_meta': TopicMeta,
 }
 
-def serialize_model(type_):
+
+# Versioned need to be setup after all models are initialized otherwise
+# SQLAlchemy won't be able to locate relation tables due to import order.
+setup_versioned()
+
+
+def deserialize_model(type_):
+    """Deserialize the given model type string into a model class."""
     return _MODELS.get(type_)
 
 
-redis_conn = RedisProxy()
-identity = Identity(redis=redis_conn)
-make_versioned(DBSession)
+def init_dbsession(dbsession, tm=None):  # pragma: no cover
+    """Initialize SQLAlchemy ``dbsession`` with application defaults.
+
+    :param dbsession: A :class:`sqlalchemy.orm.session.Session` object.
+    :param tm: A Zope transaction manager.
+    """
+    zope.sqlalchemy.register(dbsession, transaction_manager=tm)
 
 
-@event.listens_for(DBSession, 'before_flush')
-def _create_topic_meta(session, context, instances):
-    """Assign a new topic meta to a topic on creation."""
-    for topic in filter(lambda m: isinstance(m, Topic), session.new):
-        if topic.meta is None:
-            topic.meta = TopicMeta(post_count=0)
+def configure_sqlalchemy(settings):  # pragma: no cover
+    """Configure SQLAlchemy with the given settings."""
+    engine = engine_from_config(settings, 'sqlalchemy.')
+    Base.metadata.bind = engine
+    dbmaker = sessionmaker()
+    dbmaker.configure(bind=engine)
+    return dbmaker
 
 
-@event.listens_for(DBSession, 'before_flush')
-def _update_topic_meta_states(session, context, instance):
-    """Update topic metadata and related states when new posts are made."""
-    for post in filter(lambda m: isinstance(m, Post), session.new):
-        topic = post.topic
-        board = topic.board
-        if topic in session.new:
-            topic_meta = topic.meta
-        else:
-            topic_meta = session.query(TopicMeta).\
-                         filter_by(topic=topic).\
-                         with_for_update().\
-                         one()
+def includeme(config):  # pragma: no cover
+    config.include('pyramid_tm')
+    dbmaker = configure_sqlalchemy(config.registry.settings)
+    make_history_event(dbmaker)
 
-        topic_meta.post_count = post.number = topic_meta.post_count + 1
-        topic_meta.posted_at = post.created_at or func.now()
-        if post.bumped is None or post.bumped:
-            topic_meta.bumped_at = topic_meta.posted_at
+    log_level = logging.WARN
+    if config.registry.settings['server.development']:
+        log_level = logging.INFO
 
-        if topic.status == 'open' and \
-           topic_meta.post_count >= board.settings['max_posts']:
-            topic.status = 'archived'
+    logger = logging.getLogger('sqlalchemy.engine.base.Engine')
+    logger.setLevel(log_level)
 
-        session.add(topic_meta)
-        session.add(topic)
-        session.add(post)
+    def dbsession_factory(context, request):
+        dbsession = dbmaker()
+        init_dbsession(dbmaker, tm=request.tm)
+        return dbsession
+
+    config.register_service_factory(dbsession_factory, name='db')

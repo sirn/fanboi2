@@ -1,44 +1,47 @@
-import copy
+import binascii
 import hashlib
+import logging
 import os
 from functools import lru_cache
-from ipaddress import ip_address
+
 from pyramid.config import Configurator
+from pyramid.csrf import SessionCSRFStoragePolicy
 from pyramid.path import AssetResolver
-from pyramid.settings import aslist
-from sqlalchemy.engine import engine_from_config
-from fanboi2.cache import cache_region
-from fanboi2.models import DBSession, Base, redis_conn, identity
-from fanboi2.tasks import celery, configure_celery
-from fanboi2.utils import akismet, dnsbl, geoip, proxy_detector, checklist
+from pyramid.settings import asbool
+from pyramid_nacl_session import EncryptedCookieSessionFactory
 
 
-def remote_addr(request):
-    """Similar to Pyramid's :attr:`request.remote_addr` but will fallback
-    to ``HTTP_X_FORWARDED_FOR`` when ``REMOTE_ADDR`` is either a private
-    address or a loopback address. If multiple forwarded IPs are given
-    in ``HTTP_X_FORWARDED_FOR``, only the first one will be returned.
-
-    :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: str
+class NoValue(object):  # pragma: no cover
+    """Base class for representing ``NO_VALUE`` to differentiate from
+    absent of value and :type:`None`, e.g. in settings, where :type:`None`
+    might be an acceptable value, but absent of value may not.
     """
-    ipaddr = ip_address(request.environ.get('REMOTE_ADDR', '255.255.255.255'))
-    if ipaddr.is_private:
-        return request.environ.get('HTTP_X_FORWARDED_FOR', str(ipaddr)).\
-            split(",")[0].\
-            strip()
-    return str(ipaddr)
+
+    def __repr__(self):
+        return 'NO_VALUE'
+
+
+NO_VALUE = NoValue()
+
+
+ENV_SETTINGS_MAP = (
+    ('CELERY_BROKER_URL', 'celery.broker', NO_VALUE, None),
+    ('DATABASE_URL', 'sqlalchemy.url', NO_VALUE, None),
+    ('MEMCACHED_URL', 'dogpile.arguments.url', NO_VALUE, None),
+    ('GEOIP_PATH', 'geoip.path', None, None),
+    ('REDIS_URL', 'redis.url', NO_VALUE, None),
+    ('SERVER_DEV', 'server.development', False, asbool),
+    ('SESSION_SECRET', 'session.secret', NO_VALUE, None),
+)
+
+LOGGING_FMT = '%(asctime)s %(levelname)6s %(name)s[%(process)d] %(message)s'
+LOGGING_DATEFMT = '%H:%M:%S'
 
 
 def route_name(request):
     """Returns :attr:`name` of current :attr:`request.matched_route`.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: str
     """
     if request.matched_route:
         return request.matched_route.name
@@ -49,9 +52,6 @@ def _get_asset_hash(path):
     """Returns an MD5 hash of the given assets path.
 
     :param path: An asset specification to the asset file.
-
-    :type param: str
-    :rtype: str
     """
     if ':' in path:
         package, path = path.split(':')
@@ -74,137 +74,91 @@ def tagged_static_path(request, path, **kwargs):
     :param request: A :class:`pyramid.request.Request` object.
     :param path: An asset specification to the asset file.
     :param kwargs: Arguments to pass to :meth:`request.static_path`.
-
-    :type request: pyramid.request.Request
-    :type path: str
-    :type kwargs: dict
-    :rtype: str
     """
     kwargs['_query'] = {'h': _get_asset_hash(path)[:8]}
     return request.static_path(path, **kwargs)
 
 
-def normalize_settings(settings, _environ=os.environ):
-    """Normalize settings to the correct format and merge it with environment
-    equivalent if relevant key exists.
-
-    :param settings: A settings :type:`dict`.
-
-    :type settings: dict
-    :rtype: dict
-    """
-    def _cget(env_key, settings_key):
-        settings_val = settings.get(settings_key, '')
-        return _environ.get(env_key, settings_val)
-
-    sqlalchemy_url = _cget('SQLALCHEMY_URL', 'sqlalchemy.url')
-    redis_url = _cget('REDIS_URL', 'redis.url')
-    celery_broker_url = _cget('CELERY_BROKER_URL', 'celery.broker')
-    dogpile_url = _cget('DOGPILE_URL', 'dogpile.arguments.url')
-    session_url = _cget('SESSION_URL', 'session.url')
-    session_secret = _cget('SESSION_SECRET', 'session.secret')
-
-    app_timezone = _cget('APP_TIMEZONE', 'app.timezone')
-    app_secret = _cget('APP_SECRET', 'app.secret')
-    app_akismet_key = _cget('APP_AKISMET_KEY', 'app.akismet_key')
-    app_dnsbl_providers = _cget('APP_DNSBL_PROVIDERS', 'app.dnsbl_providers')
-
-    app_proxy_detect_providers = _cget(
-        'APP_PROXY_DETECT_PROVIDERS',
-        'app.proxy_detect.providers')
-
-    app_proxy_detect_blackbox_url = _cget(
-        'APP_PROXY_DETECT_BLACKBOX_URL',
-        'app.proxy_detect.blackbox.url')
-
-    app_proxy_detect_getipintel_url = _cget(
-        'APP_PROXY_DETECT_GETIPINTEL_URL',
-        'app.proxy_detect.getipintel.url')
-
-    app_proxy_detect_getipintel_email = _cget(
-        'APP_PROXY_DETECT_GETIPINTEL_EMAIL',
-        'app.proxy_detect.getipintel.email')
-
-    app_proxy_detect_getipintel_flags = _cget(
-        'APP_PROXY_DETECT_GETIPINTEL_FLAGS',
-        'app.proxy_detect.getipintel.flags')
-
-    app_geoip2_database = _cget('APP_GEOIP2_DATABASE', 'app.geoip2_database')
-    app_checklist = _cget('APP_CHECKLIST', 'app.checklist')
-
-    if app_dnsbl_providers is not None:
-        app_dnsbl_providers = aslist(app_dnsbl_providers)
-
-    if app_proxy_detect_providers is not None:
-        app_proxy_detect_providers = aslist(app_proxy_detect_providers)
-
-    if app_checklist is not None:
-        app_checklist = aslist(app_checklist)
-
-    _settings = copy.deepcopy(settings)
-    _settings.update({
-        'sqlalchemy.url': sqlalchemy_url,
-        'redis.url': redis_url,
-        'celery.broker': celery_broker_url,
-        'dogpile.arguments.url': dogpile_url,
-        'session.url': session_url,
-        'session.secret': session_secret,
-        'app.timezone': app_timezone,
-        'app.secret': app_secret,
-        'app.akismet_key': app_akismet_key,
-        'app.dnsbl_providers': app_dnsbl_providers,
-        'app.proxy_detect.providers': app_proxy_detect_providers,
-        'app.proxy_detect.blackbox.url': app_proxy_detect_blackbox_url,
-        'app.proxy_detect.getipintel.url': app_proxy_detect_getipintel_url,
-        'app.proxy_detect.getipintel.email': app_proxy_detect_getipintel_email,
-        'app.proxy_detect.getipintel.flags': app_proxy_detect_getipintel_flags,
-        'app.geoip2_database': app_geoip2_database,
-        'app.checklist': app_checklist,
-    })
-
-    return _settings
+def settings_from_env(settings_map=ENV_SETTINGS_MAP, environ=os.environ):
+    """Reads environment variable into Pyramid-style settings."""
+    settings = {}
+    for env, rkey, default, fn in settings_map:
+        value = environ.get(env, default)
+        if value is NO_VALUE:
+            raise RuntimeError('{} is not set'.format(env))
+        if fn is not None:
+            value = fn(value)
+        settings[rkey] = value
+    return settings
 
 
-def main(global_config, **settings):  # pragma: no cover
-    """This function returns a Pyramid WSGI application.
+def tm_maybe_activate(request):
+    """Returns whether should the transaction manager be activated."""
+    return not request.path_info.startswith('/static/')
 
-    :param global_config: A :type:`dict` containing global config.
-    :param settings: A :type:`dict` containing values from INI.
 
-    :type global_config: dict
-    :type settings: dict
-    :rtype: pyramid.router.Router
-    """
-    config = Configurator(settings=normalize_settings(settings))
+def setup_logger(settings):  # pragma: no cover
+    """Setup logger per configured in settings."""
+    if settings['server.development']:
+        import coloredlogs
+        coloredlogs.install(
+            level=logging.DEBUG,
+            fmt=LOGGING_FMT,
+            datefmt=LOGGING_DATEFMT)
+    else:
+        logging.basicConfig(
+            level=logging.WARN,
+            format=LOGGING_FMT,
+            datefmt=LOGGING_DATEFMT)
+
+
+def make_config(settings):  # pragma: no cover
+    """Returns a Pyramid configurator."""
+    config = Configurator(settings=settings)
+    config.add_settings({
+        'mako.directories': 'fanboi2:templates',
+        'dogpile.backend': 'dogpile.cache.memcached',
+        'dogpile.arguments.distributed_lock': True,
+        'tm.activate_hook': tm_maybe_activate})
+
+    if config.registry.settings['server.development']:
+        config.add_settings({
+            'pyramid.reload_templates': True,
+            'pyramid.debug_authorization': True,
+            'pyramid.debug_notfound': True,
+            'pyramid.default_locale_name': 'en',
+            'debugtoolbar.hosts': '0.0.0.0/0'})
+        config.include('pyramid_debugtoolbar')
+
     config.include('pyramid_mako')
-    config.include('pyramid_beaker')
+    config.include('pyramid_services')
 
-    engine = engine_from_config(config.registry.settings, 'sqlalchemy.')
-    DBSession.configure(bind=engine)
-    Base.metadata.bind = engine
+    session_secret_hex = config.registry.settings['session.secret'].strip()
+    session_secret = binascii.unhexlify(session_secret_hex)
+    session_factory = EncryptedCookieSessionFactory(
+        session_secret,
+        cookie_name='_session',
+        timeout=3600,
+        httponly=True)
 
-    cache_region.configure_from_config(config.registry.settings, 'dogpile.')
-    redis_conn.from_url(config.registry.settings['redis.url'])
-    celery.config_from_object(configure_celery(config.registry.settings))
-    identity.configure_tz(config.registry.settings['app.timezone'])
-    akismet.configure_key(config.registry.settings['app.akismet_key'])
-    dnsbl.configure_providers(config.registry.settings['app.dnsbl_providers'])
-    geoip.configure_geoip2(config.registry.settings['app.geoip2_database'])
-    checklist.configure_checklist(config.registry.settings['app.checklist'])
-    proxy_detector.configure_from_config(
-        config.registry.settings,
-        'app.proxy_detect.')
-
-    config.set_request_property(remote_addr)
+    config.set_session_factory(session_factory)
+    config.set_csrf_storage_policy(SessionCSRFStoragePolicy(key='_csrf'))
     config.set_request_property(route_name)
     config.add_request_method(tagged_static_path)
     config.add_route('robots', '/robots.txt')
 
+    config.include('fanboi2.cache')
+    config.include('fanboi2.filters')
+    config.include('fanboi2.geoip')
+    config.include('fanboi2.models')
+    config.include('fanboi2.redis')
     config.include('fanboi2.serializers')
-    config.include('fanboi2.views.pages', route_prefix='/pages')
+    config.include('fanboi2.services')
+    config.include('fanboi2.tasks')
+
     config.include('fanboi2.views.api', route_prefix='/api')
+    config.include('fanboi2.views.pages', route_prefix='/pages')
     config.include('fanboi2.views.boards', route_prefix='/')
     config.add_static_view('static', 'static', cache_max_age=3600)
-    config.scan()
 
-    return config.make_wsgi_app()
+    return config

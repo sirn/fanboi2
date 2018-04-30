@@ -1,5 +1,13 @@
-Next
-====
+r30
+======
+
+- [Change] Major refactoring to utilizes `pyramid_services <https://github.com/mmerickel/pyramid_services>`.
+- [Change] Application now uses environment variable as a primary means for configuration.
+- [Change] Switch to use `Pyramid's native CSRF checking <https://docs.pylonsproject.org/projects/pyramid/en/latest/api/csrf.html>`.
+- [Change] Switch to use `PyNaCl <https://github.com/Pylons/pyramid_nacl_session/>`_ for session factory.
+
+0.10.2
+------
 
 - [Add] Allow post filter to be configured per country.
 - [Add] A ``fb2_topic_sync`` script for syncing topic's bumped timestamp.

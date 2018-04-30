@@ -8,27 +8,29 @@ changes = open(os.path.join(here, 'CHANGES.rst')).read()
 requires = [
 
     # Pyramid
-    'pyramid >=1.7, <1.8',
-    'pyramid_mako',
-    'pyramid_tm',
+    'pyramid >=1.9, <1.10',
+    'pyramid_nacl_session',
     'pyramid_debugtoolbar',
-    'pyramid_beaker',
+    'pyramid_mako',
+    'pyramid_services',
+    'pyramid_tm',
     'waitress',
 
     # Backend
-    'sqlalchemy >=1.0, <1.1',
-    'alembic >=0.8, <0.9',
-    'celery >=3.1, <3.2',
-    'transaction',
-    'psycopg2',
-    'zope.sqlalchemy',
-    'redis',
-    'hiredis',
+    'alembic >=0.9, <0.10',
+    'celery >=4.1, <4.2',
+    'coloredlogs',
     'dogpile.cache',
+    'geoip2',
+    'hiredis',
+    'psycopg2',
     'python3-memcached',
     'pytz',
+    'redis',
     'requests',
-    'geoip2',
+    'sqlalchemy >=1.2, <1.3',
+    'transaction',
+    'zope.sqlalchemy',
 
     # Frontend
     'MarkupSafe',
@@ -37,22 +39,23 @@ requires = [
     'wtforms',
 
     # Tests
-    'nose',
     'coverage',
+    'nose',
+    'rednose',
 
     ]
 
 setup(name='fanboi2',
-      version='0.10.1',
-      description='fanboi2',
+      version='0.29.9',
+      description='board engine behind fanboi.ch',
       long_description=readme + '\n\n' + changes,
       classifiers=[
-        "programming language :: python",
-        "programming language :: python :: 3",
-        "framework :: pyramid",
-        "topic :: internet :: www/http",
-        "topic :: internet :: www/http :: wsgi :: application",
-        ],
+          "programming language :: python",
+          "programming language :: python :: 3",
+          "framework :: pyramid",
+          "topic :: internet :: www/http",
+          "topic :: internet :: www/http :: wsgi :: application",
+      ],
       author='',
       author_email='',
       url='',
@@ -62,12 +65,8 @@ setup(name='fanboi2',
       zip_safe=False,
       test_suite='fanboi2.tests',
       install_requires=requires,
-      entry_points={
-          "paste.app_factory": ["main = fanboi2:main"],
-          "console_scripts": [
-              "fb2_board_create = fanboi2.scripts.board_create:main",
-              "fb2_board_update = fanboi2.scripts.board_update:main",
-              "fb2_topic_sync = fanboi2.scripts.topic_sync:main",
-              "fb2_celery = fanboi2.scripts.celery:main",
-          ]
-      })
+      entry_points="""
+      [console_scripts]
+      fbctl = fanboi2.cmd.ctl:main
+      fbcelery = fanboi2.cmd.celery:main
+      """)

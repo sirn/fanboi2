@@ -1,6 +1,7 @@
 from sqlalchemy.sql import func
 from sqlalchemy.sql.schema import Column, UniqueConstraint
-from sqlalchemy.sql.sqltypes import Integer, DateTime, String, Text, Unicode
+from sqlalchemy.sql.sqltypes import DateTime, Integer, String, Text, Unicode
+
 from ._base import Base, Versioned
 
 

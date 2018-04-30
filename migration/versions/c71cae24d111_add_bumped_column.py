@@ -3,16 +3,14 @@
 Revision ID: c71cae24d111
 Revises: 38f5ad30fe6f
 Create Date: 2013-12-05 12:01:35.668738
-
 """
-
-# revision identifiers, used by Alembic.
-revision = 'c71cae24d111'
-down_revision = '38f5ad30fe6f'
-
 from alembic import op
 from sqlalchemy import sql
 import sqlalchemy as sa
+
+
+revision = 'c71cae24d111'
+down_revision = '38f5ad30fe6f'
 
 
 def upgrade():

@@ -1,55 +1,54 @@
-from pyramid.httpexceptions import HTTPNotFound, HTTPFound
+from pyramid.csrf import check_csrf_token, BadCSRFToken
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPForbidden
 from pyramid.renderers import render_to_response
 from sqlalchemy.orm.exc import NoResultFound
-from fanboi2.errors import RateLimitedError, ParamsInvalidError, \
-    SpamRejectedError, DnsblRejectedError, StatusRejectedError, \
-    BanRejectedError, ProxyRejectedError
-from fanboi2.forms import SecurePostForm, SecureTopicForm
-from fanboi2.tasks import celery
-from fanboi2.views.api import _get_override, \
-    boards_get, board_get, board_topics_get, board_topics_post, \
-    topic_get, topic_posts_get, topic_posts_post, \
-    task_get
+
+from ..errors import BaseError
+from ..forms import PostForm, TopicForm
+from ..interfaces import IBoardQueryService
+from ..interfaces import IPostCreateService, IPostQueryService
+from ..interfaces import IRateLimiterService, IRuleBanQueryService
+from ..interfaces import ITaskQueryService
+from ..interfaces import ITopicCreateService, ITopicQueryService
 
 
 def root(request):
     """Display a list of all boards.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: dict
     """
-    boards = boards_get(request)
-    return locals()
+    board_query_svc = request.find_service(IBoardQueryService)
+    return {
+        'boards': board_query_svc.list_active()
+    }
 
 
 def board_show(request):
     """Display a single board with its related topics.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: dict
     """
-    board = board_get(request)
-    topics = board_topics_get(request).limit(10)
-    override = _get_override(request, board=board)
-    return locals()
+    board_query_svc = request.find_service(IBoardQueryService)
+    topic_query_svc = request.find_service(ITopicQueryService)
+    board_slug = request.matchdict['board']
+    return {
+        'board': board_query_svc.board_from_slug(board_slug),
+        'topics': topic_query_svc.list_recent_from_board_slug(board_slug),
+    }
 
 
 def board_all(request):
     """Display a single board with a list of all its topic.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: dict
     """
-    board = board_get(request)
-    topics = board_topics_get(request).all()
-    override = _get_override(request, board=board)
-    return locals()
+    board_query_svc = request.find_service(IBoardQueryService)
+    topic_query_svc = request.find_service(ITopicQueryService)
+    board_slug = request.matchdict['board']
+    return {
+        'board': board_query_svc.board_from_slug(board_slug),
+        'topics': topic_query_svc.list_from_board_slug(board_slug),
+    }
 
 
 def board_new_get(request):
@@ -58,76 +57,112 @@ def board_new_get(request):
     in board context instead.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: dict | pyramid.response.Response
     """
-    board = board_get(request)
-    override = _get_override(request, board=board)
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
 
-    if override.get('status', board.status) != 'open':
-        raise HTTPNotFound(request.path)
+    if board.status != 'open':
+        raise HTTPForbidden
 
-    if request.params.get('task'):
-        try:
-            task_result = celery.AsyncResult(request.params['task'])
-            task = task_get(request, task_result)
-        except SpamRejectedError as e:
-            response = render_to_response('boards/error_spam.mako', locals())
-            response.status = e.http_status
-            return response
-        except DnsblRejectedError as e:
-            response = render_to_response('boards/error_dnsbl.mako', locals())
-            response.status = e.http_status
-            return response
-        except BanRejectedError as e:
-            response = render_to_response('boards/error_ban.mako', locals())
-            response.status = e.http_status
-            return response
-        except StatusRejectedError as e:
-            status = e.status
-            response = render_to_response('boards/error_status.mako', locals())
-            response.status = e.http_status
-            return response
-        except ProxyRejectedError as e:
-            response = render_to_response('boards/error_proxy.mako', locals())
-            response.status = e.http_status
-            return response
+    if request.GET.get('task'):
+        task_query_svc = request.find_service(ITaskQueryService)
+        task_uid = request.GET['task']
+        result_proxy = task_query_svc.result_from_uid(task_uid)
 
-        if task.success():
-            topic = task.object
-            return HTTPFound(location=request.route_path(
-                route_name='topic',
-                board=board.slug,
-                topic=topic.id))
-        return render_to_response('boards/new_wait.mako', locals())
+        if result_proxy.success():
+            obj = result_proxy.deserialize(request)
+            if isinstance(obj, BaseError):
+                extra_locals = {}
+                if hasattr(obj, 'status'):
+                    extra_locals['status'] = obj.status
 
-    form = SecureTopicForm(request=request)
-    return locals()
+                response = render_to_response(
+                    'boards/new_error.mako', {
+                        'board': board,
+                        'name': obj.name,
+                        **extra_locals},
+                    request=request)
+                response.status = obj.http_status
+                return response
+
+            return HTTPFound(
+                location=request.route_path(
+                    route_name='topic',
+                    board=board.slug,
+                    topic=obj.id))
+
+        return render_to_response(
+            'boards/new_wait.mako', {
+                'board': board},
+            request=request)
+
+    form = TopicForm(request=request)
+    return {
+        'board': board,
+        'form': form,
+    }
 
 
 def board_new_post(request):
     """Handle form posting for creating new topic in a board.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: dict
     """
-    board = board_get(request)
-    form = SecureTopicForm(request.params, request=request)
-    override = _get_override(request, board=board)
+    check_csrf_token(request)
 
-    try:
-        task = board_topics_post(request, board=board, form=form)
-    except RateLimitedError as e:
-        timeleft = e.timeleft
-        response = render_to_response('boards/error_rate.mako', locals())
-        response.status = e.http_status
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
+
+    form = TopicForm(request.POST, request=request)
+    if not form.validate():
+        request.response.status = '400 Bad Request'
+        return {
+            'board': board,
+            'form': form,
+        }
+
+    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
+    if rule_ban_query_svc.is_banned(
+            request.client_addr,
+            scopes=("board:%s" % (board.slug,),)):
+        response = render_to_response(
+            'boards/new_error.mako', {
+                'board': board,
+                'name': 'ban_rejected'},
+            request=request)
+        response.status = '403 Forbidden'
         return response
-    except ParamsInvalidError as e:
-        request.response.status = e.http_status
-        return locals()
+
+    rate_limiter_svc = request.find_service(IRateLimiterService)
+    if rate_limiter_svc:
+        payload = {'ip_address': request.client_addr, 'board': board.slug}
+        if rate_limiter_svc.is_limited(**payload):
+            response = render_to_response(
+                'boards/new_error.mako', {
+                    'board': board,
+                    'name': 'rate_limited',
+                    'time_left': rate_limiter_svc.time_left(**payload)},
+                request=request)
+            response.status = '429 Too Many Requests'
+            return response
+
+        rate_limiter_svc.limit_for(
+            board.settings['post_delay'],
+            **payload)
+
+    topic_create_svc = request.find_service(ITopicCreateService)
+    task = topic_create_svc.enqueue(
+        board.slug,
+        form.title.data,
+        form.body.data,
+        request.client_addr,
+        payload={
+            'application_url': request.application_url,
+            'referrer': request.referrer,
+            'url': request.url,
+            'user_agent': request.user_agent})
 
     return HTTPFound(location=request.route_path(
         route_name='board_new',
@@ -141,82 +176,154 @@ def topic_show_get(request):
     context instead.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: dict | pyramid.response.Response
     """
-    board = board_get(request)
-    topic = topic_get(request)
-    override = _get_override(request, board=board)
+    board_query_svc = request.find_service(IBoardQueryService)
+    topic_query_svc = request.find_service(ITopicQueryService)
+    board_slug = request.matchdict['board']
+    topic_id = request.matchdict['topic']
 
-    if request.params.get('task'):
-        try:
-            task_result = celery.AsyncResult(request.params['task'])
-            task = task_get(request, task_result)
-        except SpamRejectedError as e:
-            response = render_to_response('topics/error_spam.mako', locals())
-            response.status = e.http_status
-            return response
-        except DnsblRejectedError as e:
-            response = render_to_response('topics/error_dnsbl.mako', locals())
-            response.status = e.http_status
-            return response
-        except BanRejectedError as e:
-            response = render_to_response('topics/error_ban.mako', locals())
-            response.status = e.http_status
-            return response
-        except StatusRejectedError as e:
-            status = e.status
-            response = render_to_response('topics/error_status.mako', locals())
-            response.status = e.http_status
-            return response
-        except ProxyRejectedError as e:
-            response = render_to_response('topics/error_proxy.mako', locals())
-            response.status = e.http_status
-            return response
+    board = board_query_svc.board_from_slug(board_slug)
+    topic = topic_query_svc.topic_from_id(topic_id)
 
-        if task.success():
-            return HTTPFound(location=request.route_path(
-                route_name='topic_scoped',
-                board=board.slug,
-                topic=topic.id,
-                query='l10'))
-        return render_to_response('topics/show_wait.mako', locals())
+    query = None
+    if 'query' in request.matchdict:
+        query = request.matchdict['query']
 
-    posts = topic_posts_get(request, topic=topic)
-    if not topic.board_id == board.id or not posts:
+    if topic.board_id != board.id:
+        if query:
+            return HTTPFound(
+                location=request.route_path(
+                    route_name='topic_scoped',
+                    board=topic.board.slug,
+                    topic=topic.id,
+                    query=query))
+        else:
+            return HTTPFound(
+                location=request.route_path(
+                    route_name='topic',
+                    board=topic.board.slug,
+                    topic=topic.id))
+
+    if request.GET.get('task'):
+        task_query_svc = request.find_service(ITaskQueryService)
+        task_uid = request.GET['task']
+        result_proxy = task_query_svc.result_from_uid(task_uid)
+
+        if result_proxy.success():
+            obj = result_proxy.deserialize(request)
+            if isinstance(obj, BaseError):
+                extra_locals = {}
+                if hasattr(obj, 'status'):
+                    extra_locals['status'] = obj.status
+
+                response = render_to_response(
+                    'topics/show_error.mako', {
+                        'board': board,
+                        'topic': topic,
+                        'name': obj.name,
+                        **extra_locals},
+                    request=request)
+                response.status = obj.http_status
+                return response
+
+            return HTTPFound(
+                location=request.route_path(
+                    route_name='topic_scoped',
+                    board=board.slug,
+                    topic=topic.id,
+                    query='l10'))
+
+        return render_to_response(
+            'topics/show_wait.mako', {
+                'request': request,
+                'board': board,
+                'topic': topic},
+            request=request)
+
+    post_query_svc = request.find_service(IPostQueryService)
+    posts = post_query_svc.list_from_topic_id(topic_id, query)
+    if not posts:
         raise HTTPNotFound(request.path)
-    form = SecurePostForm(request=request)
-    return locals()
+
+    form = PostForm(request=request)
+    return {
+        'board': board,
+        'form': form,
+        'posts': posts,
+        'topic': topic,
+    }
 
 
 def topic_show_post(request):
     """Handle form posting for replying to a topic.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: dict
     """
-    board = board_get(request)
-    topic = topic_get(request)
-    override = _get_override(request, board=board)
+    check_csrf_token(request)
 
-    if not topic.board_id == board.id:
+    board_query_svc = request.find_service(IBoardQueryService)
+    topic_query_svc = request.find_service(ITopicQueryService)
+    board_slug = request.matchdict['board']
+    topic_id = request.matchdict['topic']
+
+    board = board_query_svc.board_from_slug(board_slug)
+    topic = topic_query_svc.topic_from_id(topic_id)
+
+    if topic.board_id != board.id:
         raise HTTPNotFound(request.path)
 
-    form = SecurePostForm(request.params, request=request)
+    post_create_svc = request.find_service(IPostCreateService)
+    form = PostForm(request.POST, request=request)
+    if not form.validate():
+        request.response.status = '400 Bad Request'
+        return {
+            'board': board,
+            'topic': topic,
+            'form': form,
+        }
 
-    try:
-        task = topic_posts_post(request, board=board, topic=topic, form=form)
-    except RateLimitedError as e:
-        timeleft = e.timeleft
-        response = render_to_response('topics/error_rate.mako', locals())
-        response.status = e.http_status
+    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
+    if rule_ban_query_svc.is_banned(
+            request.client_addr,
+            scopes=("board:%s" % (board.slug,),)):
+        response = render_to_response(
+            'topics/show_error.mako', {
+                'board': board,
+                'topic': topic,
+                'name': 'ban_rejected'},
+            request=request)
+        response.status = '403 Forbidden'
         return response
-    except ParamsInvalidError as e:
-        request.response.status = e.http_status
-        return locals()
+
+    rate_limiter_svc = request.find_service(IRateLimiterService)
+    if rate_limiter_svc:
+        payload = {'ip_address': request.client_addr, 'board': board.slug}
+        if rate_limiter_svc.is_limited(**payload):
+            response = render_to_response(
+                'topics/show_error.mako', {
+                    'board': board,
+                    'topic': topic,
+                    'name': 'rate_limited',
+                    'time_left': rate_limiter_svc.time_left(**payload)},
+                request=request)
+            response.status = '429 Too Many Requests'
+            return response
+
+        rate_limiter_svc.limit_for(
+            board.settings['post_delay'],
+            **payload)
+
+    post_create_svc = request.find_service(IPostCreateService)
+    task = post_create_svc.enqueue(
+        topic.id,
+        form.body.data,
+        form.bumped.data,
+        request.client_addr,
+        payload={
+            'application_url': request.application_url,
+            'referrer': request.referrer,
+            'url': request.url,
+            'user_agent': request.user_agent})
 
     return HTTPFound(location=request.route_path(
         route_name='topic',
@@ -232,44 +339,96 @@ def error_not_found(exc, request):
 
     :param exc: An :class:`Exception`.
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type exc: Exception
-    :type request: pyramid.request.Request
-    :rtype: pyramid.response.Response
     """
-    response = render_to_response('not_found.mako', locals())
+    response = render_to_response('not_found.mako', {}, request=request)
     response.status = '404 Not Found'
     return response
 
 
+def error_bad_request(exc, request):
+    """Handle any exception that should cause the app to treat it as
+    BadRequest resources, such as invalid CSRF token.
+
+    :param exc: An :class:`Exception`.
+    :param request: A :class:`pyramid.request.Request` object.
+    """
+    response = render_to_response('bad_request.mako', {}, request=request)
+    response.status = '400 Bad Request'
+    return response
+
+
 def includeme(config):  # pragma: no cover
-    def _map_view(name, path, renderer, callables=None):
-        config.add_route(name, path)
-        if callables is not None:
-            for method, callable in callables.items():
-                config.add_view(
-                    callable,
-                    request_method=method,
-                    route_name=name,
-                    renderer=renderer)
+    config.add_route('root', '/')
 
-    _map_view('root', '/', 'root.mako', {'GET': root})
-    _map_view('board', '/{board}/', 'boards/show.mako', {'GET': board_show})
-    _map_view('board_all', '/{board}/all/', 'boards/all.mako', {
-        'GET': board_all})
+    config.add_view(
+        root,
+        request_method='GET',
+        route_name='root',
+        renderer='root.mako')
 
-    _map_view('board_new', '/{board}/new/', 'boards/new.mako', {
-        'GET': board_new_get,
-        'POST': board_new_post})
+    #
+    # Board
+    #
 
-    _map_view('topic', '/{board:\w+}/{topic:\d+}/', 'topics/show.mako', {
-        'GET': topic_show_get,
-        'POST': topic_show_post})
+    config.add_route('board', '/{board}/')
+    config.add_route('board_all', '/{board}/all/')
+    config.add_route('board_new', '/{board}/new/')
 
-    _map_view('topic_scoped',
-        '/{board:\w+}/{topic:\d+}/{query}/',
-        'topics/show.mako',
-        {'GET': topic_show_get})
+    config.add_view(
+        board_show,
+        request_method='GET',
+        route_name='board',
+        renderer='boards/show.mako')
 
+    config.add_view(
+        board_all,
+        request_method='GET',
+        route_name='board_all',
+        renderer='boards/all.mako')
+
+    config.add_view(
+        board_new_get,
+        request_method='GET',
+        route_name='board_new',
+        renderer='boards/new.mako')
+
+    config.add_view(
+        board_new_post,
+        request_method='POST',
+        route_name='board_new',
+        renderer='boards/new.mako')
+
+    #
+    # Topics
+    #
+
+    config.add_route('topic', '/{board:\w+}/{topic:\d+}/')
+    config.add_route('topic_scoped', '/{board:\w+}/{topic:\d+}/{query}/')
+
+    config.add_view(
+        topic_show_get,
+        request_method='GET',
+        route_name='topic',
+        renderer='topics/show.mako')
+
+    config.add_view(
+        topic_show_post,
+        request_method='POST',
+        route_name='topic',
+        renderer='topics/show.mako')
+
+    config.add_view(
+        topic_show_get,
+        request_method='GET',
+        route_name='topic_scoped',
+        renderer='topics/show.mako')
+
+    #
+    # Error handling
+    #
+
+    config.add_view(error_bad_request, context=BadCSRFToken)
     config.add_view(error_not_found, context=NoResultFound)
     config.add_notfound_view(error_not_found, append_slash=True)
+
+    config.scan()

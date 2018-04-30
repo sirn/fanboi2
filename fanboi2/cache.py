@@ -1,20 +1,22 @@
 import hashlib
-import logging
+
 from dogpile.cache import make_region
 
 
-log = logging.getLogger(__name__)
-
-
-def _key_mangler(key):
+def key_mangler(key):
     """Retrieve cache keys as a long concatenated strings and turn them into
-    an MD5 hash.
+    an SHA256 hash.
 
     :param key: A cache key :type:`str`.
-
-    :type key: str
-    :rtype: str
     """
-    return hashlib.md5(bytes(key.encode('utf8'))).hexdigest()
+    return hashlib.sha256(bytes(key.encode('utf8'))).hexdigest()
 
-cache_region = make_region(key_mangler=_key_mangler)
+
+def includeme(config):  # pragma: no cover
+    cache_region = make_region(key_mangler=key_mangler)
+    cache_region.configure_from_config(config.registry.settings, 'dogpile.')
+
+    def cache_region_factory(context, request):
+        return cache_region
+
+    config.register_service_factory(cache_region_factory, name='cache')
