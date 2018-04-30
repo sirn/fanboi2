@@ -2,7 +2,7 @@ language: python
 script: nosetests
 
 python:
-  - "3.5"
+  - "3.6"
 
 install:
   - 'pip install -e .'

@@ -126,7 +126,7 @@
                                 </ul>
                                 <p>In case of post rejection, the following statuses are returned:</p>
                                 <ul>
-                                    <li><strong>spam_rejected</strong> — the post or topic has been identified as spam.</li>
+                                    <li><strong>akismet_rejected</strong> — the post or topic has been identified as spam by Akismet.</li>
                                     <li><strong>dnsbl_rejected</strong> — the IP address is listed in one of DNSBL databases.</li>
                                     <li><strong>ban_rejected</strong> — the IP address is listed in the ban list.</li>
                                     <li><strong>proxy_rejected</strong> — the IP address has been identified as an open proxy or public VPN.</li>
@@ -149,4 +149,3 @@
         </div>
     </div>
 </div>
-

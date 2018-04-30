@@ -3,16 +3,14 @@
 Revision ID: 84a168aadc17
 Revises: c71cae24d11
 Create Date: 2016-10-24 11:56:06.244550
-
 """
-
-# revision identifiers, used by Alembic.
-revision = '84a168aadc17'
-down_revision = 'c71cae24d111'
-
 from alembic import op
 from sqlalchemy import sql
 import sqlalchemy as sa
+
+
+revision = '84a168aadc17'
+down_revision = 'c71cae24d111'
 
 
 def _add_version_column(table_name):

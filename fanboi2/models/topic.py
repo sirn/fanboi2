@@ -1,8 +1,10 @@
 import re
+
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import desc, func, select
 from sqlalchemy.sql.schema import Column, ForeignKey
 from sqlalchemy.sql.sqltypes import Integer, DateTime, Enum, Unicode
+
 from ._base import Base, Versioned
 from .post import Post
 from .topic_meta import TopicMeta
@@ -30,9 +32,9 @@ class Topic(Versioned, Base):
                                          lazy='dynamic',
                                          cascade='all,delete',
                                          order_by=desc(func.coalesce(
-                                             select([TopicMeta.bumped_at]).\
-                                                where(TopicMeta.topic_id==id).\
-                                                as_scalar(),
+                                             select([TopicMeta.bumped_at]).
+                                             where(TopicMeta.topic_id == id).
+                                             as_scalar(),
                                              created_at))))
 
     QUERY = (

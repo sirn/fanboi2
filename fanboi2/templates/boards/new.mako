@@ -13,7 +13,7 @@
     </div>
 </div>
 <form class="form" action="${request.route_path('board_new', board=board.slug)}" method="post">
-    ${form.csrf_token}
+    <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
     <div class="container">
         <div class="form-item${' error' if form.title.errors else ''}">
             <label class="form-item-label" for="${form.title.id}">Topic</label>

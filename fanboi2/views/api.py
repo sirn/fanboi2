@@ -1,13 +1,16 @@
-import datetime
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql import or_, and_, select
 from webob.multidict import MultiDict
-from fanboi2.errors import ParamsInvalidError, RateLimitedError, BaseError
-from fanboi2.forms import TopicForm, PostForm
-from fanboi2.models import DBSession, Board, Topic, TopicMeta, \
-    Page, RuleOverride
-from fanboi2.tasks import ResultProxy, add_topic, add_post, celery
-from fanboi2.utils import RateLimiter, serialize_request
+
+from ..errors import ParamsInvalidError, RateLimitedError, BanRejectedError
+from ..errors import BaseError
+from ..forms import TopicForm, PostForm
+from ..interfaces import IBoardQueryService
+from ..interfaces import IPageQueryService
+from ..interfaces import IPostCreateService, IPostQueryService
+from ..interfaces import IRateLimiterService
+from ..interfaces import IRuleBanQueryService
+from ..interfaces import ITaskQueryService
+from ..interfaces import ITopicCreateService, ITopicQueryService
 
 
 def _get_params(request):
@@ -15,40 +18,14 @@ def _get_params(request):
     regardless of whether the request is sent as JSON or as formdata.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: str
     """
-    params = request.params
+    params = request.POST
     if request.content_type.startswith('application/json'):
         try:
             params = MultiDict(request.json_body)
         except ValueError:  # pragma: no cover
             pass
     return params
-
-
-def _get_override(request, board=None):
-    """Returns a :type:`dict` of an override rule for the given IP address
-    presented in request. If no override present for a user, an empty
-    dict is returned.
-
-    :param request: A :class:`pyramid.request.Request` object.
-    :param board: A :class:`fanboi2.models.Board` object to scope.
-
-    :type request: pyramid.request.Request
-    :type board: fanboi2.models.Board
-    :rtype: dict
-    """
-    scopes = None
-    if board is not None:
-        scopes = ('board:%s' % (board.slug,),)
-    rule_override = DBSession.query(RuleOverride).filter(
-        RuleOverride.listed(request.remote_addr, scopes=scopes)).\
-        first()
-    if rule_override is not None:
-        return rule_override.override
-    return {}
 
 
 def root(request):
@@ -60,188 +37,187 @@ def boards_get(request):
     """Retrieve a list of all boards.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: sqlalchemy.orm.Query
     """
-    return DBSession.query(Board).\
-        order_by(Board.title).\
-        filter(Board.status != 'archived')
+    board_query_svc = request.find_service(IBoardQueryService)
+    return board_query_svc.list_active()
 
 
 def board_get(request):
     """Retrieve a full info of a single board.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: sqlalchemy.orm.Query
     """
-    return DBSession.query(Board).\
-        filter_by(slug=request.matchdict['board']).\
-        one()
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    return board_query_svc.board_from_slug(board_slug)
 
 
 def board_topics_get(request):
     """Retrieve all available topics within a single board.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: sqlalchemy.orm.Query
     """
-    return board_get(request).topics.\
-        filter(or_(Topic.status == "open",
-                   and_(Topic.status != "open",
-                            select([TopicMeta.posted_at]).\
-                            where(TopicMeta.topic_id==Topic.id).\
-                            as_scalar() >= datetime.datetime.now() -
-                        datetime.timedelta(days=7))))
+    board_query_svc = request.find_service(IBoardQueryService)
+    topic_query_svc = request.find_service(ITopicQueryService)
+    board_slug = request.matchdict['board']
+    board_query_svc.board_from_slug(board_slug)  # ensure exists
+    topics = topic_query_svc.list_from_board_slug(board_slug)
+    return topics
 
 
-def board_topics_post(request, board=None, form=None):
+def board_topics_post(request):
     """Create a new topic.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: celery.task.Task
     """
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
+
     params = _get_params(request)
+    form = TopicForm(params, request=request)
 
-    if board is None:
-        board = board_get(request)
-    if form is None:
-        form = TopicForm(params, request=request)
+    if not form.validate():
+        raise ParamsInvalidError(form.errors)
 
-    if form.validate():
-        ratelimit = RateLimiter(request, namespace=board.slug)
-        if ratelimit.limited():
-            timeleft = ratelimit.timeleft()
-            raise RateLimitedError(timeleft)
+    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
+    if rule_ban_query_svc.is_banned(
+            request.client_addr,
+            scopes=("board:%s" % (board.slug,),)):
+        raise BanRejectedError()
 
-        ratelimit.limit(board.settings['post_delay'])
-        return add_topic.delay(
-            request=serialize_request(request),
-            board_id=board.id,
-            title=form.title.data,
-            body=form.body.data)
+    rate_limiter_svc = request.find_service(IRateLimiterService)
+    if rate_limiter_svc:
+        payload = {'ip_address': request.client_addr, 'board': board.slug}
+        if rate_limiter_svc.is_limited(**payload):
+            time_left = rate_limiter_svc.time_left(**payload)
+            raise RateLimitedError(time_left)
 
-    raise ParamsInvalidError(form.errors)
+        rate_limiter_svc.limit_for(
+            board.settings['post_delay'],
+            **payload)
+
+    topic_create_svc = request.find_service(ITopicCreateService)
+    return topic_create_svc.enqueue(
+        board.slug,
+        form.title.data,
+        form.body.data,
+        request.client_addr,
+        payload={
+            'application_url': request.application_url,
+            'referrer': request.referrer,
+            'url': request.url,
+            'user_agent': request.user_agent})
 
 
-def task_get(request, task=None):
+def task_get(request):
     """Retrieve a task processing status for the given task id.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: fanboi2.tasks.ResultProxy
     """
-    if task is None:
-        task = celery.AsyncResult(request.matchdict['task'])
-    response = ResultProxy(task)
-    if response.success():
-        if isinstance(response.object, BaseError):
-            raise response.object
-    return response
+    task_query_svc = request.find_service(ITaskQueryService)
+    task_uid = request.matchdict['task']
+    result_proxy = task_query_svc.result_from_uid(task_uid)
+
+    if result_proxy.success():
+        obj = result_proxy.deserialize(request)
+        if isinstance(obj, BaseError):
+            raise obj
+
+    return result_proxy
 
 
 def topic_get(request):
-    """Retrieve a full post info for an individual topic.
+    """Retrieve a topic info for an individual topic.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: sqlalchemy.orm.Query
     """
-    return DBSession.query(Topic).\
-        filter_by(id=request.matchdict['topic']).\
-        one()
+    topic_query_svc = request.find_service(ITopicQueryService)
+    topic_id = request.matchdict['topic']
+    return topic_query_svc.topic_from_id(topic_id)
 
 
-def topic_posts_get(request, topic=None):
+def topic_posts_get(request):
     """Retrieve all posts in a single topic or by or by search criteria.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: sqlalchemy.orm.Query
     """
-    if topic is None:
-        topic = topic_get(request)
+    post_query_svc = request.find_service(IPostQueryService)
+    topic_id = request.matchdict['topic']
+    query = None
+
     if 'query' in request.matchdict:
-        return topic.scoped_posts(request.matchdict['query'])
-    return topic.posts
+        query = request.matchdict['query']
+
+    return post_query_svc.list_from_topic_id(topic_id, query)
 
 
-def topic_posts_post(request, board=None, topic=None, form=None):
+def topic_posts_post(request):
     """Create a new post within topic.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: celery.task.Task
     """
+    topic_query_svc = request.find_service(ITopicQueryService)
+    topic_id = request.matchdict['topic']
+
+    topic = topic_query_svc.topic_from_id(topic_id)
+    board = topic.board
+
     params = _get_params(request)
+    form = PostForm(params, request=request)
 
-    if topic is None:
-        topic = topic_get(request)
-    if board is None:
-        board = topic.board
-    if form is None:
-        form = PostForm(params, request=request)
+    if not form.validate():
+        raise ParamsInvalidError(form.errors)
 
-    if form.validate():
-        ratelimit = RateLimiter(request, namespace=board.slug)
-        if ratelimit.limited():
-            timeleft = ratelimit.timeleft()
-            raise RateLimitedError(timeleft)
+    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
+    if rule_ban_query_svc.is_banned(
+            request.client_addr,
+            scopes=("board:%s" % (board.slug,),)):
+        raise BanRejectedError()
 
-        ratelimit.limit(board.settings['post_delay'])
-        return add_post.delay(
-            request=serialize_request(request),
-            topic_id=topic.id,
-            body=form.body.data,
-            bumped=form.bumped.data)
+    rate_limiter_svc = request.find_service(IRateLimiterService)
+    if rate_limiter_svc:
+        payload = {'ip_address': request.client_addr, 'board': board.slug}
+        if rate_limiter_svc.is_limited(**payload):
+            time_left = rate_limiter_svc.time_left(**payload)
+            raise RateLimitedError(time_left)
 
-    raise ParamsInvalidError(form.errors)
+        rate_limiter_svc.limit_for(
+            board.settings['post_delay'],
+            **payload)
+
+    post_create_svc = request.find_service(IPostCreateService)
+    return post_create_svc.enqueue(
+        topic.id,
+        form.body.data,
+        form.bumped.data,
+        request.client_addr,
+        payload={
+            'application_url': request.application_url,
+            'referrer': request.referrer,
+            'url': request.url,
+            'user_agent': request.user_agent})
 
 
-def pages_get(request, namespace=None):
+def pages_get(request):
     """Retrieve a list of all pages.
 
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type request: pyramid.request.Request
-    :rtype: sqlalchemy.orm.Query
     """
-    if namespace is None:
-        namespace = 'public'
-    return DBSession.query(Page).\
-        order_by(Page.title).\
-        filter_by(namespace=namespace)
+    page_query_svc = request.find_service(IPageQueryService)
+    return page_query_svc.list_public()
 
 
-def page_get(request, page=None, namespace=None):
+def page_get(request):
     """Retrieve a page.
 
     :param request: A :class:`pyramid.request.Request` object.
     :param page: Page name to retrieve.
     :param namespace: Page namespace to retrieve from.
-
-    :type request: pyramid.request.Request
-    :type page: str
-    :type namespace: str
-    :rtype: sqlalchemy.orm.Query
     """
-    if namespace is None:
-        namespace = 'public'
-    if page is None:
-        page = request.matchdict['page']
-    return DBSession.query(Page).\
-        filter_by(namespace=namespace, slug=page).\
-        one()
+    page_query_svc = request.find_service(IPageQueryService)
+    page_slug = request.matchdict['page']
+    return page_query_svc.public_page_from_slug(page_slug)
 
 
 def error_not_found(exc, request):
@@ -251,10 +227,6 @@ def error_not_found(exc, request):
 
     :param exc: An :class:`Exception`.
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type exc: Exception
-    :type request: pyramid.request.Request
-    :rtype: dict
     """
     request.response.status = '404 Not Found'
     return {
@@ -273,10 +245,6 @@ def error_base_handler(exc, request):
 
     :param exc: A :class:`fanboi2.errors.BaseError`.
     :param request: A :class:`pyramid.request.Request` object.
-
-    :type exc: fanboi2.errors.BaseError
-    :type request: pyramid.request.Request
-    :rtype: dict
     """
     request.response.status = exc.http_status
     return exc
@@ -285,9 +253,6 @@ def error_base_handler(exc, request):
 def _api_routes_only(context, request):
     """A predicate for :meth:`pyramid.config.add_view` that returns true
     if the requested route is an API route.
-
-    :type request: pyramid.request.Request
-    :rtype: bool
     """
     return request.path.startswith('/api/')
 
@@ -300,47 +265,123 @@ def includeme(config):  # pragma: no cover
         route_name='api_root',
         renderer='api/show.mako')
 
-    def _map_api_route(name, path, callables=None):
-        config.add_route(name, path)
-        if callables is not None:
-            for method, callable in callables.items():
-                config.add_view(
-                    callable,
-                    request_method=method,
-                    route_name=name,
-                    renderer='json')
+    #
+    # Pages API
+    #
 
-    _map_api_route('api_pages', '/1.0/pages/', {'GET': pages_get})
-    _map_api_route('api_page', '/1.0/pages/{page:.*}/', {'GET': page_get})
+    config.add_route('api_pages', '/1.0/pages/')
+    config.add_route('api_page', '/1.0/pages/{page:.*}/')
 
-    _map_api_route('api_boards', '/1.0/boards/', {'GET': boards_get})
-    _map_api_route('api_board', '/1.0/boards/{board}/', {'GET': board_get})
-    _map_api_route('api_board_topics', '/1.0/boards/{board}/topics/', {
-        'GET': board_topics_get,
-        'POST': board_topics_post})
+    config.add_view(
+        pages_get,
+        request_method='GET',
+        route_name='api_pages',
+        renderer='json')
 
-    _map_api_route('api_task', '/1.0/tasks/{task}/', {'GET': task_get})
-    _map_api_route('api_topic', '/1.0/topics/{topic:\d+}/', {'GET': topic_get})
-    _map_api_route('api_topic_posts', '/1.0/topics/{topic:\d+}/posts/', {
-        'GET': topic_posts_get,
-        'POST': topic_posts_post})
+    config.add_view(
+        page_get,
+        request_method='GET',
+        route_name='api_page',
+        renderer='json')
 
-    _map_api_route(
+    #
+    # Boards API
+    #
+
+    config.add_route('api_boards', '/1.0/boards/')
+    config.add_route('api_board', '/1.0/boards/{board}/')
+    config.add_route('api_board_topics', '/1.0/boards/{board}/topics/')
+
+    config.add_view(
+        boards_get,
+        request_method='GET',
+        route_name='api_boards',
+        renderer='json')
+
+    config.add_view(
+        board_get,
+        request_method='GET',
+        route_name='api_board',
+        renderer='json')
+
+    config.add_view(
+        board_topics_get,
+        request_method='GET',
+        route_name='api_board_topics',
+        renderer='json')
+
+    config.add_view(
+        board_topics_post,
+        request_method='POST',
+        route_name='api_board_topics',
+        renderer='json')
+
+    #
+    # Task API
+    #
+
+    config.add_route('api_task', '/1.0/tasks/{task}/')
+
+    config.add_view(
+        task_get,
+        request_method='GET',
+        route_name='api_task',
+        renderer='json')
+
+    #
+    # Topics API
+    #
+
+    config.add_route('api_topic', '/1.0/topics/{topic:\d+}/')
+    config.add_route('api_topic_posts', '/1.0/topics/{topic:\d+}/posts/')
+    config.add_route(
         'api_topic_posts_scoped',
-        '/1.0/topics/{topic:\d+}/posts/{query}/',
-        {'GET': topic_posts_get})
+        '/1.0/topics/{topic:\d+}/posts/{query}/')
 
-    def _map_api_errors(exc, callable):
-        config.add_view(
-            callable,
-            context=exc,
-            renderer='json',
-            custom_predicates=[_api_routes_only])
+    config.add_view(
+        topic_get,
+        request_method='GET',
+        route_name='api_topic',
+        renderer='json')
 
-    _map_api_errors(BaseError, error_base_handler)
-    _map_api_errors(NoResultFound, error_not_found)
+    config.add_view(
+        topic_posts_get,
+        request_method='GET',
+        route_name='api_topic_posts',
+        renderer='json')
+
+    config.add_view(
+        topic_posts_post,
+        request_method='POST',
+        route_name='api_topic_posts',
+        renderer='json')
+
+    config.add_view(
+        topic_posts_get,
+        request_method='GET',
+        route_name='api_topic_posts_scoped',
+        renderer='json')
+
+    #
+    # Error handling
+    #
+
+    config.add_view(
+        error_base_handler,
+        context=BaseError,
+        renderer='json',
+        custom_predicates=[_api_routes_only])
+
+    config.add_view(
+        error_not_found,
+        context=NoResultFound,
+        renderer='json',
+        custom_predicates=[_api_routes_only])
+
     config.add_notfound_view(
         error_not_found,
         append_slash=True,
         renderer='json',
         custom_predicates=[_api_routes_only])
+
+    config.scan()

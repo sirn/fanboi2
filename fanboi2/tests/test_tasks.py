@@ -1,41 +1,280 @@
-import transaction
 import unittest
-import unittest.mock
-from fanboi2.models import DBSession
-from fanboi2.tests import ModelMixin, TaskMixin, DummyAsyncResult
+
+from pyramid import testing
+
+from . import ModelSessionMixin
 
 
-class TestResultProxy(TaskMixin, ModelMixin, unittest.TestCase):
+class _DummyFilterService(object):
 
-    def test_object(self):
-        from fanboi2.tasks import ResultProxy
-        board = self._makeBoard(title='Foobar', slug='foobar')
-        response = ['board', board.id]
-        proxy = ResultProxy(DummyAsyncResult('demo', 'success', response))
-        self.assertEqual(proxy.object, board)
+    def __init__(self, rejected_by=None):
+        self._rejected_by = rejected_by
 
-    # noinspection PyUnresolvedReferences
-    def test_object_failure(self):
-        from fanboi2.tasks import ResultProxy
-        from fanboi2.errors import BaseError, StatusRejectedError
-        response = ['failure', 'status_rejected', 'locked']
-        proxy = ResultProxy(DummyAsyncResult('demo', 'success', response))
-        self.assertIsInstance(proxy.object, BaseError)
-        self.assertIsInstance(proxy.object, StatusRejectedError)
-        self.assertEqual(proxy.object.status, 'locked')
+    def evaluate(self, payload):
+        from ..services.filter_ import FilterResult
+        return FilterResult(rejected_by=self._rejected_by, filters=[])
+
+
+class _DummyIdentityService(object):
+    def identity_for(self, **kwargs):
+        return ','.join(
+            '%s' % (v,) for k, v in sorted(kwargs.items()))
+
+
+class _DummySettingQueryService(object):
+    def value_from_key(self, key):
+        return {'app.time_zone': 'Asia/Bangkok'}.get(key, None)
+
+
+class TestResultProxyWithModel(ModelSessionMixin, unittest.TestCase):
+
+    def setUp(self):
+        super(TestResultProxyWithModel, self).setUp()
+        self.request = testing.setUp()
+
+    def tearDown(self):
+        super(TestResultProxyWithModel, self).tearDown()
+        testing.tearDown()
+
+    def _get_target_class(self):
+        from ..tasks import ResultProxy
+        return ResultProxy
+
+    def test_deserialize_board(self):
+        from ..models import Board
+        from . import mock_service, DummyAsyncResult
+        board = self._make(Board(title='Foobar', slug='foo'))
+        self.dbsession.commit()
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['board', board.id]))
+        request = mock_service(self.request, {'db': self.dbsession})
+        self.assertEqual(
+            result_proxy.deserialize(request),
+            board)
+
+    def test_deserialize_page(self):
+        from ..models import Page
+        from . import mock_service, DummyAsyncResult
+        page = self._make(Page(
+            title='Test',
+            body='**Test**',
+            slug='test',
+            formatter='markdown'))
+        self.dbsession.commit()
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['page', page.id]))
+        request = mock_service(self.request, {'db': self.dbsession})
+        self.assertEqual(
+            result_proxy.deserialize(request),
+            page)
+
+    def test_deserialize_post(self):
+        from ..models import Board, Topic, Post
+        from . import mock_service, DummyAsyncResult
+        board = self._make(Board(title='Foobar', slug='foobar'))
+        topic = self._make(Topic(board=board, title='Foobar'))
+        post = self._make(Post(
+            topic=topic,
+            number=1,
+            name='Nameless Fanboi',
+            body='Foobar',
+            ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['post', post.id]))
+        request = mock_service(self.request, {'db': self.dbsession})
+        self.assertEqual(
+            result_proxy.deserialize(request),
+            post)
+
+    def test_deserialize_rule(self):
+        from ..models import Rule
+        from . import mock_service, DummyAsyncResult
+        rule = self._make(Rule(ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['rule', rule.id]))
+        request = mock_service(self.request, {'db': self.dbsession})
+        self.assertEqual(
+            result_proxy.deserialize(request),
+            rule)
+
+    def test_deserialize_rule_ban(self):
+        from ..models import RuleBan
+        from . import mock_service, DummyAsyncResult
+        rule_ban = self._make(RuleBan(ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['rule_ban', rule_ban.id]))
+        request = mock_service(self.request, {'db': self.dbsession})
+        self.assertEqual(
+            result_proxy.deserialize(request),
+            rule_ban)
+
+    def test_deserialize_setting(self):
+        from ..models import Setting
+        from . import mock_service, DummyAsyncResult
+        setting = self._make(Setting(key='foo', value='bar'))
+        self.dbsession.commit()
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['setting', setting.key]))
+        request = mock_service(self.request, {'db': self.dbsession})
+        self.assertEqual(
+            result_proxy.deserialize(request),
+            setting)
+
+    def test_deserialize_topic(self):
+        from ..models import Board, Topic
+        from . import mock_service, DummyAsyncResult
+        board = self._make(Board(title='Foobar', slug='foobar'))
+        topic = self._make(Topic(board=board, title='Foobar'))
+        self.dbsession.commit()
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['topic', topic.id]))
+        request = mock_service(self.request, {'db': self.dbsession})
+        self.assertEqual(
+            result_proxy.deserialize(request),
+            topic)
+
+    def test_deserialize_topic_meta(self):
+        from ..models import Board, Topic, TopicMeta
+        from . import mock_service, DummyAsyncResult
+        board = self._make(Board(title='Foobar', slug='foobar'))
+        topic = self._make(Topic(board=board, title='Foobar'))
+        topic_meta = self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['topic_meta', topic_meta.topic_id]))
+        request = mock_service(self.request, {'db': self.dbsession})
+        self.assertEqual(
+            result_proxy.deserialize(request),
+            topic_meta)
+
+
+class TestResultProxy(unittest.TestCase):
+
+    def setUp(self):
+        super(TestResultProxy, self).setUp()
+        self.request = testing.setUp()
+
+    def tearDown(self):
+        super(TestResultProxy, self).tearDown()
+        testing.tearDown()
+
+    def _get_target_class(self):
+        from ..tasks import ResultProxy
+        return ResultProxy
+
+    def test_deserialize_rate_limited(self):
+        from ..errors import RateLimitedError
+        from . import DummyAsyncResult
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['failure', 'rate_limited', 10]))
+        self.assertIsInstance(
+            result_proxy.deserialize(self.request),
+            RateLimitedError)
+
+    def test_deserialize_params_invalid(self):
+        from ..errors import ParamsInvalidError
+        from . import DummyAsyncResult
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['failure', 'params_invalid', []]))
+        self.assertIsInstance(
+            result_proxy.deserialize(self.request),
+            ParamsInvalidError)
+
+    def test_deserialize_akismet_rejected(self):
+        from ..errors import AkismetRejectedError
+        from . import DummyAsyncResult
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['failure', 'akismet_rejected']))
+        self.assertIsInstance(
+            result_proxy.deserialize(self.request),
+            AkismetRejectedError)
+
+    def test_deserialize_dnsbl_rejected(self):
+        from ..errors import DNSBLRejectedError
+        from . import DummyAsyncResult
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['failure', 'dnsbl_rejected']))
+        self.assertIsInstance(
+            result_proxy.deserialize(self.request),
+            DNSBLRejectedError)
+
+    def test_deserialize_ban_rejected(self):
+        from ..errors import BanRejectedError
+        from . import DummyAsyncResult
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['failure', 'ban_rejected']))
+        self.assertIsInstance(
+            result_proxy.deserialize(self.request),
+            BanRejectedError)
+
+    def test_deserialize_status_rejected(self):
+        from ..errors import StatusRejectedError
+        from . import DummyAsyncResult
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['failure', 'status_rejected', 'demo']))
+        self.assertIsInstance(
+            result_proxy.deserialize(self.request),
+            StatusRejectedError)
+
+    def test_deserialize_proxy_rejected(self):
+        from ..errors import ProxyRejectedError
+        from . import DummyAsyncResult
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success',
+            ['failure', 'proxy_rejected', 'demo']))
+        self.assertIsInstance(
+            result_proxy.deserialize(self.request),
+            ProxyRejectedError)
 
     def test_success(self):
-        from fanboi2.tasks import ResultProxy
-        proxy = ResultProxy(DummyAsyncResult('demo', 'success'))
-        self.assertTrue(proxy.success())
+        from . import DummyAsyncResult
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'success'))
+        self.assertTrue(result_proxy.success())
 
     def test_success_non_success(self):
-        from fanboi2.tasks import ResultProxy
-        proxy = ResultProxy(DummyAsyncResult('demo', 'pending'))
-        self.assertFalse(proxy.success())
+        from . import DummyAsyncResult
+        result_proxy = self._get_target_class()(DummyAsyncResult(
+            'demo',
+            'pending'))
+        self.assertFalse(result_proxy.success())
 
-    def test_proxy(self):
-        from fanboi2.tasks import ResultProxy
+    def test_getattr(self):
+        from ..tasks import ResultProxy
+        from . import DummyAsyncResult
 
         class DummyDummyAsyncResult(DummyAsyncResult):
             def dummy(self):
@@ -45,598 +284,757 @@ class TestResultProxy(TaskMixin, ModelMixin, unittest.TestCase):
         self.assertEqual(proxy.dummy(), "dummy")
 
 
-class TestAddTopicTask(TaskMixin, ModelMixin, unittest.TestCase):
+class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
 
-    def _makeOne(self, *args, **kwargs):
-        from fanboi2.tasks import add_topic
-        return add_topic.delay(*args, **kwargs)
+    def setUp(self):
+        from ..tasks import celery
+        super(TestAddPostTask, self).setUp()
+        self.config = testing.setUp()
+        self.request = testing.DummyRequest()
+        self.request.registry = self.config.registry
+        celery.config_from_object({'task_always_eager': True})
 
-    def test_add_topic(self):
-        import transaction
-        from fanboi2.models import Topic
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        topic = DBSession.query(Topic).first()
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 1)
-        self.assertEqual(DBSession.query(Topic).get(result.get()[1]), topic)
-        self.assertEqual(topic.title, 'Foobar')
-        self.assertEqual(topic.posts[0].body, 'Hello, world!')
-        self.assertEqual(result.result, ('topic', topic.id))
+    def tearDown(self):
+        from ..tasks import celery
+        super(TestAddPostTask, self).tearDown()
+        testing.tearDown()
+        celery.config_from_object({'task_always_eager': False})
 
-    def test_add_topic_overridden(self):
-        import transaction
-        from fanboi2.models import Topic
-        request = {'remote_addr': '10.0.1.1'}
-        with transaction.manager:
-            self._makeRuleOverride(
-                ip_address='10.0.1.0/24',
-                override={'status': 'open'})
-            board = self._makeBoard(
-                title='Foobar',
-                slug='foobar',
-                status='restricted')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        topic = DBSession.query(Topic).first()
-        print(result.result)
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 1)
-        self.assertEqual(DBSession.query(Topic).get(result.get()[1]), topic)
-        self.assertEqual(topic.title, 'Foobar')
-        self.assertEqual(topic.posts[0].body, 'Hello, world!')
-        self.assertEqual(result.result, ('topic', topic.id))
-
-    def test_add_topic_overridden_scoped(self):
-        import transaction
-        from fanboi2.models import Topic
-        request = {'remote_addr': '10.0.1.1'}
-        with transaction.manager:
-            self._makeRuleOverride(
-                ip_address='10.0.1.0/24',
-                scope='board:foobar',
-                override={'status': 'open'})
-            board = self._makeBoard(
-                title='Foobar',
-                slug='foobar',
-                status='restricted')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        topic = DBSession.query(Topic).first()
-        print(result.result)
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 1)
-        self.assertEqual(DBSession.query(Topic).get(result.get()[1]), topic)
-        self.assertEqual(topic.title, 'Foobar')
-        self.assertEqual(topic.posts[0].body, 'Hello, world!')
-        self.assertEqual(result.result, ('topic', topic.id))
-
-    def test_add_topic_overridden_other_scoped(self):
-        import transaction
-        from fanboi2.models import Topic
-        request = {'remote_addr': '10.0.1.1'}
-        with transaction.manager:
-            self._makeRuleOverride(
-                ip_address='10.0.1.0/24',
-                scope='board:other',
-                override={'status': 'open'})
-            board = self._makeBoard(
-                title='Foobar',
-                slug='foobar',
-                status='restricted')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        topic = DBSession.query(Topic).first()
-        print(result.result)
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 0)
-        self.assertEqual(result.result, (
-            'failure',
-            'status_rejected',
-            'restricted'))
-
-    def test_add_topic_ban(self):
-        from fanboi2.models import Topic
-        request = {'remote_addr': '10.0.1.1'}
-        with transaction.manager:
-            self._makeRuleBan(ip_address='10.0.1.0/24')
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 0)
-        self.assertEqual(result.result, ('failure', 'ban_rejected'))
-
-    def test_add_topic_ban_scoped(self):
-        from fanboi2.models import Topic
-        request = {'remote_addr': '10.0.1.1'}
-        with transaction.manager:
-            self._makeRuleBan(ip_address='10.0.1.0/24', scope='board:foobar')
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 0)
-        self.assertEqual(result.result, ('failure', 'ban_rejected'))
-
-    def test_add_topic_ban_other_scoped(self):
-        from fanboi2.models import Topic
-        request = {'remote_addr': '10.0.1.1'}
-        with transaction.manager:
-            self._makeRuleBan(ip_address='10.0.1.0/24', scope='board:other')
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        topic = DBSession.query(Topic).first()
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 1)
-        self.assertEqual(DBSession.query(Topic).get(result.get()[1]), topic)
-        self.assertEqual(topic.title, 'Foobar')
-        self.assertEqual(topic.posts[0].body, 'Hello, world!')
-        self.assertEqual(result.result, ('topic', topic.id))
-
-    def test_add_topic_board_restricted(self):
-        from fanboi2.models import Topic
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(
-                title='Foobar',
-                slug='foobar',
-                status='restricted')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 0)
-        self.assertEqual(result.result, (
-            'failure',
-            'status_rejected',
-            'restricted'))
-
-    def test_add_topic_board_locked(self):
-        from fanboi2.models import Topic
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(
-                title='Foobar',
-                slug='foobar',
-                status='locked')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 0)
-        self.assertEqual(result.result, (
-            'failure',
-            'status_rejected',
-            'locked'))
-
-    def test_add_topic_board_archived(self):
-        from fanboi2.models import Topic
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(
-                title='Foobar',
-                slug='foobar',
-                status='archived')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 0)
-        self.assertEqual(result.result, (
-            'failure',
-            'status_rejected',
-            'archived'))
-
-    @unittest.mock.patch('fanboi2.utils.Akismet.spam')
-    def test_add_topic_spam(self, akismet):
-        from fanboi2.models import Topic
-        akismet.return_value = True
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 0)
-        self.assertEqual(result.result, ('failure', 'spam_rejected'))
-
-    @unittest.mock.patch('fanboi2.utils.Akismet.spam')
-    @unittest.mock.patch('fanboi2.utils.Checklist.enabled')
-    def test_add_topic_spam_disabled(self, checklist, akismet):
-        import transaction
-        from fanboi2.models import Topic
-        def disable_akismet(scope, target):
-            return target != 'akismet'
-        checklist.side_effect = disable_akismet
-        akismet.return_value = True
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 1)
-        akismet.assert_not_called()
-
-    @unittest.mock.patch('fanboi2.utils.Dnsbl.listed')
-    def test_add_topic_dnsbl(self, dnsbl):
-        from fanboi2.models import Topic
-        dnsbl.return_value = True
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 0)
-        self.assertEqual(result.result, ('failure', 'dnsbl_rejected'))
-
-    @unittest.mock.patch('fanboi2.utils.Dnsbl.listed')
-    @unittest.mock.patch('fanboi2.utils.Checklist.enabled')
-    def test_add_topic_dnsbl_disabled(self, checklist, dnsbl):
-        import transaction
-        from fanboi2.models import Topic
-        def disable_dnsbl(scope, target):
-            return target != 'dnsbl'
-        checklist.side_effect = disable_dnsbl
-        dnsbl.return_value = True
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 1)
-        dnsbl.assert_not_called()
-
-    @unittest.mock.patch('fanboi2.utils.ProxyDetector.detect')
-    def test_add_topic_proxy(self, proxy):
-        from fanboi2.models import Topic
-        proxy.return_value = True
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 0)
-        self.assertEqual(result.result, ('failure', 'proxy_rejected'))
-
-    @unittest.mock.patch('fanboi2.utils.ProxyDetector.detect')
-    @unittest.mock.patch('fanboi2.utils.Checklist.enabled')
-    def test_add_topic_proxy_disabled(self, checklist, proxy):
-        import transaction
-        from fanboi2.models import Topic
-        def disable_proxy_detect(scope, target):
-            return target != 'proxy_detect'
-        checklist.side_effect = disable_proxy_detect
-        proxy.return_value = True
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            board_id = board.id  # board is not bound outside transaction!
-        result = self._makeOne(request, board_id, 'Foobar', 'Hello, world!')
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Topic).count(), 1)
-        proxy.assert_not_called()
-
-
-class TestAddPostTask(TaskMixin, ModelMixin, unittest.TestCase):
-
-    def _makeOne(self, *args, **kwargs):
-        from fanboi2.tasks import add_post
-        return add_post.delay(*args, **kwargs)
+    def _get_target_func(self):
+        from ..tasks.post import add_post
+        return add_post
 
     def test_add_post(self):
-        import transaction
-        from fanboi2.models import Post
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            topic = self._makeTopic(board=board, title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        post = DBSession.query(Post).first()
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 1)
-        self.assertEqual(DBSession.query(Post).get(result.get()[1]), post)
-        self.assertEqual(post.body, 'Hi!')
-        self.assertEqual(post.bumped, True)
-        self.assertEqual(result.result, ('post', post.id))
+        from datetime import datetime
+        from pytz import timezone
+        from ..interfaces import IFilterService, IPostCreateService
+        from ..models import Board, Topic, TopicMeta, Post
+        from ..services import PostCreateService
+        from . import mock_service
+        board = self._make(Board(
+            title='Foobar',
+            slug='foo',
+            settings={'name': 'Nameless Foobar'}))
+        topic = self._make(Topic(board=board, title='Foobar', status='open'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(),
+            IPostCreateService: PostCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            topic.id,
+            'Hello, world!',
+            True,
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        post = self.dbsession.query(Post).get(resp[1])
+        topic = self.dbsession.query(Topic).get(topic.id)
+        topic_meta = self.dbsession.query(TopicMeta).get(topic.id)
+        self.assertEqual(post.number, 1)
+        self.assertEqual(post.name, 'Nameless Foobar')
+        self.assertEqual(post.ip_address, '127.0.0.1')
+        self.assertEqual(post.body, 'Hello, world!')
+        self.assertEqual(
+            post.ident,
+            'foo,127.0.0.1,%s' % (
+                datetime.now(timezone('Asia/Bangkok')).
+                strftime("%Y%m%d")))
+        self.assertTrue(post.bumped)
+        self.assertEqual(topic.status, 'open')
+        self.assertEqual(topic_meta.post_count, 1)
+        self.assertIsNotNone(topic_meta.bumped_at)
+        self.assertIsNotNone(topic_meta.posted_at)
 
-    def test_add_post_overridden(self):
-        import transaction
-        from fanboi2.models import Post
-        request = {'remote_addr': '10.0.1.1'}
-        with transaction.manager:
-            self._makeRuleOverride(
-                ip_address='10.0.1.0/24',
-                override={'status': 'open'})
-            board = self._makeBoard(
-                title='Foobar',
-                slug='foobar',
-                status='locked')
-            topic = self._makeTopic(board=board, title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        post = DBSession.query(Post).first()
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 1)
-        self.assertEqual(DBSession.query(Post).get(result.get()[1]), post)
-        self.assertEqual(post.body, 'Hi!')
-        self.assertEqual(post.bumped, True)
-        self.assertEqual(result.result, ('post', post.id))
+    def test_add_post_without_bumped(self):
+        from ..interfaces import IFilterService, IPostCreateService
+        from ..models import Board, Topic, TopicMeta, Post
+        from ..services import PostCreateService
+        from . import mock_service
+        board = self._make(Board(title='Foobar', slug='foo'))
+        topic = self._make(Topic(board=board, title='Foobar', status='open'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(),
+            IPostCreateService: PostCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            topic.id,
+            'Hello, world!',
+            False,
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        post = self.dbsession.query(Post).get(resp[1])
+        self.assertFalse(post.bumped)
 
-    def test_add_post_overridden_scoped(self):
-        import transaction
-        from fanboi2.models import Post
-        request = {'remote_addr': '10.0.1.1'}
-        with transaction.manager:
-            self._makeRuleOverride(
-                ip_address='10.0.1.0/24',
-                scope='board:foobar',
-                override={'status': 'open'})
-            board = self._makeBoard(
-                title='Foobar',
-                slug='foobar',
-                status='locked')
-            topic = self._makeTopic(board=board, title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        post = DBSession.query(Post).first()
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 1)
-        self.assertEqual(DBSession.query(Post).get(result.get()[1]), post)
-        self.assertEqual(post.body, 'Hi!')
-        self.assertEqual(post.bumped, True)
-        self.assertEqual(result.result, ('post', post.id))
+    def test_add_post_without_ident(self):
+        from ..interfaces import IFilterService, IPostCreateService
+        from ..models import Board, Topic, TopicMeta, Post
+        from ..services import PostCreateService
+        from . import mock_service
+        board = self._make(Board(
+            title='Foobar',
+            slug='foo',
+            settings={'use_ident': False}))
+        topic = self._make(Topic(board=board, title='Foobar', status='open'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(),
+            IPostCreateService: PostCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            topic.id,
+            'Hello, world!',
+            True,
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        post = self.dbsession.query(Post).get(resp[1])
+        self.assertIsNone(post.ident)
 
-    def test_add_post_overridden_other_scoped(self):
-        import transaction
-        from fanboi2.models import Post
-        request = {'remote_addr': '10.0.1.1'}
-        with transaction.manager:
-            self._makeRuleOverride(
-                ip_address='10.0.1.0/24',
-                scope='board:other',
-                override={'status': 'open'})
-            board = self._makeBoard(
-                title='Foobar',
-                slug='foobar',
-                status='locked')
-            topic = self._makeTopic(board=board, title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        post = DBSession.query(Post).first()
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        self.assertEqual(result.result, (
-            'failure',
-            'status_rejected',
-            'locked'))
+    def test_add_post_topic_limit(self):
+        from ..interfaces import IFilterService, IPostCreateService
+        from ..models import Board, Topic, TopicMeta, Post
+        from ..services import PostCreateService
+        from . import mock_service
+        board = self._make(Board(
+            title='Foobar',
+            slug='foo',
+            settings={'max_posts': 10}))
+        topic = self._make(Topic(board=board, title='Foobar', status='open'))
+        self._make(TopicMeta(topic=topic, post_count=9))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(),
+            IPostCreateService: PostCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            topic.id,
+            'Hello, world!',
+            True,
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        post = self.dbsession.query(Post).get(resp[1])
+        topic = self.dbsession.query(Topic).get(topic.id)
+        topic_meta = self.dbsession.query(TopicMeta).get(topic.id)
+        self.assertEqual(post.number, 10)
+        self.assertEqual(topic_meta.post_count, 10)
+        self.assertEqual(topic.status, 'archived')
 
-    def test_add_post_ban(self):
-        import transaction
-        from fanboi2.models import Post
-        request = {'remote_addr': '10.0.1.1'}
-        with transaction.manager:
-            self._makeRuleBan(ip_address='10.0.1.0/24')
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            topic = self._makeTopic(board=board, title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        self.assertEqual(result.result, ('failure', 'ban_rejected'))
+    def test_add_post_topic_locked(self):
+        from ..interfaces import IFilterService, IPostCreateService
+        from ..models import Board, Topic, TopicMeta, Post
+        from ..services import PostCreateService
+        from . import mock_service
+        board = self._make(Board(title='Foobar', slug='foo'))
+        topic = self._make(Topic(
+            board=board,
+            title='Foobar',
+            status='locked'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(),
+            IPostCreateService: PostCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            topic.id,
+            'Hello, world!',
+            True,
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        topic_meta = self.dbsession.query(TopicMeta).get(topic.id)
+        self.assertEqual(self.dbsession.query(Post).count(), 0)
+        self.assertEqual(topic_meta.post_count, 0)
+        self.assertEqual(
+            resp,
+            ('failure', 'status_rejected', 'locked'))
 
-    def test_add_post_ban_scoped(self):
-        import transaction
-        from fanboi2.models import Post
-        request = {'remote_addr': '10.0.1.1'}
-        with transaction.manager:
-            self._makeRuleBan(ip_address='10.0.1.0/24', scope='board:foobar')
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            topic = self._makeTopic(board=board, title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        self.assertEqual(result.result, ('failure', 'ban_rejected'))
+    def test_add_post_topic_archived(self):
+        from ..interfaces import IFilterService, IPostCreateService
+        from ..models import Board, Topic, TopicMeta, Post
+        from ..services import PostCreateService
+        from . import mock_service
+        board = self._make(Board(title='Foobar', slug='foo'))
+        topic = self._make(Topic(
+            board=board,
+            title='Foobar',
+            status='archived'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(),
+            IPostCreateService: PostCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            topic.id,
+            'Hello, world!',
+            True,
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        topic_meta = self.dbsession.query(TopicMeta).get(topic.id)
+        self.assertEqual(self.dbsession.query(Post).count(), 0)
+        self.assertEqual(topic_meta.post_count, 0)
+        self.assertEqual(
+            resp,
+            ('failure', 'status_rejected', 'archived'))
 
-    def test_add_post_ban_other_scoped(self):
-        import transaction
-        from fanboi2.models import Post
-        request = {'remote_addr': '10.0.1.1'}
-        with transaction.manager:
-            self._makeRuleBan(ip_address='10.0.1.0/24', scope='board:other')
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            topic = self._makeTopic(board=board, title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        post = DBSession.query(Post).first()
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 1)
-        self.assertEqual(DBSession.query(Post).get(result.get()[1]), post)
-        self.assertEqual(post.body, 'Hi!')
-        self.assertEqual(post.bumped, True)
-        self.assertEqual(result.result, ('post', post.id))
-
-    def test_add_post_locked(self):
-        import transaction
-        from fanboi2.models import Post
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            topic = self._makeTopic(
-                board=board,
-                title='Hello, world!',
-                status='locked')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        self.assertEqual(result.result, (
-            'failure',
-            'status_rejected',
-            'locked'))
+    def test_add_post_board_restricted(self):
+        from ..interfaces import IFilterService, IPostCreateService
+        from ..models import Board, Topic, TopicMeta, Post
+        from ..services import PostCreateService
+        from . import mock_service
+        board = self._make(Board(
+            title='Foobar',
+            slug='foo',
+            status='restricted'))
+        topic = self._make(Topic(board=board, title='Foobar', status='open'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(),
+            IPostCreateService: PostCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            topic.id,
+            'Hello, world!',
+            True,
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        post = self.dbsession.query(Post).get(resp[1])
+        topic_meta = self.dbsession.query(TopicMeta).get(topic.id)
+        self.assertEqual(post.number, 1)
+        self.assertEqual(topic_meta.post_count, 1)
 
     def test_add_post_board_locked(self):
-        import transaction
-        from fanboi2.models import Post
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(
-                title='Foobar',
-                slug='foobar',
-                status='locked')
-            topic = self._makeTopic(
-                board=board,
-                title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        self.assertEqual(result.result, (
-            'failure',
-            'status_rejected',
-            'locked'))
+        from ..interfaces import IFilterService, IPostCreateService
+        from ..models import Board, Topic, TopicMeta, Post
+        from ..services import PostCreateService
+        from . import mock_service
+        board = self._make(Board(
+            title='Foobar',
+            slug='foo',
+            status='locked'))
+        topic = self._make(Topic(board=board, title='Foobar'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(),
+            IPostCreateService: PostCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            topic.id,
+            'Hello, world!',
+            True,
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        topic_meta = self.dbsession.query(TopicMeta).get(topic.id)
+        self.assertEqual(self.dbsession.query(Post).count(), 0)
+        self.assertEqual(topic_meta.post_count, 0)
+        self.assertEqual(
+            resp,
+            ('failure', 'status_rejected', 'locked'))
 
     def test_add_post_board_archived(self):
-        import transaction
-        from fanboi2.models import Post
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(
-                title='Foobar',
-                slug='foobar',
-                status='archived')
-            topic = self._makeTopic(
-                board=board,
-                title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        self.assertEqual(result.result, (
-            'failure',
-            'status_rejected',
-            'archived'))
+        from ..interfaces import IFilterService, IPostCreateService
+        from ..models import Board, Topic, TopicMeta, Post
+        from ..services import PostCreateService
+        from . import mock_service
+        board = self._make(Board(
+            title='Foobar',
+            slug='foo',
+            status='archived'))
+        topic = self._make(Topic(board=board, title='Foobar'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(),
+            IPostCreateService: PostCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            topic.id,
+            'Hello, world!',
+            True,
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        topic_meta = self.dbsession.query(TopicMeta).get(topic.id)
+        self.assertEqual(self.dbsession.query(Post).count(), 0)
+        self.assertEqual(topic_meta.post_count, 0)
+        self.assertEqual(
+            resp,
+            ('failure', 'status_rejected', 'archived'))
 
-    @unittest.mock.patch('fanboi2.utils.Akismet.spam')
-    def test_add_post_spam(self, akismet):
-        import transaction
-        from fanboi2.models import Post
-        akismet.return_value = True
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            topic = self._makeTopic(board=board, title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        self.assertEqual(result.result, ('failure', 'spam_rejected'))
+    def test_add_post_filter_akismet_rejected(self):
+        from ..interfaces import IFilterService, IPostCreateService
+        from ..models import Board, Topic, TopicMeta
+        from ..services import PostCreateService
+        from . import mock_service
+        board = self._make(Board(title='Foobar', slug='foo'))
+        topic = self._make(Topic(board=board, title='Foobar'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(rejected_by='akismet'),
+            IPostCreateService: PostCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            topic.id,
+            'Hello, world!',
+            True,
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        self.assertEqual(
+            resp,
+            ('failure', 'akismet_rejected'))
 
-    @unittest.mock.patch('fanboi2.utils.Akismet.spam')
-    @unittest.mock.patch('fanboi2.utils.Checklist.enabled')
-    def test_add_post_spam_disabled(self, checklist, akismet):
-        import transaction
-        from fanboi2.models import Post
-        def disable_akismet(scope, target):
-            return target != 'akismet'
-        checklist.side_effect = disable_akismet
-        akismet.return_value = True
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            topic = self._makeTopic(board=board, title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 1)
-        akismet.assert_not_called()
+    def test_add_post_filter_dnsbl_rejected(self):
+        from ..interfaces import IFilterService, IPostCreateService
+        from ..models import Board, Topic, TopicMeta
+        from ..services import PostCreateService
+        from . import mock_service
+        board = self._make(Board(title='Foobar', slug='foo'))
+        topic = self._make(Topic(board=board, title='Foobar'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(rejected_by='dnsbl'),
+            IPostCreateService: PostCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            topic.id,
+            'Hello, world!',
+            True,
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        self.assertEqual(
+            resp,
+            ('failure', 'dnsbl_rejected'))
 
-    @unittest.mock.patch('fanboi2.utils.Dnsbl.listed')
-    @unittest.mock.patch('fanboi2.utils.Checklist.enabled')
-    def test_add_post_dnsbl(self, checklist, dnsbl):
-        import transaction
-        from fanboi2.models import Post
-        dnsbl.return_value = True
-        request = {'remote_addr': '8.8.8.8'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            topic = self._makeTopic(board=board, title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        self.assertEqual(result.result, ('failure', 'dnsbl_rejected'))
+    def test_add_post_filter_proxy_rejected(self):
+        from ..interfaces import IFilterService, IPostCreateService
+        from ..models import Board, Topic, TopicMeta
+        from ..services import PostCreateService
+        from . import mock_service
+        board = self._make(Board(title='Foobar', slug='foo'))
+        topic = self._make(Topic(board=board, title='Foobar'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(rejected_by='proxy'),
+            IPostCreateService: PostCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            topic.id,
+            'Hello, world!',
+            True,
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        self.assertEqual(
+            resp,
+            ('failure', 'proxy_rejected'))
 
-    @unittest.mock.patch('fanboi2.utils.Dnsbl.listed')
-    @unittest.mock.patch('fanboi2.utils.Checklist.enabled')
-    def test_add_post_dnsbl_disabled(self, checklist, dnsbl):
-        import transaction
-        from fanboi2.models import Post
-        def disable_dnsbl(scope, target):
-            return target != 'dnsbl'
-        checklist.side_effect = disable_dnsbl
-        dnsbl.return_value = True
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            topic = self._makeTopic(board=board, title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 1)
-        dnsbl.assert_not_called()
 
-    @unittest.mock.patch('fanboi2.utils.ProxyDetector.detect')
-    def test_add_post_proxy(self, proxy):
-        import transaction
-        from fanboi2.models import Post
-        proxy.return_value = True
-        request = {'remote_addr': '8.8.8.8'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            topic = self._makeTopic(board=board, title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 0)
-        self.assertEqual(result.result, ('failure', 'proxy_rejected'))
+class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
 
-    @unittest.mock.patch('fanboi2.utils.ProxyDetector.detect')
-    @unittest.mock.patch('fanboi2.utils.Checklist.enabled')
-    def test_add_post_proxy_disabled(self, checklist, proxy):
-        import transaction
-        from fanboi2.models import Post
-        def disable_proxy_detect(scope, target):
-            return target != 'proxy_detect'
-        checklist.side_effect = disable_proxy_detect
-        proxy.return_value = True
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            topic = self._makeTopic(board=board, title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        result = self._makeOne(request, topic_id, 'Hi!', True)
-        self.assertTrue(result.successful())
-        self.assertEqual(DBSession.query(Post).count(), 1)
-        proxy.assert_not_called()
+    def setUp(self):
+        from ..tasks import celery
+        super(TestAddTopicTask, self).setUp()
+        self.config = testing.setUp()
+        self.request = testing.DummyRequest()
+        self.request.registry = self.config.registry
+        celery.config_from_object({'task_always_eager': True})
 
-    def test_add_post_retry(self):
-        import transaction
-        from sqlalchemy.exc import IntegrityError
-        request = {'remote_addr': '127.0.0.1'}
-        with transaction.manager:
-            board = self._makeBoard(title='Foobar', slug='foobar')
-            topic = self._makeTopic(board=board, title='Hello, world!')
-            topic_id = topic.id  # topic is not bound outside transaction!
-        with unittest.mock.patch('fanboi2.models.DBSession.flush') as dbs:
-            dbs.side_effect = IntegrityError(None, None, None)
-            result = self._makeOne(request, topic_id, 'Hi!', True)
-        self.assertEqual(dbs.call_count, 5)
-        self.assertFalse(result.successful())
+    def tearDown(self):
+        from ..tasks import celery
+        super(TestAddTopicTask, self).tearDown()
+        testing.tearDown()
+        celery.config_from_object({'task_always_eager': False})
+
+    def _get_target_func(self):
+        from ..tasks.topic import add_topic
+        return add_topic
+
+    def test_add_topic(self):
+        from datetime import datetime
+        from pytz import timezone
+        from ..interfaces import IFilterService, ITopicCreateService
+        from ..models import Board, Topic, TopicMeta
+        from ..services import TopicCreateService
+        from . import mock_service
+        board = self._make(Board(
+            title='Foobar',
+            slug='foo',
+            settings={'name': 'Nameless Foobar'}))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(),
+            ITopicCreateService: TopicCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            board.slug,
+            'Title',
+            'Hello, world!',
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        topic = self.dbsession.query(Topic).get(resp[1])
+        topic_meta = self.dbsession.query(TopicMeta).get(resp[1])
+        self.assertTrue(topic.posts[0].bumped)
+        self.assertEqual(topic.title, 'Title')
+        self.assertEqual(topic.status, 'open')
+        self.assertEqual(topic_meta.post_count, 1)
+        self.assertIsNotNone(topic_meta.bumped_at)
+        self.assertIsNotNone(topic_meta.posted_at)
+        self.assertEqual(topic.posts[0].number, 1)
+        self.assertEqual(topic.posts[0].name, 'Nameless Foobar')
+        self.assertEqual(topic.posts[0].ip_address, '127.0.0.1')
+        self.assertEqual(topic.posts[0].body, 'Hello, world!')
+        self.assertEqual(
+            topic.posts[0].ident,
+            'foo,127.0.0.1,%s' % (
+                datetime.now(timezone('Asia/Bangkok')).
+                strftime("%Y%m%d")))
+
+    def test_add_topic_without_ident(self):
+        from ..interfaces import IFilterService, ITopicCreateService
+        from ..models import Board, Topic
+        from ..services import TopicCreateService
+        from . import mock_service
+        board = self._make(Board(
+            title='Foobar',
+            slug='foo',
+            settings={'use_ident': False}))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(),
+            ITopicCreateService: TopicCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            board.slug,
+            'Title',
+            'Hello, world!',
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        topic = self.dbsession.query(Topic).get(resp[1])
+        self.assertIsNone(topic.posts[0].ident)
+
+    def test_add_topic_board_restricted(self):
+        from ..interfaces import IFilterService, ITopicCreateService
+        from ..models import Board, Topic
+        from ..services import TopicCreateService
+        from . import mock_service
+        board = self._make(Board(
+            title='Foobar',
+            slug='foo',
+            status='restricted'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(),
+            ITopicCreateService: TopicCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            board.slug,
+            'Title',
+            'Hello, world!',
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        self.assertEqual(self.dbsession.query(Topic).count(), 0)
+        self.assertEqual(
+            resp,
+            ('failure', 'status_rejected', 'restricted'))
+
+    def test_add_topic_board_locked(self):
+        from ..interfaces import IFilterService, ITopicCreateService
+        from ..models import Board, Topic
+        from ..services import TopicCreateService
+        from . import mock_service
+        board = self._make(Board(
+            title='Foobar',
+            slug='foo',
+            status='locked'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(),
+            ITopicCreateService: TopicCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            board.slug,
+            'Title',
+            'Hello, world!',
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        self.assertEqual(self.dbsession.query(Topic).count(), 0)
+        self.assertEqual(
+            resp,
+            ('failure', 'status_rejected', 'locked'))
+
+    def test_add_topic_board_archived(self):
+        from ..interfaces import IFilterService, ITopicCreateService
+        from ..models import Board, Topic
+        from ..services import TopicCreateService
+        from . import mock_service
+        board = self._make(Board(
+            title='Foobar',
+            slug='foo',
+            status='archived'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService(),
+            ITopicCreateService: TopicCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            board.slug,
+            'Title',
+            'Hello, world!',
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        self.assertEqual(self.dbsession.query(Topic).count(), 0)
+        self.assertEqual(
+            resp,
+            ('failure', 'status_rejected', 'archived'))
+
+    def test_add_topic_filter_akismet_rejected(self):
+        from ..interfaces import IFilterService, ITopicCreateService
+        from ..models import Board, Topic
+        from ..services import TopicCreateService
+        from . import mock_service
+        board = self._make(Board(title='Foobar', slug='foo'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService('akismet'),
+            ITopicCreateService: TopicCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            board.slug,
+            'Title',
+            'Hello, world!',
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        self.assertEqual(self.dbsession.query(Topic).count(), 0)
+        self.assertEqual(
+            resp,
+            ('failure', 'akismet_rejected'))
+
+    def test_add_topic_filter_dnsbl_rejected(self):
+        from ..interfaces import IFilterService, ITopicCreateService
+        from ..models import Board, Topic
+        from ..services import TopicCreateService
+        from . import mock_service
+        board = self._make(Board(title='Foobar', slug='foo'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService('dnsbl'),
+            ITopicCreateService: TopicCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            board.slug,
+            'Title',
+            'Hello, world!',
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        self.assertEqual(self.dbsession.query(Topic).count(), 0)
+        self.assertEqual(
+            resp,
+            ('failure', 'dnsbl_rejected'))
+
+    def test_add_topic_filter_proxy_rejected(self):
+        from ..interfaces import IFilterService, ITopicCreateService
+        from ..models import Board, Topic
+        from ..services import TopicCreateService
+        from . import mock_service
+        board = self._make(Board(title='Foobar', slug='foo'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IFilterService: _DummyFilterService('proxy'),
+            ITopicCreateService: TopicCreateService(
+                self.dbsession,
+                _DummyIdentityService(),
+                _DummySettingQueryService())})
+        resp = self._get_target_func()(
+            board.slug,
+            'Title',
+            'Hello, world!',
+            '127.0.0.1',
+            payload={
+                'application_url': 'https://www.example.com/',
+                'referrer': 'https://www.example.com/referrer',
+                'url': 'https://www.example.com/url',
+                'user_agent': 'Mock/1.0',
+            },
+            _request=request,
+            _registry=self.config.registry)
+        self.assertEqual(self.dbsession.query(Topic).count(), 0)
+        self.assertEqual(
+            resp,
+            ('failure', 'proxy_rejected'))

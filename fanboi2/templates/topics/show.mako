@@ -43,7 +43,7 @@
             </div>
         </div>
     </div>
-% elif override.get('status', board.status) == 'locked':
+% elif board.status == 'locked':
     <div class="sheet">
         <div class="container">
             <h2 class="sheet-title">Board locked</h2>
@@ -53,7 +53,7 @@
             </div>
         </div>
     </div>
-% elif override.get('status', board.status) == 'archived':
+% elif board.status == 'archived':
     <div class="sheet">
         <div class="container">
             <h2 class="sheet-title">Board archived</h2>
@@ -65,7 +65,7 @@
     </div>
 % else:
     <form class="form" id="reply" action="${request.route_path('topic', board=board.slug, topic=topic.id)}" method="post" data-topic-inline-reply="true">
-        ${form.csrf_token}
+        <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
         <div class="container">
             <div class="form-item${' error' if form.body.errors else ''}">
                 <label class="form-item-label" for="${form.body.id}">Reply</label>

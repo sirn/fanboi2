@@ -1,3 +1,0 @@
-[alembic]
-script_location = %(here)s/migration
-pyramid_configuration = %(here)s/development.ini
