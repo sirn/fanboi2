@@ -92,3 +92,14 @@ class ITopicQueryService(Interface):
 
     def topic_from_id(topic_id):
         pass
+
+
+class IUserLoginService(Interface):
+    def user_from_token(token):
+        pass
+
+    def groups_from_token(token):
+        pass
+
+    def token_for(username, ip_address):
+        pass

@@ -37,5 +37,7 @@ class User(Base):
 
     groups = relationship('Group',
                           secondary='user_group',
+                          order_by='Group.name',
                           backref=backref('users',
-                                          lazy='dynamic'))
+                                          lazy='dynamic',
+                                          order_by='User.id'))

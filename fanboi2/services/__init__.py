@@ -10,7 +10,8 @@ from ..interfaces import \
     ISettingQueryService,\
     ITaskQueryService,\
     ITopicCreateService,\
-    ITopicQueryService
+    ITopicQueryService,\
+    IUserLoginService
 
 from .board import BoardQueryService
 from .filter_ import FilterService
@@ -22,6 +23,7 @@ from .rule import RuleBanQueryService
 from .setting import SettingQueryService
 from .task import TaskQueryService
 from .topic import TopicCreateService, TopicQueryService
+from .user import UserLoginService
 
 
 def includeme(config):  # pragma: no cover
@@ -155,3 +157,13 @@ def includeme(config):  # pragma: no cover
     config.register_service_factory(
         topic_query_factory,
         ITopicQueryService)
+
+    # User Login
+
+    def user_login_factory(context, request):
+        dbsession = request.find_service(name='db')
+        return UserLoginService(dbsession)
+
+    config.register_service_factory(
+        user_login_factory,
+        IUserLoginService)

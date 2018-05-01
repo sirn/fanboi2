@@ -1810,7 +1810,7 @@ class TestUserModel(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(list(user2.sessions), [session3])
         self.assertEqual(list(user3.sessions), [])
         self.assertEqual(list(user4.sessions), [])
-        self.assertEqual(list(user1.groups), [group1, group2])
+        self.assertEqual(list(user1.groups), [group2, group1])
         self.assertEqual(list(user2.groups), [group1])
         self.assertEqual(list(user3.groups), [group2])
         self.assertEqual(list(user4.groups), [])

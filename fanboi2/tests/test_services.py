@@ -1084,3 +1084,144 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
         topic_query_svc = self._get_target_class()(self.dbsession)
         with self.assertRaises(NoResultFound):
             topic_query_svc.topic_from_id(-1)
+
+
+class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import UserLoginService
+        return UserLoginService
+
+    def test_user_from_token(self):
+        from ..models import User, UserSession
+        user1 = self._make(User(username='foo', encrypted_password='none'))
+        user2 = self._make(User(username='bar', encrypted_password='none'))
+        self._make(UserSession(
+            user=user1,
+            token='foo_token1',
+            ip_address='127.0.0.1'))
+        self._make(UserSession(
+            user=user1,
+            token='foo_token2',
+            ip_address='127.0.0.1'))
+        self._make(UserSession(
+            user=user2,
+            token='bar_token1',
+            ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertEqual(user_login_svc.user_from_token('foo_token1'), user1)
+        self.assertEqual(user_login_svc.user_from_token('foo_token2'), user1)
+        self.assertEqual(user_login_svc.user_from_token('bar_token1'), user2)
+
+    def test_user_from_token_not_found(self):
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(user_login_svc.user_from_token('notexists'))
+
+    def test_user_from_token_revoked(self):
+        from datetime import datetime, timedelta
+        from ..models import User, UserSession
+        user = self._make(User(username='foo', encrypted_password='none'))
+        self._make(UserSession(
+            user=user,
+            token='foo_token1',
+            ip_address='127.0.0.1',
+            revoked_at=datetime.now() + timedelta(hours=1)))
+        self._make(UserSession(
+            user=user,
+            token='foo_token2',
+            ip_address='127.0.0.1',
+            revoked_at=datetime.now() - timedelta(hours=1)))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertEqual(user_login_svc.user_from_token('foo_token1'), user)
+        self.assertIsNone(user_login_svc.user_from_token('foo_token2'))
+
+    def test_groups_from_token(self):
+        from ..models import User, UserSession, Group
+        group1 = self._make(Group(name='foo'))
+        group2 = self._make(Group(name='bar'))
+        user1 = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            groups=[group1, group2]))
+        user2 = self._make(User(
+            username='bar',
+            encrypted_password='none',
+            groups=[group2]))
+        user3 = self._make(User(
+            username='baz',
+            encrypted_password='none',
+            groups=[]))
+        self._make(UserSession(
+            user=user1,
+            token='foo_token',
+            ip_address='127.0.0.1'))
+        self._make(UserSession(
+            user=user2,
+            token='bar_token',
+            ip_address='127.0.0.1'))
+        self._make(UserSession(
+            user=user3,
+            token='baz_token',
+            ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertEqual(
+            user_login_svc.groups_from_token('foo_token'),
+            ['bar', 'foo'])
+        self.assertEqual(
+            user_login_svc.groups_from_token('bar_token'),
+            ['bar'])
+        self.assertEqual(
+            user_login_svc.groups_from_token('baz_token'),
+            [])
+
+    def test_groups_from_token_not_found(self):
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(user_login_svc.groups_from_token('notexists'))
+
+    def test_groups_from_token_revoked(self):
+        from datetime import datetime, timedelta
+        from ..models import User, UserSession, Group
+        group1 = self._make(Group(name='foo'))
+        group2 = self._make(Group(name='bar'))
+        user1 = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            groups=[group1, group2]))
+        user2 = self._make(User(
+            username='bar',
+            encrypted_password='none',
+            groups=[group2]))
+        self._make(UserSession(
+            user=user1,
+            token='foo_token',
+            ip_address='127.0.0.1',
+            revoked_at=datetime.now() + timedelta(hours=1)))
+        self._make(UserSession(
+            user=user2,
+            token='bar_token',
+            ip_address='127.0.0.1',
+            revoked_at=datetime.now() - timedelta(hours=1)))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertEqual(
+            user_login_svc.groups_from_token('foo_token'),
+            ['bar', 'foo'])
+        self.assertIsNone(user_login_svc.groups_from_token('bar_token'))
+
+    def test_token_for(self):
+        from ..models import User
+        user = self._make(User(username='foo', encrypted_password='none'))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        user_token = user_login_svc.token_for('foo', '127.0.0.1')
+        self.assertEqual(
+            user_login_svc.user_from_token(user_token),
+            user)
+
+    def test_token_for_not_found(self):
+        user_login_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            user_login_svc.token_for('notexists', '127.0.0.1')

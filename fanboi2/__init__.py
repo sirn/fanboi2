@@ -32,6 +32,7 @@ ENV_SETTINGS_MAP = (
     ('MEMCACHED_URL', 'dogpile.arguments.url', NO_VALUE, None),
     ('REDIS_URL', 'redis.url', NO_VALUE, None),
     ('SERVER_DEV', 'server.development', False, asbool),
+    ('SERVER_SECURE', 'server.secure', False, asbool),
     ('SESSION_SECRET', 'session.secret', NO_VALUE, None),
 )
 
