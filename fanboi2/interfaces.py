@@ -95,6 +95,9 @@ class ITopicQueryService(Interface):
 
 
 class IUserLoginService(Interface):
+    def authenticate(username, password):
+        pass
+
     def user_from_token(token):
         pass
 

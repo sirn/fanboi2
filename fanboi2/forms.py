@@ -1,4 +1,5 @@
 from wtforms import TextField, TextAreaField, Form, BooleanField
+from wtforms import PasswordField
 from wtforms.validators import Length as _Length
 from wtforms.validators import Required, ValidationError
 
@@ -45,3 +46,9 @@ class PostForm(Form):
     """
     body = TextAreaField('Body', validators=[Required(), Length(5, 4000)])
     bumped = BooleanField('Bump this topic', default=True)
+
+
+class AdminLoginForm(Form):
+    """A :class:`Form` for logging into a moderaiton system."""
+    username = TextField('Username', validators=[Required()])
+    password = PasswordField('Password', validators=[Required()])

@@ -18,11 +18,13 @@ requires = [
 
     # Backend
     'alembic >=0.9, <0.10',
+    'argon2_cffi',
     'celery >=4.1, <4.2',
     'coloredlogs',
     'dogpile.cache',
     'geoip2',
     'hiredis',
+    'passlib',
     'psycopg2',
     'python3-memcached',
     'pytz',

@@ -39,6 +39,20 @@ $color-text:             #333;
     /* app.scss
      * -------------------------------------------------------------------- */
 
+    .noticebar {
+        background-color: #fff;
+        color: $color-gray-dark;
+        font-weight: bold;
+
+        &.error {
+            color: $color-red;
+        }
+
+        &.success {
+            color: $color-green;
+        }
+    }
+
     .header {
         background-color: $color-brand;
         border-color: $color-brand;

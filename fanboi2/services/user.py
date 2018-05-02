@@ -1,5 +1,6 @@
 import secrets
 
+from passlib.context import CryptContext
 from sqlalchemy.sql import and_, or_, func
 
 from ..models import User, UserSession
@@ -10,10 +11,42 @@ class UserLoginService(object):
 
     def __init__(self, dbsession):
         self.dbsession = dbsession
+        self.crypt_context = CryptContext(
+            schemes=['argon2'],
+            deprecated=['auto'],
+            truncate_error=True,
+            argon2__memory_cost=1024,
+            argon2__parallelism=2,
+            argon2__rounds=6)
 
     def _generate_token(self):
         """Generates a secure random token."""
         return secrets.token_urlsafe(48)
+
+    def authenticate(self, username, password):
+        """Returns :type:`True` if the given username and password combination
+        could be authenticated or :type:`False` otherwise.
+
+        :param username: A username :type:`str` to authenticate.
+        :param password: A password :type:`str` to authenticate.
+        """
+        user = self.dbsession.query(User).\
+            filter_by(username=username).\
+            first()
+        if not user:
+            return False
+
+        ok, new_hash = self.crypt_context.verify_and_update(
+            password,
+            user.encrypted_password)
+        if not ok:
+            return False
+
+        if new_hash is not None:
+            user.encrypted_password = new_hash
+            self.dbsession.add(user)
+            self.dbsession.flush()
+        return True
 
     def user_from_token(self, token):
         """Returns a :class:`User` by looking up the given :param:`token`

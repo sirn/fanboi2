@@ -170,3 +170,24 @@ class TestPostForm(_FormMixin, unittest.TestCase):
         self.assertFalse(form.validate())
         self.assertListEqual(form.body.errors, [
             'Field must be between 5 and 4000 characters long.'])
+
+
+class TestAdminLoginForm(_FormMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..forms import AdminLoginForm
+        return AdminLoginForm
+
+    def test_validated(self):
+        form = self._make_one({'username': 'foo', 'password': 'bar'})
+        self.assertTrue(form.validate())
+
+    def test_username_missing(self):
+        form = self._make_one({'password': 'bar'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(form.username.errors, ['This field is required.'])
+
+    def test_password_missing(self):
+        form = self._make_one({'username': 'foo'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(form.password.errors, ['This field is required.'])

@@ -1092,6 +1092,40 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         from ..services import UserLoginService
         return UserLoginService
 
+    def test_authentication(self):
+        from passlib.hash import argon2
+        from ..models import User
+        self._make(User(
+            username='foo',
+            encrypted_password=argon2.hash('passw0rd')))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertTrue(user_login_svc.authenticate('foo', 'passw0rd'))
+        self.assertFalse(user_login_svc.authenticate('foo', 'password'))
+
+    def test_authentication_not_found(self):
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertFalse(user_login_svc.authenticate('foo', 'passw0rd'))
+
+    def test_authentication_upgrade(self):
+        from passlib.hash import argon2
+        from ..models import User
+        password = argon2.using(rounds=2).hash('passw0rd')
+        user = self._make(User(
+            username='foo',
+            encrypted_password=password))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertTrue(user_login_svc.authenticate('foo', 'passw0rd'))
+        self.dbsession.commit()
+        user_new = self.dbsession.query(User).get(user.id)
+        password_new = user_new.encrypted_password
+        self.assertNotEqual(password, password_new)
+        self.assertTrue(user_login_svc.authenticate('foo', 'passw0rd'))
+        self.dbsession.commit()
+        user_new2 = self.dbsession.query(User).get(user.id)
+        self.assertEqual(password_new, user_new2.encrypted_password)
+
     def test_user_from_token(self):
         from ..models import User, UserSession
         user1 = self._make(User(username='foo', encrypted_password='none'))

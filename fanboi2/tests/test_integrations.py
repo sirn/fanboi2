@@ -2569,3 +2569,131 @@ class TestIntegrationPage(ModelSessionMixin, unittest.TestCase):
         request.method = 'GET'
         with self.assertRaises(NoResultFound):
             robots_show(request)
+
+
+class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
+
+    def setUp(self):
+        super(TestIntegrationAdmin, self).setUp()
+        self.config = testing.setUp()
+        self.request = testing.DummyRequest()
+        self.request.registry = self.config.registry
+        self.request.user_agent = 'Mock/1.0'
+        self.request.client_addr = '127.0.0.1'
+        self.request.referrer = 'https://www.example.com/referer'
+        self.request.url = 'https://www.example.com/url'
+        self.request.application_url = 'https://www.example.com'
+
+    def tearDown(self):
+        super(TestIntegrationAdmin, self).tearDown()
+        testing.tearDown()
+
+    def test_login_get(self):
+        from ..forms import AdminLoginForm
+        from ..views.admin import login_get
+        self.request.method = 'GET'
+        response = login_get(self.request)
+        self.assertIsInstance(response['form'], AdminLoginForm)
+
+    def test_login_post(self):
+        from pyramid.authentication import AuthTktAuthenticationPolicy
+        from pyramid.authorization import ACLAuthorizationPolicy
+        from passlib.hash import argon2
+        from ..interfaces import IUserLoginService
+        from ..models import User, UserSession
+        from ..services import UserLoginService
+        from ..views.admin import login_post
+        from . import mock_service
+        self._make(User(
+            username='foo',
+            encrypted_password=argon2.hash('passw0rd')))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IUserLoginService: UserLoginService(self.dbsession)})
+        request.method = 'POST'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.session = testing.DummySession()
+        request.POST = MultiDict({})
+        request.POST['username'] = 'foo'
+        request.POST['password'] = 'passw0rd'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        authn_policy = AuthTktAuthenticationPolicy('foo')
+        authz_policy = ACLAuthorizationPolicy()
+        self.config.set_authorization_policy(authz_policy)
+        self.config.set_authentication_policy(authn_policy)
+        self.config.add_route('admin_root', '/admin')
+        response = login_post(request)
+        self.assertEqual(response.location, '/admin')
+        self.assertIn('Set-Cookie', response.headers)
+        self.assertEqual(
+            self.dbsession.query(UserSession).count(),
+            1)
+
+    def test_login_post_bad_csrf(self):
+        from pyramid.csrf import BadCSRFToken
+        from ..views.admin import login_post
+        self.request.method = 'POST'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.session = testing.DummySession()
+        self.request.POST = MultiDict({})
+        self.request.POST['username'] = 'foo'
+        self.request.POST['password'] = 'passw0rd'
+        with self.assertRaises(BadCSRFToken):
+            login_post(self.request)
+
+    def test_login_post_not_found(self):
+        from ..forms import AdminLoginForm
+        from ..interfaces import IUserLoginService
+        from ..services import UserLoginService
+        from ..views.admin import login_post
+        from . import mock_service
+        request = mock_service(self.request, {
+            IUserLoginService: UserLoginService(self.dbsession)})
+        request.method = 'POST'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.session = testing.DummySession()
+        request.POST = MultiDict({})
+        request.POST['username'] = 'foo'
+        request.POST['password'] = 'passw0rd'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        response = login_post(request)
+        self.assertIsInstance(response['form'], AdminLoginForm)
+        self.assertEqual(
+            request.session.pop_flash(queue='error'),
+            ['Username or password is invalid.'])
+
+    def test_login_post_invalid_username(self):
+        from ..models import UserSession
+        from ..views.admin import login_post
+        self.request.method = 'POST'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.session = testing.DummySession()
+        self.request.POST = MultiDict({})
+        self.request.POST['username'] = ''
+        self.request.POST['password'] = 'passw0rd'
+        self.request.POST['csrf_token'] = self.request.session.get_csrf_token()
+        response = login_post(self.request)
+        self.assertEqual(self.dbsession.query(UserSession).count(), 0)
+        self.assertEqual(response['form'].username.data, '')
+        self.assertEqual(response['form'].password.data, 'passw0rd')
+        self.assertDictEqual(response['form'].errors, {
+            'username': ['This field is required.']
+        })
+
+    def test_login_post_invalid_password(self):
+        from ..models import UserSession
+        from ..views.admin import login_post
+        self.request.method = 'POST'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.session = testing.DummySession()
+        self.request.POST = MultiDict({})
+        self.request.POST['username'] = 'foo'
+        self.request.POST['password'] = ''
+        self.request.POST['csrf_token'] = self.request.session.get_csrf_token()
+        response = login_post(self.request)
+        self.assertEqual(self.dbsession.query(UserSession).count(), 0)
+        self.assertEqual(response['form'].username.data, 'foo')
+        self.assertEqual(response['form'].password.data, '')
+        self.assertDictEqual(response['form'].errors, {
+            'password': ['This field is required.']
+        })
