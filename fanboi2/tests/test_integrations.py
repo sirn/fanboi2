@@ -2604,6 +2604,14 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         response = login_get(request)
         self.assertIsInstance(response['form'], AdminLoginForm)
 
+    def test_login_get_logged_in(self):
+        from ..views.admin import login_get
+        self.request.method = 'GET'
+        self.config.testing_securitypolicy('foo')
+        self.config.add_route('admin_dashboard', '/admin/dashboard')
+        response = login_get(self.request)
+        self.assertEqual(response.location, '/admin/dashboard')
+
     def test_login_get_not_installed(self):
         from ..interfaces import ISettingQueryService
         from ..views.admin import login_get
@@ -2648,11 +2656,23 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         authz_policy = ACLAuthorizationPolicy()
         self.config.set_authorization_policy(authz_policy)
         self.config.set_authentication_policy(authn_policy)
-        self.config.add_route('admin_root', '/admin')
+        self.config.add_route('admin_dashboard', '/admin/dashboard')
         response = login_post(request)
         self.assertEqual(self.dbsession.query(UserSession).count(), 1)
-        self.assertEqual(response.location, '/admin')
+        self.assertEqual(response.location, '/admin/dashboard')
         self.assertIn('Set-Cookie', response.headers)
+
+    def test_login_post_logged_in(self):
+        from pyramid.httpexceptions import HTTPForbidden
+        from ..views.admin import login_post
+        self.request.method = 'POST'
+        self.config.testing_securitypolicy('foo')
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST['username'] = 'foo'
+        self.request.POST['password'] = 'password'
+        self.request.POST['csrf_token'] = self.request.session.get_csrf_token()
+        with self.assertRaises(HTTPForbidden):
+            login_post(self.request)
 
     def test_login_post_wrong_password(self):
         from passlib.hash import argon2

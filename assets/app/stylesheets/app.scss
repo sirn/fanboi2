@@ -32,6 +32,30 @@ body {
     }
 }
 
+/* Generic columns
+ * ------------------------------------------------------------------------ */
+
+.cols {
+    display: flex;
+    flex-direction: column;
+
+    @media (min-width: $bound-tablet) {
+        flex-direction: row;
+    }
+}
+
+.cols-column {
+    &.sidebar {
+    }
+
+    @media (min-width: $bound-tablet) {
+        &.sidebar {
+            width: 200px;
+            margin: 0 $spacing-horizontal 0 0;
+        }
+    }
+}
+
 /* Notice bar
  * ------------------------------------------------------------------------ */
 
@@ -473,5 +497,54 @@ textarea.input {
 
     ul, ol {
         padding: 0 $spacing-horizontal-larger 0;
+    }
+}
+
+/* Menu
+ * ------------------------------------------------------------------------ */
+
+.menu {
+    border-bottom: 1px solid;
+    border-top: 1px solid;
+    margin: 0 (-$spacing-horizontal);
+
+    ul {
+        margin: 0;
+        padding: 0;
+    }
+
+    @media (min-width: $bound-tablet) {
+        border-left: 1px solid;
+        border-right: 1px solid;
+        margin: 0;
+    }
+}
+
+.menu-header {
+    font-size: $font-size;
+    line-height: $font-size;
+    margin: 0;
+    padding: $spacing-vertical $spacing-horizontal;
+}
+
+.menu-actions {
+    list-style: none;
+}
+
+.menu-actions-item {
+    margin: 0;
+    font-size: $font-size;
+    line-height: $font-size;
+    border-bottom: 1px solid;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    a {
+        box-sizing: border-box;
+        display: inline-block;
+        padding: $spacing-vertical $spacing-horizontal;
+        width: 100%;
     }
 }

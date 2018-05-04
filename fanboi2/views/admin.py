@@ -1,4 +1,4 @@
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPForbidden
 from pyramid.csrf import check_csrf_token
 from pyramid.security import remember
 
@@ -13,6 +13,10 @@ def login_get(request):
 
     :param request: A :class:`pyramid.request.Request` object.
     """
+    if request.authenticated_userid:
+        return HTTPFound(
+            location=request.route_path(route_name='admin_dashboard'))
+
     if _setup_required(None, request):
         return HTTPFound(
             location=request.route_path(route_name='admin_setup'))
@@ -29,6 +33,9 @@ def login_post(request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     check_csrf_token(request)
+    if request.authenticated_userid:
+        raise HTTPForbidden
+
     form = AdminLoginForm(request.POST, request=request)
     if not form.validate():
         request.response.status = '400 Bad Request'
@@ -46,7 +53,7 @@ def login_post(request):
     token = user_login_svc.token_for(form.username.data, request.client_addr)
     headers = remember(request, token)
     return HTTPFound(
-        location=request.route_path(route_name='admin_root'),
+        location=request.route_path(route_name='admin_dashboard'),
         headers=headers)
 
 
@@ -83,6 +90,10 @@ def setup_post(request):
 
     request.session.flash('Successfully setup initial user.', 'success')
     return HTTPFound(location=request.route_path(route_name='admin_root'))
+
+
+def dashboard_get(request):
+    return {}
 
 
 def _setup_required(context, request):
@@ -127,5 +138,17 @@ def includeme(config):  # pragma: no cover
         route_name='admin_setup',
         renderer='admin/setup.mako',
         custom_predicates=[_setup_required])
+
+    #
+    # Dashboard
+    #
+
+    config.add_route('admin_dashboard', '/dashboard')
+
+    config.add_view(
+        dashboard_get,
+        request_method='GET',
+        route_name='admin_dashboard',
+        renderer='admin/dashboard.mako')
 
     config.scan()

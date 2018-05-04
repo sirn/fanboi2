@@ -240,6 +240,28 @@ $color-text:             #333;
         h1, h2, h3, h4, h5 { color: $color-brand; }
     }
 
+    .menu {
+        background-color: $color-tint-light;
+        border-color: $color-tint;
+
+        @media (min-width: $bound-tablet) {
+            border-radius: 5px;
+            overflow: hidden;
+        }
+    }
+
+    .menu-header {
+        color: $color-gray-darker;
+    }
+
+    .menu-actions {
+        background-color: $color-tint-lighter;
+    }
+
+    .menu-actions-item {
+        border-color: $color-tint;
+    }
+
     /* api.scss
      * -------------------------------------------------------------------- */
 
