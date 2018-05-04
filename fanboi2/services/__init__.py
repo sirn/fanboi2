@@ -8,9 +8,11 @@ from ..interfaces import \
     IRateLimiterService,\
     IRuleBanQueryService, \
     ISettingQueryService,\
+    ISettingUpdateService,\
     ITaskQueryService,\
     ITopicCreateService,\
     ITopicQueryService,\
+    IUserCreateService,\
     IUserLoginService
 
 from .board import BoardQueryService
@@ -20,10 +22,10 @@ from .page import PageQueryService
 from .post import PostCreateService, PostQueryService
 from .rate_limiter import RateLimiterService
 from .rule import RuleBanQueryService
-from .setting import SettingQueryService
+from .setting import SettingQueryService, SettingUpdateService
 from .task import TaskQueryService
 from .topic import TopicCreateService, TopicQueryService
-from .user import UserLoginService
+from .user import UserCreateService, UserLoginService
 
 
 def includeme(config):  # pragma: no cover
@@ -127,6 +129,17 @@ def includeme(config):  # pragma: no cover
         setting_query_factory,
         ISettingQueryService)
 
+    # Setting Update
+
+    def setting_update_factory(context, request):
+        dbsession = request.find_service(name='db')
+        cache_region = request.find_service(name='cache')
+        return SettingUpdateService(dbsession, cache_region)
+
+    config.register_service_factory(
+        setting_update_factory,
+        ISettingUpdateService)
+
     # Task Query
 
     def task_query_factory(context, request):
@@ -157,6 +170,16 @@ def includeme(config):  # pragma: no cover
     config.register_service_factory(
         topic_query_factory,
         ITopicQueryService)
+
+    # User create
+
+    def user_create_factory(context, request):
+        dbsession = request.find_service(name='db')
+        return UserCreateService(dbsession)
+
+    config.register_service_factory(
+        user_create_factory,
+        IUserCreateService)
 
     # User Login
 

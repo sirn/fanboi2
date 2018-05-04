@@ -1,7 +1,7 @@
 from wtforms import TextField, TextAreaField, Form, BooleanField
 from wtforms import PasswordField
 from wtforms.validators import Length as _Length
-from wtforms.validators import Required, ValidationError
+from wtforms.validators import Required, EqualTo, ValidationError
 
 
 class Length(_Length):
@@ -49,6 +49,19 @@ class PostForm(Form):
 
 
 class AdminLoginForm(Form):
-    """A :class:`Form` for logging into a moderaiton system."""
+    """A :class:`Form` for logging into a moderation system."""
     username = TextField('Username', validators=[Required()])
     password = PasswordField('Password', validators=[Required()])
+
+
+class AdminSetupForm(Form):
+    """A :class:`Form` for creating an initial user."""
+    username = TextField('Username', validators=[Required()])
+    password = PasswordField('Password', validators=[
+        Required(),
+        Length(8, 64)])
+    password_confirm = PasswordField(
+        'Password confirmation',
+        validators=[
+            Required(),
+            EqualTo('password', message='Password must match.')])

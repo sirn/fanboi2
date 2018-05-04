@@ -1,9 +1,11 @@
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.csrf import check_csrf_token
 from pyramid.security import remember
 
-from ..interfaces import IUserLoginService
-from ..forms import AdminLoginForm
+from ..version import __VERSION__
+from ..forms import AdminLoginForm, AdminSetupForm
+from ..interfaces import ISettingQueryService, ISettingUpdateService
+from ..interfaces import IUserCreateService, IUserLoginService
 
 
 def login_get(request):
@@ -11,6 +13,10 @@ def login_get(request):
 
     :param request: A :class:`pyramid.request.Request` object.
     """
+    if _setup_required(None, request):
+        return HTTPFound(
+            location=request.route_path(route_name='admin_setup'))
+
     form = AdminLoginForm(request=request)
     return {
         'form': form
@@ -44,6 +50,49 @@ def login_post(request):
         headers=headers)
 
 
+def setup_get(request):
+    if not _setup_required(None, request):
+        raise HTTPNotFound()
+
+    form = AdminSetupForm(request=request)
+    return {
+        'form': form
+    }
+
+
+def setup_post(request):
+    if not _setup_required(None, request):
+        raise HTTPNotFound()
+
+    check_csrf_token(request)
+    form = AdminSetupForm(request.POST, request=request)
+    if not form.validate():
+        request.response.status = '400 Bad Request'
+        return {
+            'form': form,
+        }
+
+    setting_update_svc = request.find_service(ISettingUpdateService)
+    setting_update_svc.update('setup.version', __VERSION__)
+
+    user_create_svc = request.find_service(IUserCreateService)
+    user_create_svc.create(
+        form.username.data,
+        form.password.data,
+        None)
+
+    request.session.flash('Successfully setup initial user.', 'success')
+    return HTTPFound(location=request.route_path(route_name='admin_root'))
+
+
+def _setup_required(context, request):
+    """A predicate for :meth:`pyramid.config.add_view` that returns
+    :type:`True` if an application requrie a setup or upgrade.
+    """
+    setting_query_svc = request.find_service(ISettingQueryService)
+    return setting_query_svc.value_from_key('setup.version') is None
+
+
 def includeme(config):  # pragma: no cover
     config.add_route('admin_root', '/')
 
@@ -58,5 +107,25 @@ def includeme(config):  # pragma: no cover
         request_method='POST',
         route_name='admin_root',
         renderer='admin/login.mako')
+
+    #
+    # Initial setup
+    #
+
+    config.add_route('admin_setup', '/setup')
+
+    config.add_view(
+        setup_get,
+        request_method='GET',
+        route_name='admin_setup',
+        renderer='admin/setup.mako',
+        custom_predicates=[_setup_required])
+
+    config.add_view(
+        setup_post,
+        request_method='POST',
+        route_name='admin_setup',
+        renderer='admin/setup.mako',
+        custom_predicates=[_setup_required])
 
     config.scan()

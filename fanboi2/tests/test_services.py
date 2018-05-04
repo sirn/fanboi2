@@ -835,6 +835,64 @@ class TestSettingQueryService(ModelSessionMixin, unittest.TestCase):
             'foobar')
 
 
+class TestSettingUpdateService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import SettingUpdateService
+        return SettingUpdateService
+
+    def test_update(self):
+        from . import make_cache_region
+        from ..models import Setting
+        from ..services import SettingQueryService
+        self._make(Setting(key='app.test', value='test'))
+        self.dbsession.commit()
+        cache_region = make_cache_region()
+        setting_query_svc = SettingQueryService(
+            self.dbsession,
+            cache_region)
+        setting_update_svc = self._get_target_class()(
+            self.dbsession,
+            cache_region)
+        self.assertEqual(
+            setting_query_svc.value_from_key('app.test'),
+            'test')
+        setting = setting_update_svc.update('app.test', 'test2')
+        self.assertEqual(setting.key, 'app.test')
+        self.assertEqual(setting.value, 'test2')
+        self.assertEqual(
+            setting_query_svc.value_from_key('app.test'),
+            'test2')
+
+    def test_update_insert(self):
+        from . import make_cache_region
+        from ..services import SettingQueryService
+        cache_region = make_cache_region()
+        setting_query_svc = SettingQueryService(
+            self.dbsession,
+            cache_region)
+        setting_update_svc = self._get_target_class()(
+            self.dbsession,
+            cache_region)
+        self.assertIsNone(setting_query_svc.value_from_key('app.test'))
+        setting = setting_update_svc.update('app.test', 'test')
+        self.assertEqual(setting.key, 'app.test')
+        self.assertEqual(setting.value, 'test')
+        self.assertEqual(
+            setting_query_svc.value_from_key('app.test'),
+            'test')
+
+    def test_update_data_structure(self):
+        from . import make_cache_region
+        cache_region = make_cache_region()
+        setting_update_svc = self._get_target_class()(
+            self.dbsession,
+            cache_region)
+        setting = setting_update_svc.update('app.test', {'foo': 'bar'})
+        self.assertEqual(setting.key, 'app.test')
+        self.assertEqual(setting.value, {'foo': 'bar'})
+
+
 class TestTaskQueryService(unittest.TestCase):
 
     @unittest.mock.patch('fanboi2.tasks.celery.AsyncResult')
@@ -1084,6 +1142,34 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
         topic_query_svc = self._get_target_class()(self.dbsession)
         with self.assertRaises(NoResultFound):
             topic_query_svc.topic_from_id(-1)
+
+
+class TestUserCreateService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import UserCreateService
+        return UserCreateService
+
+    def test_create(self):
+        from passlib.hash import argon2
+        from ..models import User
+        user1 = self._make(User(
+            username='root',
+            encrypted_password='none'))
+        self.dbsession.commit()
+        user_create_svc = self._get_target_class()(self.dbsession)
+        user2 = user_create_svc.create('child', 'passw0rd', user1.id)
+        self.assertEqual(user2.parent, user1)
+        self.assertEqual(user2.username, 'child')
+        self.assertTrue(argon2.verify(
+            'passw0rd',
+            user2.encrypted_password))
+
+    def test_create_root(self):
+        user_create_svc = self._get_target_class()(self.dbsession)
+        user = user_create_svc.create('root', 'passw0rd', None)
+        self.assertEqual(user.parent, None)
+        self.assertEqual(user.username, 'root')
 
 
 class TestUserLoginService(ModelSessionMixin, unittest.TestCase):

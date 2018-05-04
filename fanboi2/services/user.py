@@ -6,6 +6,42 @@ from sqlalchemy.sql import and_, or_, func
 from ..models import User, UserSession
 
 
+ARGON2_MEMORY_COST = 1024
+ARGON2_PARALLELISM = 2
+ARGON2_ROUNDS = 6
+
+
+class UserCreateService(object):
+    """User create service provides a service for creating user."""
+
+    def __init__(self, dbsession):
+        self.dbsession = dbsession
+        self.crypt_context = CryptContext(
+            schemes=['argon2'],
+            deprecated=['auto'],
+            truncate_error=True,
+            argon2__memory_cost=ARGON2_MEMORY_COST,
+            argon2__parallelism=ARGON2_PARALLELISM,
+            argon2__rounds=ARGON2_ROUNDS)
+
+    def create(self, username, password, parent_id):
+        """Creates a user. :param:`parent_id` must be present for all users
+        except the root user, usually the user who created this specific user.
+
+        :param username: A username.
+        :param password: A password.
+        :parent parent_id: An :type:`int` ID of the user who created this user.
+        """
+        user = User(
+            username=username,
+            encrypted_password=self.crypt_context.hash(password),
+            parent_id=parent_id)
+
+        self.dbsession.add(user)
+        self.dbsession.flush()
+        return user
+
+
 class UserLoginService(object):
     """User login service provides a service for managing user logins."""
 
@@ -15,9 +51,9 @@ class UserLoginService(object):
             schemes=['argon2'],
             deprecated=['auto'],
             truncate_error=True,
-            argon2__memory_cost=1024,
-            argon2__parallelism=2,
-            argon2__rounds=6)
+            argon2__memory_cost=ARGON2_MEMORY_COST,
+            argon2__parallelism=ARGON2_PARALLELISM,
+            argon2__rounds=ARGON2_ROUNDS)
 
     def _generate_token(self):
         """Generates a secure random token."""

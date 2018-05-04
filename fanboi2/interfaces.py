@@ -70,6 +70,11 @@ class ISettingQueryService(Interface):
         pass
 
 
+class ISettingUpdateService(Interface):
+    def update(key, value):
+        pass
+
+
 class ITaskQueryService(Interface):
     def result_from_uid(task_uid):
         pass
@@ -91,6 +96,11 @@ class ITopicQueryService(Interface):
         pass
 
     def topic_from_id(topic_id):
+        pass
+
+
+class IUserCreateService(Interface):
+    def create(username, password, parent):
         pass
 
 
