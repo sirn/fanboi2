@@ -108,10 +108,10 @@ class IUserLoginService(Interface):
     def authenticate(username, password):
         pass
 
-    def user_from_token(token):
+    def user_from_token(token, ip_address):
         pass
 
-    def groups_from_token(token):
+    def groups_from_token(token, ip_address):
         pass
 
     def token_for(username, ip_address):

@@ -1241,13 +1241,20 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
             ip_address='127.0.0.1'))
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
-        self.assertEqual(user_login_svc.user_from_token('foo_token1'), user1)
-        self.assertEqual(user_login_svc.user_from_token('foo_token2'), user1)
-        self.assertEqual(user_login_svc.user_from_token('bar_token1'), user2)
+        self.assertEqual(
+            user_login_svc.user_from_token('foo_token1', '127.0.0.1'),
+            user1)
+        self.assertEqual(
+            user_login_svc.user_from_token('foo_token2', '127.0.0.1'),
+            user1)
+        self.assertEqual(
+            user_login_svc.user_from_token('bar_token1', '127.0.0.1'),
+            user2)
 
     def test_user_from_token_not_found(self):
         user_login_svc = self._get_target_class()(self.dbsession)
-        self.assertIsNone(user_login_svc.user_from_token('notexists'))
+        self.assertIsNone(
+            user_login_svc.user_from_token('notexists', '127.0.0.1'))
 
     def test_user_from_token_deactivated(self):
         from ..models import User, UserSession
@@ -1261,7 +1268,22 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
             ip_address='127.0.0.1'))
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
-        self.assertIsNone(user_login_svc.user_from_token('foo_token'))
+        self.assertIsNone(
+            user_login_svc.user_from_token('foo_token', '127.0.0.1'))
+
+    def test_user_from_token_wrong_ip(self):
+        from ..models import User, UserSession
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none'))
+        self._make(UserSession(
+            user=user,
+            token='foo_token1',
+            ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(
+            user_login_svc.user_from_token('foo_token', '127.0.0.2'))
 
     def test_user_from_token_revoked(self):
         from datetime import datetime, timedelta
@@ -1279,8 +1301,11 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
             revoked_at=datetime.now() - timedelta(hours=1)))
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
-        self.assertEqual(user_login_svc.user_from_token('foo_token1'), user)
-        self.assertIsNone(user_login_svc.user_from_token('foo_token2'))
+        self.assertEqual(
+            user_login_svc.user_from_token('foo_token1', '127.0.0.1'),
+            user)
+        self.assertIsNone(
+            user_login_svc.user_from_token('foo_token2', '127.0.0.1'))
 
     def test_groups_from_token(self):
         from ..models import User, UserSession, Group
@@ -1313,18 +1338,38 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertEqual(
-            user_login_svc.groups_from_token('foo_token'),
+            user_login_svc.groups_from_token('foo_token', '127.0.0.1'),
             ['bar', 'foo'])
         self.assertEqual(
-            user_login_svc.groups_from_token('bar_token'),
+            user_login_svc.groups_from_token('bar_token', '127.0.0.1'),
             ['bar'])
         self.assertEqual(
-            user_login_svc.groups_from_token('baz_token'),
+            user_login_svc.groups_from_token('baz_token', '127.0.0.1'),
             [])
 
     def test_groups_from_token_not_found(self):
         user_login_svc = self._get_target_class()(self.dbsession)
-        self.assertIsNone(user_login_svc.groups_from_token('notexists'))
+        self.assertIsNone(
+            user_login_svc.groups_from_token('notexists', '127.0.0.1'))
+
+    def test_groups_from_token_wrong_ip(self):
+        from datetime import datetime, timedelta
+        from ..models import User, UserSession, Group
+        group1 = self._make(Group(name='foo'))
+        group2 = self._make(Group(name='bar'))
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            groups=[group1, group2]))
+        self._make(UserSession(
+            user=user,
+            token='foo_token',
+            ip_address='127.0.0.1',
+            revoked_at=datetime.now() + timedelta(hours=1)))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(
+            user_login_svc.groups_from_token('foo_token', '127.0.0.2'))
 
     def test_groups_from_token_deactivated(self):
         from datetime import datetime, timedelta
@@ -1343,7 +1388,8 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
             revoked_at=datetime.now() + timedelta(hours=1)))
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
-        self.assertIsNone(user_login_svc.groups_from_token('foo_token'))
+        self.assertIsNone(
+            user_login_svc.groups_from_token('foo_token', '127.0.0.1'))
 
     def test_groups_from_token_revoked(self):
         from datetime import datetime, timedelta
@@ -1371,9 +1417,10 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertEqual(
-            user_login_svc.groups_from_token('foo_token'),
+            user_login_svc.groups_from_token('foo_token', '127.0.0.1'),
             ['bar', 'foo'])
-        self.assertIsNone(user_login_svc.groups_from_token('bar_token'))
+        self.assertIsNone(
+            user_login_svc.groups_from_token('bar_token', '127.0.0.1'))
 
     def test_token_for(self):
         from ..models import User
@@ -1382,7 +1429,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         user_login_svc = self._get_target_class()(self.dbsession)
         user_token = user_login_svc.token_for('foo', '127.0.0.1')
         self.assertEqual(
-            user_login_svc.user_from_token(user_token),
+            user_login_svc.user_from_token(user_token, '127.0.0.1'),
             user)
 
     def test_token_for_not_found(self):

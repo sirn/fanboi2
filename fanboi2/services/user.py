@@ -83,27 +83,30 @@ class UserLoginService(object):
             self.dbsession.flush()
         return True
 
-    def user_from_token(self, token):
+    def user_from_token(self, token, ip_address):
         """Returns a :class:`User` by looking up the given :param:`token`
         or :type:`None` if the token does not exists or has been revoked.
 
         :param token: A user login token :type:`str`.
+        :param ip_address: IP address of the user.
         """
         return self.dbsession.query(User).\
             join(User.sessions).\
             filter(and_(User.deactivated == False,  # noqa: E711
                         UserSession.token == token,
+                        UserSession.ip_address == ip_address,
                         or_(UserSession.revoked_at == None,  # noqa: E711
                             UserSession.revoked_at >= func.now()))).\
             first()
 
-    def groups_from_token(self, token):
+    def groups_from_token(self, token, ip_address):
         """Return list of group names by looking up the given :param:`token`
         or :type:`None` if the token does not exists or has been revoked.
 
         :param token: A user login token :type:`str`.
+        :param ip_address: IP address of the user.
         """
-        user = self.user_from_token(token)
+        user = self.user_from_token(token, ip_address)
         if user is None:
             return None
         return [g.name for g in user.groups]

@@ -22,7 +22,7 @@ def groupfinder(userid, request):
     if userid is None:
         return None
     user_login_svc = request.find_service(IUserLoginService)
-    groups = user_login_svc.groups_from_token(userid)
+    groups = user_login_svc.groups_from_token(userid, request.client_addr)
     if groups is None:
         return None
     return ['g:%s' % (g,) for g in groups]

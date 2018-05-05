@@ -9,7 +9,7 @@ class _DummyUserLoginService(object):
     def __init__(self, groups):
         self.groups = groups
 
-    def groups_from_token(self, token):
+    def groups_from_token(self, token, ip_address):
         return self.groups
 
 
@@ -30,6 +30,7 @@ class TestGroupFinder(unittest.TestCase):
         from . import mock_service
         request = mock_service(self.request, {
             IUserLoginService: _DummyUserLoginService(['mod', 'admin'])})
+        request.client_addr = '127.0.0.1'
         self.assertEqual(
             self._get_target_function()('foobar', request),
             ['g:mod', 'g:admin'])
@@ -38,12 +39,14 @@ class TestGroupFinder(unittest.TestCase):
         from . import mock_service
         request = mock_service(self.request, {
             IUserLoginService: _DummyUserLoginService(None)})
+        request.client_addr = '127.0.0.1'
         self.assertIsNone(self._get_target_function()('foobar', request))
 
     def test_groupfinder_no_groups(self):
         from . import mock_service
         request = mock_service(self.request, {
             IUserLoginService: _DummyUserLoginService([])})
+        request.client_addr = '127.0.0.1'
         self.assertEqual(
             self._get_target_function()('foobar', request),
             [])
