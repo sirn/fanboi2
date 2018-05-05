@@ -2607,7 +2607,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
     def test_login_get_logged_in(self):
         from ..views.admin import login_get
         self.request.method = 'GET'
-        self.config.testing_securitypolicy('foo')
+        self.config.testing_securitypolicy(userid='foo')
         self.config.add_route('admin_dashboard', '/admin/dashboard')
         response = login_get(self.request)
         self.assertEqual(response.location, '/admin/dashboard')
@@ -2631,8 +2631,6 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             '/setup')
 
     def test_login_post(self):
-        from pyramid.authentication import AuthTktAuthenticationPolicy
-        from pyramid.authorization import ACLAuthorizationPolicy
         from passlib.hash import argon2
         from ..interfaces import IUserLoginService
         from ..models import User, UserSession
@@ -2652,10 +2650,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         request.POST['username'] = 'foo'
         request.POST['password'] = 'passw0rd'
         request.POST['csrf_token'] = request.session.get_csrf_token()
-        authn_policy = AuthTktAuthenticationPolicy('foo')
-        authz_policy = ACLAuthorizationPolicy()
-        self.config.set_authorization_policy(authz_policy)
-        self.config.set_authentication_policy(authn_policy)
+        self.config.testing_securitypolicy(
+            userid=None,
+            remember_result=[('Set-Cookie', 'foobar')])
         self.config.add_route('admin_dashboard', '/admin/dashboard')
         response = login_post(request)
         self.assertEqual(self.dbsession.query(UserSession).count(), 1)
@@ -2666,7 +2663,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from pyramid.httpexceptions import HTTPForbidden
         from ..views.admin import login_post
         self.request.method = 'POST'
-        self.config.testing_securitypolicy('foo')
+        self.config.testing_securitypolicy(userid='foo')
         self.request.content_type = 'application/x-www-form-urlencoded'
         self.request.POST['username'] = 'foo'
         self.request.POST['password'] = 'password'
@@ -2803,18 +2800,41 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             'password': ['This field is required.']})
 
     def test_logout_get(self):
-        from pyramid.authentication import AuthTktAuthenticationPolicy
-        from pyramid.authorization import ACLAuthorizationPolicy
+        from ..interfaces import IUserLoginService
+        from ..models import User, UserSession
+        from ..services import UserLoginService
+        from ..views.admin import logout_get
+        from . import mock_service
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none'))
+        user_session = self._make(UserSession(
+            user=user,
+            token='foo_token1',
+            ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IUserLoginService: UserLoginService(self.dbsession)})
+        request.method = 'GET'
+        request.client_addr = '127.0.0.1'
+        self.config.testing_securitypolicy(
+            userid='foo_token1',
+            forget_result=[('Set-Cookie', 'foobar')])
+        self.config.add_route('admin_root', '/admin')
+        self.assertIsNone(user_session.revoked_at)
+        response = logout_get(request)
+        self.assertEqual(response.location, '/admin')
+        self.assertIn('Set-Cookie', response.headers)
+        self.assertIsNotNone(user_session.revoked_at)
+
+    def test_logout_get_not_logged_in(self):
         from ..views.admin import logout_get
         self.request.method = 'GET'
-        authn_policy = AuthTktAuthenticationPolicy('foo')
-        authz_policy = ACLAuthorizationPolicy()
-        self.config.set_authorization_policy(authz_policy)
-        self.config.set_authentication_policy(authn_policy)
+        self.request.client_addr = '127.0.0.1'
+        self.config.testing_securitypolicy(userid=None)
         self.config.add_route('admin_root', '/admin')
         response = logout_get(self.request)
         self.assertEqual(response.location, '/admin')
-        self.assertIn('Set-Cookie', response.headers)
 
     def test_setup_get(self):
         from ..forms import AdminSetupForm

@@ -62,6 +62,11 @@ def logout_get(request):
 
     :param request: A :class:`pyramid.request.Request` object.
     """
+    userid = authenticated_userid(request)
+    if userid:
+        user_login_svc = request.find_service(IUserLoginService)
+        user_login_svc.revoke_token(userid, request.client_addr)
+
     headers = forget(request)
     return HTTPFound(
         location=request.route_path(route_name='admin_root'),
