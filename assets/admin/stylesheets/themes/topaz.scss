@@ -1,0 +1,41 @@
+@import "../../../app/stylesheets/variables";
+@import "../../../app/stylesheets/themes/variables_topaz";
+
+.theme-topaz {
+
+    /* admin.scss
+     * -------------------------------------------------------------------- */
+
+    .admin-table {
+        border-color: $color-tint-light;
+        overflow: hidden;
+    }
+
+    .admin-table-body {
+        .admin-table-item {
+            &.title {
+                font-weight: normal;
+            }
+        }
+
+        @media (min-width: $bound-tablet) {
+            .admin-table-item {
+                &.title {
+                    background-color: #fff;
+                    border-color: $color-tint-light;
+                }
+            }
+        }
+    }
+
+    .admin-table-item {
+        border-color: $color-tint-light;
+
+        &.title {
+            color: $color-gray-dark;
+            border-color: #fff;
+            background-color: $color-tint-lighter;
+        }
+    }
+
+}

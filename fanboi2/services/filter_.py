@@ -36,10 +36,7 @@ class FilterService(object):
                     services[s] = self.service_query_fn(name=s)
 
             settings_name = "ext.filters.%s" % (name,)
-            settings_default = getattr(cls, '__default_settings__', None)
             settings = setting_query_svc.value_from_key(settings_name)
-            if settings is None:
-                settings = settings_default
 
             f = cls(settings, services)
             if f.should_reject(payload):

@@ -16,6 +16,7 @@ tmp/
 # Assets
 /assets/*/
 !/assets/app/
+!/assets/admin/
 !/assets/vendor/
 !/assets/legacy/
 

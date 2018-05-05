@@ -1,0 +1,41 @@
+@import "../../../app/stylesheets/variables";
+@import "../../../app/stylesheets/themes/variables_obsidian";
+
+.theme-obsidian {
+
+    /* admin.scss
+     * -------------------------------------------------------------------- */
+
+    .admin-table {
+        border-color: $color-gray;
+        overflow: hidden;
+    }
+
+    .admin-table-body {
+        .admin-table-item {
+            &.title {
+                font-weight: normal;
+            }
+        }
+
+        @media (min-width: $bound-tablet) {
+            .admin-table-item {
+                &.title {
+                    background-color: $color-gray-dark;
+                    border-color: $color-gray;
+                }
+            }
+        }
+    }
+
+    .admin-table-item {
+        border-color: $color-gray;
+
+        &.title {
+            color: $color-gray-light;
+            border-color: $color-gray-darker;
+            background-color: $color-gray-darker;
+        }
+    }
+
+}

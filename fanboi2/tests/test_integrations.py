@@ -3060,3 +3060,20 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         self.request.method = 'GET'
         response = dashboard_get(self.request)
         self.assertEqual(response, {})
+
+    def test_settings_get(self):
+        from ..interfaces import ISettingQueryService
+        from ..views.admin import settings_get
+        from . import mock_service
+
+        class _DummySettingQueryService(object):
+            def list_json(self):
+                return [('foo', 'bar'), ('baz', 'bax')]
+
+        request = mock_service(self.request, {
+            ISettingQueryService: _DummySettingQueryService()})
+        request.method = 'GET'
+        response = settings_get(request)
+        self.assertEqual(
+            response['settings'],
+            [('foo', 'bar'), ('baz', 'bax')])

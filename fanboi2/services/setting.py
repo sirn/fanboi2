@@ -1,3 +1,5 @@
+import json
+
 from sqlalchemy.dialects.postgresql import insert
 
 from ..models.setting import DEFAULT_SETTINGS, Setting
@@ -21,6 +23,21 @@ class SettingQueryService(object):
         self.dbsession = dbsession
         self.cache_region = cache_region
 
+    def _jsonify(self, value):
+        return json.dumps(value, indent=4, sort_keys=True)
+
+    def list_json(self, _default=DEFAULT_SETTINGS):
+        """Returns a 2-tuple of all settings where its values are JSONified.
+        This method will only return the safe settings that are explicitly
+        defined within the list of default settings.
+        """
+        all_settings = []
+        for key in sorted(_default.keys()):
+            all_settings.append((
+                key,
+                self._jsonify(self.value_from_key(key, _default=_default))))
+        return all_settings
+
     def value_from_key(self, key, _default=DEFAULT_SETTINGS):
         """Returns a setting value either from a cache, from a database
         or the default value. The value returned by this method will be
@@ -37,6 +54,18 @@ class SettingQueryService(object):
             _get_cache_key(key),
             _creator_fn,
             expiration_time=3600)
+
+    def value_from_key_json(self, key, _default=DEFAULT_SETTINGS):
+        """Similar to :meth:`value_from_key` but returns a JSONified value.
+        This method should be used when displaying the settings data and will
+        raise ``KeyError`` if the given key is not considered safe.
+
+        :param key: The setting key.
+        """
+        if key not in _default:
+            raise KeyError(key)
+        value = self.value_from_key(key, _default=_default)
+        return self._jsonify(value)
 
     def reload(self, key):
         """Delete the given key from the cache to force reloading

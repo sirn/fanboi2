@@ -4,8 +4,11 @@ from pyramid.security import remember, forget, authenticated_userid
 
 from ..version import __VERSION__
 from ..forms import AdminLoginForm, AdminSetupForm
-from ..interfaces import ISettingQueryService, ISettingUpdateService
-from ..interfaces import IUserCreateService, IUserLoginService
+from ..interfaces import \
+    ISettingQueryService,\
+    ISettingUpdateService,\
+    IUserCreateService,\
+    IUserLoginService
 
 
 def login_get(request):
@@ -113,6 +116,14 @@ def dashboard_get(request):
     return {}
 
 
+def settings_get(request):
+    setting_query_svc = request.find_service(ISettingQueryService)
+    settings = setting_query_svc.list_json()
+    return {
+        'settings': settings,
+    }
+
+
 def _setup_required(context, request):
     """A predicate for :meth:`pyramid.config.add_view` that returns
     :type:`True` if an application requrie a setup or upgrade.
@@ -178,7 +189,7 @@ def includeme(config):  # pragma: no cover
         request_method='GET',
         route_name='admin_dashboard',
         renderer='admin/dashboard.mako',
-        permission='dashboard')
+        permission='manage')
 
     #
     # Bans
@@ -214,6 +225,13 @@ def includeme(config):  # pragma: no cover
 
     config.add_route('admin_settings', '/settings/')
     config.add_route('admin_setting', '/settings/{setting}/')
+
+    config.add_view(
+        settings_get,
+        request_method='GET',
+        route_name='admin_settings',
+        renderer='admin/settings/all.mako',
+        permission='manage')
 
     #
     # Users

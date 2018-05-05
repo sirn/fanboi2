@@ -37,7 +37,7 @@ body {
 
 .cols {
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
 
     @media (min-width: $bound-tablet) {
         flex-direction: row;
@@ -50,7 +50,8 @@ body {
 
     @media (min-width: $bound-tablet) {
         &.sidebar {
-            width: 200px;
+            min-width: 180px;
+            max-width: 180px;
             margin: 0 $spacing-horizontal 0 0;
         }
     }
@@ -474,9 +475,10 @@ textarea.input {
     margin: 0;
     overflow-y: auto;
     padding: $spacing-vertical-small $spacing-horizontal-small;
-    white-space: pre-wrap;
-    word-break: break-all;
-    word-wrap: break-word;
+
+    &.noshade {
+        padding: 0;
+    }
 }
 
 /* Content
@@ -522,9 +524,9 @@ textarea.input {
 
 .menu-header {
     font-size: $font-size;
-    line-height: $font-size;
+    line-height: $line-height-content;
     margin: 0;
-    padding: $spacing-vertical $spacing-horizontal;
+    padding: $spacing-vertical-small $spacing-horizontal;
 }
 
 .menu-actions {
@@ -534,7 +536,7 @@ textarea.input {
 .menu-actions-item {
     margin: 0;
     font-size: $font-size;
-    line-height: $font-size;
+    line-height: $line-height-content;
     border-bottom: 1px solid;
 
     &:last-child {
@@ -544,7 +546,7 @@ textarea.input {
     a {
         box-sizing: border-box;
         display: inline-block;
-        padding: $spacing-vertical $spacing-horizontal;
+        padding: $spacing-vertical-small $spacing-horizontal;
         width: 100%;
     }
 }

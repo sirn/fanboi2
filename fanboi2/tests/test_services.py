@@ -84,7 +84,6 @@ class TestFilterService(unittest.TestCase):
         _payload = None
 
         class _DummyFilter(object):
-            __default_settings__ = 'default'
             __use_services__ = ('cache',)
 
             def __init__(self, settings=None, services={}):
@@ -118,7 +117,6 @@ class TestFilterService(unittest.TestCase):
         called_ = False
 
         class _DummyFilter(object):  # pragma: no cover
-            __default_settings__ = 'default'
 
             def __init__(self, **kwargs):
                 pass
@@ -139,34 +137,6 @@ class TestFilterService(unittest.TestCase):
         self.assertEqual(results.filters, [])
         self.assertEqual(results.rejected_by, None)
         self.assertFalse(called_)
-
-    def test_evaluate_default_settings(self):
-        from . import make_cache_region
-        from ..interfaces import ISettingQueryService
-        _settings = None
-
-        class _DummyFilter(object):
-            __default_settings__ = 'default'
-
-            def __init__(self, settings=None, services={}):
-                nonlocal _settings
-                self.settings = _settings = settings
-                self.services = services
-
-            def should_reject(self, payload):
-                return True
-
-        class _DummySettingQueryService(object):
-            def value_from_key(self, key):
-                return {}.get(key, None)
-
-        cache_region = make_cache_region({})
-        filter_svc = self._make_one((('dummy', _DummyFilter),), {
-            'cache': cache_region,
-            ISettingQueryService: _DummySettingQueryService()})
-
-        filter_svc.evaluate({'foo': 'bar'})
-        self.assertEqual(_settings, 'default')
 
     def test_evaluate_fallback(self):
         from . import make_cache_region
@@ -787,6 +757,25 @@ class TestSettingQueryService(ModelSessionMixin, unittest.TestCase):
             setting_query_svc.cache_region,
             cache_region)
 
+    def test_list_json(self):
+        from ..models import Setting
+        from . import make_cache_region
+        cache_region = make_cache_region()
+        self._make(Setting(key='app.test', value='test'))
+        self._make(Setting(key='bax', value=32))
+        self.dbsession.commit()
+        setting_query_svc = self._get_target_class()(
+            self.dbsession,
+            cache_region)
+        result = setting_query_svc.list_json(
+            _default={
+                'foo': None,
+                'bar': "baz",
+                'bax': 1})
+        self.assertEqual(
+            result,
+            [('bar', '"baz"'), ('bax', '32'), ('foo', 'null')])
+
     def test_value_from_key(self):
         from . import make_cache_region
         from ..models import Setting
@@ -809,6 +798,33 @@ class TestSettingQueryService(ModelSessionMixin, unittest.TestCase):
         self.assertIsNone(setting_query_svc.value_from_key(
             'app.test',
             _default={}))
+
+    def test_value_from_key_json(self):
+        from . import make_cache_region
+        from ..models import Setting
+        cache_region = make_cache_region()
+        setting_query_svc = self._get_target_class()(
+            self.dbsession,
+            cache_region)
+        self._make(Setting(key='foo', value='test'))
+        self.dbsession.commit()
+        result = setting_query_svc.value_from_key_json(
+            'foo',
+            _default={'foo': None})
+        self.assertEqual(
+            result,
+            '"test"')
+
+    def test_value_from_key_json_unsafe(self):
+        from . import make_cache_region
+        cache_region = make_cache_region()
+        setting_query_svc = self._get_target_class()(
+            self.dbsession,
+            cache_region)
+        with self.assertRaises(KeyError):
+            setting_query_svc.value_from_key_json(
+                'app.test',
+                _default={})
 
     def test_reload(self):
         from . import make_cache_region

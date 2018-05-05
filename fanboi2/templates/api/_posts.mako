@@ -9,8 +9,8 @@
                 <table class="api-table">
                     <thead class="api-table-header">
                         <tr class="api-table-row">
-                            <th class="api-table-item title">Parameters</th>
-                            <th class="api-table-item title">Type</th>
+                            <th class="api-table-item title lead">Parameters</th>
+                            <th class="api-table-item title sublead">Type</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>
@@ -50,7 +50,7 @@
                 <table class="api-table">
                     <thead class="api-table-header">
                         <tr class="api-table-row">
-                            <th class="api-table-item title">Query string</th>
+                            <th class="api-table-item title lead">Query string</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>
@@ -75,8 +75,8 @@
                 <table class="api-table inner">
                     <thead class="api-table-header">
                         <tr class="api-table-row">
-                            <th class="api-table-item title">Field</th>
-                            <th class="api-table-item title">Type</th>
+                            <th class="api-table-item title lead">Field</th>
+                            <th class="api-table-item title sublead">Type</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>
@@ -186,7 +186,7 @@
                 <table class="api-table">
                     <thead class="api-table-header">
                         <tr class="api-table-row">
-                            <th class="api-table-item title">Query</th>
+                            <th class="api-table-item title lead">Query</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>
@@ -212,7 +212,7 @@
                 <table class="api-table">
                     <thead class="api-table-header">
                         <tr class="api-table-row">
-                            <th class="api-table-item title">Query string</th>
+                            <th class="api-table-item title lead">Query string</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>

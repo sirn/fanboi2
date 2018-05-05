@@ -9,20 +9,20 @@
                 <table class="api-table">
                     <thead class="api-table-header">
                         <tr class="api-table-row">
-                            <th class="api-table-item title">Parameters</th>
-                            <th class="api-table-item title">Type</th>
+                            <th class="api-table-item title lead">Parameters</th>
+                            <th class="api-table-item title sublead">Type</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>
                     <tbody class="api-table-body">
                         <tr class="api-table-row">
                             <th class="api-table-item title">title</th>
-                            <th class="api-table-item type">String</th>
+                            <td class="api-table-item type">String</td>
                             <td class="api-table-item">Title of the topic. From 5 to 200 characters.</td>
                         </tr>
                         <tr class="api-table-row">
                             <th class="api-table-item title">body</th>
-                            <th class="api-table-item type">String</th>
+                            <td class="api-table-item type">String</td>
                             <td class="api-table-item">Content of the topic. From 5 to 4,000 characters.</td>
                         </tr>
                     </tbody>
@@ -50,7 +50,7 @@
                 <table class="api-table">
                     <thead class="api-table-header">
                         <tr class="api-table-row">
-                            <th class="api-table-item title">Query string</th>
+                            <th class="api-table-item title lead">Query string</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>
@@ -88,7 +88,7 @@
                 <table class="api-table">
                     <thead class="api-table-header">
                         <tr class="api-table-row">
-                            <th class="api-table-item title">Query string</th>
+                            <th class="api-table-item title lead">Query string</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>
@@ -113,8 +113,8 @@
                 <table class="api-table">
                     <thead class="api-table-header">
                         <tr class="api-table-row">
-                            <th class="api-table-item title">Field</th>
-                            <th class="api-table-item title">Type</th>
+                            <th class="api-table-item title lead">Field</th>
+                            <th class="api-table-item title sublead">Type</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>
