@@ -14,6 +14,7 @@ class UserSession(Base):
 
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime(timezone=True), default=func.now())
+    last_seen_at = Column(DateTime(timezone=True))
     revoked_at = Column(DateTime(timezone=True))
     user_id = Column(Integer, ForeignKey('user.id'))
     token = Column(String, nullable=False)

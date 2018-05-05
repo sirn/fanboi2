@@ -1422,6 +1422,108 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         self.assertIsNone(
             user_login_svc.groups_from_token('bar_token', '127.0.0.1'))
 
+    def test_revoke_token(self):
+        from ..models import User, UserSession
+        user = self._make(User(username='foo', encrypted_password='none'))
+        user_session = self._make(UserSession(
+            user=user,
+            token='foo_token',
+            ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        revoked_at = user_session.revoked_at
+        user_login_svc = self._get_target_class()(self.dbsession)
+        user_session_new = user_login_svc.revoke_token('foo_token')
+        self.assertNotEqual(revoked_at, user_session_new.revoked_at)
+
+    def test_revoke_token_not_found(self):
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(user_login_svc.revoke_token('notexists'))
+
+    def test_revoke_token_revoked(self):
+        from datetime import datetime, timedelta
+        from ..models import User, UserSession
+        user = self._make(User(username='foo', encrypted_password='none'))
+        self._make(UserSession(
+            user=user,
+            token='foo_token',
+            ip_address='127.0.0.1',
+            revoked_at=datetime.now() - timedelta(hours=1)))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(user_login_svc.revoke_token('foo_token'))
+
+    def test_mark_seen(self):
+        from ..models import User, UserSession
+        user = self._make(User(username='foo', encrypted_password='none'))
+        user_session = self._make(UserSession(
+            user=user,
+            token='foo_token',
+            ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        last_seen_at = user_session.last_seen_at
+        revoked_at = user_session.revoked_at
+        user_login_svc = self._get_target_class()(self.dbsession)
+        user_session_new = user_login_svc.mark_seen(
+            'foo_token',
+            '127.0.0.1',
+            3600)
+        self.assertNotEqual(last_seen_at, user_session_new.last_seen_at)
+        self.assertNotEqual(revoked_at, user_session_new.revoked_at)
+
+    def test_mark_seen_not_found(self):
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(user_login_svc.mark_seen(
+            'notexists',
+            '127.0.0.1',
+            3600))
+
+    def test_mark_seen_wrong_ip(self):
+        from ..models import User, UserSession
+        user = self._make(User(username='foo', encrypted_password='none'))
+        self._make(UserSession(
+            user=user,
+            token='foo_token',
+            ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(user_login_svc.mark_seen(
+            'foo_token',
+            '127.0.0.2',
+            3600))
+
+    def test_mark_seen_deactivated(self):
+        from ..models import User, UserSession
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            deactivated=True))
+        self._make(UserSession(
+            user=user,
+            token='foo_token',
+            ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(user_login_svc.mark_seen(
+            'foo_token',
+            '127.0.0.1',
+            3600))
+
+    def test_mark_seen_revoked(self):
+        from datetime import datetime, timedelta
+        from ..models import User, UserSession
+        user = self._make(User(username='foo', encrypted_password='none'))
+        self._make(UserSession(
+            user=user,
+            token='foo_token',
+            ip_address='127.0.0.1',
+            revoked_at=datetime.now() - timedelta(hours=1)))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(user_login_svc.mark_seen(
+            'foo_token',
+            '127.0.0.1',
+            3600))
+
     def test_token_for(self):
         from ..models import User
         user = self._make(User(username='foo', encrypted_password='none'))

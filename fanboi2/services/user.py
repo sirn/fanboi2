@@ -1,8 +1,10 @@
+import datetime
 import secrets
 
 from passlib.context import CryptContext
 from sqlalchemy.sql import and_, or_, func
 
+from ..auth import SESSION_TOKEN_VALIDITY
 from ..models import User, UserSession
 
 
@@ -83,6 +85,16 @@ class UserLoginService(object):
             self.dbsession.flush()
         return True
 
+    def _user_session_q(self, token, ip_address):
+        """Internal method for querying user from token."""
+        return self.dbsession.query(User).\
+            join(User.sessions).\
+            filter(and_(User.deactivated == False,  # noqa: E711
+                        UserSession.token == token,
+                        UserSession.ip_address == ip_address,
+                        or_(UserSession.revoked_at == None,  # noqa: E711
+                            UserSession.revoked_at >= func.now())))
+
     def user_from_token(self, token, ip_address):
         """Returns a :class:`User` by looking up the given :param:`token`
         or :type:`None` if the token does not exists or has been revoked.
@@ -90,14 +102,7 @@ class UserLoginService(object):
         :param token: A user login token :type:`str`.
         :param ip_address: IP address of the user.
         """
-        return self.dbsession.query(User).\
-            join(User.sessions).\
-            filter(and_(User.deactivated == False,  # noqa: E711
-                        UserSession.token == token,
-                        UserSession.ip_address == ip_address,
-                        or_(UserSession.revoked_at == None,  # noqa: E711
-                            UserSession.revoked_at >= func.now()))).\
-            first()
+        return self._user_session_q(token, ip_address).first()
 
     def groups_from_token(self, token, ip_address):
         """Return list of group names by looking up the given :param:`token`
@@ -106,10 +111,54 @@ class UserLoginService(object):
         :param token: A user login token :type:`str`.
         :param ip_address: IP address of the user.
         """
-        user = self.user_from_token(token, ip_address)
+        user = self._user_session_q(token, ip_address).first()
         if user is None:
             return None
         return [g.name for g in user.groups]
+
+    def revoke_token(self, token):
+        """Revoke the given token. This method should be called when the user
+        is logging out.
+
+        :param token: A user login token :type:`str`.
+        """
+        user_session = self.dbsession.query(UserSession).\
+            filter(and_(UserSession.token == token,
+                        or_(UserSession.revoked_at == None,  # noqa: E711
+                            UserSession.revoked_at >= func.now()))).\
+            first()
+        if user_session is None:
+            return None
+        user_session.revoked_at = func.now()
+        self.dbsession.add(user_session)
+        self.dbsession.flush()
+        return user_session
+
+    def mark_seen(self, token, ip_address, revocation=SESSION_TOKEN_VALIDITY):
+        """Mark the given token as seen and extend the token validity period
+        by the given :param:`revocation` seconds.
+
+        :param token: A user login token :type:`str`.
+        :param ip_address: IP address of the user.
+        :param revocation: Number of seconds until the token is invalidated.
+        """
+        last_seen_at = datetime.datetime.now()
+        revoked_at = last_seen_at + datetime.timedelta(seconds=revocation)
+        user_session = self.dbsession.query(UserSession).\
+            join(UserSession.user).\
+            filter(and_(User.deactivated == False,  # noqa: E711
+                        UserSession.token == token,
+                        UserSession.ip_address == ip_address,
+                        or_(UserSession.revoked_at == None,  # noqa: E711
+                            UserSession.revoked_at >= func.now()))).\
+            first()
+        if user_session is None:
+            return None
+        user_session.last_seen_at = func.now()
+        user_session.revoked_at = revoked_at
+        self.dbsession.add(user_session)
+        self.dbsession.flush()
+        return user_session
 
     def token_for(self, username, ip_address):
         """Create a new token for the given :param:`username`.

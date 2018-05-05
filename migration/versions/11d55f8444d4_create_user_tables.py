@@ -31,6 +31,7 @@ def upgrade():
         'user_session',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('last_seen_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('revoked_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('user_id', sa.Integer(), nullable=False),
         sa.Column('token', sa.String(), nullable=False),

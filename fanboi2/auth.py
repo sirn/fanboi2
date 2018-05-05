@@ -1,9 +1,15 @@
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
+from pyramid.events import NewRequest
 from pyramid.security import ALL_PERMISSIONS
 from pyramid.security import Allow
+from pyramid.security import authenticated_userid
 
 from .interfaces import IUserLoginService
+
+
+SESSION_TOKEN_VALIDITY = 3600
+SESSION_TOKEN_REISSUE = 300
 
 
 class Root(object):  # pragma: no cover
@@ -28,17 +34,25 @@ def groupfinder(userid, request):
     return ['g:%s' % (g,) for g in groups]
 
 
+def mark_user_seen(ev):
+    userid = authenticated_userid(ev.request)
+    if userid is not None:
+        user_login_svc = ev.request.find_service(IUserLoginService)
+        user_login_svc.mark_seen(userid, ev.request.client_addr)
+
+
 def includeme(config):  # pragma: no cover
     authz_policy = ACLAuthorizationPolicy()
     authn_policy = AuthTktAuthenticationPolicy(
         config.registry.settings['auth.secret'],
         callback=groupfinder,
-        timeout=3600,
-        reissue_time=300,
+        timeout=SESSION_TOKEN_VALIDITY,
+        reissue_time=SESSION_TOKEN_REISSUE,
         cookie_name='_auth',
         http_only=True,
         secure=config.registry.settings['server.secure'])
 
+    config.add_subscriber(mark_user_seen, NewRequest)
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
     config.set_root_factory(Root)
