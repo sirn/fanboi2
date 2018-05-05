@@ -319,6 +319,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         self._make(TopicMeta(topic=topic, post_count=0))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(),
             IPostCreateService: PostCreateService(
                 self.dbsession,
@@ -365,6 +366,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         self._make(TopicMeta(topic=topic, post_count=0))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(),
             IPostCreateService: PostCreateService(
                 self.dbsession,
@@ -399,6 +401,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         self._make(TopicMeta(topic=topic, post_count=0))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(),
             IPostCreateService: PostCreateService(
                 self.dbsession,
@@ -433,6 +436,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         self._make(TopicMeta(topic=topic, post_count=9))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(),
             IPostCreateService: PostCreateService(
                 self.dbsession,
@@ -471,6 +475,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         self._make(TopicMeta(topic=topic, post_count=0))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(),
             IPostCreateService: PostCreateService(
                 self.dbsession,
@@ -509,6 +514,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         self._make(TopicMeta(topic=topic, post_count=0))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(),
             IPostCreateService: PostCreateService(
                 self.dbsession,
@@ -547,6 +553,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         self._make(TopicMeta(topic=topic, post_count=0))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(),
             IPostCreateService: PostCreateService(
                 self.dbsession,
@@ -583,6 +590,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         self._make(TopicMeta(topic=topic, post_count=0))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(),
             IPostCreateService: PostCreateService(
                 self.dbsession,
@@ -621,6 +629,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         self._make(TopicMeta(topic=topic, post_count=0))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(),
             IPostCreateService: PostCreateService(
                 self.dbsession,
@@ -656,6 +665,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         self._make(TopicMeta(topic=topic, post_count=0))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(rejected_by='akismet'),
             IPostCreateService: PostCreateService(
                 self.dbsession,
@@ -688,6 +698,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         self._make(TopicMeta(topic=topic, post_count=0))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(rejected_by='dnsbl'),
             IPostCreateService: PostCreateService(
                 self.dbsession,
@@ -720,6 +731,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         self._make(TopicMeta(topic=topic, post_count=0))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(rejected_by='proxy'),
             IPostCreateService: PostCreateService(
                 self.dbsession,
@@ -776,6 +788,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
             settings={'name': 'Nameless Foobar'}))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(),
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
@@ -823,6 +836,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
             settings={'use_ident': False}))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(),
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
@@ -855,6 +869,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
             status='restricted'))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(),
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
@@ -889,6 +904,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
             status='locked'))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(),
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
@@ -923,6 +939,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
             status='archived'))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService(),
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
@@ -954,6 +971,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
         board = self._make(Board(title='Foobar', slug='foo'))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService('akismet'),
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
@@ -985,6 +1003,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
         board = self._make(Board(title='Foobar', slug='foo'))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService('dnsbl'),
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
@@ -1016,6 +1035,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
         board = self._make(Board(title='Foobar', slug='foo'))
         self.dbsession.commit()
         request = mock_service(self.request, {
+            'db': self.dbsession,
             IFilterService: _DummyFilterService('proxy'),
             ITopicCreateService: TopicCreateService(
                 self.dbsession,

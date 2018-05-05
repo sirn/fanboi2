@@ -1159,6 +1159,7 @@ class TestUserCreateService(ModelSessionMixin, unittest.TestCase):
         self.dbsession.commit()
         user_create_svc = self._get_target_class()(self.dbsession)
         user2 = user_create_svc.create('child', 'passw0rd', user1.id)
+        self.dbsession.commit()
         self.assertEqual(user2.parent, user1)
         self.assertEqual(user2.username, 'child')
         self.assertTrue(argon2.verify(
@@ -1214,14 +1215,10 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertTrue(user_login_svc.authenticate('foo', 'passw0rd'))
-        self.dbsession.commit()
-        user_new = self.dbsession.query(User).get(user.id)
-        password_new = user_new.encrypted_password
-        self.assertNotEqual(password, password_new)
+        self.assertNotEqual(password, user.encrypted_password)
+        password_new = user.encrypted_password
         self.assertTrue(user_login_svc.authenticate('foo', 'passw0rd'))
-        self.dbsession.commit()
-        user_new2 = self.dbsession.query(User).get(user.id)
-        self.assertEqual(password_new, user_new2.encrypted_password)
+        self.assertEqual(password_new, user.encrypted_password)
 
     def test_user_from_token(self):
         from ..models import User, UserSession
@@ -1430,12 +1427,10 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
             token='foo_token',
             ip_address='127.0.0.1'))
         self.dbsession.commit()
-        revoked_at = user_session.revoked_at
+        self.assertIsNone(user_session.revoked_at)
         user_login_svc = self._get_target_class()(self.dbsession)
-        user_session_new = user_login_svc.revoke_token(
-            'foo_token',
-            '127.0.0.1')
-        self.assertNotEqual(revoked_at, user_session_new.revoked_at)
+        user_login_svc.revoke_token('foo_token', '127.0.0.1')
+        self.assertIsNotNone(user_session.revoked_at)
 
     def test_revoke_token_not_found(self):
         user_login_svc = self._get_target_class()(self.dbsession)
@@ -1479,15 +1474,12 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
             token='foo_token',
             ip_address='127.0.0.1'))
         self.dbsession.commit()
-        last_seen_at = user_session.last_seen_at
-        revoked_at = user_session.revoked_at
+        self.assertIsNone(user_session.last_seen_at)
+        self.assertIsNone(user_session.revoked_at)
         user_login_svc = self._get_target_class()(self.dbsession)
-        user_session_new = user_login_svc.mark_seen(
-            'foo_token',
-            '127.0.0.1',
-            3600)
-        self.assertNotEqual(last_seen_at, user_session_new.last_seen_at)
-        self.assertNotEqual(revoked_at, user_session_new.revoked_at)
+        user_login_svc.mark_seen('foo_token', '127.0.0.1', 3600)
+        self.assertIsNotNone(user_session.last_seen_at)
+        self.assertIsNotNone(user_session.revoked_at)
 
     def test_mark_seen_not_found(self):
         user_login_svc = self._get_target_class()(self.dbsession)

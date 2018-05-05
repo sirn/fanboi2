@@ -98,10 +98,6 @@ class PostCreateService(object):
             ip_address=ip_address)
 
         self.dbsession.add(post)
-
-        # Finalize
-
-        self.dbsession.flush()
         return post
 
 

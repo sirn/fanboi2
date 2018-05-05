@@ -45,7 +45,6 @@ class UserCreateService(object):
             parent_id=parent_id)
 
         self.dbsession.add(user)
-        self.dbsession.flush()
         return user
 
 
@@ -84,7 +83,6 @@ class UserLoginService(object):
         if new_hash is not None:
             user.encrypted_password = new_hash
             self.dbsession.add(user)
-            self.dbsession.flush()
         return True
 
     def _user_session_c(self, token, ip_address):
@@ -191,5 +189,4 @@ class UserLoginService(object):
             token=self._generate_token())
 
         self.dbsession.add(user_session)
-        self.dbsession.flush()
         return user_session.token
