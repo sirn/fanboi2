@@ -1432,12 +1432,29 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         self.dbsession.commit()
         revoked_at = user_session.revoked_at
         user_login_svc = self._get_target_class()(self.dbsession)
-        user_session_new = user_login_svc.revoke_token('foo_token')
+        user_session_new = user_login_svc.revoke_token(
+            'foo_token',
+            '127.0.0.1')
         self.assertNotEqual(revoked_at, user_session_new.revoked_at)
 
     def test_revoke_token_not_found(self):
         user_login_svc = self._get_target_class()(self.dbsession)
-        self.assertIsNone(user_login_svc.revoke_token('notexists'))
+        self.assertIsNone(user_login_svc.revoke_token(
+            'notexists',
+            '127.0.0.1'))
+
+    def test_revoke_token_wrong_ip(self):
+        from ..models import User, UserSession
+        user = self._make(User(username='foo', encrypted_password='none'))
+        self._make(UserSession(
+            user=user,
+            token='foo_token',
+            ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(user_login_svc.revoke_token(
+            'notexists',
+            '127.0.0.2'))
 
     def test_revoke_token_revoked(self):
         from datetime import datetime, timedelta
@@ -1450,7 +1467,9 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
             revoked_at=datetime.now() - timedelta(hours=1)))
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
-        self.assertIsNone(user_login_svc.revoke_token('foo_token'))
+        self.assertIsNone(user_login_svc.revoke_token(
+            'foo_token',
+            '127.0.0.1'))
 
     def test_mark_seen(self):
         from ..models import User, UserSession

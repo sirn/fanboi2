@@ -114,7 +114,7 @@ class IUserLoginService(Interface):
     def groups_from_token(token, ip_address):
         pass
 
-    def revoke_token(token):
+    def revoke_token(token, ip_address):
         pass
 
     def mark_seen(token, ip_address, revocation):
