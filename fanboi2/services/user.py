@@ -6,7 +6,7 @@ from sqlalchemy.sql import and_, or_, func
 from sqlalchemy.orm import joinedload
 
 from ..auth import SESSION_TOKEN_VALIDITY
-from ..models import User, UserSession
+from ..models import User, UserSession, Group
 
 
 ARGON2_MEMORY_COST = 1024
@@ -43,6 +43,12 @@ class UserCreateService(object):
             username=username,
             encrypted_password=self.crypt_context.hash(password),
             parent_id=parent_id)
+
+        for g in groups:
+            group = self.dbsession.query(Group).filter_by(name=g).first()
+            if not group:
+                group = Group(name=g)
+            user.groups.append(group)
 
         self.dbsession.add(user)
         return user

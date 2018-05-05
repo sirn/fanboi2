@@ -1152,25 +1152,52 @@ class TestUserCreateService(ModelSessionMixin, unittest.TestCase):
 
     def test_create(self):
         from passlib.hash import argon2
-        from ..models import User
+        from ..models import User, Group
+        group1 = self._make(Group(name='admin'))
+        group2 = self._make(Group(name='mod'))
         user1 = self._make(User(
             username='root',
-            encrypted_password='none'))
+            encrypted_password='none',
+            groups=[group1]))
         self.dbsession.commit()
         user_create_svc = self._get_target_class()(self.dbsession)
-        user2 = user_create_svc.create('child', 'passw0rd', user1.id)
+        user2 = user_create_svc.create(
+            'child',
+            'passw0rd',
+            user1.id,
+            ['mod', 'janitor'])
         self.dbsession.commit()
+        self.assertEqual(self.dbsession.query(Group).count(), 3)
+        group3 = self.dbsession.query(Group).filter_by(name='janitor').first()
         self.assertEqual(user2.parent, user1)
         self.assertEqual(user2.username, 'child')
+        self.assertEqual(user2.groups, [group3, group2])
         self.assertTrue(argon2.verify(
             'passw0rd',
             user2.encrypted_password))
 
     def test_create_root(self):
+        from ..models import Group
         user_create_svc = self._get_target_class()(self.dbsession)
-        user = user_create_svc.create('root', 'passw0rd', None)
+        user = user_create_svc.create(
+            'root',
+            'passw0rd',
+            None,
+            ['admin'])
+        self.assertEqual(self.dbsession.query(Group).count(), 1)
+        group = self.dbsession.query(Group).filter_by(name='admin').first()
         self.assertEqual(user.parent, None)
         self.assertEqual(user.username, 'root')
+        self.assertEqual(user.groups, [group])
+
+    def test_create_without_group(self):
+        from ..models import Group
+        user_create_svc = self._get_target_class()(self.dbsession)
+        user = user_create_svc.create('root', 'passw0rd', None, [])
+        self.assertEqual(self.dbsession.query(Group).count(), 0)
+        self.assertEqual(user.parent, None)
+        self.assertEqual(user.username, 'root')
+        self.assertEqual(user.groups, [])
 
 
 class TestUserLoginService(ModelSessionMixin, unittest.TestCase):

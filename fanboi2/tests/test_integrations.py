@@ -2871,7 +2871,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
     def test_setup_post(self):
         from ..interfaces import ISettingQueryService, ISettingUpdateService
         from ..interfaces import IUserCreateService
-        from ..models import User, UserSession
+        from ..models import User, UserSession, Group
         from ..services import SettingQueryService, SettingUpdateService
         from ..services import UserCreateService
         from ..version import __VERSION__
@@ -2895,7 +2895,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         self.config.add_route('admin_root', '/admin')
         response = setup_post(request)
         user = self.dbsession.query(User).one()
+        group = self.dbsession.query(Group).one()
         self.assertEqual(user.username, 'root')
+        self.assertEqual(user.groups, [group])
         self.assertNotEqual(user.encrypted_password, 'passw0rd')
         self.assertIsNone(user.parent)
         self.assertEqual(self.dbsession.query(UserSession).count(), 0)

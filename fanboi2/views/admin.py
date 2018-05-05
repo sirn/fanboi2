@@ -102,7 +102,8 @@ def setup_post(request):
     user_create_svc.create(
         form.username.data,
         form.password.data,
-        None)
+        None,
+        ['admin'])
 
     request.session.flash('Successfully setup initial user.', 'success')
     return HTTPFound(location=request.route_path(route_name='admin_root'))

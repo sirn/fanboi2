@@ -100,7 +100,7 @@ class ITopicQueryService(Interface):
 
 
 class IUserCreateService(Interface):
-    def create(username, password, parent):
+    def create(username, password, parent, groups):
         pass
 
 
