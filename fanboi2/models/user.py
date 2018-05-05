@@ -22,7 +22,6 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime(timezone=True), default=func.now())
-    logged_in_at = Column(DateTime(timezone=True))
     parent_id = Column(Integer, ForeignKey('user.id'))
     username = Column(String, nullable=False)
     encrypted_password = Column(String, nullable=False)

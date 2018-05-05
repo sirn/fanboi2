@@ -2716,6 +2716,35 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             login_post(self.request)
         self.assertEqual(self.dbsession.query(UserSession).count(), 0)
 
+    def test_login_post_deactivated(self):
+        from passlib.hash import argon2
+        from ..forms import AdminLoginForm
+        from ..interfaces import IUserLoginService
+        from ..models import User, UserSession
+        from ..services import UserLoginService
+        from ..views.admin import login_post
+        from . import mock_service
+        self._make(User(
+            username='foo',
+            encrypted_password=argon2.hash('passw0rd'),
+            deactivated=True))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IUserLoginService: UserLoginService(self.dbsession)})
+        request.method = 'POST'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.session = testing.DummySession()
+        request.POST = MultiDict({})
+        request.POST['username'] = 'foo'
+        request.POST['password'] = 'passw0rd'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        response = login_post(request)
+        self.assertEqual(self.dbsession.query(UserSession).count(), 0)
+        self.assertIsInstance(response['form'], AdminLoginForm)
+        self.assertEqual(
+            request.session.pop_flash(queue='error'),
+            ['Username or password is invalid.'])
+
     def test_login_post_not_found(self):
         from ..forms import AdminLoginForm
         from ..interfaces import IUserLoginService

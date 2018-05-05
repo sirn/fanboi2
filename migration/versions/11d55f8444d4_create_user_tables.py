@@ -18,7 +18,6 @@ def upgrade():
         'user',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
-        sa.Column('logged_in_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('parent_id', sa.Integer(), nullable=True),
         sa.Column('username', sa.String(), nullable=False),
         sa.Column('encrypted_password', sa.String(), nullable=False),

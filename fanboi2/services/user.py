@@ -11,20 +11,24 @@ ARGON2_PARALLELISM = 2
 ARGON2_ROUNDS = 6
 
 
+def _create_crypt_context():
+    return CryptContext(
+        schemes=['argon2'],
+        deprecated=['auto'],
+        truncate_error=True,
+        argon2__memory_cost=ARGON2_MEMORY_COST,
+        argon2__parallelism=ARGON2_PARALLELISM,
+        argon2__rounds=ARGON2_ROUNDS)
+
+
 class UserCreateService(object):
     """User create service provides a service for creating user."""
 
     def __init__(self, dbsession):
         self.dbsession = dbsession
-        self.crypt_context = CryptContext(
-            schemes=['argon2'],
-            deprecated=['auto'],
-            truncate_error=True,
-            argon2__memory_cost=ARGON2_MEMORY_COST,
-            argon2__parallelism=ARGON2_PARALLELISM,
-            argon2__rounds=ARGON2_ROUNDS)
+        self.crypt_context = _create_crypt_context()
 
-    def create(self, username, password, parent_id):
+    def create(self, username, password, parent_id, groups=[]):
         """Creates a user. :param:`parent_id` must be present for all users
         except the root user, usually the user who created this specific user.
 
@@ -47,13 +51,7 @@ class UserLoginService(object):
 
     def __init__(self, dbsession):
         self.dbsession = dbsession
-        self.crypt_context = CryptContext(
-            schemes=['argon2'],
-            deprecated=['auto'],
-            truncate_error=True,
-            argon2__memory_cost=ARGON2_MEMORY_COST,
-            argon2__parallelism=ARGON2_PARALLELISM,
-            argon2__rounds=ARGON2_ROUNDS)
+        self.crypt_context = _create_crypt_context()
 
     def _generate_token(self):
         """Generates a secure random token."""
@@ -67,7 +65,8 @@ class UserLoginService(object):
         :param password: A password :type:`str` to authenticate.
         """
         user = self.dbsession.query(User).\
-            filter_by(username=username).\
+            filter(and_(User.deactivated == False,  # noqa: E711
+                        User.username == username)).\
             first()
         if not user:
             return False
@@ -92,9 +91,10 @@ class UserLoginService(object):
         """
         return self.dbsession.query(User).\
             join(User.sessions).\
-            filter(and_(or_(UserSession.revoked_at == None,  # noqa: E711
-                            UserSession.revoked_at >= func.now()),
-                        UserSession.token == token)).\
+            filter(and_(User.deactivated == False,  # noqa: E711
+                        UserSession.token == token,
+                        or_(UserSession.revoked_at == None,  # noqa: E711
+                            UserSession.revoked_at >= func.now()))).\
             first()
 
     def groups_from_token(self, token):
@@ -115,7 +115,8 @@ class UserLoginService(object):
         :param ip_address: IP address that used to retrieve this token.
         """
         user = self.dbsession.query(User).\
-            filter(User.username == username).\
+            filter(and_(User.deactivated == False,  # noqa: E711
+                        User.username == username)).\
             one()
 
         user_session = UserSession(

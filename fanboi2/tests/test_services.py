@@ -1178,7 +1178,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         from ..services import UserLoginService
         return UserLoginService
 
-    def test_authentication(self):
+    def test_authenticate(self):
         from passlib.hash import argon2
         from ..models import User
         self._make(User(
@@ -1189,11 +1189,22 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         self.assertTrue(user_login_svc.authenticate('foo', 'passw0rd'))
         self.assertFalse(user_login_svc.authenticate('foo', 'password'))
 
-    def test_authentication_not_found(self):
+    def test_authenticate_not_found(self):
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertFalse(user_login_svc.authenticate('foo', 'passw0rd'))
 
-    def test_authentication_upgrade(self):
+    def test_authenticate_deactivated(self):
+        from passlib.hash import argon2
+        from ..models import User
+        self._make(User(
+            username='foo',
+            encrypted_password=argon2.hash('passw0rd'),
+            deactivated=True))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertFalse(user_login_svc.authenticate('foo', 'passw0rd'))
+
+    def test_authenticate_upgrade(self):
         from passlib.hash import argon2
         from ..models import User
         password = argon2.using(rounds=2).hash('passw0rd')
@@ -1237,6 +1248,20 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
     def test_user_from_token_not_found(self):
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertIsNone(user_login_svc.user_from_token('notexists'))
+
+    def test_user_from_token_deactivated(self):
+        from ..models import User, UserSession
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            deactivated=True))
+        self._make(UserSession(
+            user=user,
+            token='foo_token1',
+            ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(user_login_svc.user_from_token('foo_token'))
 
     def test_user_from_token_revoked(self):
         from datetime import datetime, timedelta
@@ -1301,6 +1326,25 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertIsNone(user_login_svc.groups_from_token('notexists'))
 
+    def test_groups_from_token_deactivated(self):
+        from datetime import datetime, timedelta
+        from ..models import User, UserSession, Group
+        group1 = self._make(Group(name='foo'))
+        group2 = self._make(Group(name='bar'))
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            groups=[group1, group2],
+            deactivated=True))
+        self._make(UserSession(
+            user=user,
+            token='foo_token',
+            ip_address='127.0.0.1',
+            revoked_at=datetime.now() + timedelta(hours=1)))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(user_login_svc.groups_from_token('foo_token'))
+
     def test_groups_from_token_revoked(self):
         from datetime import datetime, timedelta
         from ..models import User, UserSession, Group
@@ -1345,3 +1389,13 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         user_login_svc = self._get_target_class()(self.dbsession)
         with self.assertRaises(NoResultFound):
             user_login_svc.token_for('notexists', '127.0.0.1')
+
+    def test_token_for_deactivated(self):
+        from ..models import User
+        self._make(User(
+            username='foo',
+            encrypted_password='none',
+            deactivated=True))
+        user_login_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            user_login_svc.token_for('foo', '127.0.0.1')
