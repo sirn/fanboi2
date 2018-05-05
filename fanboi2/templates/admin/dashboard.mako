@@ -2,18 +2,17 @@
 <%def name='title()'>Login - Admin Panel</%def>
 <header class="subheader">
     <div class="container">
-        <h2 class="subheader-title">Admin Panel</h2>
-        <div class="subheader-body"><p>Manage various aspect of the site.</p></div>
+        <h2 class="subheader-title">Dashboard</h2>
+        <div class="subheader-body"><p>Overview of the site.</p></div>
     </div>
 </header>
 <div class="sheet">
     <div class="container">
-        <h2 class="sheet-title">Dashboard</h2>
         <div class="cols">
             <div class="cols-column sidebar">
                 <div class="sheet-body">
                     <div class="menu">
-                        <h3 class="menu-header">My</h3>
+                        <h3 class="menu-header">My Actions</h3>
                         <ul class="menu-actions">
                             <li class="menu-actions-item"><a href="/">Dashboard</a></li>
                             <li class="menu-actions-item"><a href="/">Logout</a></li>

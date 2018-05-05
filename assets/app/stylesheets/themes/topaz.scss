@@ -241,25 +241,25 @@ $color-text:             #333;
     }
 
     .menu {
-        background-color: $color-tint-light;
-        border-color: $color-tint;
+        background-color: $color-tint-lighter;
+        border-color: $color-tint-light;
 
         @media (min-width: $bound-tablet) {
-            border-radius: 5px;
+            border-radius: 2px;
             overflow: hidden;
         }
     }
 
     .menu-header {
-        color: $color-gray-darker;
+        color: $color-gray-dark;
     }
 
     .menu-actions {
-        background-color: $color-tint-lighter;
+        background-color: #fff;
     }
 
     .menu-actions-item {
-        border-color: $color-tint;
+        border-color: $color-tint-light;
     }
 
     /* api.scss
@@ -283,7 +283,7 @@ $color-text:             #333;
     }
 
     .api-request-verb {
-        border-radius: 3px;
+        border-radius: 2px;
         font-weight: bold;
         color: #fff;
 

@@ -223,6 +223,28 @@ $color-text:             #cfcfcf;
         h1, h2, h3, h4, h5 { color: $color-brand; }
     }
 
+    .menu {
+        background-color: $color-gray-darker;
+        border-color: $color-gray;
+
+        @media (min-width: $bound-tablet) {
+            border-radius: 2px;
+            overflow: hidden;
+        }
+    }
+
+    .menu-header {
+        color: $color-gray-light;
+    }
+
+    .menu-actions {
+        background-color: $color-gray-dark;
+    }
+
+    .menu-actions-item {
+        border-color: $color-gray;
+    }
+
     /* api.scss
      * -------------------------------------------------------------------- */
 
