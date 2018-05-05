@@ -2773,6 +2773,20 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         self.assertDictEqual(response['form'].errors, {
             'password': ['This field is required.']})
 
+    def test_logout_get(self):
+        from pyramid.authentication import AuthTktAuthenticationPolicy
+        from pyramid.authorization import ACLAuthorizationPolicy
+        from ..views.admin import logout_get
+        self.request.method = 'GET'
+        authn_policy = AuthTktAuthenticationPolicy('foo')
+        authz_policy = ACLAuthorizationPolicy()
+        self.config.set_authorization_policy(authz_policy)
+        self.config.set_authentication_policy(authn_policy)
+        self.config.add_route('admin_root', '/admin')
+        response = logout_get(self.request)
+        self.assertEqual(response.location, '/admin')
+        self.assertIn('Set-Cookie', response.headers)
+
     def test_setup_get(self):
         from ..forms import AdminSetupForm
         from ..interfaces import ISettingQueryService
@@ -2989,3 +3003,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(response['form'].password_confirm.data, 'p' * 65)
         self.assertDictEqual(response['form'].errors, {
             'password': ['Field must be between 8 and 64 characters long.']})
+
+    def test_dashboard_get(self):
+        from ..views.admin import dashboard_get
+        self.request.method = 'GET'
+        response = dashboard_get(self.request)
+        self.assertEqual(response, {})

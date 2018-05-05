@@ -1,6 +1,6 @@
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPForbidden
 from pyramid.csrf import check_csrf_token
-from pyramid.security import remember
+from pyramid.security import remember, forget, authenticated_userid
 
 from ..version import __VERSION__
 from ..forms import AdminLoginForm, AdminSetupForm
@@ -13,7 +13,7 @@ def login_get(request):
 
     :param request: A :class:`pyramid.request.Request` object.
     """
-    if request.authenticated_userid:
+    if authenticated_userid(request):
         return HTTPFound(
             location=request.route_path(route_name='admin_dashboard'))
 
@@ -33,7 +33,7 @@ def login_post(request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     check_csrf_token(request)
-    if request.authenticated_userid:
+    if authenticated_userid(request):
         raise HTTPForbidden
 
     form = AdminLoginForm(request.POST, request=request)
@@ -54,6 +54,17 @@ def login_post(request):
     headers = remember(request, token)
     return HTTPFound(
         location=request.route_path(route_name='admin_dashboard'),
+        headers=headers)
+
+
+def logout_get(request):
+    """Perform user logout.
+
+    :param request: A :class:`pyramid.request.Request` object.
+    """
+    headers = forget(request)
+    return HTTPFound(
+        location=request.route_path(route_name='admin_root'),
         headers=headers)
 
 
@@ -120,10 +131,21 @@ def includeme(config):  # pragma: no cover
         renderer='admin/login.mako')
 
     #
+    # Logout
+    #
+
+    config.add_route('admin_logout', '/logout/')
+
+    config.add_view(
+        logout_get,
+        request_method='GET',
+        route_name='admin_logout')
+
+    #
     # Initial setup
     #
 
-    config.add_route('admin_setup', '/setup')
+    config.add_route('admin_setup', '/setup/')
 
     config.add_view(
         setup_get,
@@ -143,12 +165,55 @@ def includeme(config):  # pragma: no cover
     # Dashboard
     #
 
-    config.add_route('admin_dashboard', '/dashboard')
+    config.add_route('admin_dashboard', '/dashboard/')
 
     config.add_view(
         dashboard_get,
         request_method='GET',
         route_name='admin_dashboard',
-        renderer='admin/dashboard.mako')
+        renderer='admin/dashboard.mako',
+        permission='dashboard')
+
+    #
+    # Bans
+    #
+
+    config.add_route('admin_bans', '/bans/')
+    config.add_route('admin_ban', '/bans/{ban:\d+}/')
+
+    #
+    # Boards
+    #
+
+    config.add_route('admin_boards', '/boards/')
+    config.add_route('admin_board', '/boards/{board}/')
+
+    #
+    # Topics
+    #
+
+    config.add_route('admin_topics', '/topics/')
+    config.add_route('admin_topic', '/topics/{topic:\d+}/')
+
+    #
+    # Pages
+    #
+
+    config.add_route('admin_pages', '/pages/')
+    config.add_route('admin_page', '/pages/{namespace}/{page:.*}/')
+
+    #
+    # Settings
+    #
+
+    config.add_route('admin_settings', '/settings/')
+    config.add_route('admin_setting', '/settings/{setting}/')
+
+    #
+    # Users
+    #
+
+    config.add_route('admin_users', '/users/')
+    config.add_route('admin_user', '/users/{user}/')
 
     config.scan()
