@@ -301,11 +301,4 @@ def includeme(config):  # pragma: no cover
         renderer='admin/settings/show.mako',
         permission='manage')
 
-    #
-    # Users
-    #
-
-    config.add_route('admin_users', '/users/')
-    config.add_route('admin_user', '/users/{user}/')
-
     config.scan()

@@ -29,7 +29,6 @@
                         <ul class="menu-actions">
                             <li class="menu-actions-item"><a href="${request.route_path('admin_pages')}">Pages</a></li>
                             <li class="menu-actions-item"><a href="${request.route_path('admin_settings')}">Settings</a></li>
-                            <li class="menu-actions-item"><a href="${request.route_path('admin_users')}">Users</a></li>
                         </ul>
                     </div>
                 </div>
