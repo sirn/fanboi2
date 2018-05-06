@@ -89,21 +89,15 @@ class SettingUpdateService(object):
     def update(self, key, value):
         """Update the given setting key with the given value. The value
         may be any data structure that are JSON-serializable. This method
-        will automatically expire cache for the given key if exists.
+        will automatically reload cache for the given key.
 
         :param key: The setting key.
         :param value: The value to set.
         """
-        stmt = insert(Setting.__table__)
-        stmt = stmt.\
-            values(key=key, value=value).\
-            returning(Setting.key).\
-            on_conflict_do_update(
-                index_elements=[Setting.key],
-                set_=dict(value=stmt.excluded.value))
-        result = self.dbsession.execute(stmt)
-        key_ = result.fetchone()[0]
-        cache_key = _get_cache_key(key)
-        self.cache_region.delete(cache_key)
-        result.close()
-        return self.dbsession.query(Setting).filter_by(key=key_).first()
+        setting = self.dbsession.query(Setting).filter_by(key=key).first()
+        if setting is None:
+            setting = Setting(key=key)
+        setting.value = value
+        self.dbsession.add(setting)
+        self.cache_region.set(_get_cache_key(key), value)
+        return setting
