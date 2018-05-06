@@ -38,4 +38,17 @@
         }
     }
 
+    .admin-cascade {
+        border-color: $color-tint-light;
+    }
+
+    .admin-cascade-header {
+        font-weight: bold;
+        border-color: $color-tint-light;
+    }
+
+    .admin-cascade-body {
+        color: $color-gray-dark;
+    }
+
 }

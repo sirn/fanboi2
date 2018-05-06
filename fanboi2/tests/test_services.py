@@ -12,6 +12,22 @@ class TestBoardQueryService(ModelSessionMixin, unittest.TestCase):
         from ..services import BoardQueryService
         return BoardQueryService
 
+    def test_list_all(self):
+        from ..models import Board
+        board1 = self._make(Board(slug='foo', title='Foo', status='open'))
+        board2 = self._make(Board(
+            slug='baz',
+            title='Baz',
+            status='restricted'))
+        board3 = self._make(Board(slug='bax', title='Bax', status='locked'))
+        board4 = self._make(Board(slug='wel', title='Wel', status='open'))
+        board5 = self._make(Board(slug='bar', title='Bar', status='archived'))
+        self.dbsession.commit()
+        board_query_svc = self._get_target_class()(self.dbsession)
+        self.assertEqual(
+            board_query_svc.list_all(),
+            [board5, board3, board2, board1, board4])
+
     def test_list_active(self):
         from ..models import Board
         board1 = self._make(Board(slug='foo', title='Foo', status='open'))
@@ -268,6 +284,35 @@ class TestPageQueryService(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(
             page_query_svc.list_public(),
             [page2, page3, page1])
+
+    def test_list_internal(self):
+        from sqlalchemy import inspect
+        from ..models import Page
+        internal_pages = (
+            ('foo', 'none'),
+            ('bar', 'markdown'),
+            ('baz', 'html'))
+        self._make(Page(
+            title='bar',
+            slug='bar',
+            body='Hello',
+            namespace='internal'))
+        self._make(Page(
+            title='hoge',
+            slug='hoge',
+            body='Hoge',
+            namespace='internal'))
+        self.dbsession.commit()
+        page_query_svc = self._get_target_class()(self.dbsession)
+        pages = page_query_svc.list_internal(_internal_pages=internal_pages)
+        self.assertEqual(pages[0].slug, 'bar')
+        self.assertTrue(inspect(pages[0]).persistent)
+        self.assertEqual(pages[1].slug, 'baz')
+        self.assertFalse(inspect(pages[1]).persistent)
+        self.assertEqual(pages[2].slug, 'foo')
+        self.assertFalse(inspect(pages[2]).persistent)
+        self.assertEqual(pages[3].slug, 'hoge')
+        self.assertTrue(inspect(pages[3]).persistent)
 
     def test_public_page_from_slug(self):
         from ..models import Page
@@ -686,11 +731,64 @@ class TestRuleBanQueryService(ModelSessionMixin, unittest.TestCase):
         from ..services import RuleBanQueryService
         return RuleBanQueryService
 
+    def test_list_active(self):
+        from datetime import datetime, timedelta
+        from ..models import RuleBan
+        rule_ban1 = self._make(RuleBan(
+            ip_address='10.0.1.0/24',
+            active_until=datetime.now() + timedelta(hours=1)))
+        self._make(RuleBan(
+            ip_address='10.0.2.0/24',
+            active_until=datetime.now() - timedelta(hours=1)))
+        rule_ban3 = self._make(RuleBan(
+            ip_address='10.0.3.0/24'))
+        self._make(RuleBan(
+            ip_address='10.0.3.0/24',
+            active=False))
+        rule_ban5 = self._make(RuleBan(
+            ip_address='10.0.3.0/24',
+            active_until=datetime.now() + timedelta(hours=2)))
+        rule_ban6 = self._make(RuleBan(
+            ip_address='10.0.3.0/24',
+            created_at=datetime.now() + timedelta(minutes=5)))
+        self.dbsession.commit()
+        rule_ban_query_svc = self._get_target_class()(self.dbsession)
+        self.assertEqual(
+            rule_ban_query_svc.list_active(),
+            [rule_ban6, rule_ban3, rule_ban5, rule_ban1])
+
+    def test_list_inactive(self):
+        from datetime import datetime, timedelta
+        from ..models import RuleBan
+        self._make(RuleBan(
+            ip_address='10.0.1.0/24',
+            active_until=datetime.now() + timedelta(hours=1)))
+        rule_ban2 = self._make(RuleBan(
+            ip_address='10.0.2.0/24',
+            active_until=datetime.now() - timedelta(hours=1)))
+        self._make(RuleBan(
+            ip_address='10.0.3.0/24'))
+        rule_ban4 = self._make(RuleBan(
+            ip_address='10.0.3.0/24',
+            active=False))
+        rule_ban5 = self._make(RuleBan(
+            ip_address='10.0.3.0/24',
+            active_until=datetime.now() - timedelta(hours=2)))
+        rule_ban6 = self._make(RuleBan(
+            ip_address='10.0.3.0/24',
+            created_at=datetime.now() + timedelta(minutes=5),
+            active=False))
+        self.dbsession.commit()
+        rule_ban_query_svc = self._get_target_class()(self.dbsession)
+        self.assertEqual(
+            rule_ban_query_svc.list_inactive(),
+            [rule_ban6, rule_ban4, rule_ban2, rule_ban5])
+
     def test_is_banned(self):
         from ..models import RuleBan
         self._make(RuleBan(ip_address='10.0.1.0/24'))
-        rule_ban_query_svc = self._get_target_class()(self.dbsession)
         self.dbsession.commit()
+        rule_ban_query_svc = self._get_target_class()(self.dbsession)
         self.assertTrue(rule_ban_query_svc.is_banned('10.0.1.1'))
         self.assertTrue(rule_ban_query_svc.is_banned('10.0.1.255'))
         self.assertTrue(rule_ban_query_svc.is_banned(
@@ -1154,6 +1252,56 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(
             topic_query_svc.list_recent_from_board_slug('notfound'),
             [])
+
+    def test_list_recent(self):
+        from ..models import Board, Topic, TopicMeta
+        from datetime import datetime, timedelta
+
+        def _make_topic(days=0, **kwargs):
+            topic = self._make(Topic(**kwargs))
+            self._make(TopicMeta(
+                topic=topic,
+                post_count=0,
+                posted_at=datetime.now(),
+                bumped_at=datetime.now() - timedelta(days=days)))
+            return topic
+
+        board1 = self._make(Board(title='Foo', slug='foo'))
+        board2 = self._make(Board(title='Bar', slug='bar'))
+        topic1 = _make_topic(0.1, board=board1, title='Foo')
+        topic2 = _make_topic(1, board=board1, title='Foo')
+        topic3 = _make_topic(2, board=board1, title='Foo')
+        topic4 = _make_topic(3, board=board1, title='Foo')
+        topic5 = _make_topic(4, board=board1, title='Foo')
+        topic6 = _make_topic(5, board=board1, title='Foo')
+        topic7 = _make_topic(6, board=board1, title='Foo')
+        topic8 = _make_topic(6.1, board=board1, title='Foo', status='locked')
+        topic9 = _make_topic(6.2, board=board1, title='Foo', status='archived')
+        topic10 = _make_topic(7, board=board1, title='Foo')
+        topic11 = _make_topic(8, board=board1, title='Foo')
+        topic12 = _make_topic(9, board=board1, title='Foo')
+        topic13 = _make_topic(0.2, board=board2, title='Foo')
+        _make_topic(7, board=board1, title='Foo', status='archived')
+        _make_topic(7, board=board1, title='Foo', status='locked')
+        self.dbsession.commit()
+        topic_query_svc = self._get_target_class()(self.dbsession)
+        self.assertEqual(
+            topic_query_svc.list_recent(_limit=20),
+            [
+                topic1,
+                topic13,
+                topic2,
+                topic3,
+                topic4,
+                topic5,
+                topic6,
+                topic7,
+                topic8,
+                topic9,
+                topic10,
+                topic11,
+                topic12,
+            ])
 
     def test_topic_from_id(self):
         from ..models import Board, Topic

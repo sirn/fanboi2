@@ -8,6 +8,10 @@ from webob.multidict import MultiDict
 from ..version import __VERSION__
 from ..forms import AdminLoginForm, AdminSetupForm, AdminSettingForm
 from ..interfaces import \
+    IBoardQueryService,\
+    ITopicQueryService,\
+    IPageQueryService,\
+    IRuleBanQueryService,\
     ISettingQueryService,\
     ISettingUpdateService,\
     IUserCreateService,\
@@ -116,6 +120,148 @@ def setup_post(request):
 
 
 def dashboard_get(request):
+    return {}
+
+
+def bans_get(request):
+    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
+    bans = rule_ban_query_svc.list_active()
+    return {
+        'bans': bans
+    }
+
+
+def bans_inactive_get(request):
+    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
+    bans = rule_ban_query_svc.list_inactive()
+    return {
+        'bans': bans
+    }
+
+
+def ban_new_get(request):
+    return {}
+
+
+def ban_new_post(request):
+    check_csrf_token(request)
+    return {}
+
+
+def ban_get(request):
+    return {}
+
+
+def ban_post(request):
+    check_csrf_token(request)
+    return {}
+
+
+def boards_get(request):
+    board_query_svc = request.find_service(IBoardQueryService)
+    boards = board_query_svc.list_all()
+    return {
+        'boards': boards
+    }
+
+
+def board_new_get(request):
+    return {}
+
+
+def board_new_post(request):
+    check_csrf_token(request)
+    return {}
+
+
+def board_get(request):
+    return {}
+
+
+def board_post(request):
+    check_csrf_token(request)
+    return {}
+
+
+def topics_get(request):
+    topic_query_svc = request.find_service(ITopicQueryService)
+    topics = topic_query_svc.list_recent()
+    return {
+        'topics': topics
+    }
+
+
+def topic_new_get(request):
+    return {}
+
+
+def topic_new_post(request):
+    check_csrf_token(request)
+    return {}
+
+
+def topic_get(request):
+    return {}
+
+
+def topic_post(request):
+    check_csrf_token(request)
+    return {}
+
+
+def topic_delete_post(request):
+    check_csrf_token(request)
+    return {}
+
+
+def topic_post_get(request):
+    return {}
+
+
+def topic_post_delete_post(request):
+    check_csrf_token(request)
+    return {}
+
+
+def pages_get(request):
+    page_query_svc = request.find_service(IPageQueryService)
+    pages = page_query_svc.list_public()
+    pages_internal = page_query_svc.list_internal()
+    return {
+        'pages': pages,
+        'pages_internal': pages_internal,
+    }
+
+
+def page_new_get(request):
+    return {}
+
+
+def page_new_post(request):
+    check_csrf_token(request)
+    return {}
+
+
+def page_get(request):
+    return {}
+
+
+def page_post(request):
+    check_csrf_token(request)
+    return {}
+
+
+def page_delete_post(request):
+    check_csrf_token(request)
+    return {}
+
+
+def page_internal_get(request):
+    return {}
+
+
+def page_internal_post(request):
+    check_csrf_token(request)
     return {}
 
 
@@ -250,28 +396,229 @@ def includeme(config):  # pragma: no cover
     #
 
     config.add_route('admin_bans', '/bans/')
+    config.add_route('admin_bans_inactive', '/bans/inactive/')
+    config.add_route('admin_ban_new', '/bans/new/')
     config.add_route('admin_ban', '/bans/{ban:\d+}/')
+
+    config.add_view(
+        bans_get,
+        request_method='GET',
+        route_name='admin_bans',
+        renderer='admin/bans/all.mako',
+        permission='manage')
+
+    config.add_view(
+        bans_inactive_get,
+        request_method='GET',
+        route_name='admin_bans_inactive',
+        renderer='admin/bans/inactive.mako',
+        permission='manage')
+
+    config.add_view(
+        ban_new_get,
+        request_method='GET',
+        route_name='admin_ban_new',
+        renderer='admin/bans/new.mako',
+        permission='manage')
+
+    config.add_view(
+        ban_new_post,
+        request_method='POST',
+        route_name='admin_ban_new',
+        renderer='admin/bans/new.mako',
+        permission='manage')
+
+    config.add_view(
+        ban_get,
+        request_method='GET',
+        route_name='admin_ban',
+        renderer='admin/bans/show.mako',
+        permission='manage')
+
+    config.add_view(
+        ban_post,
+        request_method='POST',
+        route_name='admin_ban',
+        renderer='admin/bans/show.mako',
+        permission='manage')
 
     #
     # Boards
     #
 
     config.add_route('admin_boards', '/boards/')
+    config.add_route('admin_board_new', '/boards/new/')
     config.add_route('admin_board', '/boards/{board}/')
+
+    config.add_view(
+        boards_get,
+        request_method='GET',
+        route_name='admin_boards',
+        renderer='admin/boards/all.mako',
+        permission='manage')
+
+    config.add_view(
+        board_new_get,
+        request_method='GET',
+        route_name='admin_board_new',
+        renderer='admin/boards/new.mako',
+        permission='manage')
+
+    config.add_view(
+        board_new_post,
+        request_method='POST',
+        route_name='admin_board_new',
+        renderer='admin/boards/new.mako',
+        permission='manage')
+
+    config.add_view(
+        board_get,
+        request_method='GET',
+        route_name='admin_board',
+        renderer='admin/boards/show.mako',
+        permission='manage')
+
+    config.add_view(
+        board_post,
+        request_method='POST',
+        route_name='admin_board',
+        renderer='admin/boards/show.mako',
+        permission='manage')
 
     #
     # Topics
     #
 
     config.add_route('admin_topics', '/topics/')
+    config.add_route('admin_topic_new', '/topics/new/')
     config.add_route('admin_topic', '/topics/{topic:\d+}/')
+    config.add_route('admin_topic_delete', '/topics/{topic:\d+}/delete/')
+    config.add_route('admin_topic_post', '/topics/{topic:\d+}/{post:\d+}/')
+    config.add_route(
+        'admin_topic_post_delete',
+        '/topics/{topic:\d+}/{post:\d+}/delete/')
+
+    config.add_view(
+        topics_get,
+        request_method='GET',
+        route_name='admin_topics',
+        renderer='admin/topics/all.mako',
+        permission='manage')
+
+    config.add_view(
+        topic_new_get,
+        request_method='GET',
+        route_name='admin_topic_new',
+        renderer='admin/topics/new.mako',
+        permission='manage')
+
+    config.add_view(
+        topic_new_post,
+        request_method='POST',
+        route_name='admin_topic_new',
+        renderer='admin/topics/new.mako',
+        permission='manage')
+
+    config.add_view(
+        topic_get,
+        request_method='GET',
+        route_name='admin_topic',
+        renderer='admin/topics/show.mako',
+        permission='manage')
+
+    config.add_view(
+        topic_post,
+        request_method='POST',
+        route_name='admin_topic',
+        renderer='admin/topics/show.mako',
+        permission='manage')
+
+    config.add_view(
+        topic_delete_post,
+        request_method='POST',
+        route_name='admin_topic_delete',
+        renderer='admin/topics/show.mako',
+        permission='manage')
+
+    config.add_view(
+        topic_post_get,
+        request_method='GET',
+        route_name='admin_topic_post',
+        renderer='admin/topics/post.mako',
+        permission='manage')
+
+    config.add_view(
+        topic_post_delete_post,
+        request_method='POST',
+        route_name='admin_topic_post_delete',
+        renderer='admin/topics/post.mako',
+        permission='manage')
 
     #
     # Pages
     #
 
     config.add_route('admin_pages', '/pages/')
-    config.add_route('admin_page', '/pages/{namespace}/{page:.*}/')
+    config.add_route('admin_page_new', '/pages/new/')
+    config.add_route('admin_page', '/pages/public/{page:.*}/')
+    config.add_route('admin_page_delete', '/pages/public/{page:.*}/delete/')
+    config.add_route('admin_page_internal', '/pages/internal/{page:.*}/')
+
+    config.add_view(
+        pages_get,
+        request_method='GET',
+        route_name='admin_pages',
+        renderer='admin/pages/all.mako',
+        permission='manage')
+
+    config.add_view(
+        page_new_get,
+        request_method='GET',
+        route_name='admin_page_new',
+        renderer='admin/pages/new.mako',
+        permission='manage')
+
+    config.add_view(
+        page_new_post,
+        request_method='POST',
+        route_name='admin_page_new',
+        renderer='admin/pages/new.mako',
+        permission='manage')
+
+    config.add_view(
+        page_get,
+        request_method='GET',
+        route_name='admin_page',
+        renderer='admin/pages/show.mako',
+        permission='manage')
+
+    config.add_view(
+        page_post,
+        request_method='POST',
+        route_name='admin_page',
+        renderer='admin/pages/show.mako',
+        permission='manage')
+
+    config.add_view(
+        page_delete_post,
+        request_method='POST',
+        route_name='admin_page_delete',
+        renderer='admin/pages/show.mako',
+        permission='manage')
+
+    config.add_view(
+        page_internal_get,
+        request_method='GET',
+        route_name='admin_page_internal',
+        renderer='admin/pages/show.mako',
+        permission='manage')
+
+    config.add_view(
+        page_internal_get,
+        request_method='POST',
+        route_name='admin_page_internal',
+        renderer='admin/pages/show.mako',
+        permission='manage')
 
     #
     # Settings

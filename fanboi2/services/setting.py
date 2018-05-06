@@ -1,7 +1,3 @@
-import json
-
-from sqlalchemy.dialects.postgresql import insert
-
 from ..models.setting import DEFAULT_SETTINGS, Setting
 
 

@@ -9,12 +9,20 @@ class BoardQueryService(object):
     def __init__(self, dbsession):
         self.dbsession = dbsession
 
+    def list_all(self):
+        """Query all boards."""
+        return list(
+            self.dbsession.query(Board).
+            order_by(Board.title).
+            all())
+
     def list_active(self):
         """Query all boards that are not archived."""
         return list(
             self.dbsession.query(Board).
             order_by(Board.title).
-            filter(Board.status != 'archived'))
+            filter(Board.status != 'archived').
+            all())
 
     def board_from_slug(self, board_slug):
         """Query a board from the given board slug.

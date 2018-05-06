@@ -456,16 +456,29 @@ textarea.input {
     padding: $spacing-vertical-input $spacing-horizontal-input;
     font-size: $font-size-input;
 
-    &.default {
+    &.default {}
+    &.muted   {}
+    &.brand   {}
+    &.green   {}
+
+    &.smaller {
+        font-size: $font-size-smaller;
+        padding: $spacing-vertical-smaller $spacing-horizontal-smaller;
     }
 
-    &.muted {
+    &.small {
+        font-size: $font-size-small;
+        padding: $spacing-vertical-small $spacing-horizontal-small;
     }
 
-    &.brand {
+    &.large {
+        font-size: $font-size-large;
+        padding: $spacing-vertical-large $spacing-horizontal-large;
     }
 
-    &.green {
+    &.larger {
+        font-size: $font-size-larger;
+        padding: $spacing-vertical $spacing-horizontal-larger;
     }
 
     &.block {
@@ -474,8 +487,7 @@ textarea.input {
         width: 100%;
     }
 
-    &.static {
-    }
+    &.static {}
 }
 
 /* Code block

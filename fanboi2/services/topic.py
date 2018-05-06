@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy.orm import contains_eager
+from sqlalchemy.orm import contains_eager, joinedload
 from sqlalchemy.sql import or_, and_, func, desc
 import pytz
 
@@ -132,12 +132,27 @@ class TopicQueryService(object):
         """
         return list(self._list_q(board_slug))
 
-    def list_recent_from_board_slug(self, board_slug):
-        """Query recent 10 topics for the given board slug.
+    def list_recent_from_board_slug(self, board_slug, _limit=10):
+        """Query recent topics for the given board slug.
 
         :param board_slug: The slug :type:`str` identifying a board.
         """
-        return list(self._list_q(board_slug).limit(10))
+        return list(self._list_q(board_slug).limit(_limit))
+
+    def list_recent(self, _limit=100):
+        """Query recent topics regardless of the board."""
+        anchor = datetime.datetime.now() - datetime.timedelta(days=7)
+        return list(
+            self.dbsession.query(Topic).
+            join(Topic.meta).
+            options(contains_eager(Topic.meta), joinedload(Topic.board)).
+            filter(and_(or_(Topic.status == "open",
+                            and_(Topic.status != "open",
+                                 TopicMeta.bumped_at >= anchor)))).
+            order_by(desc(func.coalesce(
+                TopicMeta.bumped_at,
+                Topic.created_at))).
+            limit(_limit))
 
     def topic_from_id(self, topic_id):
         """Query a topic from the given topic ID.

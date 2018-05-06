@@ -2,6 +2,9 @@ from zope.interface import Interface
 
 
 class IBoardQueryService(Interface):
+    def list_all():
+        pass
+
     def list_active():
         pass
 
@@ -21,6 +24,9 @@ class IIdentityService(Interface):
 
 class IPageQueryService(Interface):
     def list_public():
+        pass
+
+    def list_internal():
         pass
 
     def public_page_from_slug(page_slug):
@@ -58,12 +64,18 @@ class IRateLimiterService(Interface):
 
 
 class IRuleBanQueryService(Interface):
+    def list_active():
+        pass
+
+    def list_inactive():
+        pass
+
     def is_banned(ip_address, scopes):
         pass
 
 
 class ISettingQueryService(Interface):
-    def list_all(key):
+    def list_all():
         pass
 
     def value_from_key(key, use_cache=True, safe_keys=False):
@@ -96,6 +108,9 @@ class ITopicQueryService(Interface):
         pass
 
     def list_recent_from_board_slug(board_slug):
+        pass
+
+    def list_recent():
         pass
 
     def topic_from_id(topic_id):

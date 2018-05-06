@@ -1,3 +1,5 @@
+from sqlalchemy.sql import desc, func, or_, and_
+
 from ..models import RuleBan
 
 
@@ -6,6 +8,29 @@ class RuleBanQueryService(object):
 
     def __init__(self, dbsession):
         self.dbsession = dbsession
+
+    def list_active(self):
+        """Returns a list of bans that are currently active."""
+        return list(
+            self.dbsession.query(RuleBan).
+            filter(
+                and_(RuleBan.active == True,  # noqa: E712
+                     or_(RuleBan.active_until == None,  # noqa: E712
+                         RuleBan.active_until >= func.now()))).
+            order_by(desc(RuleBan.active_until),
+                     desc(RuleBan.created_at)).
+            all())
+
+    def list_inactive(self):
+        """Returns a list of bans that are currently inactive."""
+        return list(
+            self.dbsession.query(RuleBan).
+            filter(
+                or_(RuleBan.active == False,  # noqa: E712
+                    RuleBan.active_until <= func.now())).
+            order_by(desc(RuleBan.active_until),
+                     desc(RuleBan.created_at)).
+            all())
 
     def is_banned(self, ip_address, scopes=None):
         """Verify whether the IP address is in the ban list.

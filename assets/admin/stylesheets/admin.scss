@@ -31,6 +31,7 @@
     @media (min-width: $bound-tablet) {
         display: table-row-group;
         .lead { width: 200px; }
+        .tail { width: 320px; }
     }
 }
 
@@ -71,5 +72,38 @@
         display: table-cell;
         padding: $spacing-vertical-small $spacing-horizontal;
         vertical-align: top;
+    }
+}
+
+/* Admin cascade
+ * ------------------------------------------------------------------------ */
+
+.admin-cascade {
+    border: 1px solid;
+    margin: 0 0 $spacing-vertical;
+}
+
+.admin-cascade-header {
+    font-size: $font-size;
+    line-height: $line-height-content;
+    padding: $spacing-vertical-small $spacing-horizontal-small;
+    border-bottom: 1px solid;
+
+    @media (min-width: $bound-tablet) {
+        padding: $spacing-vertical-small $spacing-horizontal;
+    }
+}
+
+.admin-cascade-body {
+    font-size: $font-size;
+    line-height: $line-height-content;
+    padding: $spacing-vertical-small $spacing-horizontal-small;
+
+    @media (min-width: $bound-tablet) {
+        padding: $spacing-vertical-small $spacing-horizontal;
+    }
+
+    p {
+        margin: 0;
     }
 }
