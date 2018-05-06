@@ -1,9 +1,12 @@
+import json
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPForbidden
 from pyramid.csrf import check_csrf_token
 from pyramid.security import remember, forget, authenticated_userid
 
+from webob.multidict import MultiDict
+
 from ..version import __VERSION__
-from ..forms import AdminLoginForm, AdminSetupForm
+from ..forms import AdminLoginForm, AdminSetupForm, AdminSettingForm
 from ..interfaces import \
     ISettingQueryService,\
     ISettingUpdateService,\
@@ -124,6 +127,51 @@ def settings_get(request):
     }
 
 
+def setting_get(request):
+    setting_query_svc = request.find_service(ISettingQueryService)
+    setting_key = request.matchdict['setting']
+
+    try:
+        value = setting_query_svc.value_from_key_json(setting_key)
+    except KeyError:
+        raise HTTPNotFound()
+
+    form = AdminSettingForm(
+        MultiDict({'value': value}),
+        request=request)
+
+    return {
+        'key': setting_key,
+        'value':  value,
+        'form': form,
+    }
+
+
+def setting_post(request):
+    check_csrf_token(request)
+
+    setting_query_svc = request.find_service(ISettingQueryService)
+    setting_key = request.matchdict['setting']
+
+    try:
+        value = setting_query_svc.value_from_key_json(setting_key)
+    except KeyError:
+        raise HTTPNotFound()
+
+    form = AdminSettingForm(request.POST, request=request)
+    if not form.validate():
+        request.response.status = '400 Bad Request'
+        return {
+            'key': setting_key,
+            'value':  value,
+            'form': form,
+        }
+
+    setting_update_svc = request.find_service(ISettingUpdateService)
+    setting_update_svc.update(setting_key, json.loads(form.value.data))
+    return HTTPFound(location=request.route_path(route_name='admin_settings'))
+
+
 def _setup_required(context, request):
     """A predicate for :meth:`pyramid.config.add_view` that returns
     :type:`True` if an application requrie a setup or upgrade.
@@ -231,6 +279,20 @@ def includeme(config):  # pragma: no cover
         request_method='GET',
         route_name='admin_settings',
         renderer='admin/settings/all.mako',
+        permission='manage')
+
+    config.add_view(
+        setting_get,
+        request_method='GET',
+        route_name='admin_setting',
+        renderer='admin/settings/show.mako',
+        permission='manage')
+
+    config.add_view(
+        setting_post,
+        request_method='POST',
+        route_name='admin_setting',
+        renderer='admin/settings/show.mako',
         permission='manage')
 
     #

@@ -258,3 +258,28 @@ class TestAdminSetupForm(_FormMixin, unittest.TestCase):
         self.assertListEqual(
             form.password_confirm.errors,
             ['Password must match.'])
+
+
+class TestAdminSettingForm(_FormMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..forms import AdminSettingForm
+        return AdminSettingForm
+
+    def test_validated(self):
+        form = self._make_one({'value': '"foo"'})
+        self.assertTrue(form.validate())
+
+    def test_value_missing(self):
+        form = self._make_one({})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.value.errors,
+            ['This field is required.'])
+
+    def test_value_invalid_json(self):
+        form = self._make_one({'value': 'invalid'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.value.errors,
+            ['Must be a valid JSON.'])

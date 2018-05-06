@@ -45,6 +45,8 @@ body {
 }
 
 .cols-column {
+    width: 100%;
+
     &.sidebar {
     }
 
@@ -363,6 +365,11 @@ body {
     border-bottom: 1px solid;
     display: block;
     padding: $spacing-vertical-large 0 $form-spacing;
+
+    &.noshade {
+        border-bottom: none;
+        padding: 0;
+    }
 }
 
 .form-item {
@@ -414,15 +421,18 @@ body {
 
     &.block {
         display: block;
+        max-width: 100%;
         min-width: 100%;
+        resize: vertical;
         width: 100%;
     }
 
-    &.smaller { font-size: $font-size-smaller; }
-    &.small   { font-size: $font-size-small; }
-    &.content { font-size: $font-size-content; }
-    &.large   { font-size: $font-size-large; }
-    &.larger  { font-size: $font-size-larger; }
+    &.monospaced { font-family: monospace; }
+    &.smaller    { font-size: $font-size-smaller; }
+    &.small      { font-size: $font-size-small; }
+    &.content    { font-size: $font-size-content; }
+    &.large      { font-size: $font-size-large; }
+    &.larger     { font-size: $font-size-larger; }
 }
 
 textarea.input {
@@ -472,6 +482,7 @@ textarea.input {
  * ------------------------------------------------------------------------ */
 
 .codeblock {
+    font-family: monospace;
     margin: 0;
     overflow-y: auto;
     padding: $spacing-vertical-small $spacing-horizontal-small;

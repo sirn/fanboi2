@@ -1,3 +1,5 @@
+import json
+
 from wtforms import TextField, TextAreaField, Form, BooleanField
 from wtforms import PasswordField
 from wtforms.validators import Length as _Length
@@ -65,3 +67,15 @@ class AdminSetupForm(Form):
         validators=[
             Required(),
             EqualTo('password', message='Password must match.')])
+
+
+class AdminSettingForm(Form):
+    """A :class:`Form` for updating settings."""
+    value = TextAreaField('Value', validators=[Required()])
+
+    def validate_value(form, field):
+        """Custom field validator that ensure value is a valid JSON."""
+        try:
+            json.loads(field.data)
+        except json.decoder.JSONDecodeError:
+            raise ValidationError('Must be a valid JSON.')
