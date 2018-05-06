@@ -97,7 +97,7 @@ class TestFilterService(unittest.TestCase):
                 return True
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {'ext.filters.dummy': 'overridden'}.get(key, None)
 
         cache_region = make_cache_region({})
@@ -155,7 +155,7 @@ class TestFilterService(unittest.TestCase):
                 return True
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {}.get(key, None)
 
         cache_region = make_cache_region({})
@@ -181,7 +181,7 @@ class TestFilterService(unittest.TestCase):
                 return False
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {}.get(key, None)
 
         cache_region = make_cache_region({})
@@ -330,7 +330,7 @@ class TestPostCreateService(ModelSessionMixin, unittest.TestCase):
                     '%s' % (v,) for k, v in sorted(kwargs.items()))
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {'app.time_zone': 'Asia/Bangkok'}.get(key, None)
 
         return self._get_target_class()(
@@ -757,7 +757,7 @@ class TestSettingQueryService(ModelSessionMixin, unittest.TestCase):
             setting_query_svc.cache_region,
             cache_region)
 
-    def test_list_json(self):
+    def test_list_all(self):
         from ..models import Setting
         from . import make_cache_region
         cache_region = make_cache_region()
@@ -767,14 +767,14 @@ class TestSettingQueryService(ModelSessionMixin, unittest.TestCase):
         setting_query_svc = self._get_target_class()(
             self.dbsession,
             cache_region)
-        result = setting_query_svc.list_json(
+        result = setting_query_svc.list_all(
             _default={
                 'foo': None,
                 'bar': "baz",
                 'bax': 1})
         self.assertEqual(
             result,
-            [('bar', '"baz"'), ('bax', '32'), ('foo', 'null')])
+            [('bar', "baz"), ('bax', 32), ('foo', None)])
 
     def test_value_from_key(self):
         from . import make_cache_region
@@ -789,6 +789,44 @@ class TestSettingQueryService(ModelSessionMixin, unittest.TestCase):
             setting_query_svc.value_from_key('app.test', _default={}),
             'test')
 
+    def test_value_from_key_safe_keys(self):
+        from . import make_cache_region
+        cache_region = make_cache_region()
+        setting_query_svc = self._get_target_class()(
+            self.dbsession,
+            cache_region)
+        with self.assertRaises(KeyError):
+            setting_query_svc.value_from_key(
+                'app.test',
+                safe_keys=True,
+                _default={})
+
+    def test_value_from_key_use_cache(self):
+        from . import make_cache_region
+        from ..models import Setting
+        cache_region = make_cache_region()
+        setting_query_svc = self._get_target_class()(
+            self.dbsession,
+            cache_region)
+        self.assertIsNone(
+            setting_query_svc.value_from_key(
+                'app.test',
+                use_cache=True,
+                _default={}))
+        self._make(Setting(key='app.test', value='test'))
+        self.dbsession.commit()
+        self.assertIsNone(
+            setting_query_svc.value_from_key(
+                'app.test',
+                use_cache=True,
+                _default={}))
+        self.assertEqual(
+            setting_query_svc.value_from_key(
+                'app.test',
+                use_cache=False,
+                _default={}),
+            'test')
+
     def test_value_from_key_not_found(self):
         from . import make_cache_region
         cache_region = make_cache_region()
@@ -799,34 +837,7 @@ class TestSettingQueryService(ModelSessionMixin, unittest.TestCase):
             'app.test',
             _default={}))
 
-    def test_value_from_key_json(self):
-        from . import make_cache_region
-        from ..models import Setting
-        cache_region = make_cache_region()
-        setting_query_svc = self._get_target_class()(
-            self.dbsession,
-            cache_region)
-        self._make(Setting(key='foo', value='test'))
-        self.dbsession.commit()
-        result = setting_query_svc.value_from_key_json(
-            'foo',
-            _default={'foo': None})
-        self.assertEqual(
-            result,
-            '"test"')
-
-    def test_value_from_key_json_unsafe(self):
-        from . import make_cache_region
-        cache_region = make_cache_region()
-        setting_query_svc = self._get_target_class()(
-            self.dbsession,
-            cache_region)
-        with self.assertRaises(KeyError):
-            setting_query_svc.value_from_key_json(
-                'app.test',
-                _default={})
-
-    def test_reload(self):
+    def test_reload_cache(self):
         from . import make_cache_region
         from ..models import Setting
         cache_region = make_cache_region()
@@ -845,7 +856,7 @@ class TestSettingQueryService(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(
             setting_query_svc.value_from_key('app.test', _default={}),
             'test')
-        setting_query_svc.reload('app.test')
+        setting_query_svc.reload_cache('app.test')
         self.assertEqual(
             setting_query_svc.value_from_key('app.test', _default={}),
             'foobar')
@@ -938,7 +949,7 @@ class TestTopicCreateService(ModelSessionMixin, unittest.TestCase):
                     '%s' % (v,) for k, v in sorted(kwargs.items()))
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {'app.time_zone': 'Asia/Bangkok'}.get(key, None)
 
         return self._get_target_class()(

@@ -20,7 +20,7 @@ class _DummyQuery(object):
 
 
 class _DummySettingQueryService(object):
-    def value_from_key(self, key):
+    def value_from_key(self, key, **kwargs):
         return {'app.time_zone': 'Asia/Bangkok'}.get(key, None)
 
 

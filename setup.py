@@ -38,7 +38,7 @@ requires = [
     'MarkupSafe',
     'isodate',
     'misaka',
-    'wtforms',
+    'wtforms >=2.1, <3.0',
 
     # Tests
     'coverage',

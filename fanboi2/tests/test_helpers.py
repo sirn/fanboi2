@@ -29,7 +29,7 @@ class _DummyPageNotFoundService(object):
 
 
 class _DummySettingQueryService(object):
-    def value_from_key(self, key):
+    def value_from_key(self, key, **kwargs):
         return {'app.time_zone': 'Asia/Bangkok'}.get(key, None)
 
 
@@ -390,6 +390,12 @@ class TestFormatters(unittest.TestCase):
         self.assertEqual(
             format_isotime(None, self.request, d2),
             "2012-12-31T16:59:59Z")
+
+    def test_format_json(self):
+        from ..helpers.formatters import format_json
+        self.assertEqual(
+            format_json(None, self.request, {"foo": "bar"}),
+            '{\n    "foo": "bar"\n}')
 
     def test_user_theme(self):
         from ..helpers.formatters import user_theme

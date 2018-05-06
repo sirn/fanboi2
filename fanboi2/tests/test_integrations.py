@@ -2595,7 +2595,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {'setup.version': '0.30.0'}.get(key, None)
 
         request = mock_service(self.request, {
@@ -2618,7 +2618,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {}.get(key, None)
 
         request = mock_service(self.request, {
@@ -2843,7 +2843,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {}.get(key, None)
 
         request = mock_service(self.request, {
@@ -2859,7 +2859,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {'setup.version': '0.30.0'}.get(key, None)
 
         request = mock_service(self.request, {
@@ -2917,7 +2917,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {}.get(key, None)
 
         request = mock_service(self.request, {
@@ -2939,7 +2939,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {'setup.version': '0.30.0'}.get(key, None)
 
         request = mock_service(self.request, {
@@ -2957,7 +2957,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {}.get(key, None)
 
         request = mock_service(self.request, {
@@ -2983,7 +2983,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {}.get(key, None)
 
         request = mock_service(self.request, {
@@ -3010,7 +3010,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {}.get(key, None)
 
         request = mock_service(self.request, {
@@ -3036,7 +3036,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def value_from_key(self, key):
+            def value_from_key(self, key, **kwargs):
                 return {}.get(key, None)
 
         request = mock_service(self.request, {
@@ -3067,7 +3067,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def list_json(self):
+            def list_all(self):
                 return [('foo', 'bar'), ('baz', 'bax')]
 
         request = mock_service(self.request, {
@@ -3085,8 +3085,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def value_from_key_json(self, key):
-                return '"foobar"'
+            def value_from_key(self, key, **kwargs):
+                return 'foobar'
 
         request = mock_service(self.request, {
             ISettingQueryService: _DummySettingQueryService()})
@@ -3094,7 +3094,6 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         request.matchdict['setting'] = 'foo.bar'
         response = setting_get(request)
         self.assertEqual(response['key'], 'foo.bar')
-        self.assertEqual(response['value'], '"foobar"')
         self.assertIsInstance(response['form'], AdminSettingForm)
         self.assertEqual(response['form'].value.data, '"foobar"')
 
@@ -3105,7 +3104,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def value_from_key_json(self, key):
+            def value_from_key(self, key, **kwargs):
                 raise KeyError(key)
 
         request = mock_service(self.request, {
@@ -3123,8 +3122,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         updated_value = None
 
         class _DummySettingQueryService(object):
-            def value_from_key_json(self, key):
-                return '"foobar"'
+            def value_from_key(self, key, **kwargs):
+                return 'foobar'
 
         class _DummySettingUpdateService(object):
             def update(self, key, value):
@@ -3168,7 +3167,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def value_from_key_json(self, key):
+            def value_from_key(self, key, **kwargs):
                 raise KeyError(key)
 
         request = mock_service(self.request, {
@@ -3189,8 +3188,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         class _DummySettingQueryService(object):
-            def value_from_key_json(self, key):
-                return '"foobar"'
+            def value_from_key(self, key, **kwargs):
+                return 'foobar'
 
         request = mock_service(self.request, {
             ISettingQueryService: _DummySettingQueryService()})

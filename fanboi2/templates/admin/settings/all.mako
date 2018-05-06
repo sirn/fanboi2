@@ -1,3 +1,4 @@
+<%namespace name='formatters' module='fanboi2.helpers.formatters' />
 <%inherit file='../_layout.mako' />
 <%def name='title()'>Settings - Admin Panel</%def>
 <%def name='subheader_title()'>Settings</%def>
@@ -14,7 +15,7 @@
             % for key, value in settings:
             <tr class="admin-table-row">
                 <th class="admin-table-item title"><a href="${request.route_path('admin_setting', setting=key)}">${key}</a></th>
-                <td class="admin-table-item"><pre class="codeblock noshade">${value}</pre></td>
+                <td class="admin-table-item"><pre class="codeblock noshade">${formatters.format_json(request, value)}</pre></td>
             </tr>
             % endfor
         </tbody>

@@ -63,10 +63,13 @@ class IRuleBanQueryService(Interface):
 
 
 class ISettingQueryService(Interface):
-    def value_from_key(key):
+    def list_all(key):
         pass
 
-    def reload(key):
+    def value_from_key(key, use_cache=True, safe_keys=False):
+        pass
+
+    def reload_cache(key):
         pass
 
 
@@ -117,7 +120,7 @@ class IUserLoginService(Interface):
     def revoke_token(token, ip_address):
         pass
 
-    def mark_seen(token, ip_address, revocation):
+    def mark_seen(token, ip_address, revocation=3600):
         pass
 
     def token_for(username, ip_address):

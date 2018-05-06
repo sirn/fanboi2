@@ -121,7 +121,7 @@ def dashboard_get(request):
 
 def settings_get(request):
     setting_query_svc = request.find_service(ISettingQueryService)
-    settings = setting_query_svc.list_json()
+    settings = setting_query_svc.list_all()
     return {
         'settings': settings,
     }
@@ -132,17 +132,19 @@ def setting_get(request):
     setting_key = request.matchdict['setting']
 
     try:
-        value = setting_query_svc.value_from_key_json(setting_key)
+        value = setting_query_svc.value_from_key(
+            setting_key,
+            use_cache=False,
+            safe_keys=True)
     except KeyError:
         raise HTTPNotFound()
 
     form = AdminSettingForm(
-        MultiDict({'value': value}),
+        MultiDict({'value': json.dumps(value, indent=4, sort_keys=True)}),
         request=request)
 
     return {
         'key': setting_key,
-        'value':  value,
         'form': form,
     }
 
@@ -154,7 +156,10 @@ def setting_post(request):
     setting_key = request.matchdict['setting']
 
     try:
-        value = setting_query_svc.value_from_key_json(setting_key)
+        setting_query_svc.value_from_key(
+            setting_key,
+            use_cache=False,
+            safe_keys=True)
     except KeyError:
         raise HTTPNotFound()
 
@@ -163,7 +168,6 @@ def setting_post(request):
         request.response.status = '400 Bad Request'
         return {
             'key': setting_key,
-            'value':  value,
             'form': form,
         }
 
@@ -177,7 +181,9 @@ def _setup_required(context, request):
     :type:`True` if an application requrie a setup or upgrade.
     """
     setting_query_svc = request.find_service(ISettingQueryService)
-    return setting_query_svc.value_from_key('setup.version') is None
+    return setting_query_svc.value_from_key(
+        'setup.version',
+        use_cache=False) is None
 
 
 def includeme(config):  # pragma: no cover
