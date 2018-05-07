@@ -283,3 +283,28 @@ class TestAdminSettingForm(_FormMixin, unittest.TestCase):
         self.assertListEqual(
             form.value.errors,
             ['Must be a valid JSON.'])
+
+
+class TestAdminRuleBanForm(_FormMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..forms import AdminRuleBanForm
+        return AdminRuleBanForm
+
+    def test_validated(self):
+        form = self._make_one({'ip_address': '10.0.0.0/24'})
+        self.assertTrue(form.validate())
+
+    def test_ip_address_missing(self):
+        form = self._make_one({})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.ip_address.errors,
+            ['This field is required.'])
+
+    def test_ip_address_invalid(self):
+        form = self._make_one({'ip_address': 'foobar'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.ip_address.errors,
+            ['Must be a valid IP address.'])

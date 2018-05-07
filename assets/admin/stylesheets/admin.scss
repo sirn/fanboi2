@@ -30,8 +30,6 @@
 
     @media (min-width: $bound-tablet) {
         display: table-row-group;
-        .lead { width: 200px; }
-        .tail { width: 320px; }
     }
 }
 
@@ -72,6 +70,9 @@
         display: table-cell;
         padding: $spacing-vertical-small $spacing-horizontal;
         vertical-align: top;
+
+        &.lead { width: 200px; }
+        &.tail { width: 320px; }
     }
 }
 

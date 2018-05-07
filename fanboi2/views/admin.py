@@ -6,12 +6,18 @@ from pyramid.security import remember, forget, authenticated_userid
 from webob.multidict import MultiDict
 
 from ..version import __VERSION__
-from ..forms import AdminLoginForm, AdminSetupForm, AdminSettingForm
+from ..forms import \
+    AdminLoginForm,\
+    AdminRuleBanForm,\
+    AdminSettingForm,\
+    AdminSetupForm
 from ..interfaces import \
     IBoardQueryService,\
     ITopicQueryService,\
     IPageQueryService,\
+    IRuleBanCreateService,\
     IRuleBanQueryService,\
+    IRuleBanUpdateService,\
     ISettingQueryService,\
     ISettingUpdateService,\
     IUserCreateService,\
@@ -140,21 +146,82 @@ def bans_inactive_get(request):
 
 
 def ban_new_get(request):
-    return {}
+    form = AdminRuleBanForm(request=request)
+    return {
+        'form': form
+    }
 
 
 def ban_new_post(request):
     check_csrf_token(request)
-    return {}
+
+    form = AdminRuleBanForm(request.POST, request=request)
+    if not form.validate():
+        request.response.status = '400 Bad Request'
+        return {
+            'form': form,
+        }
+
+    rule_ban_create_service = request.find_service(IRuleBanCreateService)
+    rule_ban = rule_ban_create_service.create(
+        form.ip_address.data,
+        description=form.description.data,
+        duration=form.duration.data,
+        scope=form.scope.data,
+        active=form.active.data)
+
+    # Explicitly flush so that ID is available.
+    dbsession = request.find_service(name='db')
+    dbsession.flush()
+
+    return HTTPFound(location=request.route_path(
+        route_name='admin_ban', ban=rule_ban.id))
 
 
 def ban_get(request):
-    return {}
+    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
+    rule_ban_id = request.matchdict['ban']
+    rule_ban = rule_ban_query_svc.rule_ban_from_id(rule_ban_id)
+    return {
+        'ban': rule_ban
+    }
 
 
-def ban_post(request):
+def ban_edit_get(request):
+    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
+    rule_ban_id = request.matchdict['ban']
+    rule_ban = rule_ban_query_svc.rule_ban_from_id(rule_ban_id)
+    form = AdminRuleBanForm(obj=rule_ban, request=request)
+    return {
+        'ban': rule_ban,
+        'form': form
+    }
+
+
+def ban_edit_post(request):
     check_csrf_token(request)
-    return {}
+
+    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
+    rule_ban_id = request.matchdict['ban']
+    rule_ban = rule_ban_query_svc.rule_ban_from_id(rule_ban_id)
+    form = AdminRuleBanForm(request.POST, obj=rule_ban, request=request)
+    if not form.validate():
+        request.response.status = '400 Bad Request'
+        return {
+            'ban': rule_ban,
+            'form': form,
+        }
+
+    rule_ban_update_service = request.find_service(IRuleBanUpdateService)
+    rule_ban = rule_ban_update_service.update(
+        rule_ban.id,
+        ip_address=form.ip_address.data,
+        description=form.description.data,
+        duration=form.duration.data,
+        scope=form.scope.data,
+        active=form.active.data)
+    return HTTPFound(location=request.route_path(
+        route_name='admin_ban', ban=rule_ban.id))
 
 
 def boards_get(request):
@@ -399,6 +466,7 @@ def includeme(config):  # pragma: no cover
     config.add_route('admin_bans_inactive', '/bans/inactive/')
     config.add_route('admin_ban_new', '/bans/new/')
     config.add_route('admin_ban', '/bans/{ban:\d+}/')
+    config.add_route('admin_ban_edit', '/bans/{ban:\d+}/edit/')
 
     config.add_view(
         bans_get,
@@ -436,10 +504,17 @@ def includeme(config):  # pragma: no cover
         permission='manage')
 
     config.add_view(
-        ban_post,
+        ban_edit_get,
+        request_method='GET',
+        route_name='admin_ban_edit',
+        renderer='admin/bans/edit.mako',
+        permission='manage')
+
+    config.add_view(
+        ban_edit_post,
         request_method='POST',
-        route_name='admin_ban',
-        renderer='admin/bans/show.mako',
+        route_name='admin_ban_edit',
+        renderer='admin/bans/edit.mako',
         permission='manage')
 
     #

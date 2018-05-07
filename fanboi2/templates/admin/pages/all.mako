@@ -4,9 +4,8 @@
 <%def name='title()'>Pages - Admin Panel</%def>
 <%def name='subheader_title()'>Pages</%def>
 <%def name='subheader_body()'>Manage pages.</%def>
-<div class="sheet-body">
-    <a class="button green" href="${request.route_path('admin_page_new')}">New Public Page</a>
-</div>
+<h2 class="sheet-title">All Pages</h2>
+<%include file='_nav.mako' />
 <div class="sheet-body">
     <table class="admin-table">
         <thead class="admin-table-header">

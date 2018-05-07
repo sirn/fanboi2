@@ -1679,6 +1679,21 @@ class TestRuleModel(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(None, _makeQuery('10.0.5.1'))
         self.assertEqual(None, _makeQuery('10.0.6.1'))
 
+    def test_duration(self):
+        from datetime import datetime, timedelta
+        from ..models import Rule
+        rule = self._make(Rule(
+            ip_address='10.0.1.0/24',
+            active_until=datetime.now() + timedelta(days=30)))
+        self.dbsession.commit()
+        self.assertEqual(rule.duration, 30)
+
+    def test_duration_no_duration(self):
+        from ..models import Rule
+        rule = self._make(Rule(ip_address='10.0.1.0/24'))
+        self.dbsession.commit()
+        self.assertEqual(rule.duration, 0)
+
 
 class TestRuleBanModel(ModelSessionMixin, unittest.TestCase):
 
@@ -1718,6 +1733,21 @@ class TestRuleBanModel(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(None, _makeQuery('10.0.6.1'))
         self.assertEqual(None, _makeQuery('10.0.7.1'))
         self.assertEqual(None, _makeQuery('10.0.8.1'))
+
+    def test_duration(self):
+        from datetime import datetime, timedelta
+        from ..models import RuleBan
+        rule_ban = self._make(RuleBan(
+            ip_address='10.0.1.0/24',
+            active_until=datetime.now() + timedelta(days=30)))
+        self.dbsession.commit()
+        self.assertEqual(rule_ban.duration, 30)
+
+    def test_duration_no_duration(self):
+        from ..models import RuleBan
+        rule_ban = self._make(RuleBan(ip_address='10.0.1.0/24'))
+        self.dbsession.commit()
+        self.assertEqual(rule_ban.duration, 0)
 
 
 class TestSettingModel(ModelSessionMixin, unittest.TestCase):

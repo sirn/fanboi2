@@ -6,7 +6,9 @@ from ..interfaces import \
     IPostCreateService,\
     IPostQueryService,\
     IRateLimiterService,\
-    IRuleBanQueryService, \
+    IRuleBanCreateService,\
+    IRuleBanQueryService,\
+    IRuleBanUpdateService,\
     ISettingQueryService,\
     ISettingUpdateService,\
     ITaskQueryService,\
@@ -21,7 +23,8 @@ from .identity import IdentityService
 from .page import PageQueryService
 from .post import PostCreateService, PostQueryService
 from .rate_limiter import RateLimiterService
-from .rule import RuleBanQueryService
+from .rule import RuleBanCreateService, RuleBanQueryService
+from .rule import RuleBanUpdateService
 from .setting import SettingQueryService, SettingUpdateService
 from .task import TaskQueryService
 from .topic import TopicCreateService, TopicQueryService
@@ -108,6 +111,16 @@ def includeme(config):  # pragma: no cover
         rate_limiter_factory,
         IRateLimiterService)
 
+    # RuleBan create
+
+    def rule_ban_create_factory(context, request):
+        dbsession = request.find_service(name='db')
+        return RuleBanCreateService(dbsession)
+
+    config.register_service_factory(
+        rule_ban_create_factory,
+        IRuleBanCreateService)
+
     # RuleBan query
 
     def rule_ban_query_factory(context, request):
@@ -117,6 +130,16 @@ def includeme(config):  # pragma: no cover
     config.register_service_factory(
         rule_ban_query_factory,
         IRuleBanQueryService)
+
+    # RuleBan update
+
+    def rule_ban_update_factory(context, request):
+        dbsession = request.find_service(name='db')
+        return RuleBanUpdateService(dbsession)
+
+    config.register_service_factory(
+        rule_ban_update_factory,
+        IRuleBanUpdateService)
 
     # Setting Query
 

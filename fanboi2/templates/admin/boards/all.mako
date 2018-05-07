@@ -3,9 +3,8 @@
 <%def name='title()'>Boards - Admin Panel</%def>
 <%def name='subheader_title()'>Boards</%def>
 <%def name='subheader_body()'>Manage boards.</%def>
-<div class="sheet-body">
-    <a class="button green" href="${request.route_path('admin_board_new')}">New Board</a>
-</div>
+<h2 class="sheet-title">All Boards</h2>
+<%include file='_nav.mako' />
 <div class="sheet-body">
     <table class="admin-table">
         <thead class="admin-table-header">

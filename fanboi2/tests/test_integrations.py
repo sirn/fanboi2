@@ -2655,8 +2655,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             remember_result=[('Set-Cookie', 'foobar')])
         self.config.add_route('admin_dashboard', '/admin/dashboard')
         response = login_post(request)
-        self.assertEqual(self.dbsession.query(UserSession).count(), 1)
         self.assertEqual(response.location, '/admin/dashboard')
+        self.assertEqual(self.dbsession.query(UserSession).count(), 1)
         self.assertIn('Set-Cookie', response.headers)
 
     def test_login_post_logged_in(self):
@@ -2896,6 +2896,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         response = setup_post(request)
         user = self.dbsession.query(User).one()
         group = self.dbsession.query(Group).one()
+        self.assertEqual(response.location, '/admin')
         self.assertEqual(user.username, 'root')
         self.assertEqual(user.groups, [group])
         self.assertNotEqual(user.encrypted_password, 'passw0rd')
@@ -2904,7 +2905,6 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(
             setting_query_svc.value_from_key('setup.version'),
             __VERSION__)
-        self.assertEqual(response.location, '/admin')
         self.assertEqual(
             request.session.pop_flash(queue='success'),
             ['Successfully setup initial user.'])
@@ -3061,6 +3061,606 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         response = dashboard_get(self.request)
         self.assertEqual(response, {})
 
+    def test_bans_get(self):
+        from datetime import datetime, timedelta
+        from ..interfaces import IRuleBanQueryService
+        from ..models import RuleBan
+        from ..services import RuleBanQueryService
+        from ..views.admin import bans_get
+        from . import mock_service
+        rule_ban1 = self._make(RuleBan(
+            ip_address='10.0.1.0/24',
+            active_until=datetime.now() + timedelta(hours=1)))
+        self._make(RuleBan(
+            ip_address='10.0.2.0/24',
+            active_until=datetime.now() - timedelta(hours=1)))
+        rule_ban3 = self._make(RuleBan(
+            ip_address='10.0.3.0/24'))
+        self._make(RuleBan(
+            ip_address='10.0.3.0/24',
+            active=False))
+        rule_ban5 = self._make(RuleBan(
+            ip_address='10.0.3.0/24',
+            active_until=datetime.now() + timedelta(hours=2)))
+        rule_ban6 = self._make(RuleBan(
+            ip_address='10.0.3.0/24',
+            created_at=datetime.now() + timedelta(minutes=5)))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IRuleBanQueryService: RuleBanQueryService(self.dbsession)})
+        request.method = 'GET'
+        response = bans_get(request)
+        self.assertEqual(
+            response['bans'],
+            [rule_ban6, rule_ban3, rule_ban5, rule_ban1])
+
+    def test_bans_inactive_get(self):
+        from datetime import datetime, timedelta
+        from ..interfaces import IRuleBanQueryService
+        from ..models import RuleBan
+        from ..services import RuleBanQueryService
+        from ..views.admin import bans_inactive_get
+        from . import mock_service
+        self._make(RuleBan(
+            ip_address='10.0.1.0/24',
+            active_until=datetime.now() + timedelta(hours=1)))
+        rule_ban2 = self._make(RuleBan(
+            ip_address='10.0.2.0/24',
+            active_until=datetime.now() - timedelta(hours=1)))
+        self._make(RuleBan(
+            ip_address='10.0.3.0/24'))
+        rule_ban4 = self._make(RuleBan(
+            ip_address='10.0.3.0/24',
+            active=False))
+        rule_ban5 = self._make(RuleBan(
+            ip_address='10.0.3.0/24',
+            active_until=datetime.now() - timedelta(hours=2)))
+        rule_ban6 = self._make(RuleBan(
+            ip_address='10.0.3.0/24',
+            created_at=datetime.now() + timedelta(minutes=5),
+            active=False))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IRuleBanQueryService: RuleBanQueryService(self.dbsession)})
+        request.method = 'GET'
+        response = bans_inactive_get(request)
+        self.assertEqual(
+            response['bans'],
+            [rule_ban6, rule_ban4, rule_ban2, rule_ban5])
+
+    def test_ban_new_get(self):
+        from ..forms import AdminRuleBanForm
+        from ..views.admin import ban_new_get
+        self.request = 'GET'
+        response = ban_new_get(self.request)
+        self.assertIsInstance(response['form'], AdminRuleBanForm)
+
+    def test_ban_new_post(self):
+        import pytz
+        from datetime import datetime, timedelta
+        from ..interfaces import IRuleBanCreateService
+        from ..models import RuleBan
+        from ..services import RuleBanCreateService
+        from ..views.admin import ban_new_post
+        from . import mock_service
+        request = mock_service(self.request, {
+            'db': self.dbsession,
+            IRuleBanCreateService: RuleBanCreateService(self.dbsession)})
+        request.method = 'POST'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict({})
+        request.POST['ip_address'] = '10.0.1.0/24'
+        request.POST['description'] = 'Violation of galactic law'
+        request.POST['duration'] = '30'
+        request.POST['scope'] = 'galaxy_far_away'
+        request.POST['active'] = '1'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_ban', '/admin/bans/{ban}')
+        response = ban_new_post(request)
+        rule_ban = self.dbsession.query(RuleBan).first()
+        self.assertEqual(response.location, '/admin/bans/%s' % rule_ban.id)
+        self.assertEqual(self.dbsession.query(RuleBan).count(), 1)
+        self.assertEqual(rule_ban.ip_address, '10.0.1.0/24')
+        self.assertEqual(rule_ban.description, 'Violation of galactic law')
+        self.assertGreaterEqual(
+            rule_ban.active_until,
+            datetime.now(pytz.utc) + timedelta(days=29, hours=23))
+        self.assertEqual(rule_ban.scope, 'galaxy_far_away')
+        self.assertTrue(rule_ban.active)
+
+    def test_ban_new_post_bad_csrf(self):
+        from pyramid.csrf import BadCSRFToken
+        from ..views.admin import ban_new_post
+        self.request.method = 'POST'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST = MultiDict({})
+        self.request.POST['ip_address'] = '10.0.1.0/24'
+        self.request.POST['description'] = 'Violation of galactic law'
+        self.request.POST['duration'] = 30
+        self.request.POST['scope'] = 'galaxy_far_away'
+        self.request.POST['active'] = '1'
+        with self.assertRaises(BadCSRFToken):
+            ban_new_post(self.request)
+
+    def test_ban_new_post_empty(self):
+        from ..interfaces import IRuleBanCreateService
+        from ..models import RuleBan
+        from ..services import RuleBanCreateService
+        from ..views.admin import ban_new_post
+        from . import mock_service
+        request = mock_service(self.request, {
+            'db': self.dbsession,
+            IRuleBanCreateService: RuleBanCreateService(self.dbsession)})
+        request.method = 'POST'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict({})
+        request.POST['ip_address'] = '10.0.1.0/24'
+        request.POST['description'] = ''
+        request.POST['duration'] = '0'
+        request.POST['scope'] = ''
+        request.POST['active'] = ''
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_ban', '/admin/bans/{ban}')
+        response = ban_new_post(request)
+        rule_ban = self.dbsession.query(RuleBan).first()
+        self.assertEqual(response.location, '/admin/bans/%s' % rule_ban.id)
+        self.assertEqual(self.dbsession.query(RuleBan).count(), 1)
+        self.assertEqual(rule_ban.ip_address, '10.0.1.0/24')
+        self.assertIsNone(rule_ban.description)
+        self.assertIsNone(rule_ban.active_until)
+        self.assertIsNone(rule_ban.scope)
+        self.assertFalse(rule_ban.active)
+
+    def test_ban_new_post_invalid_ip_address(self):
+        from ..interfaces import IRuleBanCreateService
+        from ..models import RuleBan
+        from ..services import RuleBanCreateService
+        from ..views.admin import ban_new_post
+        from . import mock_service
+        request = mock_service(self.request, {
+            IRuleBanCreateService: RuleBanCreateService(self.dbsession)})
+        request.method = 'POST'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict({})
+        request.POST['ip_address'] = 'foobar'
+        request.POST['description'] = 'Violation of galactic law'
+        request.POST['duration'] = '30'
+        request.POST['scope'] = 'galaxy_far_away'
+        request.POST['active'] = '1'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        response = ban_new_post(request)
+        self.assertEqual(self.dbsession.query(RuleBan).count(), 0)
+        self.assertEqual(response['form'].ip_address.data, 'foobar')
+        self.assertDictEqual(response['form'].errors, {
+            'ip_address': ['Must be a valid IP address.']})
+
+    def test_ban_get(self):
+        from ..models import RuleBan
+        from ..interfaces import IRuleBanQueryService
+        from ..services import RuleBanQueryService
+        from ..views.admin import ban_get
+        from . import mock_service
+        rule_ban = self._make(RuleBan(ip_address='10.0.0.0/24'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IRuleBanQueryService: RuleBanQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['ban'] = str(rule_ban.id)
+        response = ban_get(request)
+        self.assertEqual(response['ban'], rule_ban)
+
+    def test_ban_get_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IRuleBanQueryService
+        from ..services import RuleBanQueryService
+        from ..views.admin import ban_get
+        from . import mock_service
+        request = mock_service(self.request, {
+            IRuleBanQueryService: RuleBanQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['ban'] = '-1'
+        with self.assertRaises(NoResultFound):
+            ban_get(request)
+
+    def test_ban_edit_get(self):
+        from datetime import datetime, timedelta
+        from ..models import RuleBan
+        from ..interfaces import IRuleBanQueryService
+        from ..services import RuleBanQueryService
+        from ..views.admin import ban_edit_get
+        from . import mock_service
+        now = datetime.now()
+        rule_ban = self._make(RuleBan(
+            ip_address='10.0.0.0/24',
+            description='Violation of galactic law',
+            active_until=now + timedelta(days=30),
+            scope='galaxy_far_away',
+            active=True,
+            created_at=now))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IRuleBanQueryService: RuleBanQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['ban'] = str(rule_ban.id)
+        response = ban_edit_get(request)
+        self.assertEqual(response['ban'], rule_ban)
+        self.assertEqual(response['form'].ip_address.data, '10.0.0.0/24')
+        self.assertEqual(
+            response['form'].description.data,
+            'Violation of galactic law')
+        self.assertEqual(response['form'].duration.data, 30)
+        self.assertEqual(response['form'].scope.data, 'galaxy_far_away')
+        self.assertTrue(response['form'].active.data)
+
+    def test_ban_edit_get_no_duration(self):
+        from ..models import RuleBan
+        from ..interfaces import IRuleBanQueryService
+        from ..services import RuleBanQueryService
+        from ..views.admin import ban_edit_get
+        from . import mock_service
+        rule_ban = self._make(RuleBan(ip_address='10.0.0.0/24'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IRuleBanQueryService: RuleBanQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['ban'] = str(rule_ban.id)
+        response = ban_edit_get(request)
+        self.assertEqual(response['form'].duration.data, 0)
+
+    def test_ban_edit_get_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IRuleBanQueryService
+        from ..services import RuleBanQueryService
+        from ..views.admin import ban_edit_get
+        from . import mock_service
+        request = mock_service(self.request, {
+            IRuleBanQueryService: RuleBanQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['ban'] = '-1'
+        with self.assertRaises(NoResultFound):
+            ban_edit_get(request)
+
+    def test_ban_edit_post(self):
+        import pytz
+        from datetime import datetime, timedelta
+        from ..models import RuleBan
+        from ..interfaces import IRuleBanQueryService, IRuleBanUpdateService
+        from ..services import RuleBanQueryService, RuleBanUpdateService
+        from ..views.admin import ban_edit_post
+        from . import mock_service
+        rule_ban = self._make(RuleBan(ip_address='10.0.0.0/24'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+            IRuleBanUpdateService: RuleBanUpdateService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['ban'] = str(rule_ban.id)
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict({})
+        request.POST['ip_address'] = '10.0.1.0/24'
+        request.POST['description'] = 'Violation of galactic law'
+        request.POST['duration'] = 30
+        request.POST['scope'] = 'galaxy_far_away'
+        request.POST['active'] = ''
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_ban', '/admin/bans/{ban}')
+        response = ban_edit_post(request)
+        self.assertEqual(response.location, '/admin/bans/%s' % rule_ban.id)
+        self.assertEqual(rule_ban.ip_address, '10.0.1.0/24')
+        self.assertEqual(rule_ban.description, 'Violation of galactic law')
+        self.assertGreaterEqual(
+            rule_ban.active_until,
+            datetime.now(pytz.utc) + timedelta(days=29, hours=23))
+        self.assertEqual(rule_ban.scope, 'galaxy_far_away')
+        self.assertFalse(rule_ban.active)
+
+    def test_ban_edit_post_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IRuleBanQueryService
+        from ..services import RuleBanQueryService
+        from ..views.admin import ban_edit_post
+        from . import mock_service
+        request = mock_service(self.request, {
+            IRuleBanQueryService: RuleBanQueryService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['ban'] = '-1'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict({})
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        with self.assertRaises(NoResultFound):
+            ban_edit_post(request)
+
+    def test_ban_edit_post_bad_csrf(self):
+        from pyramid.csrf import BadCSRFToken
+        from ..models import RuleBan
+        from ..interfaces import IRuleBanQueryService
+        from ..services import RuleBanQueryService
+        from ..views.admin import ban_edit_post
+        from . import mock_service
+        rule_ban = self._make(RuleBan(ip_address='10.0.0.0/24'))
+        request = mock_service(self.request, {
+            IRuleBanQueryService: RuleBanQueryService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['ban'] = str(rule_ban.id)
+        with self.assertRaises(BadCSRFToken):
+            ban_edit_post(request)
+
+    def test_ban_edit_post_empty(self):
+        from datetime import datetime, timedelta
+        from ..models import RuleBan
+        from ..interfaces import IRuleBanQueryService, IRuleBanUpdateService
+        from ..services import RuleBanQueryService, RuleBanUpdateService
+        from ..views.admin import ban_edit_post
+        from . import mock_service
+        rule_ban = self._make(RuleBan(
+            ip_address='10.0.0.0/24',
+            description='Violation of galactic law',
+            active_until=datetime.now() + timedelta(days=30),
+            scope='galaxy_far_away',
+            active=True))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+            IRuleBanUpdateService: RuleBanUpdateService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['ban'] = str(rule_ban.id)
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict({})
+        request.POST['ip_address'] = '10.0.1.0/24'
+        request.POST['description'] = ''
+        request.POST['duration'] = '0'
+        request.POST['scope'] = ''
+        request.POST['active'] = ''
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_ban', '/admin/bans/{ban}')
+        response = ban_edit_post(request)
+        self.assertEqual(response.location, '/admin/bans/%s' % rule_ban.id)
+        self.assertEqual(rule_ban.ip_address, '10.0.1.0/24')
+        self.assertIsNone(rule_ban.description)
+        self.assertIsNone(rule_ban.active_until)
+        self.assertIsNone(rule_ban.scope)
+        self.assertFalse(rule_ban.active)
+
+    def test_ban_edit_post_duration(self):
+        import pytz
+        from datetime import datetime, timedelta
+        from ..models import RuleBan
+        from ..interfaces import IRuleBanQueryService, IRuleBanUpdateService
+        from ..services import RuleBanQueryService, RuleBanUpdateService
+        from ..views.admin import ban_edit_post
+        from . import mock_service
+        past_now = datetime.now() - timedelta(days=30)
+        rule_ban = self._make(RuleBan(
+            ip_address='10.0.0.0/24',
+            created_at=past_now,
+            active_until=past_now + timedelta(days=7)))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+            IRuleBanUpdateService: RuleBanUpdateService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['ban'] = str(rule_ban.id)
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict({})
+        request.POST['ip_address'] = '10.0.0.0/24'
+        request.POST['description'] = ''
+        request.POST['duration'] = '14'
+        request.POST['scope'] = ''
+        request.POST['active'] = ''
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_ban', '/admin/bans/{ban}')
+        active_until = rule_ban.active_until
+        response = ban_edit_post(request)
+        self.assertEqual(response.location, '/admin/bans/%s' % rule_ban.id)
+        self.assertEqual(rule_ban.duration, 14)
+        self.assertGreater(rule_ban.active_until, active_until)
+        self.assertLess(rule_ban.active_until, datetime.now(pytz.utc))
+
+    def test_ban_edit_post_duration_no_change(self):
+        from datetime import datetime, timedelta
+        from ..models import RuleBan
+        from ..interfaces import IRuleBanQueryService, IRuleBanUpdateService
+        from ..services import RuleBanQueryService, RuleBanUpdateService
+        from ..views.admin import ban_edit_post
+        from . import mock_service
+        past_now = datetime.now() - timedelta(days=30)
+        rule_ban = self._make(RuleBan(
+            ip_address='10.0.0.0/24',
+            created_at=past_now,
+            active_until=past_now + timedelta(days=7)))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+            IRuleBanUpdateService: RuleBanUpdateService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['ban'] = str(rule_ban.id)
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict({})
+        request.POST['ip_address'] = '10.0.0.0/24'
+        request.POST['description'] = ''
+        request.POST['duration'] = '7'
+        request.POST['scope'] = ''
+        request.POST['active'] = ''
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_ban', '/admin/bans/{ban}')
+        active_until = rule_ban.active_until
+        response = ban_edit_post(request)
+        self.assertEqual(response.location, '/admin/bans/%s' % rule_ban.id)
+        self.assertEqual(
+            rule_ban.active_until,
+            active_until)
+
+    def test_ban_edit_post_invalid_ip_address(self):
+        from ..models import RuleBan
+        from ..interfaces import IRuleBanQueryService, IRuleBanUpdateService
+        from ..services import RuleBanQueryService, RuleBanUpdateService
+        from ..views.admin import ban_edit_post
+        from . import mock_service
+        rule_ban = self._make(RuleBan(ip_address='10.0.0.0/24'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+            IRuleBanUpdateService: RuleBanUpdateService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['ban'] = str(rule_ban.id)
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict({})
+        request.POST['ip_address'] = 'foobar'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        response = ban_edit_post(request)
+        self.assertEqual(rule_ban.ip_address, '10.0.0.0/24')
+        self.assertEqual(response['ban'], rule_ban)
+        self.assertEqual(response['form'].ip_address.data, 'foobar')
+        self.assertDictEqual(response['form'].errors, {
+            'ip_address': ['Must be a valid IP address.']})
+
+    def test_boards_get(self):
+        from ..interfaces import IBoardQueryService
+        from ..models import Board
+        from ..services import BoardQueryService
+        from ..views.admin import boards_get
+        from . import mock_service
+        board1 = self._make(Board(slug='foo', title='Foo', status='open'))
+        board2 = self._make(Board(
+            slug='baz',
+            title='Baz',
+            status='restricted'))
+        board3 = self._make(Board(slug='bax', title='Bax', status='locked'))
+        board4 = self._make(Board(slug='wel', title='Wel', status='open'))
+        board5 = self._make(Board(slug='bar', title='Bar', status='archived'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IBoardQueryService: BoardQueryService(self.dbsession)})
+        request.method = 'GET'
+        response = boards_get(request)
+        self.assertEqual(
+            response['boards'],
+            [board5, board3, board2, board1, board4])
+
+    def test_topics_get(self):
+        from datetime import datetime, timedelta
+        from ..interfaces import ITopicQueryService
+        from ..models import Board, Topic, TopicMeta
+        from ..services import TopicQueryService
+        from ..views.admin import topics_get
+        from . import mock_service
+
+        def _make_topic(days=0, **kwargs):
+            topic = self._make(Topic(**kwargs))
+            self._make(TopicMeta(
+                topic=topic,
+                post_count=0,
+                posted_at=datetime.now(),
+                bumped_at=datetime.now() - timedelta(days=days)))
+            return topic
+
+        board1 = self._make(Board(title='Foo', slug='foo'))
+        board2 = self._make(Board(title='Bar', slug='bar'))
+        topic1 = _make_topic(0.1, board=board1, title='Foo')
+        topic2 = _make_topic(1, board=board1, title='Foo')
+        topic3 = _make_topic(2, board=board1, title='Foo')
+        topic4 = _make_topic(3, board=board1, title='Foo')
+        topic5 = _make_topic(4, board=board1, title='Foo')
+        topic6 = _make_topic(5, board=board1, title='Foo')
+        topic7 = _make_topic(6, board=board1, title='Foo')
+        topic8 = _make_topic(6.1, board=board1, title='Foo', status='locked')
+        topic9 = _make_topic(6.2, board=board1, title='Foo', status='archived')
+        topic10 = _make_topic(7, board=board1, title='Foo')
+        topic11 = _make_topic(8, board=board1, title='Foo')
+        topic12 = _make_topic(9, board=board1, title='Foo')
+        topic13 = _make_topic(0.2, board=board2, title='Foo')
+        _make_topic(7, board=board1, title='Foo', status='archived')
+        _make_topic(7, board=board1, title='Foo', status='locked')
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            ITopicQueryService: TopicQueryService(self.dbsession)})
+        request.method = 'GET'
+        response = topics_get(request)
+        self.assertEqual(
+            response['topics'],
+            [
+                topic1,
+                topic13,
+                topic2,
+                topic3,
+                topic4,
+                topic5,
+                topic6,
+                topic7,
+                topic8,
+                topic9,
+                topic10,
+                topic11,
+                topic12,
+            ])
+
+    def test_pages_get(self):
+        from sqlalchemy import inspect
+        from ..interfaces import IPageQueryService
+        from ..models import Page
+        from ..services import PageQueryService
+        from ..views.admin import pages_get
+        from . import mock_service
+        internal_pages = (
+            ('foo', 'none'),
+            ('bar', 'markdown'),
+            ('baz', 'html'))
+
+        class _WrappedPageQueryService(PageQueryService):
+            def list_internal(self):
+                return super(_WrappedPageQueryService, self).\
+                    list_internal(_internal_pages=internal_pages)
+
+        page1 = self._make(Page(
+            title='Foo',
+            body='Hi',
+            slug='test1',
+            namespace='public'))
+        page2 = self._make(Page(
+            title='Bar',
+            body='Hi',
+            slug='test2',
+            formatter='html',
+            namespace='public'))
+        page3 = self._make(Page(
+            title='Baz',
+            body='Hi',
+            slug='test3',
+            formatter='none',
+            namespace='public'))
+        self._make(Page(
+            title='Test',
+            body='Hi',
+            slug='test4',
+            formatter='markdown',
+            namespace='internal'))
+        self._make(Page(
+            title='bar',
+            slug='bar',
+            body='Hello',
+            namespace='internal'))
+        self._make(Page(
+            title='hoge',
+            slug='hoge',
+            body='Hoge',
+            namespace='internal'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+        request.method = 'GET'
+        response = pages_get(request)
+        self.assertEqual(
+            response['pages'],
+            [page2, page3, page1])
+        self.assertEqual(response['pages_internal'][0].slug, 'bar')
+        self.assertEqual(response['pages_internal'][1].slug, 'baz')
+        self.assertEqual(response['pages_internal'][2].slug, 'foo')
+        self.assertEqual(response['pages_internal'][3].slug, 'hoge')
+        self.assertTrue(inspect(response['pages_internal'][0]).persistent)
+        self.assertFalse(inspect(response['pages_internal'][1]).persistent)
+        self.assertFalse(inspect(response['pages_internal'][2]).persistent)
+        self.assertTrue(inspect(response['pages_internal'][3]).persistent)
+
     def test_settings_get(self):
         from ..interfaces import ISettingQueryService
         from ..views.admin import settings_get
@@ -3144,9 +3744,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         request.POST['csrf_token'] = request.session.get_csrf_token()
         self.config.add_route('admin_settings', '/admin/settings')
         response = setting_post(request)
+        self.assertEqual(response.location, "/admin/settings")
         self.assertEqual(updated_key, "foo.bar")
         self.assertEqual(updated_value, {'bar': 'baz'})
-        self.assertEqual(response.location, "/admin/settings")
 
     def test_setting_post_bad_csrf(self):
         from pyramid.csrf import BadCSRFToken

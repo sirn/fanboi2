@@ -63,6 +63,16 @@ class IRateLimiterService(Interface):
         pass
 
 
+class IRuleBanCreateService(Interface):
+    def create(
+            ip_address,
+            description=None,
+            duration=None,
+            scope=None,
+            active=True):
+        pass
+
+
 class IRuleBanQueryService(Interface):
     def list_active():
         pass
@@ -71,6 +81,14 @@ class IRuleBanQueryService(Interface):
         pass
 
     def is_banned(ip_address, scopes):
+        pass
+
+    def rule_ban_from_id(id):
+        pass
+
+
+class IRuleBanUpdateService(Interface):
+    def update(id, **kwargs):
         pass
 
 

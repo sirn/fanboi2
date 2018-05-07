@@ -3,6 +3,8 @@
 <%def name='title()'>Settings - Admin Panel</%def>
 <%def name='subheader_title()'>Settings</%def>
 <%def name='subheader_body()'>Manage site runtime settings.</%def>
+<h2 class="sheet-title">All Settings</h2>
+<%include file='_nav.mako' />
 <div class="sheet-body">
     <table class="admin-table">
         <thead class="admin-table-header">

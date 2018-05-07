@@ -3,10 +3,8 @@
 <%def name='title()'>Bans - Admin Panel</%def>
 <%def name='subheader_title()'>Bans</%def>
 <%def name='subheader_body()'>Manage IP bans.</%def>
-<div class="sheet-body">
-    <a class="button green" href="${request.route_path('admin_ban_new')}">New Ban</a>
-    <a class="button muted" href="${request.route_path('admin_bans_inactive')}">Inactive Bans</a>
-</div>
+<h2 class="sheet-title">All Bans</h2>
+<%include file='_nav.mako' />
 <div class="sheet-body">
     <table class="admin-table">
         <thead class="admin-table-header">
@@ -30,6 +28,11 @@
                 <td class="admin-table-item">
                 % if ban.active_until:
                     ${formatters.format_datetime(request, ban.active_until)}
+                    % if ban.duration == 1:
+                        (1 day)
+                    % else:
+                        (${ban.duration} days)
+                    % endif
                 % else:
                     <em>Indefinite</em>
                 % endif

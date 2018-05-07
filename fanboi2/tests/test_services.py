@@ -725,6 +725,57 @@ class TestRateLimiterService(unittest.TestCase):
             0)
 
 
+class TestRuleBanCreateService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import RuleBanCreateService
+        return RuleBanCreateService
+
+    def test_create(self):
+        from datetime import datetime, timedelta
+        rule_ban_create_svc = self._get_target_class()(self.dbsession)
+        rule_ban = rule_ban_create_svc.create(
+            '10.0.1.0/24',
+            description='Violation of galactic law.',
+            duration=30,
+            scope='galaxy_far_away',
+            active=True)
+        self.assertEqual(rule_ban.ip_address, '10.0.1.0/24')
+        self.assertEqual(rule_ban.description, 'Violation of galactic law.')
+        self.assertEqual(rule_ban.scope, 'galaxy_far_away')
+        self.assertGreaterEqual(
+            rule_ban.active_until,
+            datetime.now() + timedelta(days=29, hours=23))
+        self.assertTrue(rule_ban.active)
+
+    def test_create_without_optional_fields(self):
+        rule_ban_create_svc = self._get_target_class()(self.dbsession)
+        rule_ban = rule_ban_create_svc.create('10.0.1.0/24')
+        self.assertEqual(rule_ban.ip_address, '10.0.1.0/24')
+        self.assertIsNone(rule_ban.description)
+        self.assertIsNone(rule_ban.scope)
+        self.assertIsNone(rule_ban.active_until)
+        self.assertTrue(rule_ban.active)
+
+    def test_create_with_empty_fields(self):
+        rule_ban_create_svc = self._get_target_class()(self.dbsession)
+        rule_ban = rule_ban_create_svc.create(
+            '10.0.1.0/24',
+            description='',
+            duration='',
+            scope='',
+            active='')
+        self.assertIsNone(rule_ban.scope)
+        self.assertIsNone(rule_ban.active_until)
+        self.assertIsNone(rule_ban.scope)
+        self.assertFalse(rule_ban.active)
+
+    def test_create_deactivated(self):
+        rule_ban_create_svc = self._get_target_class()(self.dbsession)
+        rule_ban = rule_ban_create_svc.create('10.0.1.0/24', active=False)
+        self.assertFalse(rule_ban.active)
+
+
 class TestRuleBanQueryService(ModelSessionMixin, unittest.TestCase):
 
     def _get_target_class(self):
@@ -834,6 +885,129 @@ class TestRuleBanQueryService(ModelSessionMixin, unittest.TestCase):
         self.assertFalse(rule_ban_query_svc.is_banned('10.0.7.1'))
         self.assertFalse(rule_ban_query_svc.is_banned('10.0.7.255'))
         self.assertFalse(rule_ban_query_svc.is_banned('10.0.8.1'))
+
+    def test_rule_ban_from_id(self):
+        from ..models import RuleBan
+        rule_ban = self._make(RuleBan(ip_address='10.0.1.0/24'))
+        self.dbsession.commit()
+        rule_ban_query_svc = self._get_target_class()(self.dbsession)
+        self.assertEqual(
+            rule_ban_query_svc.rule_ban_from_id(rule_ban.id),
+            rule_ban)
+
+    def test_rule_ban_from_id_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        rule_ban_query_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            rule_ban_query_svc.rule_ban_from_id(-1)
+
+    def test_rule_ban_from_id_string(self):
+        from ..models import RuleBan
+        rule_ban = self._make(RuleBan(ip_address='10.0.1.0/24'))
+        self.dbsession.commit()
+        rule_ban_query_svc = self._get_target_class()(self.dbsession)
+        self.assertEqual(
+            rule_ban_query_svc.rule_ban_from_id(str(rule_ban.id)),
+            rule_ban)
+
+
+class TestRuleBanUpdateService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import RuleBanUpdateService
+        return RuleBanUpdateService
+
+    def test_update(self):
+        import pytz
+        from datetime import datetime, timedelta
+        from ..models import RuleBan
+        rule_ban = self._make(RuleBan(ip_address='10.0.1.0/24'))
+        self.dbsession.commit()
+        rule_ban_update_svc = self._get_target_class()(self.dbsession)
+        rule_ban = rule_ban_update_svc.update(
+            rule_ban.id,
+            ip_address='10.0.2.0/24',
+            description='Violation of galactic law',
+            duration=30,
+            scope='galaxy_far_away',
+            active=False)
+        self.assertEqual(rule_ban.ip_address, '10.0.2.0/24')
+        self.assertEqual(rule_ban.description, 'Violation of galactic law')
+        self.assertGreaterEqual(
+            rule_ban.active_until,
+            datetime.now(pytz.utc) + timedelta(days=29, hours=23))
+        self.assertEqual(rule_ban.scope, 'galaxy_far_away')
+        self.assertFalse(rule_ban.active)
+
+    def test_update_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        rule_ban_update_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            rule_ban_update_svc.update(-1, active=False)
+
+    def test_update_duration(self):
+        import pytz
+        from datetime import datetime, timedelta
+        from ..models import RuleBan
+        past_now = datetime.now() - timedelta(days=30)
+        rule_ban = self._make(RuleBan(
+            ip_address='10.0.1.0/24',
+            created_at=past_now,
+            active_until=past_now + timedelta(days=7)))
+        self.dbsession.commit()
+        active_until = rule_ban.active_until
+        rule_ban_update_svc = self._get_target_class()(self.dbsession)
+        rule_ban = rule_ban_update_svc.update(rule_ban.id, duration=14)
+        self.assertEqual(rule_ban.duration, 14)
+        self.assertGreater(rule_ban.active_until, active_until)
+        self.assertLess(rule_ban.active_until, datetime.now(pytz.utc))
+
+    def test_update_duration_no_change(self):
+        from datetime import datetime, timedelta
+        from ..models import RuleBan
+        past_now = datetime.now() - timedelta(days=30)
+        rule_ban = self._make(RuleBan(
+            ip_address='10.0.1.0/24',
+            created_at=past_now,
+            active_until=past_now + timedelta(days=7)))
+        self.dbsession.commit()
+        active_until = rule_ban.active_until
+        rule_ban_update_svc = self._get_target_class()(self.dbsession)
+        rule_ban = rule_ban_update_svc.update(rule_ban.id, duration=7)
+        self.assertEqual(
+            rule_ban.active_until,
+            active_until)
+
+    def test_update_none(self):
+        from ..models import RuleBan
+        rule_ban = self._make(RuleBan(
+            ip_address='10.0.1.0/24',
+            description='In a galaxy far away'))
+        self.dbsession.commit()
+        rule_ban_update_svc = self._get_target_class()(self.dbsession)
+        rule_ban = rule_ban_update_svc.update(rule_ban.id, description=None)
+        self.assertIsNone(rule_ban.description)
+
+    def test_update_empty(self):
+        from datetime import datetime, timedelta
+        from ..models import RuleBan
+        rule_ban = self._make(RuleBan(
+            ip_address='10.0.1.0/24',
+            description='Violation of galactic law',
+            active_until=datetime.now() + timedelta(days=7),
+            scope='galaxy_far_away'))
+        self.dbsession.commit()
+        rule_ban_update_svc = self._get_target_class()(self.dbsession)
+        rule_ban = rule_ban_update_svc.update(
+            rule_ban.id,
+            description='',
+            duration='',
+            scope='',
+            active='')
+        self.assertIsNone(rule_ban.description)
+        self.assertIsNone(rule_ban.active_until)
+        self.assertIsNone(rule_ban.scope)
+        self.assertFalse(rule_ban.active)
 
 
 class TestSettingQueryService(ModelSessionMixin, unittest.TestCase):
@@ -1254,8 +1428,8 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
             [])
 
     def test_list_recent(self):
-        from ..models import Board, Topic, TopicMeta
         from datetime import datetime, timedelta
+        from ..models import Board, Topic, TopicMeta
 
         def _make_topic(days=0, **kwargs):
             topic = self._make(Topic(**kwargs))

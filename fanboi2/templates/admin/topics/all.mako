@@ -3,9 +3,8 @@
 <%def name='title()'>Topics - Admin Panel</%def>
 <%def name='subheader_title()'>Topics</%def>
 <%def name='subheader_body()'>Manage topics.</%def>
-<div class="sheet-body">
-    <a class="button green" href="${request.route_path('admin_topic_new')}">New Topic</a>
-</div>
+<h2 class="sheet-title">All Topics</h2>
+<%include file='_nav.mako' />
 % for topic in topics:
 <div class="admin-cascade">
     <div class="admin-cascade-header">
