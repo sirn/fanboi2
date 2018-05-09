@@ -1,6 +1,11 @@
 from zope.interface import Interface
 
 
+class IBoardCreateService(Interface):
+    def create(slug, title, description, status, agreements, settings):
+        pass
+
+
 class IBoardQueryService(Interface):
     def list_all():
         pass
@@ -9,6 +14,11 @@ class IBoardQueryService(Interface):
         pass
 
     def board_from_slug(board_slug):
+        pass
+
+
+class IBoardUpdateService(Interface):
+    def update(slug, **kwargs):
         pass
 
 

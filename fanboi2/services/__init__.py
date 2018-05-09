@@ -1,5 +1,7 @@
 from ..interfaces import \
+    IBoardCreateService,\
     IBoardQueryService,\
+    IBoardUpdateService,\
     IFilterService,\
     IIdentityService,\
     IPageQueryService,\
@@ -17,7 +19,8 @@ from ..interfaces import \
     IUserCreateService,\
     IUserLoginService
 
-from .board import BoardQueryService
+from .board import BoardCreateService, BoardQueryService
+from .board import BoardUpdateService
 from .filter_ import FilterService
 from .identity import IdentityService
 from .page import PageQueryService
@@ -33,6 +36,16 @@ from .user import UserCreateService, UserLoginService
 
 def includeme(config):  # pragma: no cover
 
+    # Board Create
+
+    def board_create_factory(context, request):
+        dbsession = request.find_service(name='db')
+        return BoardCreateService(dbsession)
+
+    config.register_service_factory(
+        board_create_factory,
+        IBoardCreateService)
+
     # Board Query
 
     def board_query_factory(context, request):
@@ -42,6 +55,16 @@ def includeme(config):  # pragma: no cover
     config.register_service_factory(
         board_query_factory,
         IBoardQueryService)
+
+    # Board Update
+
+    def board_update_factory(context, request):
+        dbsession = request.find_service(name='db')
+        return BoardUpdateService(dbsession)
+
+    config.register_service_factory(
+        board_update_factory,
+        IBoardUpdateService)
 
     # Filter
 

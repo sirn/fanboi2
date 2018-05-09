@@ -8,7 +8,7 @@
     <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
     <div class="form-item${' error' if form.value.errors else ''}">
         <label class="form-item-label" for="${form.value.id}">Value</label>
-        ${form.value(class_="input block large monospaced", rows=6)}
+        ${form.value(class_="input block font-large font-monospaced", rows=6)}
         % if form.value.errors:
             <span class="form-item-error">${form.value.errors[0]}</span>
         % endif

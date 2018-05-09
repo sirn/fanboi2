@@ -2,7 +2,7 @@ import json
 import ipaddress
 
 from wtforms import TextField, TextAreaField, Form, BooleanField
-from wtforms import PasswordField, IntegerField
+from wtforms import PasswordField, IntegerField, SelectField
 from wtforms.validators import Length as _Length
 from wtforms.validators import Required, EqualTo, ValidationError
 
@@ -96,3 +96,29 @@ class AdminRuleBanForm(Form):
             ipaddress.ip_network(field.data)
         except ValueError:
             raise ValidationError('Must be a valid IP address.')
+
+
+class AdminBoardForm(Form):
+    """A :class:`Form` for updating a board."""
+    title = TextField('Title', validators=[Required()])
+    description = TextField('Description', validators=[Required()])
+    status = SelectField('Status', validators=[Required()], choices=[
+        ('open', 'Open'),
+        ('restricted', 'Restricted'),
+        ('locked', 'Locked'),
+        ('archived', 'Archived')])
+
+    agreements = TextAreaField('Agreements', validators=[Required()])
+    settings = TextAreaField('Settings', validators=[Required()])
+
+    def validate_settings(form, field):
+        """Custom field validator that ensure value is a valid JSON."""
+        try:
+            json.loads(field.data)
+        except json.decoder.JSONDecodeError:
+            raise ValidationError('Must be a valid JSON.')
+
+
+class AdminBoardNewForm(AdminBoardForm):
+    """A :class:`Form` for creating a board."""
+    slug = TextField('Slug', validators=[Required()])

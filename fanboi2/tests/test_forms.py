@@ -308,3 +308,212 @@ class TestAdminRuleBanForm(_FormMixin, unittest.TestCase):
         self.assertListEqual(
             form.ip_address.errors,
             ['Must be a valid IP address.'])
+
+
+class TestAdminBoardForm(_FormMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..forms import AdminBoardForm
+        return AdminBoardForm
+
+    def test_validated(self):
+        form = self._make_one({
+            'title': 'Foobar',
+            'description': 'New board',
+            'status': 'open',
+            'agreements': 'None!',
+            'settings': '{}'})
+        self.assertTrue(form.validate())
+
+    def test_title_missing(self):
+        form = self._make_one({
+            'description': 'New board',
+            'status': 'open',
+            'agreements': 'None!',
+            'settings': '{}'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.title.errors,
+            ['This field is required.'])
+
+    def test_description_missing(self):
+        form = self._make_one({
+            'title': 'Foobar',
+            'status': 'open',
+            'agreements': 'None!',
+            'settings': '{}'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.description.errors,
+            ['This field is required.'])
+
+    def test_status_missing(self):
+        form = self._make_one({
+            'title': 'Foobar',
+            'description': 'New board',
+            'agreements': 'None!',
+            'settings': '{}'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.status.errors,
+            ['Not a valid choice'])
+
+    def test_status_not_allowed(self):
+        form = self._make_one({
+            'title': 'Foobar',
+            'status': 'foobar',
+            'description': 'New board',
+            'agreements': 'None!',
+            'settings': '{}'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.status.errors,
+            ['Not a valid choice'])
+
+    def test_agreements_missing(self):
+        form = self._make_one({
+            'title': 'Foobar',
+            'description': 'New board',
+            'status': 'open',
+            'settings': '{}'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.agreements.errors,
+            ['This field is required.'])
+
+    def test_settings_missing(self):
+        form = self._make_one({
+            'title': 'Foobar',
+            'description': 'New board',
+            'status': 'open',
+            'agreements': 'None!'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.settings.errors,
+            ['This field is required.'])
+
+    def test_settings_invalid_json(self):
+        form = self._make_one({
+            'title': 'Foobar',
+            'description': 'New board',
+            'status': 'open',
+            'agreements': 'None!',
+            'settings': 'foobar'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.settings.errors,
+            ['Must be a valid JSON.'])
+
+
+class TestAdminBoardNewForm(_FormMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..forms import AdminBoardNewForm
+        return AdminBoardNewForm
+
+    def test_validated(self):
+        form = self._make_one({
+            'title': 'Foobar',
+            'slug': 'foobar',
+            'description': 'New board',
+            'status': 'open',
+            'agreements': 'None!',
+            'settings': '{}'})
+        self.assertTrue(form.validate())
+
+    def test_title_missing(self):
+        form = self._make_one({
+            'slug': 'foobar',
+            'description': 'New board',
+            'status': 'open',
+            'agreements': 'None!',
+            'settings': '{}'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.title.errors,
+            ['This field is required.'])
+
+    def test_slug_missing(self):
+        form = self._make_one({
+            'description': 'New board',
+            'status': 'open',
+            'agreements': 'None!',
+            'settings': '{}'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.slug.errors,
+            ['This field is required.'])
+
+    def test_description_missing(self):
+        form = self._make_one({
+            'title': 'Foobar',
+            'slug': 'foobar',
+            'status': 'open',
+            'agreements': 'None!',
+            'settings': '{}'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.description.errors,
+            ['This field is required.'])
+
+    def test_status_missing(self):
+        form = self._make_one({
+            'title': 'Foobar',
+            'slug': 'foobar',
+            'description': 'New board',
+            'agreements': 'None!',
+            'settings': '{}'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.status.errors,
+            ['Not a valid choice'])
+
+    def test_status_not_allowed(self):
+        form = self._make_one({
+            'title': 'Foobar',
+            'slug': 'foobar',
+            'status': 'foobar',
+            'description': 'New board',
+            'agreements': 'None!',
+            'settings': '{}'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.status.errors,
+            ['Not a valid choice'])
+
+    def test_agreements_missing(self):
+        form = self._make_one({
+            'title': 'Foobar',
+            'slug': 'foobar',
+            'description': 'New board',
+            'status': 'open',
+            'settings': '{}'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.agreements.errors,
+            ['This field is required.'])
+
+    def test_settings_missing(self):
+        form = self._make_one({
+            'title': 'Foobar',
+            'slug': 'foobar',
+            'description': 'New board',
+            'status': 'open',
+            'agreements': 'None!'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.settings.errors,
+            ['This field is required.'])
+
+    def test_settings_invalid_json(self):
+        form = self._make_one({
+            'title': 'Foobar',
+            'slug': 'foobar',
+            'description': 'New board',
+            'status': 'open',
+            'agreements': 'None!',
+            'settings': 'foobar'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.settings.errors,
+            ['Must be a valid JSON.'])

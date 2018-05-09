@@ -6,6 +6,29 @@ from sqlalchemy.orm.exc import NoResultFound
 from . import ModelSessionMixin
 
 
+class TestBoardCreateService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import BoardCreateService
+        return BoardCreateService
+
+    def test_create(self):
+        board_create_svc = self._get_target_class()(self.dbsession)
+        board = board_create_svc.create(
+            'foobar',
+            title='Foobar',
+            description='Board about foobar',
+            status='open',
+            agreements='Nope',
+            settings={'foo': 'bar'})
+        self.assertEqual(board.slug, 'foobar')
+        self.assertEqual(board.title, 'Foobar')
+        self.assertEqual(board.description, 'Board about foobar')
+        self.assertEqual(board.status, 'open')
+        self.assertEqual(board.agreements, 'Nope')
+        self.assertEqual(board.settings['foo'], 'bar')
+
+
 class TestBoardQueryService(ModelSessionMixin, unittest.TestCase):
 
     def _get_target_class(self):
@@ -63,6 +86,49 @@ class TestBoardQueryService(ModelSessionMixin, unittest.TestCase):
         board_query_svc = self._get_target_class()(self.dbsession)
         with self.assertRaises(NoResultFound):
             board_query_svc.board_from_slug('not_found')
+
+
+class TestBoardUpdateService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import BoardUpdateService
+        return BoardUpdateService
+
+    def test_update(self):
+        from ..models import Board
+        board = self._make(Board(
+            slug='baz',
+            title='Baz',
+            description='Baz baz baz',
+            status='open',
+            agreements='Yes',
+            settings={'baz': 'baz'}))
+        self.dbsession.commit()
+        board_update_svc = self._get_target_class()(self.dbsession)
+        board_update_svc.update(
+            board.slug,
+            title='Foobar',
+            description='Foo foo foo',
+            status='locked',
+            agreements='Nope',
+            settings={'baz': 'bar'})
+        self.assertEqual(board.title, 'Foobar')
+        self.assertEqual(board.description, 'Foo foo foo')
+        self.assertEqual(board.status, 'locked')
+        self.assertEqual(board.agreements, 'Nope')
+        self.assertEqual(board.settings['baz'], 'bar')
+
+    def test_update_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        board_update_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            board_update_svc.update(
+                'notexists',
+                title='Foobar',
+                description='Foo foo foo',
+                status='locked',
+                agreements='Nope',
+                settings={'baz': 'bar'})
 
 
 class TestFilterService(unittest.TestCase):

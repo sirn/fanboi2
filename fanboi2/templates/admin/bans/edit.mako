@@ -9,28 +9,28 @@
     <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
     <div class="form-item${' error' if form.ip_address.errors else ''}">
         <label class="form-item-label" for="${form.ip_address.id}">IP address</label>
-        ${form.ip_address(class_="input block large", rows=6)}
+        ${form.ip_address(class_="input block font-large", rows=6)}
         % if form.ip_address.errors:
             <span class="form-item-error">${form.ip_address.errors[0]}</span>
         % endif
     </div>
     <div class="form-item${' error' if form.description.errors else ''}">
         <label class="form-item-label" for="${form.description.id}">Description</label>
-        ${form.description(class_="input block large", rows=6)}
+        ${form.description(class_="input block font-large", rows=6)}
         % if form.description.errors:
             <span class="form-item-error">${form.description.errors[0]}</span>
         % endif
     </div>
     <div class="form-item${' error' if form.duration.errors else ''}">
         <label class="form-item-label" for="${form.duration.id}">Duration</label>
-        ${form.duration(class_="input block large", rows=6)}
+        ${form.duration(class_="input block font-large", rows=6)}
         % if form.duration.errors:
             <span class="form-item-error">${form.duration.errors[0]}</span>
         % endif
     </div>
     <div class="form-item${' error' if form.scope.errors else ''}">
         <label class="form-item-label" for="${form.scope.id}">Scope</label>
-        ${form.scope(class_="input block large", rows=6)}
+        ${form.scope(class_="input block font-large", rows=6)}
         % if form.scope.errors:
             <span class="form-item-error">${form.scope.errors[0]}</span>
         % endif

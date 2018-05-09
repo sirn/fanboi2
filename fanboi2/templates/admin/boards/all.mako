@@ -18,7 +18,17 @@
             % for board in boards:
             <tr class="admin-table-row">
                 <th class="admin-table-item title"><a href="${request.route_path('admin_board', board=board.slug)}">${board.title}</a></th>
-                <td class="admin-table-item">${board.status}</td>
+                <td class="admin-table-item">
+                    % if board.status == 'open':
+                    Open
+                    % elif board.status == 'locked':
+                    Locked
+                    % elif board.status == 'restricted':
+                    Restricted
+                    % elif board.status == 'archived':
+                    Archived
+                    % endif
+                </td>
                 <td class="admin-table-item">${formatters.format_datetime(request, board.updated_at or board.created_at)}</td>
             </tr>
             % endfor

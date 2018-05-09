@@ -11,14 +11,14 @@
     <div class="container">
         <div class="form-item${' error' if form.username.errors else ''}">
             <label class="form-item-label" for="${form.username.id}">Username</label>
-            ${form.username(class_="input block larger")}
+            ${form.username(class_="input block font-large")}
             % if form.username.errors:
                 <span class="form-item-error">${form.username.errors[0]}</span>
             % endif
         </div>
         <div class="form-item${' error' if form.password.errors else ''}">
             <label class="form-item-label" for="${form.password.id}">Password</label>
-            ${form.password(class_="input block larger")}
+            ${form.password(class_="input block font-large")}
             % if form.password.errors:
                 <span class="form-item-error">${form.password.errors[0]}</span>
             % endif

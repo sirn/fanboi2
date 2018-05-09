@@ -419,6 +419,13 @@ body {
     border-radius: 0;       /* WebKit on mobile */
     outline: none;          /* WebKit on desktop */
 
+    &.font-monospaced { font-family: monospace; }
+    &.font-smaller    { font-size: $font-size-smaller; }
+    &.font-small      { font-size: $font-size-small; }
+    &.font-content    { font-size: $font-size-content; }
+    &.font-large      { font-size: $font-size-large; }
+    &.font-larger     { font-size: $font-size-larger; }
+
     &.block {
         display: block;
         max-width: 100%;
@@ -426,13 +433,6 @@ body {
         resize: vertical;
         width: 100%;
     }
-
-    &.monospaced { font-family: monospace; }
-    &.smaller    { font-size: $font-size-smaller; }
-    &.small      { font-size: $font-size-small; }
-    &.content    { font-size: $font-size-content; }
-    &.large      { font-size: $font-size-large; }
-    &.larger     { font-size: $font-size-larger; }
 }
 
 textarea.input {
@@ -460,26 +460,6 @@ textarea.input {
     &.muted   {}
     &.brand   {}
     &.green   {}
-
-    &.smaller {
-        font-size: $font-size-smaller;
-        padding: $spacing-vertical-smaller $spacing-horizontal-smaller;
-    }
-
-    &.small {
-        font-size: $font-size-small;
-        padding: $spacing-vertical-small $spacing-horizontal-small;
-    }
-
-    &.large {
-        font-size: $font-size-large;
-        padding: $spacing-vertical-large $spacing-horizontal-large;
-    }
-
-    &.larger {
-        font-size: $font-size-larger;
-        padding: $spacing-vertical $spacing-horizontal-larger;
-    }
 
     &.block {
         display: block;

@@ -3182,35 +3182,6 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         with self.assertRaises(BadCSRFToken):
             ban_new_post(self.request)
 
-    def test_ban_new_post_empty(self):
-        from ..interfaces import IRuleBanCreateService
-        from ..models import RuleBan
-        from ..services import RuleBanCreateService
-        from ..views.admin import ban_new_post
-        from . import mock_service
-        request = mock_service(self.request, {
-            'db': self.dbsession,
-            IRuleBanCreateService: RuleBanCreateService(self.dbsession)})
-        request.method = 'POST'
-        request.content_type = 'application/x-www-form-urlencoded'
-        request.POST = MultiDict({})
-        request.POST['ip_address'] = '10.0.1.0/24'
-        request.POST['description'] = ''
-        request.POST['duration'] = '0'
-        request.POST['scope'] = ''
-        request.POST['active'] = ''
-        request.POST['csrf_token'] = request.session.get_csrf_token()
-        self.config.add_route('admin_ban', '/admin/bans/{ban}')
-        response = ban_new_post(request)
-        rule_ban = self.dbsession.query(RuleBan).first()
-        self.assertEqual(response.location, '/admin/bans/%s' % rule_ban.id)
-        self.assertEqual(self.dbsession.query(RuleBan).count(), 1)
-        self.assertEqual(rule_ban.ip_address, '10.0.1.0/24')
-        self.assertIsNone(rule_ban.description)
-        self.assertIsNone(rule_ban.active_until)
-        self.assertIsNone(rule_ban.scope)
-        self.assertFalse(rule_ban.active)
-
     def test_ban_new_post_invalid_ip_address(self):
         from ..interfaces import IRuleBanCreateService
         from ..models import RuleBan
@@ -3373,53 +3344,19 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
     def test_ban_edit_post_bad_csrf(self):
         from pyramid.csrf import BadCSRFToken
         from ..models import RuleBan
-        from ..interfaces import IRuleBanQueryService
-        from ..services import RuleBanQueryService
         from ..views.admin import ban_edit_post
-        from . import mock_service
         rule_ban = self._make(RuleBan(ip_address='10.0.0.0/24'))
-        request = mock_service(self.request, {
-            IRuleBanQueryService: RuleBanQueryService(self.dbsession)})
-        request.method = 'POST'
-        request.matchdict['ban'] = str(rule_ban.id)
+        self.request.method = 'POST'
+        self.request.matchdict['ban'] = str(rule_ban.id)
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST = MultiDict({})
+        self.request.POST['ip_address'] = '10.0.1.0/24'
+        self.request.POST['description'] = 'Violation of galactic law'
+        self.request.POST['duration'] = 30
+        self.request.POST['scope'] = 'galaxy_far_away'
+        self.request.POST['active'] = ''
         with self.assertRaises(BadCSRFToken):
-            ban_edit_post(request)
-
-    def test_ban_edit_post_empty(self):
-        from datetime import datetime, timedelta
-        from ..models import RuleBan
-        from ..interfaces import IRuleBanQueryService, IRuleBanUpdateService
-        from ..services import RuleBanQueryService, RuleBanUpdateService
-        from ..views.admin import ban_edit_post
-        from . import mock_service
-        rule_ban = self._make(RuleBan(
-            ip_address='10.0.0.0/24',
-            description='Violation of galactic law',
-            active_until=datetime.now() + timedelta(days=30),
-            scope='galaxy_far_away',
-            active=True))
-        self.dbsession.commit()
-        request = mock_service(self.request, {
-            IRuleBanQueryService: RuleBanQueryService(self.dbsession),
-            IRuleBanUpdateService: RuleBanUpdateService(self.dbsession)})
-        request.method = 'POST'
-        request.matchdict['ban'] = str(rule_ban.id)
-        request.content_type = 'application/x-www-form-urlencoded'
-        request.POST = MultiDict({})
-        request.POST['ip_address'] = '10.0.1.0/24'
-        request.POST['description'] = ''
-        request.POST['duration'] = '0'
-        request.POST['scope'] = ''
-        request.POST['active'] = ''
-        request.POST['csrf_token'] = request.session.get_csrf_token()
-        self.config.add_route('admin_ban', '/admin/bans/{ban}')
-        response = ban_edit_post(request)
-        self.assertEqual(response.location, '/admin/bans/%s' % rule_ban.id)
-        self.assertEqual(rule_ban.ip_address, '10.0.1.0/24')
-        self.assertIsNone(rule_ban.description)
-        self.assertIsNone(rule_ban.active_until)
-        self.assertIsNone(rule_ban.scope)
-        self.assertFalse(rule_ban.active)
+            ban_edit_post(self.request)
 
     def test_ban_edit_post_duration(self):
         import pytz
@@ -3536,6 +3473,315 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(
             response['boards'],
             [board5, board3, board2, board1, board4])
+
+    def test_board_new_get(self):
+        from ..forms import AdminBoardNewForm
+        from ..views.admin import board_new_get
+        self.request = 'GET'
+        response = board_new_get(self.request)
+        self.assertIsInstance(response['form'], AdminBoardNewForm)
+
+    def test_board_new_post(self):
+        from ..interfaces import IBoardCreateService
+        from ..models import Board
+        from ..services import BoardCreateService
+        from ..views.admin import board_new_post
+        from . import mock_service
+        request = mock_service(self.request, {
+            IBoardCreateService: BoardCreateService(self.dbsession)})
+        request.method = 'POST'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict({})
+        request.POST['slug'] = 'foobar'
+        request.POST['title'] = 'Foobar'
+        request.POST['status'] = 'open'
+        request.POST['description'] = 'Foobar'
+        request.POST['agreements'] = 'I agree'
+        request.POST['settings'] = '{"name":"Nameless Foobar"}'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_board', '/admin/boards/{board}')
+        response = board_new_post(request)
+        board = self.dbsession.query(Board).first()
+        self.assertEqual(response.location, '/admin/boards/foobar')
+        self.assertEqual(self.dbsession.query(Board).count(), 1)
+        self.assertEqual(board.slug, 'foobar')
+        self.assertEqual(board.title, 'Foobar')
+        self.assertEqual(board.description, 'Foobar')
+        self.assertEqual(board.agreements, 'I agree')
+        self.assertEqual(board.settings, {
+            'max_posts': 1000,
+            'name': 'Nameless Foobar',
+            'post_delay': 10,
+            'use_ident': True})
+
+    def test_board_new_post_bad_csrf(self):
+        from pyramid.csrf import BadCSRFToken
+        from ..views.admin import board_new_post
+        self.request.method = 'POST'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST = MultiDict([])
+        self.request.POST['slug'] = 'foobar'
+        self.request.POST['title'] = 'Foobar'
+        self.request.POST['status'] = 'open'
+        self.request.POST['description'] = 'Foobar'
+        self.request.POST['agreements'] = 'I agree'
+        self.request.POST['settings'] = '{}'
+        with self.assertRaises(BadCSRFToken):
+            board_new_post(self.request)
+
+    def test_board_new_post_invalid_status(self):
+        from ..models import Board
+        from ..views.admin import board_new_post
+        self.request.method = 'POST'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST = MultiDict([])
+        self.request.POST['slug'] = 'foobar'
+        self.request.POST['title'] = 'Foobar'
+        self.request.POST['status'] = 'foobar'
+        self.request.POST['description'] = 'Foobar'
+        self.request.POST['agreements'] = 'I agree'
+        self.request.POST['settings'] = '{}'
+        self.request.POST['csrf_token'] = self.request.session.get_csrf_token()
+        response = board_new_post(self.request)
+        self.assertEqual(self.dbsession.query(Board).count(), 0)
+        self.assertEqual(response['form'].slug.data, 'foobar')
+        self.assertEqual(response['form'].title.data, 'Foobar')
+        self.assertEqual(response['form'].status.data, 'foobar')
+        self.assertEqual(response['form'].description.data, 'Foobar')
+        self.assertEqual(response['form'].agreements.data, 'I agree')
+        self.assertEqual(response['form'].settings.data, '{}')
+        self.assertDictEqual(response['form'].errors, {
+            'status': ['Not a valid choice']})
+
+    def test_board_new_post_invalid_settings(self):
+        from ..models import Board
+        from ..views.admin import board_new_post
+        self.request.method = 'POST'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST = MultiDict([])
+        self.request.POST['slug'] = 'foobar'
+        self.request.POST['title'] = 'Foobar'
+        self.request.POST['status'] = 'open'
+        self.request.POST['description'] = 'Foobar'
+        self.request.POST['agreements'] = 'I agree'
+        self.request.POST['settings'] = 'foobar'
+        self.request.POST['csrf_token'] = self.request.session.get_csrf_token()
+        response = board_new_post(self.request)
+        self.assertEqual(self.dbsession.query(Board).count(), 0)
+        self.assertEqual(response['form'].slug.data, 'foobar')
+        self.assertEqual(response['form'].title.data, 'Foobar')
+        self.assertEqual(response['form'].status.data, 'open')
+        self.assertEqual(response['form'].description.data, 'Foobar')
+        self.assertEqual(response['form'].agreements.data, 'I agree')
+        self.assertEqual(response['form'].settings.data, 'foobar')
+        self.assertDictEqual(response['form'].errors, {
+            'settings': ['Must be a valid JSON.']})
+
+    def test_board_get(self):
+        from ..interfaces import IBoardQueryService
+        from ..models import Board
+        from ..services import BoardQueryService
+        from ..views.admin import board_get
+        from . import mock_service
+        board = self._make(Board(title='Foobar', slug='foobar'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IBoardQueryService: BoardQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['board'] = 'foobar'
+        response = board_get(request)
+        self.assertEqual(response['board'], board)
+
+    def test_board_get_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IBoardQueryService
+        from ..services import BoardQueryService
+        from ..views.admin import board_get
+        from . import mock_service
+        request = mock_service(self.request, {
+            IBoardQueryService: BoardQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['board'] = 'foobar'
+        with self.assertRaises(NoResultFound):
+            board_get(request)
+
+    def test_board_edit_get(self):
+        from ..forms import AdminBoardForm
+        from ..interfaces import IBoardQueryService
+        from ..models import Board
+        from ..services import BoardQueryService
+        from ..views.admin import board_edit_get
+        from . import mock_service
+        board = self._make(Board(
+            title='Foobar',
+            slug='foobar',
+            description='Foobar',
+            agreements='I agree',
+            settings={'name': 'Nameless Foobar'}))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IBoardQueryService: BoardQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['board'] = 'foobar'
+        response = board_edit_get(request)
+        self.assertEqual(response['board'], board)
+        self.assertIsInstance(response['form'], AdminBoardForm)
+        self.assertEqual(response['form'].title.data, 'Foobar')
+        self.assertEqual(response['form'].status.data, 'open')
+        self.assertEqual(response['form'].description.data, 'Foobar')
+        self.assertEqual(response['form'].agreements.data, 'I agree')
+        self.assertEqual(
+            response['form'].settings.data,
+            '{\n' +
+            '    "max_posts": 1000,\n' +
+            '    "name": "Nameless Foobar",\n' +
+            '    "post_delay": 10,\n' +
+            '    "use_ident": true\n' +
+            '}')
+
+    def test_board_edit_get_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IBoardQueryService
+        from ..services import BoardQueryService
+        from ..views.admin import board_edit_get
+        from . import mock_service
+        request = mock_service(self.request, {
+            IBoardQueryService: BoardQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['board'] = 'foobar'
+        with self.assertRaises(NoResultFound):
+            board_edit_get(request)
+
+    def test_board_edit_post(self):
+        from ..interfaces import IBoardQueryService, IBoardUpdateService
+        from ..models import Board
+        from ..services import BoardQueryService, BoardUpdateService
+        from ..views.admin import board_edit_post
+        from . import mock_service
+        board = self._make(Board(slug='baz', title='Baz'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IBoardQueryService: BoardQueryService(self.dbsession),
+            IBoardUpdateService: BoardUpdateService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['board'] = 'baz'
+        request.POST = MultiDict([])
+        request.POST['title'] = 'Foobar'
+        request.POST['status'] = 'locked'
+        request.POST['description'] = 'Foobar'
+        request.POST['agreements'] = 'I agree'
+        request.POST['settings'] = '{"name":"Nameless Foobar"}'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_board', '/admin/boards/{board}')
+        response = board_edit_post(request)
+        self.assertEqual(response.location, '/admin/boards/baz')
+        self.assertEqual(board.title, 'Foobar')
+        self.assertEqual(board.status, 'locked')
+        self.assertEqual(board.description, 'Foobar')
+        self.assertEqual(board.agreements, 'I agree')
+        self.assertEqual(board.settings, {
+            'max_posts': 1000,
+            'name': 'Nameless Foobar',
+            'post_delay': 10,
+            'use_ident': True})
+
+    def test_board_edit_post_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IBoardQueryService
+        from ..services import BoardQueryService
+        from ..views.admin import board_edit_post
+        from . import mock_service
+        request = mock_service(self.request, {
+            IBoardQueryService: BoardQueryService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['board'] = 'notexists'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict({})
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        with self.assertRaises(NoResultFound):
+            board_edit_post(request)
+
+    def test_board_edit_post_bad_csrf(self):
+        from pyramid.csrf import BadCSRFToken
+        from ..models import Board
+        from ..views.admin import board_edit_post
+        board = self._make(Board(slug='baz', title='Baz'))
+        self.dbsession.commit()
+        self.request.method = 'POST'
+        self.request.matchdict['board'] = board.slug
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST = MultiDict([])
+        self.request.POST['title'] = 'Foobar'
+        self.request.POST['status'] = 'open'
+        self.request.POST['description'] = 'Foobar'
+        self.request.POST['agreements'] = 'I agree'
+        self.request.POST['settings'] = '{}'
+        with self.assertRaises(BadCSRFToken):
+            board_edit_post(self.request)
+
+    def test_board_edit_post_invalid_status(self):
+        from ..interfaces import IBoardQueryService, IBoardUpdateService
+        from ..models import Board
+        from ..services import BoardQueryService, BoardUpdateService
+        from ..views.admin import board_edit_post
+        from . import mock_service
+        board = self._make(Board(slug='baz', title='Baz'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IBoardQueryService: BoardQueryService(self.dbsession),
+            IBoardUpdateService: BoardUpdateService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['board'] = 'baz'
+        request.POST = MultiDict([])
+        request.POST['title'] = 'Foobar'
+        request.POST['status'] = 'foobar'
+        request.POST['description'] = 'Foobar'
+        request.POST['agreements'] = 'I agree'
+        request.POST['settings'] = '{"name":"Nameless Foobar"}'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_board', '/admin/boards/{board}')
+        response = board_edit_post(request)
+        self.assertEqual(board.status, 'open')
+        self.assertEqual(response['form'].title.data, 'Foobar')
+        self.assertEqual(response['form'].status.data, 'foobar')
+        self.assertEqual(response['form'].description.data, 'Foobar')
+        self.assertEqual(response['form'].agreements.data, 'I agree')
+        self.assertEqual(
+            response['form'].settings.data,
+            '{"name":"Nameless Foobar"}')
+        self.assertDictEqual(response['form'].errors, {
+            'status': ['Not a valid choice']})
+
+    def test_board_edit_post_invalid_settings(self):
+        from ..interfaces import IBoardQueryService, IBoardUpdateService
+        from ..models import Board
+        from ..services import BoardQueryService, BoardUpdateService
+        from ..views.admin import board_edit_post
+        from . import mock_service
+        board = self._make(Board(slug='baz', title='Baz'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IBoardQueryService: BoardQueryService(self.dbsession),
+            IBoardUpdateService: BoardUpdateService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['board'] = 'baz'
+        request.POST = MultiDict([])
+        request.POST['title'] = 'Foobar'
+        request.POST['status'] = 'locked'
+        request.POST['description'] = 'Foobar'
+        request.POST['agreements'] = 'I agree'
+        request.POST['settings'] = 'invalid'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_board', '/admin/boards/{board}')
+        response = board_edit_post(request)
+        self.assertEqual(board.status, 'open')
+        self.assertEqual(response['form'].title.data, 'Foobar')
+        self.assertEqual(response['form'].status.data, 'locked')
+        self.assertEqual(response['form'].description.data, 'Foobar')
+        self.assertEqual(response['form'].agreements.data, 'I agree')
+        self.assertEqual(response['form'].settings.data, 'invalid')
+        self.assertDictEqual(response['form'].errors, {
+            'settings': ['Must be a valid JSON.']})
 
     def test_topics_get(self):
         from datetime import datetime, timedelta

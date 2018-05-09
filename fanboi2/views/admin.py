@@ -6,20 +6,25 @@ from pyramid.security import remember, forget, authenticated_userid
 from webob.multidict import MultiDict
 
 from ..version import __VERSION__
+from ..models.board import DEFAULT_BOARD_CONFIG
 from ..forms import \
+    AdminBoardForm,\
+    AdminBoardNewForm,\
     AdminLoginForm,\
     AdminRuleBanForm,\
     AdminSettingForm,\
     AdminSetupForm
 from ..interfaces import \
+    IBoardCreateService,\
     IBoardQueryService,\
-    ITopicQueryService,\
+    IBoardUpdateService,\
     IPageQueryService,\
     IRuleBanCreateService,\
     IRuleBanQueryService,\
     IRuleBanUpdateService,\
     ISettingQueryService,\
     ISettingUpdateService,\
+    ITopicQueryService,\
     IUserCreateService,\
     IUserLoginService
 
@@ -31,11 +36,13 @@ def login_get(request):
     """
     if authenticated_userid(request):
         return HTTPFound(
-            location=request.route_path(route_name='admin_dashboard'))
+            location=request.route_path(
+                route_name='admin_dashboard'))
 
     if _setup_required(None, request):
         return HTTPFound(
-            location=request.route_path(route_name='admin_setup'))
+            location=request.route_path(
+                route_name='admin_setup'))
 
     form = AdminLoginForm(request=request)
     return {
@@ -69,8 +76,9 @@ def login_post(request):
     token = user_login_svc.token_for(form.username.data, request.client_addr)
     headers = remember(request, token)
     return HTTPFound(
-        location=request.route_path(route_name='admin_dashboard'),
-        headers=headers)
+        headers=headers,
+        location=request.route_path(
+            route_name='admin_dashboard'))
 
 
 def logout_get(request):
@@ -85,8 +93,9 @@ def logout_get(request):
 
     headers = forget(request)
     return HTTPFound(
-        location=request.route_path(route_name='admin_root'),
-        headers=headers)
+        headers=headers,
+        location=request.route_path(
+            route_name='admin_root'))
 
 
 def setup_get(request):
@@ -122,7 +131,9 @@ def setup_post(request):
         ['admin'])
 
     request.session.flash('Successfully setup initial user.', 'success')
-    return HTTPFound(location=request.route_path(route_name='admin_root'))
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_root'))
 
 
 def dashboard_get(request):
@@ -162,8 +173,8 @@ def ban_new_post(request):
             'form': form,
         }
 
-    rule_ban_create_service = request.find_service(IRuleBanCreateService)
-    rule_ban = rule_ban_create_service.create(
+    rule_ban_create_svc = request.find_service(IRuleBanCreateService)
+    rule_ban = rule_ban_create_svc.create(
         form.ip_address.data,
         description=form.description.data,
         duration=form.duration.data,
@@ -174,8 +185,10 @@ def ban_new_post(request):
     dbsession = request.find_service(name='db')
     dbsession.flush()
 
-    return HTTPFound(location=request.route_path(
-        route_name='admin_ban', ban=rule_ban.id))
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_ban',
+            ban=rule_ban.id))
 
 
 def ban_get(request):
@@ -212,16 +225,18 @@ def ban_edit_post(request):
             'form': form,
         }
 
-    rule_ban_update_service = request.find_service(IRuleBanUpdateService)
-    rule_ban = rule_ban_update_service.update(
+    rule_ban_update_svc = request.find_service(IRuleBanUpdateService)
+    rule_ban = rule_ban_update_svc.update(
         rule_ban.id,
         ip_address=form.ip_address.data,
         description=form.description.data,
         duration=form.duration.data,
         scope=form.scope.data,
         active=form.active.data)
-    return HTTPFound(location=request.route_path(
-        route_name='admin_ban', ban=rule_ban.id))
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_ban',
+            ban=rule_ban.id))
 
 
 def boards_get(request):
@@ -233,21 +248,89 @@ def boards_get(request):
 
 
 def board_new_get(request):
-    return {}
+    form = AdminBoardNewForm(request=request)
+    form.settings.data = json.dumps(
+        DEFAULT_BOARD_CONFIG,
+        indent=4,
+        sort_keys=True)
+    return {
+        'form': form
+    }
 
 
 def board_new_post(request):
     check_csrf_token(request)
-    return {}
+
+    form = AdminBoardNewForm(request.POST, request=request)
+    if not form.validate():
+        request.response.status = '400 Bad Request'
+        return {
+            'form': form
+        }
+
+    board_create_svc = request.find_service(IBoardCreateService)
+    board = board_create_svc.create(
+        form.slug.data,
+        title=form.title.data,
+        description=form.description.data,
+        status=form.status.data,
+        agreements=form.agreements.data,
+        settings=json.loads(form.settings.data))
+
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_board',
+            board=board.slug))
 
 
 def board_get(request):
-    return {}
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
+    return {
+        'board': board,
+    }
 
 
-def board_post(request):
+def board_edit_get(request):
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
+    form = AdminBoardForm(obj=board, request=request)
+    form.settings.data = json.dumps(board.settings, indent=4, sort_keys=True)
+    return {
+        'board': board,
+        'form': form
+    }
+
+
+def board_edit_post(request):
     check_csrf_token(request)
-    return {}
+
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
+
+    form = AdminBoardForm(request.POST, obj=board, request=request)
+    if not form.validate():
+        request.response.status = '400 Bad Request'
+        return {
+            'board': board,
+            'form': form
+        }
+
+    board_update_svc = request.find_service(IBoardUpdateService)
+    board = board_update_svc.update(
+        board.slug,
+        title=form.title.data,
+        description=form.description.data,
+        status=form.status.data,
+        agreements=form.agreements.data,
+        settings=json.loads(form.settings.data))
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_board',
+            board=board.slug))
 
 
 def topics_get(request):
@@ -386,7 +469,9 @@ def setting_post(request):
 
     setting_update_svc = request.find_service(ISettingUpdateService)
     setting_update_svc.update(setting_key, json.loads(form.value.data))
-    return HTTPFound(location=request.route_path(route_name='admin_settings'))
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_settings'))
 
 
 def _setup_required(context, request):
@@ -524,6 +609,7 @@ def includeme(config):  # pragma: no cover
     config.add_route('admin_boards', '/boards/')
     config.add_route('admin_board_new', '/boards/new/')
     config.add_route('admin_board', '/boards/{board}/')
+    config.add_route('admin_board_edit', '/boards/{board}/edit/')
 
     config.add_view(
         boards_get,
@@ -554,10 +640,17 @@ def includeme(config):  # pragma: no cover
         permission='manage')
 
     config.add_view(
-        board_post,
+        board_edit_get,
+        request_method='GET',
+        route_name='admin_board_edit',
+        renderer='admin/boards/edit.mako',
+        permission='manage')
+
+    config.add_view(
+        board_edit_post,
         request_method='POST',
-        route_name='admin_board',
-        renderer='admin/boards/show.mako',
+        route_name='admin_board_edit',
+        renderer='admin/boards/edit.mako',
         permission='manage')
 
     #
