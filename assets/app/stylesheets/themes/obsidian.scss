@@ -200,6 +200,10 @@
     .codeblock {
         background-color: $color-gray-dark;
         color: $color-gray-light;
+
+        &.noshade {
+            background: none;
+        }
     }
 
     .content {

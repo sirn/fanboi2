@@ -32,6 +32,16 @@ class IIdentityService(Interface):
         pass
 
 
+class IPageCreateService(Interface):
+    def create(slug, title, body):
+        pass
+
+
+class IPageDeleteService(Interface):
+    def delete(slug):
+        pass
+
+
 class IPageQueryService(Interface):
     def list_public():
         pass
@@ -39,10 +49,18 @@ class IPageQueryService(Interface):
     def list_internal():
         pass
 
-    def public_page_from_slug(page_slug):
+    def public_page_from_slug(slug):
         pass
 
-    def internal_page_from_slug(page_slug):
+    def internal_page_from_slug(slug):
+        pass
+
+
+class IPageUpdateService(Interface):
+    def update(slug, **kwargs):
+        pass
+
+    def update_internal(slug, **kwargs):
         pass
 
 
@@ -98,7 +116,7 @@ class IRuleBanQueryService(Interface):
 
 
 class IRuleBanUpdateService(Interface):
-    def update(id, **kwargs):
+    def update(rule_ban_id, **kwargs):
         pass
 
 

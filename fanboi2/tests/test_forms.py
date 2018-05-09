@@ -517,3 +517,91 @@ class TestAdminBoardNewForm(_FormMixin, unittest.TestCase):
         self.assertListEqual(
             form.settings.errors,
             ['Must be a valid JSON.'])
+
+
+class TestAdminPageForm(_FormMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..forms import AdminPageForm
+        return AdminPageForm
+
+    def test_validated(self):
+        form = self._make_one({'body': 'Foobar'})
+        self.assertTrue(form.validate())
+
+    def test_body_missing(self):
+        form = self._make_one({})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.body.errors,
+            ['This field is required.'])
+
+
+class TestAdminPublicPageForm(_FormMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..forms import AdminPublicPageForm
+        return AdminPublicPageForm
+
+    def test_validated(self):
+        form = self._make_one({
+            'body': 'Foobar',
+            'title': 'Foobar'})
+        self.assertTrue(form.validate())
+
+    def test_body_missing(self):
+        form = self._make_one({
+            'title': 'Foobar'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.body.errors,
+            ['This field is required.'])
+
+    def test_title_missing(self):
+        form = self._make_one({
+            'body': 'Foobar'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.title.errors,
+            ['This field is required.'])
+
+
+class TestAdminPublicPageNewForm(_FormMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..forms import AdminPublicPageNewForm
+        return AdminPublicPageNewForm
+
+    def test_validated(self):
+        form = self._make_one({
+            'body': 'Foobar',
+            'slug': 'foobar',
+            'title': 'Foobar'})
+        self.assertTrue(form.validate())
+
+    def test_body_missing(self):
+        form = self._make_one({
+            'slug': 'foobar',
+            'title': 'Foobar'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.body.errors,
+            ['This field is required.'])
+
+    def test_slug_missing(self):
+        form = self._make_one({
+            'body': 'Foobar',
+            'title': 'Foobar'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.slug.errors,
+            ['This field is required.'])
+
+    def test_title_missing(self):
+        form = self._make_one({
+            'body': 'Foobar',
+            'slug': 'foobar'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.title.errors,
+            ['This field is required.'])

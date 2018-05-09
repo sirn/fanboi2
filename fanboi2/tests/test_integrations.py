@@ -3131,7 +3131,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
     def test_ban_new_get(self):
         from ..forms import AdminRuleBanForm
         from ..views.admin import ban_new_get
-        self.request = 'GET'
+        self.request.method = 'GET'
         response = ban_new_get(self.request)
         self.assertIsInstance(response['form'], AdminRuleBanForm)
 
@@ -3477,7 +3477,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
     def test_board_new_get(self):
         from ..forms import AdminBoardNewForm
         from ..views.admin import board_new_get
-        self.request = 'GET'
+        self.request.method = 'GET'
         response = board_new_get(self.request)
         self.assertIsInstance(response['form'], AdminBoardNewForm)
 
@@ -3665,6 +3665,7 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             IBoardUpdateService: BoardUpdateService(self.dbsession)})
         request.method = 'POST'
         request.matchdict['board'] = 'baz'
+        request.content_type = 'application/x-www-form-urlencoded'
         request.POST = MultiDict([])
         request.POST['title'] = 'Foobar'
         request.POST['status'] = 'locked'
@@ -3906,6 +3907,770 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         self.assertFalse(inspect(response['pages_internal'][1]).persistent)
         self.assertFalse(inspect(response['pages_internal'][2]).persistent)
         self.assertTrue(inspect(response['pages_internal'][3]).persistent)
+
+    def test_page_new_get(self):
+        from ..forms import AdminPublicPageNewForm
+        from ..views.admin import page_new_get
+        self.request.method = 'GET'
+        response = page_new_get(self.request)
+        self.assertIsInstance(response['form'], AdminPublicPageNewForm)
+
+    def test_page_new_post(self):
+        from ..interfaces import IPageCreateService
+        from ..models import Page
+        from ..services import PageCreateService
+        from ..views.admin import page_new_post
+        from . import mock_service
+        request = mock_service(self.request, {
+            IPageCreateService: PageCreateService(self.dbsession)})
+        request.method = 'POST'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict({})
+        request.POST['title'] = 'Foobar'
+        request.POST['slug'] = 'foobar'
+        request.POST['body'] = '**Hello, world!**'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_page', '/admin/pages/{page}')
+        response = page_new_post(request)
+        page = self.dbsession.query(Page).first()
+        self.assertEqual(response.location, '/admin/pages/foobar')
+        self.assertEqual(self.dbsession.query(Page).count(), 1)
+        self.assertEqual(page.slug, 'foobar')
+        self.assertEqual(page.title, 'Foobar')
+        self.assertEqual(page.body, '**Hello, world!**')
+        self.assertEqual(page.namespace, 'public')
+        self.assertEqual(page.formatter, 'markdown')
+
+    def test_page_new_post_bad_csrf(self):
+        from pyramid.csrf import BadCSRFToken
+        from ..views.admin import page_new_post
+        self.request.method = 'POST'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST = MultiDict({})
+        self.request.POST['title'] = 'Foobar'
+        self.request.POST['slug'] = 'foobar'
+        self.request.POST['body'] = '**Hello, world!**'
+        with self.assertRaises(BadCSRFToken):
+            page_new_post(self.request)
+
+    def test_page_new_post_invalid_title(self):
+        from ..forms import AdminPublicPageNewForm
+        from ..models import Page
+        from ..views.admin import page_new_post
+        self.request.method = 'POST'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST = MultiDict({})
+        self.request.POST['title'] = ''
+        self.request.POST['slug'] = 'foobar'
+        self.request.POST['body'] = '**Hello, world!**'
+        self.request.POST['csrf_token'] = self.request.session.get_csrf_token()
+        response = page_new_post(self.request)
+        self.assertEqual(self.dbsession.query(Page).count(), 0)
+        self.assertIsInstance(response['form'], AdminPublicPageNewForm)
+        self.assertEqual(response['form'].title.data, '')
+        self.assertEqual(response['form'].slug.data, 'foobar')
+        self.assertEqual(response['form'].body.data, '**Hello, world!**')
+        self.assertDictEqual(response['form'].errors, {
+            'title': ['This field is required.']})
+
+    def test_page_new_post_invalid_slug(self):
+        from ..forms import AdminPublicPageNewForm
+        from ..models import Page
+        from ..views.admin import page_new_post
+        self.request.method = 'POST'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST = MultiDict({})
+        self.request.POST['title'] = 'Foobar'
+        self.request.POST['slug'] = ''
+        self.request.POST['body'] = '**Hello, world!**'
+        self.request.POST['csrf_token'] = self.request.session.get_csrf_token()
+        response = page_new_post(self.request)
+        self.assertEqual(self.dbsession.query(Page).count(), 0)
+        self.assertIsInstance(response['form'], AdminPublicPageNewForm)
+        self.assertEqual(response['form'].title.data, 'Foobar')
+        self.assertEqual(response['form'].slug.data, '')
+        self.assertEqual(response['form'].body.data, '**Hello, world!**')
+        self.assertDictEqual(response['form'].errors, {
+            'slug': ['This field is required.']})
+
+    def test_page_new_post_invalid_body(self):
+        from ..forms import AdminPublicPageNewForm
+        from ..models import Page
+        from ..views.admin import page_new_post
+        self.request.method = 'POST'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST = MultiDict({})
+        self.request.POST['title'] = 'Foobar'
+        self.request.POST['slug'] = 'foobar'
+        self.request.POST['body'] = ''
+        self.request.POST['csrf_token'] = self.request.session.get_csrf_token()
+        response = page_new_post(self.request)
+        self.assertEqual(self.dbsession.query(Page).count(), 0)
+        self.assertIsInstance(response['form'], AdminPublicPageNewForm)
+        self.assertEqual(response['form'].title.data, 'Foobar')
+        self.assertEqual(response['form'].slug.data, 'foobar')
+        self.assertEqual(response['form'].body.data, '')
+        self.assertDictEqual(response['form'].errors, {
+            'body': ['This field is required.']})
+
+    def test_page_get(self):
+        from ..interfaces import IPageQueryService
+        from ..models import Page
+        from ..services import PageQueryService
+        from ..views.admin import page_get
+        from . import mock_service
+        page = self._make(Page(
+            slug='foobar',
+            title='Foobar',
+            body='**Hello**',
+            namespace='public',
+            formatter='markdown'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageQueryService: PageQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'foobar'
+        response = page_get(request)
+        self.assertEqual(response['page'], page)
+
+    def test_page_get_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IPageQueryService
+        from ..services import PageQueryService
+        from ..views.admin import page_get
+        from . import mock_service
+        request = mock_service(self.request, {
+            IPageQueryService: PageQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'notexists'
+        with self.assertRaises(NoResultFound):
+            page_get(request)
+
+    def test_page_edit_get(self):
+        from ..forms import AdminPublicPageForm
+        from ..interfaces import IPageQueryService
+        from ..models import Page
+        from ..services import PageQueryService
+        from ..views.admin import page_edit_get
+        from . import mock_service
+        page = self._make(Page(
+            slug='foobar',
+            title='Foobar',
+            body='**Hello**',
+            namespace='public',
+            formatter='markdown'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageQueryService: PageQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'foobar'
+        response = page_edit_get(request)
+        self.assertEqual(response['page'], page)
+        self.assertIsInstance(response['form'], AdminPublicPageForm)
+        self.assertEqual(response['form'].title.data, 'Foobar')
+        self.assertEqual(response['form'].body.data, '**Hello**')
+
+    def test_page_edit_get_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IPageQueryService
+        from ..services import PageQueryService
+        from ..views.admin import page_edit_get
+        from . import mock_service
+        request = mock_service(self.request, {
+            IPageQueryService: PageQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'notexists'
+        with self.assertRaises(NoResultFound):
+            page_edit_get(request)
+
+    def test_page_edit_post(self):
+        from ..interfaces import IPageQueryService, IPageUpdateService
+        from ..models import Page
+        from ..services import PageQueryService, PageUpdateService
+        from ..views.admin import page_edit_post
+        from . import mock_service
+        page = self._make(Page(
+            slug='foobar',
+            title='Foobar',
+            body='**Hello**',
+            namespace='public',
+            formatter='markdown'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageQueryService: PageQueryService(self.dbsession),
+            IPageUpdateService: PageUpdateService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['page'] = 'foobar'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['title'] = 'Baz'
+        request.POST['body'] = '**Baz**'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_page', '/admin/pages/{page}')
+        response = page_edit_post(request)
+        self.assertEqual(response.location, '/admin/pages/foobar')
+        self.assertEqual(page.slug, 'foobar')
+        self.assertEqual(page.title, 'Baz')
+        self.assertEqual(page.body, '**Baz**')
+        self.assertEqual(page.namespace, 'public')
+        self.assertEqual(page.formatter, 'markdown')
+
+    def test_page_edit_post_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IPageQueryService
+        from ..models import Page
+        from ..services import PageQueryService
+        from ..views.admin import page_edit_post
+        from . import mock_service
+        request = mock_service(self.request, {
+            IPageQueryService: PageQueryService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['page'] = 'notexists'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        with self.assertRaises(NoResultFound):
+            page_edit_post(request)
+
+    def test_page_edit_post_bad_csrf(self):
+        from pyramid.csrf import BadCSRFToken
+        from ..interfaces import IPageQueryService
+        from ..models import Page
+        from ..services import PageQueryService
+        from ..views.admin import page_edit_post
+        from . import mock_service
+        page = self._make(Page(
+            slug='foobar',
+            title='Foobar',
+            body='**Hello**',
+            namespace='public',
+            formatter='markdown'))
+        self.dbsession.commit()
+        self.request.method = 'POST'
+        self.request.matchdict['page'] = 'notexists'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST = MultiDict([])
+        self.request.POST['title'] = 'Baz'
+        self.request.POST['body'] = '**Baz**'
+        with self.assertRaises(BadCSRFToken):
+            page_edit_post(self.request)
+
+    def test_page_edit_post_invalid_title(self):
+        from ..forms import AdminPublicPageForm
+        from ..interfaces import IPageQueryService, IPageUpdateService
+        from ..models import Page
+        from ..services import PageQueryService, PageUpdateService
+        from ..views.admin import page_edit_post
+        from . import mock_service
+        page = self._make(Page(
+            slug='foobar',
+            title='Foobar',
+            body='**Hello**',
+            namespace='public',
+            formatter='markdown'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageQueryService: PageQueryService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['page'] = 'foobar'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['title'] = ''
+        request.POST['body'] = '**Baz**'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        response = page_edit_post(request)
+        self.assertIsInstance(response['form'], AdminPublicPageForm)
+        self.assertEqual(response['form'].title.data, '')
+        self.assertEqual(response['form'].body.data, '**Baz**')
+        self.assertEqual(page.slug, 'foobar')
+        self.assertEqual(page.title, 'Foobar')
+        self.assertEqual(page.body, '**Hello**')
+        self.assertEqual(page.namespace, 'public')
+        self.assertEqual(page.formatter, 'markdown')
+
+    def test_page_edit_post_invalid_body(self):
+        from ..forms import AdminPublicPageForm
+        from ..interfaces import IPageQueryService, IPageUpdateService
+        from ..models import Page
+        from ..services import PageQueryService, PageUpdateService
+        from ..views.admin import page_edit_post
+        from . import mock_service
+        page = self._make(Page(
+            slug='foobar',
+            title='Foobar',
+            body='**Hello**',
+            namespace='public',
+            formatter='markdown'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageQueryService: PageQueryService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['page'] = 'foobar'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['title'] = 'Baz'
+        request.POST['body'] = ''
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        response = page_edit_post(request)
+        self.assertIsInstance(response['form'], AdminPublicPageForm)
+        self.assertEqual(response['form'].title.data, 'Baz')
+        self.assertEqual(response['form'].body.data, '')
+        self.assertEqual(page.slug, 'foobar')
+        self.assertEqual(page.title, 'Foobar')
+        self.assertEqual(page.body, '**Hello**')
+        self.assertEqual(page.namespace, 'public')
+        self.assertEqual(page.formatter, 'markdown')
+
+    def test_page_delete_post(self):
+        from ..interfaces import IPageDeleteService
+        from ..models import Page
+        from ..services import PageDeleteService
+        from ..views.admin import page_delete_post
+        from . import mock_service
+        page = self._make(Page(
+            slug='foobar',
+            title='Foobar',
+            body='**Hello**',
+            namespace='public',
+            formatter='markdown'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageDeleteService: PageDeleteService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['page'] = 'foobar'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_pages', '/admin/pages')
+        self.assertEqual(self.dbsession.query(Page).count(), 1)
+        response = page_delete_post(request)
+        self.assertEqual(response.location, '/admin/pages')
+        self.assertEqual(self.dbsession.query(Page).count(), 0)
+
+    def test_page_delete_post_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IPageDeleteService
+        from ..services import PageDeleteService
+        from ..views.admin import page_delete_post
+        from . import mock_service
+        request = mock_service(self.request, {
+            IPageDeleteService: PageDeleteService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['page'] = 'notexists'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        with self.assertRaises(NoResultFound):
+            page_delete_post(request)
+
+    def test_page_delete_post_bad_csrf(self):
+        from pyramid.csrf import BadCSRFToken
+        from ..views.admin import page_delete_post
+        self.request.method = 'POST'
+        self.request.matchdict['page'] = 'notexists'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST = MultiDict([])
+        with self.assertRaises(BadCSRFToken):
+            page_delete_post(self.request)
+
+    def test_page_internal_get(self):
+        from ..interfaces import IPageQueryService
+        from ..models import Page
+        from ..services import PageQueryService
+        from ..views.admin import page_internal_get
+        from . import mock_service
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=(('global/foobar', 'html'),))
+
+        page = self._make(Page(
+            slug='global/foobar',
+            title='global/foobar',
+            body='<em>Hello</em>',
+            namespace='internal',
+            formatter='html'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/foobar'
+        response = page_internal_get(request)
+        self.assertEqual(response['page_slug'], 'global/foobar')
+        self.assertEqual(response['page'], page)
+
+    def test_page_internal_get_not_found(self):
+        from ..interfaces import IPageQueryService
+        from ..services import PageQueryService
+        from ..views.admin import page_internal_get
+        from . import mock_service
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=(('global/notexists', 'none'),))
+
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/notexists'
+        response = page_internal_get(request)
+        self.assertEqual(response['page_slug'], 'global/notexists')
+        self.assertIsNone(response['page'])
+
+    def test_page_internal_get_not_allowed(self):
+        from pyramid.httpexceptions import HTTPNotFound
+        from ..interfaces import IPageQueryService
+        from ..services import PageQueryService
+        from ..views.admin import page_internal_get
+        from . import mock_service
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=tuple())
+
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/foobar'
+        with self.assertRaises(HTTPNotFound):
+            page_internal_get(request)
+
+    def test_page_internal_edit_get(self):
+        from ..forms import AdminPageForm
+        from ..interfaces import IPageQueryService
+        from ..models import Page
+        from ..services import PageQueryService
+        from ..views.admin import page_internal_edit_get
+        from . import mock_service
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=(('global/foobar', 'html'),))
+
+        page = self._make(Page(
+            slug='global/foobar',
+            title='global/foobar',
+            body='<em>Hello</em>',
+            namespace='internal',
+            formatter='html'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/foobar'
+        response = page_internal_edit_get(request)
+        self.assertIsInstance(response['form'], AdminPageForm)
+        self.assertEqual(response['form'].body.data, '<em>Hello</em>')
+        self.assertEqual(response['page_slug'], 'global/foobar')
+        self.assertEqual(response['page'], page)
+
+    def test_page_internal_edit_get_auto_create(self):
+        from ..forms import AdminPageForm
+        from ..interfaces import IPageQueryService
+        from ..models import Page
+        from ..services import PageQueryService
+        from ..views.admin import page_internal_edit_get
+        from . import mock_service
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=(('global/foobar', 'html'),))
+
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/foobar'
+        response = page_internal_edit_get(request)
+        self.assertIsInstance(response['form'], AdminPageForm)
+        self.assertEqual(response['form'].body.data, None)
+        self.assertEqual(response['page_slug'], 'global/foobar')
+        self.assertIsNone(response['page'])
+
+    def test_page_internal_edit_not_allowed(self):
+        from pyramid.httpexceptions import HTTPNotFound
+        from ..forms import AdminPageForm
+        from ..interfaces import IPageQueryService
+        from ..models import Page
+        from ..services import PageQueryService
+        from ..views.admin import page_internal_edit_get
+        from . import mock_service
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=tuple())
+
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/notallowed'
+        with self.assertRaises(HTTPNotFound):
+            page_internal_edit_get(request)
+
+    def test_page_internal_edit_post(self):
+        from ..interfaces import IPageQueryService, IPageUpdateService
+        from ..models import Page
+        from ..services import PageQueryService, PageUpdateService
+        from ..views.admin import page_internal_edit_post
+        from . import mock_service
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=(('global/foobar', 'html'),))
+
+        page = self._make(Page(
+            slug='global/foobar',
+            title='global/foobar',
+            body='<em>Hello</em>',
+            namespace='internal',
+            formatter='html'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(self.dbsession),
+            IPageUpdateService: PageUpdateService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/foobar'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['body'] = '<em>World</em>'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_page_internal', '/admin/pages_i/{page}')
+        response = page_internal_edit_post(request)
+        self.assertEqual(response.location, '/admin/pages_i/global/foobar')
+        self.assertEqual(page.slug, 'global/foobar')
+        self.assertEqual(page.title, 'global/foobar')
+        self.assertEqual(page.body, '<em>World</em>')
+        self.assertEqual(page.namespace, 'internal')
+        self.assertEqual(page.formatter, 'html')
+
+    def test_page_internal_edit_post_auto_create(self):
+        from ..interfaces import IPageQueryService, IPageCreateService
+        from ..models import Page
+        from ..services import PageQueryService, PageCreateService
+        from ..views.admin import page_internal_edit_post
+        from . import mock_service
+
+        class _WrappedPageCreateService(PageCreateService):
+            def create_internal(self, slug, body):
+                return super(_WrappedPageCreateService, self).\
+                    create_internal(
+                        slug,
+                        body,
+                        _internal_pages=(('global/foobar', 'html'),))
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=(('global/foobar', 'html'),))
+
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(self.dbsession),
+            IPageCreateService: _WrappedPageCreateService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/foobar'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['body'] = '<em>World</em>'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_page_internal', '/admin/pages_i/{page}')
+        response = page_internal_edit_post(request)
+        self.assertEqual(response.location, '/admin/pages_i/global/foobar')
+        self.assertEqual(self.dbsession.query(Page).count(), 1)
+        page = self.dbsession.query(Page).first()
+        self.assertEqual(page.slug, 'global/foobar')
+        self.assertEqual(page.title, 'global/foobar')
+        self.assertEqual(page.body, '<em>World</em>')
+        self.assertEqual(page.namespace, 'internal')
+        self.assertEqual(page.formatter, 'html')
+
+    def test_page_internal_edit_post_not_allowed(self):
+        from pyramid.httpexceptions import HTTPNotFound
+        from ..interfaces import IPageQueryService, IPageCreateService
+        from ..models import Page
+        from ..services import PageQueryService, PageCreateService
+        from ..views.admin import page_internal_edit_post
+        from . import mock_service
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=tuple())
+
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/foobar'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['body'] = '<em>World</em>'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        with self.assertRaises(HTTPNotFound):
+            page_internal_edit_post(request)
+        self.assertEqual(self.dbsession.query(Page).count(), 0)
+
+    def test_page_internal_edit_post_bad_csrf(self):
+        from pyramid.csrf import BadCSRFToken
+        from ..views.admin import page_internal_edit_post
+        self.request.method = 'GET'
+        self.request.matchdict['page'] = 'global/foobar'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST = MultiDict([])
+        self.request.POST['body'] = '<em>World</em>'
+        with self.assertRaises(BadCSRFToken):
+            page_internal_edit_post(self.request)
+
+    def test_page_internal_edit_post_invalid_body(self):
+        from ..forms import AdminPageForm
+        from ..interfaces import IPageQueryService, IPageUpdateService
+        from ..models import Page
+        from ..services import PageQueryService, PageUpdateService
+        from ..views.admin import page_internal_edit_post
+        from . import mock_service
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=(('global/foobar', 'html'),))
+
+        page = self._make(Page(
+            slug='global/foobar',
+            title='global/foobar',
+            body='<em>Hello</em>',
+            namespace='internal',
+            formatter='html'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(self.dbsession),
+            IPageUpdateService: PageUpdateService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/foobar'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['body'] = ''
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        response = page_internal_edit_post(request)
+        self.assertIsInstance(response['form'], AdminPageForm)
+        self.assertEqual(response['form'].body.data, '')
+        self.assertEqual(response['form'].errors, {
+            'body': ['This field is required.']})
+        self.assertEqual(response['page_slug'], 'global/foobar')
+        self.assertEqual(response['page'], page)
+        self.assertEqual(page.slug, 'global/foobar')
+        self.assertEqual(page.title, 'global/foobar')
+        self.assertEqual(page.body, '<em>Hello</em>')
+        self.assertEqual(page.namespace, 'internal')
+        self.assertEqual(page.formatter, 'html')
+
+    def test_page_internal_edit_post_auto_create_invalid_body(self):
+        from ..forms import AdminPageForm
+        from ..interfaces import IPageQueryService, IPageCreateService
+        from ..models import Page
+        from ..services import PageQueryService, PageCreateService
+        from ..views.admin import page_internal_edit_post
+        from . import mock_service
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=(('global/foobar', 'html'),))
+
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/foobar'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['body'] = ''
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        response = page_internal_edit_post(request)
+        self.assertIsInstance(response['form'], AdminPageForm)
+        self.assertEqual(response['form'].body.data, '')
+        self.assertEqual(response['form'].errors, {
+            'body': ['This field is required.']})
+        self.assertEqual(response['page_slug'], 'global/foobar')
+        self.assertIsNone(response['page'])
+        self.assertEqual(self.dbsession.query(Page).count(), 0)
+
+    def test_page_internal_delete_post(self):
+        from ..interfaces import IPageDeleteService
+        from ..models import Page
+        from ..services import PageDeleteService
+        from ..views.admin import page_internal_delete_post
+        from . import mock_service
+        page = self._make(Page(
+            slug='global/foobar',
+            title='global/foobar',
+            body='<em>Hello</em>',
+            namespace='internal',
+            formatter='html'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageDeleteService: PageDeleteService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['page'] = 'global/foobar'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_pages', '/admin/pages')
+        self.assertEqual(self.dbsession.query(Page).count(), 1)
+        response = page_internal_delete_post(request)
+        self.assertEqual(response.location, '/admin/pages')
+        self.assertEqual(self.dbsession.query(Page).count(), 0)
+
+    def test_page_internal_delete_post_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IPageDeleteService
+        from ..services import PageDeleteService
+        from ..views.admin import page_internal_delete_post
+        from . import mock_service
+        request = mock_service(self.request, {
+            IPageDeleteService: PageDeleteService(self.dbsession)})
+        request.method = 'POST'
+        request.matchdict['page'] = 'global/notexists'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        with self.assertRaises(NoResultFound):
+            page_internal_delete_post(request)
+
+    def test_page_internal_delete_post_bad_csrf(self):
+        from pyramid.csrf import BadCSRFToken
+        from ..views.admin import page_internal_delete_post
+        self.request.method = 'POST'
+        self.request.matchdict['page'] = 'global/notexists'
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        self.request.POST = MultiDict([])
+        with self.assertRaises(BadCSRFToken):
+            page_internal_delete_post(self.request)
 
     def test_settings_get(self):
         from ..interfaces import ISettingQueryService

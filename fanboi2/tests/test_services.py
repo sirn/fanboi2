@@ -314,6 +314,120 @@ class TestIdentityService(unittest.TestCase):
         self.assertEqual(len(identity_svc.identity_for(a='1', b='2')), 5)
 
 
+class TestPageCreateService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import PageCreateService
+        return PageCreateService
+
+    def test_create(self):
+        page_create_svc = self._get_target_class()(self.dbsession)
+        page = page_create_svc.create(
+            'foobar',
+            title='Foobar',
+            body='**Hello, world!**')
+        self.assertEqual(page.slug, 'foobar')
+        self.assertEqual(page.title, 'Foobar')
+        self.assertEqual(page.body, '**Hello, world!**')
+        self.assertEqual(page.namespace, 'public')
+        self.assertEqual(page.formatter, 'markdown')
+
+    def test_create_internal(self):
+        page_create_svc = self._get_target_class()(self.dbsession)
+        page = page_create_svc.create_internal(
+            'global/foo',
+            body='<em>Hello, world!</em>',
+            _internal_pages=(('global/foo', 'html'),))
+        self.assertEqual(page.slug, 'global/foo')
+        self.assertEqual(page.title, 'global/foo')
+        self.assertEqual(page.body, '<em>Hello, world!</em>')
+        self.assertEqual(page.namespace, 'internal')
+        self.assertEqual(page.formatter, 'html')
+
+    def test_create_internal_not_allowed(self):
+        page_create_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(ValueError):
+            page_create_svc.create_internal(
+                'global/foo',
+                body='<em>Hello, world!</em>',
+                _internal_pages=tuple())
+
+
+class TestPageDeleteService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import PageDeleteService
+        return PageDeleteService
+
+    def test_delete(self):
+        from ..models import Page
+        self._make(Page(
+            slug='foobar',
+            title='Foobar',
+            body='**Foobar**',
+            namespace='public',
+            formatter='markdown'))
+        self.dbsession.commit()
+        self.assertEqual(self.dbsession.query(Page).count(), 1)
+        page_delete_svc = self._get_target_class()(self.dbsession)
+        page_delete_svc.delete('foobar')
+        self.assertEqual(self.dbsession.query(Page).count(), 0)
+
+    def test_delete_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        page_delete_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            page_delete_svc.delete('notexists')
+
+    def test_delete_wrong_namespace(self):
+        from ..models import Page
+        self._make(Page(
+            slug='global/foo',
+            title='global/foo',
+            body='<em>Foobar</em>',
+            namespace='internal',
+            formatter='html'))
+        self.dbsession.commit()
+        self.assertEqual(self.dbsession.query(Page).count(), 1)
+        page_delete_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            page_delete_svc.delete('global/foo')
+
+    def test_delete_internal(self):
+        from ..models import Page
+        self._make(Page(
+            slug='global/foo',
+            title='global/foo',
+            body='<em>Foobar</em>',
+            namespace='internal',
+            formatter='html'))
+        self.dbsession.commit()
+        self.assertEqual(self.dbsession.query(Page).count(), 1)
+        page_delete_svc = self._get_target_class()(self.dbsession)
+        page_delete_svc.delete_internal('global/foo')
+        self.assertEqual(self.dbsession.query(Page).count(), 0)
+
+    def test_delete_internal_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        page_delete_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            page_delete_svc.delete_internal('global/notexists')
+
+    def test_delete_internal_wrong_namespace(self):
+        from ..models import Page
+        self._make(Page(
+            slug='foobar',
+            title='Foobar',
+            body='**Foobar**',
+            namespace='public',
+            formatter='markdown'))
+        self.dbsession.commit()
+        self.assertEqual(self.dbsession.query(Page).count(), 1)
+        page_delete_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            page_delete_svc.delete_internal('foobar')
+
+
 class TestPageQueryService(ModelSessionMixin, unittest.TestCase):
 
     def _get_target_class(self):
@@ -418,13 +532,192 @@ class TestPageQueryService(ModelSessionMixin, unittest.TestCase):
         self.dbsession.commit()
         page_query_svc = self._get_target_class()(self.dbsession)
         self.assertEqual(
-            page_query_svc.internal_page_from_slug('test'),
+            page_query_svc.internal_page_from_slug(
+                'test',
+                _internal_pages=(('test', 'none'),)),
             page)
 
     def test_internal_page_from_slug_not_found(self):
         page_query_svc = self._get_target_class()(self.dbsession)
         with self.assertRaises(NoResultFound):
-            page_query_svc.internal_page_from_slug('notfound')
+            page_query_svc.internal_page_from_slug(
+                'notfound',
+                _internal_pages=(('notfound', 'none'),))
+
+    def test_internal_page_from_slug_not_allowed(self):
+        page_query_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(ValueError):
+            page_query_svc.internal_page_from_slug(
+                'notallowed',
+                _internal_pages=tuple())
+
+
+class TestPageUpdateService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import PageUpdateService
+        return PageUpdateService
+
+    def test_update(self):
+        from ..models import Page
+        self._make(Page(
+            slug='foobar',
+            title='Foobar',
+            body='**Foobar**',
+            namespace='public',
+            formatter='markdown'))
+        self.dbsession.commit()
+        page_update_svc = self._get_target_class()(self.dbsession)
+        page = page_update_svc.update(
+            'foobar',
+            title='Baz',
+            body='*Baz*')
+        self.assertEqual(page.slug, 'foobar')
+        self.assertEqual(page.title, 'Baz')
+        self.assertEqual(page.body, '*Baz*')
+        self.assertEqual(page.namespace, 'public')
+        self.assertEqual(page.formatter, 'markdown')
+
+    def test_update_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        page_update_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            page_update_svc.update(
+                'notexists',
+                title='Baz',
+                body='*Baz*')
+
+    def test_update_wrong_namespace(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..models import Page
+        self._make(Page(
+            slug='global/foo',
+            title='global/foo',
+            body='<em>Foobar</em>',
+            namespace='internal',
+            formatter='html'))
+        self.dbsession.commit()
+        page_update_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            page_update_svc.update(
+                'global/foo',
+                title='Baz',
+                body='*Baz*')
+
+    def test_update_none(self):
+        from ..models import Page
+        self._make(Page(
+            slug='foobar',
+            title='Foobar',
+            body='**Foobar**',
+            namespace='public',
+            formatter='markdown'))
+        self.dbsession.commit()
+        page_update_svc = self._get_target_class()(self.dbsession)
+        page = page_update_svc.update('foobar')
+        self.assertEqual(page.slug, 'foobar')
+        self.assertEqual(page.title, 'Foobar')
+        self.assertEqual(page.body, '**Foobar**')
+        self.assertEqual(page.namespace, 'public')
+        self.assertEqual(page.formatter, 'markdown')
+
+    def test_update_not_whitelisted(self):
+        from ..models import Page
+        self._make(Page(
+            slug='foobar',
+            title='Foobar',
+            body='**Foobar**',
+            namespace='public',
+            formatter='markdown'))
+        self.dbsession.commit()
+        page_update_svc = self._get_target_class()(self.dbsession)
+        page = page_update_svc.update(
+            'foobar',
+            namespace='internal',
+            formatter='html')
+        self.assertEqual(page.namespace, 'public')
+        self.assertEqual(page.formatter, 'markdown')
+
+    def test_update_internal(self):
+        from ..models import Page
+        self._make(Page(
+            slug='global/foobar',
+            title='global/foobar',
+            body='<em>Foobar</em>',
+            namespace='internal',
+            formatter='html'))
+        self.dbsession.commit()
+        page_update_svc = self._get_target_class()(self.dbsession)
+        page = page_update_svc.update_internal(
+            'global/foobar',
+            body='<em>Baz</em>')
+        self.assertEqual(page.slug, 'global/foobar')
+        self.assertEqual(page.title, 'global/foobar')
+        self.assertEqual(page.body, '<em>Baz</em>')
+        self.assertEqual(page.namespace, 'internal')
+        self.assertEqual(page.formatter, 'html')
+
+    def test_update_internal_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..models import Page
+        page_update_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            page_update_svc.update_internal(
+                'global/notexists',
+                body='<em>Baz</em>')
+
+    def test_update_internal_wrong_namespace(self):
+        from ..models import Page
+        self._make(Page(
+            slug='foobar',
+            title='Foobar',
+            body='**Foobar**',
+            namespace='public',
+            formatter='markdown'))
+        self.dbsession.commit()
+        page_update_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            page_update_svc.update_internal(
+                'global/foobar',
+                body='<em>Baz</em>')
+
+    def test_update_internal_none(self):
+        from ..models import Page
+        self._make(Page(
+            slug='global/foobar',
+            title='global/foobar',
+            body='<em>Foobar</em>',
+            namespace='internal',
+            formatter='html'))
+        self.dbsession.commit()
+        page_update_svc = self._get_target_class()(self.dbsession)
+        page = page_update_svc.update_internal('global/foobar')
+        self.assertEqual(page.slug, 'global/foobar')
+        self.assertEqual(page.title, 'global/foobar')
+        self.assertEqual(page.body, '<em>Foobar</em>')
+        self.assertEqual(page.namespace, 'internal')
+        self.assertEqual(page.formatter, 'html')
+
+    def test_update_internal_not_whitelisted(self):
+        from ..models import Page
+        self._make(Page(
+            slug='global/foobar',
+            title='global/foobar',
+            body='<em>Foobar</em>',
+            namespace='internal',
+            formatter='html'))
+        self.dbsession.commit()
+        page_update_svc = self._get_target_class()(self.dbsession)
+        page = page_update_svc.update_internal(
+            'global/foobar',
+            title='Foobar',
+            namespace='public',
+            formatter='markdown')
+        self.assertEqual(page.slug, 'global/foobar')
+        self.assertEqual(page.title, 'global/foobar')
+        self.assertEqual(page.body, '<em>Foobar</em>')
+        self.assertEqual(page.namespace, 'internal')
+        self.assertEqual(page.formatter, 'html')
 
 
 class TestPostCreateService(ModelSessionMixin, unittest.TestCase):

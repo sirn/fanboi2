@@ -70,7 +70,7 @@ class BoardUpdateService(object):
 
     def update(self, slug, **kwargs):
         """Update the given board slug with the given :param:`kwargs`.
-        This method will raise `NoResultFound` if the given slug does not
+        This method will raise ``NoResultFound`` if the given slug does not
         already exists. Slug cannot be updated.
 
         :param slug: The board identifier.

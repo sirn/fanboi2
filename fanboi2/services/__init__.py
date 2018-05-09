@@ -4,7 +4,10 @@ from ..interfaces import \
     IBoardUpdateService,\
     IFilterService,\
     IIdentityService,\
+    IPageCreateService,\
+    IPageDeleteService,\
     IPageQueryService,\
+    IPageUpdateService,\
     IPostCreateService,\
     IPostQueryService,\
     IRateLimiterService,\
@@ -23,7 +26,8 @@ from .board import BoardCreateService, BoardQueryService
 from .board import BoardUpdateService
 from .filter_ import FilterService
 from .identity import IdentityService
-from .page import PageQueryService
+from .page import PageCreateService, PageDeleteService
+from .page import PageQueryService, PageUpdateService
 from .post import PostCreateService, PostQueryService
 from .rate_limiter import RateLimiterService
 from .rule import RuleBanCreateService, RuleBanQueryService
@@ -92,6 +96,26 @@ def includeme(config):  # pragma: no cover
         identity_factory,
         IIdentityService)
 
+    # Page Create
+
+    def page_create_factory(context, request):
+        dbsession = request.find_service(name='db')
+        return PageCreateService(dbsession)
+
+    config.register_service_factory(
+        page_create_factory,
+        IPageCreateService)
+
+    # Page Delete
+
+    def page_delete_factory(context, request):
+        dbsession = request.find_service(name='db')
+        return PageDeleteService(dbsession)
+
+    config.register_service_factory(
+        page_delete_factory,
+        IPageDeleteService)
+
     # Page Query
 
     def page_query_factory(context, request):
@@ -101,6 +125,16 @@ def includeme(config):  # pragma: no cover
     config.register_service_factory(
         page_query_factory,
         IPageQueryService)
+
+    # Page Update
+
+    def page_update_factory(context, request):
+        dbsession = request.find_service(name='db')
+        return PageUpdateService(dbsession)
+
+    config.register_service_factory(
+        page_update_factory,
+        IPageUpdateService)
 
     # Post Create
 

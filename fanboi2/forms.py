@@ -122,3 +122,18 @@ class AdminBoardForm(Form):
 class AdminBoardNewForm(AdminBoardForm):
     """A :class:`Form` for creating a board."""
     slug = TextField('Slug', validators=[Required()])
+
+
+class AdminPageForm(Form):
+    """A :class:`Form` for creating and updating pages."""
+    body = TextAreaField('Body', validators=[Required()])
+
+
+class AdminPublicPageForm(AdminPageForm):
+    """A :class:`Form` for updating public pages."""
+    title = TextField('Title', validators=[Required()])
+
+
+class AdminPublicPageNewForm(AdminPublicPageForm):
+    """A :class:`Form` for creating public pages."""
+    slug = TextField('Slug', validators=[Required()])

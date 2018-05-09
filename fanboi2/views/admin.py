@@ -1,8 +1,9 @@
 import json
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPForbidden
-from pyramid.csrf import check_csrf_token
-from pyramid.security import remember, forget, authenticated_userid
 
+from pyramid.csrf import check_csrf_token
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPForbidden
+from pyramid.security import remember, forget, authenticated_userid
+from sqlalchemy.orm.exc import NoResultFound
 from webob.multidict import MultiDict
 
 from ..version import __VERSION__
@@ -11,6 +12,9 @@ from ..forms import \
     AdminBoardForm,\
     AdminBoardNewForm,\
     AdminLoginForm,\
+    AdminPageForm,\
+    AdminPublicPageForm,\
+    AdminPublicPageNewForm,\
     AdminRuleBanForm,\
     AdminSettingForm,\
     AdminSetupForm
@@ -18,7 +22,10 @@ from ..interfaces import \
     IBoardCreateService,\
     IBoardQueryService,\
     IBoardUpdateService,\
+    IPageCreateService,\
+    IPageDeleteService,\
     IPageQueryService,\
+    IPageUpdateService,\
     IRuleBanCreateService,\
     IRuleBanQueryService,\
     IRuleBanUpdateService,\
@@ -384,35 +391,177 @@ def pages_get(request):
 
 
 def page_new_get(request):
-    return {}
+    form = AdminPublicPageNewForm(request=request)
+    return {
+        'form': form
+    }
 
 
 def page_new_post(request):
     check_csrf_token(request)
-    return {}
+
+    form = AdminPublicPageNewForm(request.POST, request=request)
+    if not form.validate():
+        request.response.status = '400 Bad Request'
+        return {
+            'form': form
+        }
+
+    page_create_svc = request.find_service(IPageCreateService)
+    page = page_create_svc.create(
+        form.slug.data,
+        title=form.title.data,
+        body=form.body.data)
+
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_page',
+            page=page.slug))
 
 
 def page_get(request):
-    return {}
+    page_query_svc = request.find_service(IPageQueryService)
+    page_slug = request.matchdict['page']
+    page = page_query_svc.public_page_from_slug(page_slug)
+    return {
+        'page': page
+    }
 
 
-def page_post(request):
+def page_edit_get(request):
+    page_query_svc = request.find_service(IPageQueryService)
+    page_slug = request.matchdict['page']
+    page = page_query_svc.public_page_from_slug(page_slug)
+    form = AdminPublicPageForm(obj=page, request=request)
+    return {
+        'page': page,
+        'form': form,
+    }
+
+
+def page_edit_post(request):
     check_csrf_token(request)
-    return {}
+
+    page_query_svc = request.find_service(IPageQueryService)
+    page_slug = request.matchdict['page']
+    page = page_query_svc.public_page_from_slug(page_slug)
+    form = AdminPublicPageForm(request.POST, obj=page, request=request)
+    if not form.validate():
+        request.response.status = '400 Bad Request'
+        return {
+            'page': page,
+            'form': form
+        }
+
+    page_update_svc = request.find_service(IPageUpdateService)
+    page = page_update_svc.update(
+        page.slug,
+        title=form.title.data,
+        body=form.body.data)
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_page',
+            page=page.slug))
 
 
 def page_delete_post(request):
     check_csrf_token(request)
-    return {}
+
+    page_delete_svc = request.find_service(IPageDeleteService)
+    page_slug = request.matchdict['page']
+    page_delete_svc.delete(page_slug)
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_pages'))
 
 
 def page_internal_get(request):
-    return {}
+    page_query_svc = request.find_service(IPageQueryService)
+    page_slug = request.matchdict['page']
+
+    try:
+        page = page_query_svc.internal_page_from_slug(page_slug)
+    except NoResultFound:
+        page = None
+    except ValueError:
+        raise HTTPNotFound()
+
+    return {
+        'page_slug': page_slug,
+        'page': page
+    }
 
 
-def page_internal_post(request):
+def page_internal_edit_get(request):
+    page_query_svc = request.find_service(IPageQueryService)
+    page_slug = request.matchdict['page']
+    try:
+        page = page_query_svc.internal_page_from_slug(page_slug)
+    except ValueError:
+        raise HTTPNotFound()
+    except NoResultFound:
+        page = None
+
+    if page:
+        form = AdminPageForm(obj=page, request=request)
+    else:
+        form = AdminPageForm(request=request)
+    return {
+        'page_slug': page_slug,
+        'page': page,
+        'form': form
+    }
+
+
+def page_internal_edit_post(request):
     check_csrf_token(request)
-    return {}
+
+    page_query_svc = request.find_service(IPageQueryService)
+    page_slug = request.matchdict['page']
+    try:
+        page = page_query_svc.internal_page_from_slug(page_slug)
+    except ValueError:
+        raise HTTPNotFound()
+    except NoResultFound:
+        page = None
+
+    if page:
+        form = AdminPageForm(request.POST, obj=page, request=request)
+    else:
+        form = AdminPageForm(request.POST, request=request)
+    if not form.validate():
+        request.response.status = '400 Bad Request'
+        return {
+            'page_slug': page_slug,
+            'page': page,
+            'form': form
+        }
+
+    if page:
+        page_update_svc = request.find_service(IPageUpdateService)
+        page = page_update_svc.update_internal(
+            page.slug,
+            body=form.body.data)
+    else:
+        page_create_svc = request.find_service(IPageCreateService)
+        page = page_create_svc.create_internal(
+            page_slug,
+            body=form.body.data)
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_page_internal',
+            page=page.slug))
+
+
+def page_internal_delete_post(request):
+    check_csrf_token(request)
+
+    page_delete_svc = request.find_service(IPageDeleteService)
+    page_slug = request.matchdict['page']
+    page_delete_svc.delete_internal(page_slug)
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_pages'))
 
 
 def settings_get(request):
@@ -705,7 +854,6 @@ def includeme(config):  # pragma: no cover
         topic_delete_post,
         request_method='POST',
         route_name='admin_topic_delete',
-        renderer='admin/topics/show.mako',
         permission='manage')
 
     config.add_view(
@@ -719,7 +867,6 @@ def includeme(config):  # pragma: no cover
         topic_post_delete_post,
         request_method='POST',
         route_name='admin_topic_post_delete',
-        renderer='admin/topics/post.mako',
         permission='manage')
 
     #
@@ -728,8 +875,15 @@ def includeme(config):  # pragma: no cover
 
     config.add_route('admin_pages', '/pages/')
     config.add_route('admin_page_new', '/pages/new/')
-    config.add_route('admin_page', '/pages/public/{page:.*}/')
+    config.add_route('admin_page_edit', '/pages/public/{page:.*}/edit/')
     config.add_route('admin_page_delete', '/pages/public/{page:.*}/delete/')
+    config.add_route('admin_page', '/pages/public/{page:.*}/')
+    config.add_route(
+        'admin_page_internal_edit',
+        '/pages/internal/{page:.*}/edit/')
+    config.add_route(
+        'admin_page_internal_delete',
+        '/pages/internal/{page:.*}/delete/')
     config.add_route('admin_page_internal', '/pages/internal/{page:.*}/')
 
     config.add_view(
@@ -761,31 +915,50 @@ def includeme(config):  # pragma: no cover
         permission='manage')
 
     config.add_view(
-        page_post,
+        page_edit_get,
+        request_method='GET',
+        route_name='admin_page_edit',
+        renderer='admin/pages/edit.mako',
+        permission='manage')
+
+    config.add_view(
+        page_edit_post,
         request_method='POST',
-        route_name='admin_page',
-        renderer='admin/pages/show.mako',
+        route_name='admin_page_edit',
+        renderer='admin/pages/edit.mako',
         permission='manage')
 
     config.add_view(
         page_delete_post,
         request_method='POST',
         route_name='admin_page_delete',
-        renderer='admin/pages/show.mako',
         permission='manage')
 
     config.add_view(
         page_internal_get,
         request_method='GET',
         route_name='admin_page_internal',
-        renderer='admin/pages/show.mako',
+        renderer='admin/pages/show_internal.mako',
         permission='manage')
 
     config.add_view(
-        page_internal_get,
+        page_internal_edit_get,
+        request_method='GET',
+        route_name='admin_page_internal_edit',
+        renderer='admin/pages/edit_internal.mako',
+        permission='manage')
+
+    config.add_view(
+        page_internal_edit_post,
         request_method='POST',
-        route_name='admin_page_internal',
-        renderer='admin/pages/show.mako',
+        route_name='admin_page_internal_edit',
+        renderer='admin/pages/edit_internal.mako',
+        permission='manage')
+
+    config.add_view(
+        page_internal_delete_post,
+        request_method='POST',
+        route_name='admin_page_internal_delete',
         permission='manage')
 
     #

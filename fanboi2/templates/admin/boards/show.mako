@@ -54,9 +54,9 @@
 <h2 class="sheet-title">Agreements</h2>
 <div class="sheet-body content">
     % if board.agreements:
-    <article class="admin-embed">
+    <div class="admin-embed">
         ${formatters.format_markdown(request, board.agreements)}
-    </article>
+    </div>
     % else:
     <p><em>No agreements</em></p>
     % endif
