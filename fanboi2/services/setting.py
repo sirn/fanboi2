@@ -6,7 +6,7 @@ def _get_cache_key(key):
 
     :param key: The setting key.
     """
-    return 'services.settings:key=%s' % (key,)
+    return 'services.setting:key=%s' % (key,)
 
 
 class SettingQueryService(object):

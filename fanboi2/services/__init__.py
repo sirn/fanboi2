@@ -100,7 +100,8 @@ def includeme(config):  # pragma: no cover
 
     def page_create_factory(context, request):
         dbsession = request.find_service(name='db')
-        return PageCreateService(dbsession)
+        cache_region = request.find_service(name='cache')
+        return PageCreateService(dbsession, cache_region)
 
     config.register_service_factory(
         page_create_factory,
@@ -110,7 +111,8 @@ def includeme(config):  # pragma: no cover
 
     def page_delete_factory(context, request):
         dbsession = request.find_service(name='db')
-        return PageDeleteService(dbsession)
+        cache_region = request.find_service(name='cache')
+        return PageDeleteService(dbsession, cache_region)
 
     config.register_service_factory(
         page_delete_factory,
@@ -120,7 +122,8 @@ def includeme(config):  # pragma: no cover
 
     def page_query_factory(context, request):
         dbsession = request.find_service(name='db')
-        return PageQueryService(dbsession)
+        cache_region = request.find_service(name='cache')
+        return PageQueryService(dbsession, cache_region)
 
     config.register_service_factory(
         page_query_factory,
@@ -130,7 +133,8 @@ def includeme(config):  # pragma: no cover
 
     def page_update_factory(context, request):
         dbsession = request.find_service(name='db')
-        return PageUpdateService(dbsession)
+        cache_region = request.find_service(name='cache')
+        return PageUpdateService(dbsession, cache_region)
 
     config.register_service_factory(
         page_update_factory,

@@ -863,13 +863,16 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService
         from ..views.api import pages_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         page1 = self._make(Page(title='Foo', body='Foo', slug='foo'))
         page2 = self._make(Page(title='Bar', body='Bar', slug='bar'))
         page3 = self._make(Page(title='Baz', body='Baz', slug='baz'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         self.assertEqual(
             pages_get(request),
@@ -880,11 +883,14 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService
         from ..views.api import page_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         page = self._make(Page(title='Foo', body='Foo', slug='foo'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = page.slug
         self.assertEqual(
@@ -897,7 +903,8 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService
         from ..views.api import page_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         page = self._make(Page(
             title='Foo',
             body='Foo',
@@ -905,7 +912,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             namespace='internal'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = page.slug
         with self.assertRaises(NoResultFound):
@@ -916,9 +925,12 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..interfaces import IPageQueryService
         from ..services import PageQueryService
         from ..views.api import page_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'notexists'
         with self.assertRaises(NoResultFound):
@@ -2494,11 +2506,14 @@ class TestIntegrationPage(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService
         from ..views.pages import page_show
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         page = self._make(Page(title='Foo', body='Foo', slug='foo'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = page.slug
         response = page_show(request)
@@ -2512,7 +2527,8 @@ class TestIntegrationPage(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService
         from ..views.pages import page_show
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         page = self._make(Page(
             title='Foo',
             body='Foo',
@@ -2520,7 +2536,9 @@ class TestIntegrationPage(ModelSessionMixin, unittest.TestCase):
             namespace='internal'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = page.slug
         with self.assertRaises(NoResultFound):
@@ -2531,9 +2549,12 @@ class TestIntegrationPage(ModelSessionMixin, unittest.TestCase):
         from ..interfaces import IPageQueryService
         from ..services import PageQueryService
         from ..views.pages import page_show
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'notexists'
         with self.assertRaises(NoResultFound):
@@ -2544,7 +2565,8 @@ class TestIntegrationPage(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService
         from ..views.pages import robots_show
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         self._make(Page(
             title='Robots',
             slug='global/robots',
@@ -2552,7 +2574,9 @@ class TestIntegrationPage(ModelSessionMixin, unittest.TestCase):
             body='Hi'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         self.assertEqual(
             robots_show(request).body,
@@ -2563,9 +2587,12 @@ class TestIntegrationPage(ModelSessionMixin, unittest.TestCase):
         from ..interfaces import IPageQueryService
         from ..services import PageQueryService
         from ..views.pages import robots_show
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         with self.assertRaises(NoResultFound):
             robots_show(request)
@@ -3847,7 +3874,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService
         from ..views.admin import pages_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         internal_pages = (
             ('foo', 'none'),
             ('bar', 'markdown'),
@@ -3893,7 +3921,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             namespace='internal'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         response = pages_get(request)
         self.assertEqual(
@@ -3920,9 +3950,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageCreateService
         from ..views.admin import page_new_post
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         request = mock_service(self.request, {
-            IPageCreateService: PageCreateService(self.dbsession)})
+            IPageCreateService: PageCreateService(
+                self.dbsession,
+                cache_region)})
         request.method = 'POST'
         request.content_type = 'application/x-www-form-urlencoded'
         request.POST = MultiDict({})
@@ -4018,7 +4051,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService
         from ..views.admin import page_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         page = self._make(Page(
             slug='foobar',
             title='Foobar',
@@ -4027,7 +4061,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             formatter='markdown'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'foobar'
         response = page_get(request)
@@ -4038,9 +4074,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..interfaces import IPageQueryService
         from ..services import PageQueryService
         from ..views.admin import page_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'notexists'
         with self.assertRaises(NoResultFound):
@@ -4052,7 +4091,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService
         from ..views.admin import page_edit_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         page = self._make(Page(
             slug='foobar',
             title='Foobar',
@@ -4061,7 +4101,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             formatter='markdown'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'foobar'
         response = page_edit_get(request)
@@ -4075,9 +4117,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..interfaces import IPageQueryService
         from ..services import PageQueryService
         from ..views.admin import page_edit_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'notexists'
         with self.assertRaises(NoResultFound):
@@ -4088,7 +4133,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService, PageUpdateService
         from ..views.admin import page_edit_post
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         page = self._make(Page(
             slug='foobar',
             title='Foobar',
@@ -4097,8 +4143,10 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             formatter='markdown'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession),
-            IPageUpdateService: PageUpdateService(self.dbsession)})
+            IPageQueryService: PageQueryService(self.dbsession, cache_region),
+            IPageUpdateService: PageUpdateService(
+                self.dbsession,
+                cache_region)})
         request.method = 'POST'
         request.matchdict['page'] = 'foobar'
         request.content_type = 'application/x-www-form-urlencoded'
@@ -4118,12 +4166,14 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
     def test_page_edit_post_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
         from ..interfaces import IPageQueryService
-        from ..models import Page
         from ..services import PageQueryService
         from ..views.admin import page_edit_post
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'POST'
         request.matchdict['page'] = 'notexists'
         request.content_type = 'application/x-www-form-urlencoded'
@@ -4134,12 +4184,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_page_edit_post_bad_csrf(self):
         from pyramid.csrf import BadCSRFToken
-        from ..interfaces import IPageQueryService
         from ..models import Page
-        from ..services import PageQueryService
         from ..views.admin import page_edit_post
-        from . import mock_service
-        page = self._make(Page(
+        self._make(Page(
             slug='foobar',
             title='Foobar',
             body='**Hello**',
@@ -4157,11 +4204,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_page_edit_post_invalid_title(self):
         from ..forms import AdminPublicPageForm
-        from ..interfaces import IPageQueryService, IPageUpdateService
+        from ..interfaces import IPageQueryService
         from ..models import Page
-        from ..services import PageQueryService, PageUpdateService
+        from ..services import PageQueryService
         from ..views.admin import page_edit_post
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         page = self._make(Page(
             slug='foobar',
             title='Foobar',
@@ -4170,7 +4218,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             formatter='markdown'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'POST'
         request.matchdict['page'] = 'foobar'
         request.content_type = 'application/x-www-form-urlencoded'
@@ -4190,11 +4240,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_page_edit_post_invalid_body(self):
         from ..forms import AdminPublicPageForm
-        from ..interfaces import IPageQueryService, IPageUpdateService
+        from ..interfaces import IPageQueryService
         from ..models import Page
-        from ..services import PageQueryService, PageUpdateService
+        from ..services import PageQueryService
         from ..views.admin import page_edit_post
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         page = self._make(Page(
             slug='foobar',
             title='Foobar',
@@ -4203,7 +4254,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             formatter='markdown'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: PageQueryService(self.dbsession)})
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'POST'
         request.matchdict['page'] = 'foobar'
         request.content_type = 'application/x-www-form-urlencoded'
@@ -4226,8 +4279,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageDeleteService
         from ..views.admin import page_delete_post
-        from . import mock_service
-        page = self._make(Page(
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
+        self._make(Page(
             slug='foobar',
             title='Foobar',
             body='**Hello**',
@@ -4235,7 +4289,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             formatter='markdown'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageDeleteService: PageDeleteService(self.dbsession)})
+            IPageDeleteService: PageDeleteService(
+                self.dbsession,
+                cache_region)})
         request.method = 'POST'
         request.matchdict['page'] = 'foobar'
         request.content_type = 'application/x-www-form-urlencoded'
@@ -4252,9 +4308,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..interfaces import IPageDeleteService
         from ..services import PageDeleteService
         from ..views.admin import page_delete_post
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         request = mock_service(self.request, {
-            IPageDeleteService: PageDeleteService(self.dbsession)})
+            IPageDeleteService: PageDeleteService(
+                self.dbsession,
+                cache_region)})
         request.method = 'POST'
         request.matchdict['page'] = 'notexists'
         request.content_type = 'application/x-www-form-urlencoded'
@@ -4278,7 +4337,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService
         from ..views.admin import page_internal_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
 
         class _WrappedPageQueryService(PageQueryService):
             def internal_page_from_slug(self, slug):
@@ -4295,7 +4355,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             formatter='html'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'global/foobar'
         response = page_internal_get(request)
@@ -4306,7 +4368,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..interfaces import IPageQueryService
         from ..services import PageQueryService
         from ..views.admin import page_internal_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
 
         class _WrappedPageQueryService(PageQueryService):
             def internal_page_from_slug(self, slug):
@@ -4316,7 +4379,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
                         _internal_pages=(('global/notexists', 'none'),))
 
         request = mock_service(self.request, {
-            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'global/notexists'
         response = page_internal_get(request)
@@ -4328,7 +4393,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..interfaces import IPageQueryService
         from ..services import PageQueryService
         from ..views.admin import page_internal_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
 
         class _WrappedPageQueryService(PageQueryService):
             def internal_page_from_slug(self, slug):
@@ -4338,7 +4404,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
                         _internal_pages=tuple())
 
         request = mock_service(self.request, {
-            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'global/foobar'
         with self.assertRaises(HTTPNotFound):
@@ -4350,7 +4418,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService
         from ..views.admin import page_internal_edit_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
 
         class _WrappedPageQueryService(PageQueryService):
             def internal_page_from_slug(self, slug):
@@ -4367,7 +4436,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             formatter='html'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'global/foobar'
         response = page_internal_edit_get(request)
@@ -4379,10 +4450,10 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
     def test_page_internal_edit_get_auto_create(self):
         from ..forms import AdminPageForm
         from ..interfaces import IPageQueryService
-        from ..models import Page
         from ..services import PageQueryService
         from ..views.admin import page_internal_edit_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
 
         class _WrappedPageQueryService(PageQueryService):
             def internal_page_from_slug(self, slug):
@@ -4392,7 +4463,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
                         _internal_pages=(('global/foobar', 'html'),))
 
         request = mock_service(self.request, {
-            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'global/foobar'
         response = page_internal_edit_get(request)
@@ -4403,12 +4476,11 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_page_internal_edit_not_allowed(self):
         from pyramid.httpexceptions import HTTPNotFound
-        from ..forms import AdminPageForm
         from ..interfaces import IPageQueryService
-        from ..models import Page
         from ..services import PageQueryService
         from ..views.admin import page_internal_edit_get
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
 
         class _WrappedPageQueryService(PageQueryService):
             def internal_page_from_slug(self, slug):
@@ -4419,7 +4491,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'global/notallowed'
         with self.assertRaises(HTTPNotFound):
@@ -4430,7 +4504,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService, PageUpdateService
         from ..views.admin import page_internal_edit_post
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region()
 
         class _WrappedPageQueryService(PageQueryService):
             def internal_page_from_slug(self, slug):
@@ -4447,8 +4522,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             formatter='html'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: _WrappedPageQueryService(self.dbsession),
-            IPageUpdateService: PageUpdateService(self.dbsession)})
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region),
+            IPageUpdateService: PageUpdateService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'global/foobar'
         request.content_type = 'application/x-www-form-urlencoded'
@@ -4469,7 +4548,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService, PageCreateService
         from ..views.admin import page_internal_edit_post
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
 
         class _WrappedPageCreateService(PageCreateService):
             def create_internal(self, slug, body):
@@ -4487,8 +4567,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
                         _internal_pages=(('global/foobar', 'html'),))
 
         request = mock_service(self.request, {
-            IPageQueryService: _WrappedPageQueryService(self.dbsession),
-            IPageCreateService: _WrappedPageCreateService(self.dbsession)})
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region),
+            IPageCreateService: _WrappedPageCreateService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'global/foobar'
         request.content_type = 'application/x-www-form-urlencoded'
@@ -4508,11 +4592,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_page_internal_edit_post_not_allowed(self):
         from pyramid.httpexceptions import HTTPNotFound
-        from ..interfaces import IPageQueryService, IPageCreateService
+        from ..interfaces import IPageQueryService
         from ..models import Page
-        from ..services import PageQueryService, PageCreateService
+        from ..services import PageQueryService
         from ..views.admin import page_internal_edit_post
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
 
         class _WrappedPageQueryService(PageQueryService):
             def internal_page_from_slug(self, slug):
@@ -4522,7 +4607,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
                         _internal_pages=tuple())
 
         request = mock_service(self.request, {
-            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'global/foobar'
         request.content_type = 'application/x-www-form-urlencoded'
@@ -4550,7 +4637,8 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from ..services import PageQueryService, PageUpdateService
         from ..views.admin import page_internal_edit_post
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
 
         class _WrappedPageQueryService(PageQueryService):
             def internal_page_from_slug(self, slug):
@@ -4567,8 +4655,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             formatter='html'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageQueryService: _WrappedPageQueryService(self.dbsession),
-            IPageUpdateService: PageUpdateService(self.dbsession)})
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region),
+            IPageUpdateService: PageUpdateService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'global/foobar'
         request.content_type = 'application/x-www-form-urlencoded'
@@ -4590,11 +4682,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_page_internal_edit_post_auto_create_invalid_body(self):
         from ..forms import AdminPageForm
-        from ..interfaces import IPageQueryService, IPageCreateService
+        from ..interfaces import IPageQueryService
         from ..models import Page
-        from ..services import PageQueryService, PageCreateService
+        from ..services import PageQueryService
         from ..views.admin import page_internal_edit_post
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
 
         class _WrappedPageQueryService(PageQueryService):
             def internal_page_from_slug(self, slug):
@@ -4604,7 +4697,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
                         _internal_pages=(('global/foobar', 'html'),))
 
         request = mock_service(self.request, {
-            IPageQueryService: _WrappedPageQueryService(self.dbsession)})
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region)})
         request.method = 'GET'
         request.matchdict['page'] = 'global/foobar'
         request.content_type = 'application/x-www-form-urlencoded'
@@ -4620,13 +4715,113 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         self.assertIsNone(response['page'])
         self.assertEqual(self.dbsession.query(Page).count(), 0)
 
+    def test_page_internal_edit_post_cache(self):
+        from ..interfaces import IPageQueryService, IPageUpdateService
+        from ..models import Page
+        from ..services import PageQueryService, PageUpdateService
+        from ..views.admin import page_internal_edit_post
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region()
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=(('global/foobar', 'html'),))
+
+        page_query_svc = PageQueryService(self.dbsession, cache_region)
+        self._make(Page(
+            slug='global/foobar',
+            title='global/foobar',
+            body='<em>Hello</em>',
+            namespace='internal',
+            formatter='html'))
+        self.dbsession.commit()
+        self.assertEqual(
+            page_query_svc.internal_body_from_slug(
+                'global/foobar',
+                _internal_pages=(('global/foobar', 'html'),)),
+            '<em>Hello</em>')
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region),
+            IPageUpdateService: PageUpdateService(
+                self.dbsession,
+                cache_region)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/foobar'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['body'] = '<em>World</em>'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_page_internal', '/admin/pages_i/{page}')
+        response = page_internal_edit_post(request)
+        self.assertEqual(response.location, '/admin/pages_i/global/foobar')
+        self.assertEqual(
+            page_query_svc.internal_body_from_slug(
+                'global/foobar',
+                _internal_pages=(('global/foobar', 'html'),)),
+            '<em>World</em>')
+
+    def test_page_internal_edit_post_auto_create_cache(self):
+        from ..interfaces import IPageQueryService, IPageCreateService
+        from ..services import PageQueryService, PageCreateService
+        from ..views.admin import page_internal_edit_post
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
+
+        class _WrappedPageCreateService(PageCreateService):
+            def create_internal(self, slug, body):
+                return super(_WrappedPageCreateService, self).\
+                    create_internal(
+                        slug,
+                        body,
+                        _internal_pages=(('global/foobar', 'html'),))
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=(('global/foobar', 'html'),))
+
+        page_query_svc = PageQueryService(self.dbsession, cache_region)
+        self.assertIsNone(
+            page_query_svc.internal_body_from_slug(
+                'global/foobar',
+                _internal_pages=(('global/foobar', 'html'),)))
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region),
+            IPageCreateService: _WrappedPageCreateService(
+                self.dbsession,
+                cache_region)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/foobar'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['body'] = '<em>World</em>'
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_page_internal', '/admin/pages_i/{page}')
+        response = page_internal_edit_post(request)
+        self.assertEqual(response.location, '/admin/pages_i/global/foobar')
+        self.assertEqual(
+            page_query_svc.internal_body_from_slug(
+                'global/foobar',
+                _internal_pages=(('global/foobar', 'html'),)),
+            '<em>World</em>')
+
     def test_page_internal_delete_post(self):
         from ..interfaces import IPageDeleteService
         from ..models import Page
         from ..services import PageDeleteService
         from ..views.admin import page_internal_delete_post
-        from . import mock_service
-        page = self._make(Page(
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
+        self._make(Page(
             slug='global/foobar',
             title='global/foobar',
             body='<em>Hello</em>',
@@ -4634,7 +4829,9 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             formatter='html'))
         self.dbsession.commit()
         request = mock_service(self.request, {
-            IPageDeleteService: PageDeleteService(self.dbsession)})
+            IPageDeleteService: PageDeleteService(
+                self.dbsession,
+                cache_region)})
         request.method = 'POST'
         request.matchdict['page'] = 'global/foobar'
         request.content_type = 'application/x-www-form-urlencoded'
@@ -4651,9 +4848,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         from ..interfaces import IPageDeleteService
         from ..services import PageDeleteService
         from ..views.admin import page_internal_delete_post
-        from . import mock_service
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
         request = mock_service(self.request, {
-            IPageDeleteService: PageDeleteService(self.dbsession)})
+            IPageDeleteService: PageDeleteService(
+                self.dbsession,
+                cache_region)})
         request.method = 'POST'
         request.matchdict['page'] = 'global/notexists'
         request.content_type = 'application/x-www-form-urlencoded'
@@ -4671,6 +4871,43 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         self.request.POST = MultiDict([])
         with self.assertRaises(BadCSRFToken):
             page_internal_delete_post(self.request)
+
+    def test_page_internal_delete_post_cache(self):
+        from ..interfaces import IPageDeleteService
+        from ..models import Page
+        from ..services import PageDeleteService, PageQueryService
+        from ..views.admin import page_internal_delete_post
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
+        self._make(Page(
+            slug='global/foobar',
+            title='global/foobar',
+            body='<em>Hello</em>',
+            namespace='internal',
+            formatter='html'))
+        self.dbsession.commit()
+        page_query_svc = PageQueryService(self.dbsession, cache_region)
+        self.assertEqual(
+            page_query_svc.internal_body_from_slug(
+                'global/foobar',
+                _internal_pages=(('global/foobar', 'html'),)),
+            '<em>Hello</em>')
+        request = mock_service(self.request, {
+            IPageDeleteService: PageDeleteService(
+                self.dbsession,
+                cache_region)})
+        request.method = 'POST'
+        request.matchdict['page'] = 'global/foobar'
+        request.content_type = 'application/x-www-form-urlencoded'
+        request.POST = MultiDict([])
+        request.POST['csrf_token'] = request.session.get_csrf_token()
+        self.config.add_route('admin_pages', '/admin/pages')
+        response = page_internal_delete_post(request)
+        self.assertEqual(response.location, '/admin/pages')
+        self.assertIsNone(
+            page_query_svc.internal_body_from_slug(
+                'global/foobar',
+                _internal_pages=(('global/foobar', 'html'),)))
 
     def test_settings_get(self):
         from ..interfaces import ISettingQueryService

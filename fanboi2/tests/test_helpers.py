@@ -3,29 +3,18 @@ import unittest
 from pyramid import testing
 
 
-class _DummyPage(object):
-    def __init__(self, slug, counter):
-        self._counter = counter
-        self._slug = slug
-
-    @property
-    def body(self):
-        return "call%s_%s" % (self._counter, self._slug)
-
-
 class _DummyPageService(object):
     def __init__(self):
         self._counter = 0
 
-    def internal_page_from_slug(self, slug):
+    def internal_body_from_slug(self, slug):
         self._counter += 1
-        return _DummyPage(slug, self._counter)
+        return "call%s_%s" % (self._counter, slug)
 
 
-class _DummyPageNotFoundService(object):
-    def internal_page_from_slug(self, slug):
-        from sqlalchemy.orm.exc import NoResultFound
-        raise NoResultFound
+class _DummyPageInvalidService(object):
+    def internal_body_from_slug(self, slug):
+        raise ValueError
 
 
 class _DummySettingQueryService(object):
@@ -45,106 +34,55 @@ class TestPartials(unittest.TestCase):
 
     def test_get_partial(self):
         from markupsafe import Markup
-        from . import mock_service, make_cache_region
+        from . import mock_service
         from ..helpers.partials import get_partial
         from ..interfaces import IPageQueryService
         request = mock_service(self.request, {
-            'cache': make_cache_region(),
             IPageQueryService: _DummyPageService()})
         self.assertEqual(
             get_partial(request, 'global/test'),
             Markup('call1_global/test'))
 
-    def test_get_partial_not_found(self):
-        from . import mock_service, make_cache_region
+    def test_get_partial_invalid(self):
+        from . import mock_service
         from ..helpers.partials import get_partial
         from ..interfaces import IPageQueryService
         request = mock_service(self.request, {
-            'cache': make_cache_region(),
-            IPageQueryService: _DummyPageNotFoundService()})
+            IPageQueryService: _DummyPageInvalidService()})
         self.assertIsNone(get_partial(request, 'global/test'))
-
-    def test_reload_partial(self):
-        from markupsafe import Markup
-        from . import mock_service, make_cache_region
-        from ..helpers.partials import get_partial, reload_partial
-        from ..interfaces import IPageQueryService
-        request = mock_service(self.request, {
-            'cache': make_cache_region(),
-            IPageQueryService: _DummyPageService()})
-        self.assertEqual(
-            get_partial(request, 'global/test'),
-            Markup('call1_global/test'))
-        self.assertEqual(
-            get_partial(request, 'global/test'),
-            Markup('call1_global/test'))
-        reload_partial(request, 'global/test')
-        self.assertEqual(
-            get_partial(request, 'global/test'),
-            Markup('call2_global/test'))
 
     def test_global_css(self):
         from markupsafe import Markup
-        from . import mock_service, make_cache_region
+        from . import mock_service
         from ..helpers.partials import global_css
         from ..interfaces import IPageQueryService
         request = mock_service(self.request, {
-            'cache': make_cache_region({}),
             IPageQueryService: _DummyPageService()})
         self.assertEqual(
             global_css(None, request),
             Markup('call1_global/css'))
 
-    def test_global_css_not_found(self):
-        from . import mock_service, make_cache_region
-        from ..helpers.partials import global_css
-        from ..interfaces import IPageQueryService
-        request = mock_service(self.request, {
-            'cache': make_cache_region(),
-            IPageQueryService: _DummyPageNotFoundService()})
-        self.assertIsNone(global_css(None, request))
-
     def test_global_appendix(self):
         from markupsafe import Markup
-        from . import mock_service, make_cache_region
+        from . import mock_service
         from ..helpers.partials import global_appendix
         from ..interfaces import IPageQueryService
         request = mock_service(self.request, {
-            'cache': make_cache_region(),
             IPageQueryService: _DummyPageService()})
         self.assertEqual(
             global_appendix(None, request),
             Markup('<p>call1_global/appendix</p>\n'))
 
-    def test_global_appendix_not_found(self):
-        from . import mock_service, make_cache_region
-        from ..helpers.partials import global_appendix
-        from ..interfaces import IPageQueryService
-        request = mock_service(self.request, {
-            'cache': make_cache_region(),
-            IPageQueryService: _DummyPageNotFoundService()})
-        self.assertIsNone(global_appendix(None, request))
-
     def test_global_footer(self):
         from markupsafe import Markup
-        from . import mock_service, make_cache_region
+        from . import mock_service
         from ..helpers.partials import global_footer
         from ..interfaces import IPageQueryService
         request = mock_service(self.request, {
-            'cache': make_cache_region(),
             IPageQueryService: _DummyPageService()})
         self.assertEqual(
             global_footer(None, request),
             Markup('call1_global/footer'))
-
-    def test_global_footer_not_found(self):
-        from . import mock_service, make_cache_region
-        from ..helpers.partials import global_footer
-        from ..interfaces import IPageQueryService
-        request = mock_service(self.request, {
-            'cache': make_cache_region(),
-            IPageQueryService: _DummyPageNotFoundService()})
-        self.assertIsNone(global_footer(None, request))
 
 
 class TestFormatters(unittest.TestCase):

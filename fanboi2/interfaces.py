@@ -55,6 +55,9 @@ class IPageQueryService(Interface):
     def internal_page_from_slug(slug):
         pass
 
+    def internal_body_from_slug(slug):
+        pass
+
 
 class IPageUpdateService(Interface):
     def update(slug, **kwargs):

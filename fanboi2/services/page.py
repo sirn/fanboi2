@@ -2,11 +2,23 @@ from ..models import Page
 from ..models.page import INTERNAL_PAGES
 
 
+def _get_cache_key(namespace, slug):
+    """Returns a cache key for given namespace and slug.
+
+    :param namespace: A namespace for a page.
+    :param slug: A page slug.
+    """
+    return 'services.page:namespace=%s,slug=%s' % (
+        namespace,
+        slug)
+
+
 class PageCreateService(object):
     """Page create service provides a service for creating public page."""
 
-    def __init__(self, dbsession):
+    def __init__(self, dbsession, cache_region):
         self.dbsession = dbsession
+        self.cache_region = cache_region
 
     def create(self, slug, title, body):
         """Create a new public page.
@@ -45,14 +57,16 @@ class PageCreateService(object):
             formatter=_pages[slug])
 
         self.dbsession.add(page)
+        self.cache_region.delete(_get_cache_key('internal', slug))
         return page
 
 
 class PageDeleteService(object):
     """Page create service provides a service for deleting page."""
 
-    def __init__(self, dbsession):
+    def __init__(self, dbsession, cache_region):
         self.dbsession = dbsession
+        self.cache_region = cache_region
 
     def delete(self, slug):
         """Delete a public page. This method will raise ``NoResultFound``
@@ -78,6 +92,7 @@ class PageDeleteService(object):
             one()
 
         self.dbsession.delete(page)
+        self.cache_region.delete(_get_cache_key('internal', slug))
         return page
 
 
@@ -86,8 +101,9 @@ class PageQueryService(object):
     or a collection of pages from the database.
     """
 
-    def __init__(self, dbsession):
+    def __init__(self, dbsession, cache_region):
         self.dbsession = dbsession
+        self.cache_region = cache_region
 
     def list_public(self):
         """Query all public pages."""
@@ -127,7 +143,7 @@ class PageQueryService(object):
             one()
 
     def internal_page_from_slug(self, slug, _internal_pages=INTERNAL_PAGES):
-        """Query an internal page from the given page slug. This method will
+        """Query an internal page for the given page slug. This method will
         raise :type:`ValueError` if the given slug is not within the list of
         permitted pages.
 
@@ -141,12 +157,36 @@ class PageQueryService(object):
             filter_by(namespace='internal', slug=slug).\
             one()
 
+    def internal_body_from_slug(self, slug, _internal_pages=INTERNAL_PAGES):
+        """Query an internal page for the given page slug and returns its
+        body. This method will cache the page content for at most 12 hours.
+
+        Returns :type:`None` if slug for the page does not already exists.
+
+        :param slug: A slug :type:`str` identifying the page.
+        """
+        if slug not in (p[0] for p in _internal_pages):
+            raise ValueError(slug)
+
+        def _creator():
+            page = self.dbsession.query(Page).\
+                filter_by(namespace='internal', slug=slug).\
+                first()
+            if page:
+                return page.body
+
+        return self.cache_region.get_or_create(
+            _get_cache_key('internal', slug),
+            _creator,
+            expiration_time=43200)
+
 
 class PageUpdateService(object):
     """Page create service provides a service for updating page."""
 
-    def __init__(self, dbsession):
+    def __init__(self, dbsession, cache_region):
         self.dbsession = dbsession
+        self.cache_region = cache_region
 
     def update(self, slug, **kwargs):
         """Update a public page matching the given :param:`slug`. This method
@@ -184,4 +224,5 @@ class PageUpdateService(object):
                 setattr(page, key, kwargs[key])
 
         self.dbsession.add(page)
+        self.cache_region.delete(_get_cache_key('internal', slug))
         return page
