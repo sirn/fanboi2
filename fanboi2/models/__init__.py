@@ -92,7 +92,7 @@ def includeme(config):  # pragma: no cover
 
     def dbsession_factory(context, request):
         dbsession = dbmaker()
-        init_dbsession(dbmaker, tm=request.tm)
+        init_dbsession(dbsession, tm=request.tm)
         return dbsession
 
     config.register_service_factory(dbsession_factory, name='db')
