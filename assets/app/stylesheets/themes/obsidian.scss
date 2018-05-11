@@ -311,6 +311,29 @@
         border-color: $color-gray-dark;
     }
 
+    .topic-subheader {
+        background-color: $color-background-light;
+        border-color: $color-gray-dark;
+
+        a {
+            color: $color-gray-light;
+
+            &:hover {
+                color: $color-gray-lighter;
+            }
+        }
+    }
+
+    .topic-subheader-item {
+        &.number {
+            background-color: $color-muted-dark;
+            color: $color-muted-lighter;
+            border-color: $color-muted-dark;
+            font-weight: bold;
+        }
+    }
+
+
     .topic-footer {
         background-color: $color-background-light;
         border-color: $color-gray-dark;

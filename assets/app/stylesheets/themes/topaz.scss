@@ -328,6 +328,24 @@
         color: $color-gray-dark;
     }
 
+    .topic-subheader {
+        background-color: $color-tint-light;
+        border-color: #fff;
+
+        a {
+            color: $color-gray-dark;
+        }
+    }
+
+    .topic-subheader-item {
+        &.number {
+            background-color: $color-gray;
+            border-color: $color-gray;
+            color: #fff;
+            font-weight: bold;
+        }
+    }
+
     .topic-footer {
         background-color: $color-tint-light;
         border-color: $color-tint;
