@@ -203,20 +203,45 @@ class TestAdminSetupForm(_FormMixin, unittest.TestCase):
         form = self._make_one({
             'username': 'foo',
             'password': 'passw0rd',
-            'password_confirm': 'passw0rd'})
+            'password_confirm': 'passw0rd',
+            'name': 'Foobar'})
         self.assertTrue(form.validate())
 
     def test_username_missing(self):
         form = self._make_one({
             'password': 'passw0rd',
-            'password_confirm': 'passw0rd'})
+            'password_confirm': 'passw0rd',
+            'name': 'Foobar'})
         self.assertFalse(form.validate())
         self.assertListEqual(form.username.errors, ['This field is required.'])
+
+    def test_username_length_shorter(self):
+        form = self._make_one({
+            'username': 'f',
+            'password': 'passw0rd',
+            'password_confirm': 'passw0rd',
+            'name': 'Foo'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.username.errors,
+            ['Field must be between 2 and 32 characters long.'])
+
+    def test_username_length_longer(self):
+        form = self._make_one({
+            'username': 'f' * 33,
+            'password': 'passw0rd',
+            'password_confirm': 'passw0rd',
+            'name': 'Foo'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.username.errors,
+            ['Field must be between 2 and 32 characters long.'])
 
     def test_password_missing(self):
         form = self._make_one({
             'username': 'foo',
-            'password_confirm': 'passw0rd'})
+            'password_confirm': 'passw0rd',
+            'name': 'Foobar'})
         self.assertFalse(form.validate())
         self.assertListEqual(form.password.errors, ['This field is required.'])
 
@@ -224,7 +249,8 @@ class TestAdminSetupForm(_FormMixin, unittest.TestCase):
         form = self._make_one({
             'username': 'foo',
             'password': 'passw0r',
-            'password_confirm': 'passw0r'})
+            'password_confirm': 'passw0r',
+            'name': 'Foobar'})
         self.assertFalse(form.validate())
         self.assertListEqual(
             form.password.errors,
@@ -234,7 +260,8 @@ class TestAdminSetupForm(_FormMixin, unittest.TestCase):
         form = self._make_one({
             'username': 'foo',
             'password': 'p' * 65,
-            'password_confirm': 'p' * 65})
+            'password_confirm': 'p' * 65,
+            'name': 'Foobar'})
         self.assertFalse(form.validate())
         self.assertListEqual(
             form.password.errors,
@@ -243,7 +270,8 @@ class TestAdminSetupForm(_FormMixin, unittest.TestCase):
     def test_password_confirm_missing(self):
         form = self._make_one({
             'username': 'foo',
-            'password': 'passw0rd'})
+            'password': 'passw0rd',
+            'name': 'Foobar'})
         self.assertFalse(form.validate())
         self.assertListEqual(
             form.password_confirm.errors,
@@ -253,11 +281,44 @@ class TestAdminSetupForm(_FormMixin, unittest.TestCase):
         form = self._make_one({
             'username': 'foo',
             'password': 'passw0rd',
-            'password_confirm': 'password'})
+            'password_confirm': 'password',
+            'name': 'Foobar'})
         self.assertFalse(form.validate())
         self.assertListEqual(
             form.password_confirm.errors,
             ['Password must match.'])
+
+    def test_name_missing(self):
+        form = self._make_one({
+            'username': 'foo',
+            'password': 'passw0rd',
+            'password_confirm': 'passw0rd'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.name.errors,
+            ['This field is required.'])
+
+    def test_name_shorter(self):
+        form = self._make_one({
+            'username': 'foo',
+            'password': 'passw0rd',
+            'password_confirm': 'passw0rd',
+            'name': 'f'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.name.errors,
+            ['Field must be between 2 and 64 characters long.'])
+
+    def test_name_longer(self):
+        form = self._make_one({
+            'username': 'foo',
+            'password': 'passw0rd',
+            'password_confirm': 'passw0rd',
+            'name': 'f' * 65})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.name.errors,
+            ['Field must be between 2 and 64 characters long.'])
 
 
 class TestAdminSettingForm(_FormMixin, unittest.TestCase):

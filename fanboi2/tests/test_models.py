@@ -1803,20 +1803,28 @@ class TestUserModel(ModelSessionMixin, unittest.TestCase):
         user1 = self._make(User(
             username='foo',
             encrypted_password='none',
+            ident='fooident',
+            name='Nameless Foo',
             groups=[group1, group2]))
         user2 = self._make(User(
             username='foo1',
             parent=user1,
             encrypted_password='none',
+            ident='foo1ident',
+            name='Nameless Foo1',
             groups=[group1]))
         user3 = self._make(User(
             username='foo2',
             parent=user1,
             encrypted_password='none',
+            ident='foo2ident',
+            name='Nameless Foo2',
             groups=[group2]))
         user4 = self._make(User(
             username='foo3',
             parent=user2,
+            ident='foo3ident',
+            name='Nameless Foo3',
             encrypted_password='none'))
         session1 = self._make(UserSession(
             user=user1,
@@ -1856,20 +1864,28 @@ class TestUserModel(ModelSessionMixin, unittest.TestCase):
         user1 = self._make(User(
             username='foo',
             encrypted_password='none',
+            ident='fooident',
+            name='Nameless Foo',
             groups=[group1]))
         user2 = self._make(User(
             username='foo1',
             parent=user1,
             encrypted_password='none',
+            ident='foo1ident',
+            name='Nameless Foo1',
             groups=[group2]))
         user3 = self._make(User(
             username='foo2',
             parent=user1,
-            encrypted_password='none'))
+            encrypted_password='none',
+            ident='foo2ident',
+            name='Nameless Foo2'))
         user4 = self._make(User(
             username='foo3',
             parent=user2,
-            encrypted_password='none'))
+            encrypted_password='none',
+            ident='foo3ident',
+            name='Nameless Foo3'))
         session1 = self._make(UserSession(
             user=user1,
             token='test1',
@@ -1913,7 +1929,9 @@ class TestUserSessionModel(ModelSessionMixin, unittest.TestCase):
         from ..models import User, UserSession
         user = self._make(User(
             username='foo',
-            encrypted_password='none'))
+            encrypted_password='none',
+            ident='fooident',
+            name='Nameless Foo'))
         session1 = self._make(UserSession(
             user=user,
             token='test1',
@@ -1933,7 +1951,9 @@ class TestUserSessionModel(ModelSessionMixin, unittest.TestCase):
         from ..models import User, UserSession
         user = self._make(User(
             username='foo',
-            encrypted_password='none'))
+            encrypted_password='none',
+            ident='fooident',
+            name='Nameless Foo'))
         session = self._make(UserSession(
             user=user,
             token='test1',
@@ -1954,14 +1974,20 @@ class TestGroupModel(ModelSessionMixin, unittest.TestCase):
         user1 = self._make(User(
             username='foo',
             encrypted_password='dummy',
+            ident='fooident',
+            name='Nameless Foo',
             groups=[group1, group2]))
         user2 = self._make(User(
             username='foo2',
             encrypted_password='dummy',
+            ident='foo2ident',
+            name='Nameless Foo2',
             groups=[group1]))
         user3 = self._make(User(
             username='foo3',
             encrypted_password='dummy',
+            ident='foo3ident',
+            name='Nameless Foo3',
             groups=[group2]))
         self.dbsession.commit()
         self.assertEqual(list(group1.users), [user1, user2])
@@ -1974,10 +2000,14 @@ class TestGroupModel(ModelSessionMixin, unittest.TestCase):
         user1 = self._make(User(
             username='foo',
             encrypted_password='dummy',
+            ident='fooident',
+            name='Nameless Foo',
             groups=[group]))
         user2 = self._make(User(
             username='foo2',
             encrypted_password='dummy',
+            ident='foo2ident',
+            name='Nameless Foo2',
             groups=[group]))
         self.dbsession.commit()
         self.dbsession.delete(group)

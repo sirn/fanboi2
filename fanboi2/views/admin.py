@@ -132,9 +132,10 @@ def setup_post(request):
 
     user_create_svc = request.find_service(IUserCreateService)
     user_create_svc.create(
+        None,
         form.username.data,
         form.password.data,
-        None,
+        form.name.data,
         ['admin'])
 
     request.session.flash('Successfully setup initial user.', 'success')

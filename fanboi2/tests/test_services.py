@@ -982,7 +982,6 @@ class TestPostCreateService(ModelSessionMixin, unittest.TestCase):
         return PostCreateService
 
     def _make_one(self):
-
         class _DummyIdentityService(object):
             def identity_for(self, **kwargs):
                 return ','.join(
@@ -1024,6 +1023,7 @@ class TestPostCreateService(ModelSessionMixin, unittest.TestCase):
             'foo,127.0.0.1,%s' % (
                 datetime.now(timezone('Asia/Bangkok')).
                 strftime("%Y%m%d"),))
+        self.assertEqual(post.ident_type, 'ident')
         topic_meta = self.dbsession.query(TopicMeta).get(topic.id)
         self.assertEqual(topic_meta.post_count, 1)
         self.assertIsNotNone(topic_meta.bumped_at)
@@ -1060,6 +1060,7 @@ class TestPostCreateService(ModelSessionMixin, unittest.TestCase):
             True,
             '127.0.0.1')
         self.assertIsNone(post.ident)
+        self.assertEqual(post.ident_type, 'none')
 
     def test_create_topic_limit(self):
         from ..models import Board, Topic, TopicMeta
@@ -1871,6 +1872,7 @@ class TestTopicCreateService(ModelSessionMixin, unittest.TestCase):
             'foo,127.0.0.1,%s' % (
                 datetime.now(timezone('Asia/Bangkok')).
                 strftime("%Y%m%d"),))
+        self.assertEqual(topic.posts[0].ident_type, 'ident')
 
     def test_create_without_ident(self):
         from ..models import Board
@@ -1886,6 +1888,7 @@ class TestTopicCreateService(ModelSessionMixin, unittest.TestCase):
             'Hello Eartians',
             '127.0.0.1')
         self.assertIsNone(topic.posts[0].ident)
+        self.assertEqual(topic.posts[0].ident_type, 'none')
 
     def test_create_board_restricted(self):
         from ..errors import StatusRejectedError
@@ -2113,6 +2116,16 @@ class TestUserCreateService(ModelSessionMixin, unittest.TestCase):
         from ..services import UserCreateService
         return UserCreateService
 
+    def _make_one(self):
+        class _DummyIdentityService(object):
+            def identity_for(self, **kwargs):
+                return 'id=' + ','.join(
+                    '%s' % (v,) for k, v in sorted(kwargs.items()))
+
+        return self._get_target_class()(
+            self.dbsession,
+            _DummyIdentityService())
+
     def test_create(self):
         from passlib.hash import argon2
         from ..models import User, Group
@@ -2121,19 +2134,26 @@ class TestUserCreateService(ModelSessionMixin, unittest.TestCase):
         user1 = self._make(User(
             username='root',
             encrypted_password='none',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root',
             groups=[group1]))
         self.dbsession.commit()
-        user_create_svc = self._get_target_class()(self.dbsession)
+        user_create_svc = self._make_one()
         user2 = user_create_svc.create(
+            user1.id,
             'child',
             'passw0rd',
-            user1.id,
+            'Child',
             ['mod', 'janitor'])
         self.dbsession.commit()
         self.assertEqual(self.dbsession.query(Group).count(), 3)
         group3 = self.dbsession.query(Group).filter_by(name='janitor').first()
         self.assertEqual(user2.parent, user1)
         self.assertEqual(user2.username, 'child')
+        self.assertEqual(user2.ident, 'id=child')
+        self.assertEqual(user2.ident_type, 'ident')
+        self.assertEqual(user2.name, 'Child')
         self.assertEqual(user2.groups, [group3, group2])
         self.assertTrue(argon2.verify(
             'passw0rd',
@@ -2141,25 +2161,37 @@ class TestUserCreateService(ModelSessionMixin, unittest.TestCase):
 
     def test_create_root(self):
         from ..models import Group
-        user_create_svc = self._get_target_class()(self.dbsession)
+        user_create_svc = self._make_one()
         user = user_create_svc.create(
+            None,
             'root',
             'passw0rd',
-            None,
+            'Root',
             ['admin'])
         self.assertEqual(self.dbsession.query(Group).count(), 1)
         group = self.dbsession.query(Group).filter_by(name='admin').first()
-        self.assertEqual(user.parent, None)
+        self.assertIsNone(user.parent)
         self.assertEqual(user.username, 'root')
+        self.assertEqual(user.ident, 'id=root')
+        self.assertEqual(user.ident_type, 'ident_admin')
+        self.assertEqual(user.name, 'Root')
         self.assertEqual(user.groups, [group])
 
     def test_create_without_group(self):
         from ..models import Group
-        user_create_svc = self._get_target_class()(self.dbsession)
-        user = user_create_svc.create('root', 'passw0rd', None, [])
+        user_create_svc = self._make_one()
+        user = user_create_svc.create(
+            None,
+            'root',
+            'passw0rd',
+            'Root',
+            [])
         self.assertEqual(self.dbsession.query(Group).count(), 0)
         self.assertEqual(user.parent, None)
         self.assertEqual(user.username, 'root')
+        self.assertEqual(user.ident, 'id=root')
+        self.assertEqual(user.ident_type, 'ident')
+        self.assertEqual(user.name, 'Root')
         self.assertEqual(user.groups, [])
 
 
@@ -2174,7 +2206,9 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         from ..models import User
         self._make(User(
             username='foo',
-            encrypted_password=argon2.hash('passw0rd')))
+            encrypted_password=argon2.hash('passw0rd'),
+            ident='foo',
+            name='Nameless User'))
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertTrue(user_login_svc.authenticate('foo', 'passw0rd'))
@@ -2190,6 +2224,8 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         self._make(User(
             username='foo',
             encrypted_password=argon2.hash('passw0rd'),
+            ident='foo',
+            name='Nameless User',
             deactivated=True))
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
@@ -2201,7 +2237,9 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         password = argon2.using(rounds=2).hash('passw0rd')
         user = self._make(User(
             username='foo',
-            encrypted_password=password))
+            encrypted_password=password,
+            ident='foo',
+            name='Nameless User'))
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertTrue(user_login_svc.authenticate('foo', 'passw0rd'))
@@ -2212,8 +2250,16 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
 
     def test_user_from_token(self):
         from ..models import User, UserSession
-        user1 = self._make(User(username='foo', encrypted_password='none'))
-        user2 = self._make(User(username='bar', encrypted_password='none'))
+        user1 = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            ident='foo',
+            name='Nameless User'))
+        user2 = self._make(User(
+            username='bar',
+            encrypted_password='none',
+            ident='bar',
+            name='Nameless Bar'))
         self._make(UserSession(
             user=user1,
             token='foo_token1',
@@ -2248,6 +2294,8 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         user = self._make(User(
             username='foo',
             encrypted_password='none',
+            ident='foo',
+            name='Nameless User',
             deactivated=True))
         self._make(UserSession(
             user=user,
@@ -2262,7 +2310,9 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         from ..models import User, UserSession
         user = self._make(User(
             username='foo',
-            encrypted_password='none'))
+            encrypted_password='none',
+            ident='foo',
+            name='Nameless User'))
         self._make(UserSession(
             user=user,
             token='foo_token1',
@@ -2275,7 +2325,11 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
     def test_user_from_token_revoked(self):
         from datetime import datetime, timedelta
         from ..models import User, UserSession
-        user = self._make(User(username='foo', encrypted_password='none'))
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            ident='foo',
+            name='Nameless User'))
         self._make(UserSession(
             user=user,
             token='foo_token1',
@@ -2301,14 +2355,20 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         user1 = self._make(User(
             username='foo',
             encrypted_password='none',
+            ident='foo',
+            name='Nameless User',
             groups=[group1, group2]))
         user2 = self._make(User(
             username='bar',
             encrypted_password='none',
+            ident='foo',
+            name='Nameless Bar',
             groups=[group2]))
         user3 = self._make(User(
             username='baz',
             encrypted_password='none',
+            ident='baz',
+            name='Nameless Baz',
             groups=[]))
         self._make(UserSession(
             user=user1,
@@ -2347,6 +2407,8 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         user = self._make(User(
             username='foo',
             encrypted_password='none',
+            ident='foo',
+            name='Nameless User',
             groups=[group1, group2]))
         self._make(UserSession(
             user=user,
@@ -2366,6 +2428,8 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         user = self._make(User(
             username='foo',
             encrypted_password='none',
+            ident='foo',
+            name='Nameless User',
             groups=[group1, group2],
             deactivated=True))
         self._make(UserSession(
@@ -2386,10 +2450,14 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         user1 = self._make(User(
             username='foo',
             encrypted_password='none',
+            ident='foo',
+            name='Nameless User',
             groups=[group1, group2]))
         user2 = self._make(User(
             username='bar',
             encrypted_password='none',
+            ident='bar',
+            name='Nameless Bar',
             groups=[group2]))
         self._make(UserSession(
             user=user1,
@@ -2411,7 +2479,11 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
 
     def test_revoke_token(self):
         from ..models import User, UserSession
-        user = self._make(User(username='foo', encrypted_password='none'))
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            ident='foo',
+            name='Nameless User'))
         user_session = self._make(UserSession(
             user=user,
             token='foo_token',
@@ -2430,7 +2502,11 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
 
     def test_revoke_token_wrong_ip(self):
         from ..models import User, UserSession
-        user = self._make(User(username='foo', encrypted_password='none'))
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            ident='foo',
+            name='Nameless User'))
         self._make(UserSession(
             user=user,
             token='foo_token',
@@ -2444,7 +2520,11 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
     def test_revoke_token_revoked(self):
         from datetime import datetime, timedelta
         from ..models import User, UserSession
-        user = self._make(User(username='foo', encrypted_password='none'))
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            ident='foo',
+            name='Nameless User'))
         self._make(UserSession(
             user=user,
             token='foo_token',
@@ -2458,7 +2538,11 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
 
     def test_mark_seen(self):
         from ..models import User, UserSession
-        user = self._make(User(username='foo', encrypted_password='none'))
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            ident='foo',
+            name='Nameless User'))
         user_session = self._make(UserSession(
             user=user,
             token='foo_token',
@@ -2480,7 +2564,11 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
 
     def test_mark_seen_wrong_ip(self):
         from ..models import User, UserSession
-        user = self._make(User(username='foo', encrypted_password='none'))
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            ident='foo',
+            name='Nameless User'))
         self._make(UserSession(
             user=user,
             token='foo_token',
@@ -2497,6 +2585,8 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         user = self._make(User(
             username='foo',
             encrypted_password='none',
+            ident='foo',
+            name='Nameless User',
             deactivated=True))
         self._make(UserSession(
             user=user,
@@ -2512,7 +2602,11 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
     def test_mark_seen_revoked(self):
         from datetime import datetime, timedelta
         from ..models import User, UserSession
-        user = self._make(User(username='foo', encrypted_password='none'))
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            ident='foo',
+            name='Nameless User'))
         self._make(UserSession(
             user=user,
             token='foo_token',
@@ -2527,7 +2621,11 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
 
     def test_token_for(self):
         from ..models import User
-        user = self._make(User(username='foo', encrypted_password='none'))
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            ident='foo',
+            name='Nameless User'))
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
         user_token = user_login_svc.token_for('foo', '127.0.0.1')
@@ -2545,6 +2643,8 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         self._make(User(
             username='foo',
             encrypted_password='none',
+            ident='foo',
+            name='Nameless User',
             deactivated=True))
         user_login_svc = self._get_target_class()(self.dbsession)
         with self.assertRaises(NoResultFound):

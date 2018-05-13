@@ -259,7 +259,8 @@ def includeme(config):  # pragma: no cover
 
     def user_create_factory(context, request):
         dbsession = request.find_service(name='db')
-        return UserCreateService(dbsession)
+        identity_svc = request.find_service(IIdentityService)
+        return UserCreateService(dbsession, identity_svc)
 
     config.register_service_factory(
         user_create_factory,

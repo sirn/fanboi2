@@ -76,13 +76,26 @@ class PostCreateService(object):
             topic.status = 'archived'
             self.dbsession.add(topic)
 
-        # Create post
+        return board, topic, topic_meta
+
+    def create(self, topic_id, body, bumped, ip_address):
+        """Creates a new post and associate related metadata. Unlike
+        ``enqueue``, this method performs the actual creation of the topic.
+
+        :param topic_id: A topic ID :type:`int` to lookup the post.
+        :param body: A :type:`str` topic body.
+        :param bumped: A :type:`bool` whether to bump the topic.
+        :param ip_address: An IP address of the topic creator.
+        """
+        board, topic, topic_meta = self._prepare_c(topic_id, bumped)
 
         ident = None
+        ident_type = 'none'
         if board.settings['use_ident']:
             time_zone = self.setting_query_svc.value_from_key('app.time_zone')
             tz = pytz.timezone(time_zone)
             timestamp = datetime.datetime.now(tz).strftime("%Y%m%d")
+            ident_type = 'ident'
             ident = self.identity_svc.identity_for(
                 board=board.slug,
                 ip_address=ip_address,
@@ -95,6 +108,7 @@ class PostCreateService(object):
             bumped=bumped,
             name=board.settings['name'],
             ident=ident,
+            ident_type=ident_type,
             ip_address=ip_address)
 
         self.dbsession.add(post)

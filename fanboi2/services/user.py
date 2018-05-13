@@ -27,20 +27,30 @@ def _create_crypt_context():
 class UserCreateService(object):
     """User create service provides a service for creating user."""
 
-    def __init__(self, dbsession):
+    def __init__(self, dbsession, identity_svc):
         self.dbsession = dbsession
+        self.identity_svc = identity_svc
         self.crypt_context = _create_crypt_context()
 
-    def create(self, username, password, parent_id, groups=[]):
+    def create(self, parent_id, username, password, name, groups=[]):
         """Creates a user. :param:`parent_id` must be present for all users
         except the root user, usually the user who created this specific user.
 
+        :param parent_id: An :type:`int` ID of the user who created this user.
         :param username: A username.
         :param password: A password.
-        :parent parent_id: An :type:`int` ID of the user who created this user.
+        :param name: A default name to use when posted in board.
+        :param groups: Group the user belongs to.
         """
+        ident_type = 'ident'
+        if 'admin' in groups:
+            ident_type = 'ident_admin'
+
         user = User(
             username=username,
+            name=name,
+            ident_type=ident_type,
+            ident=self.identity_svc.identity_for(username=username),
             encrypted_password=self.crypt_context.hash(password),
             parent_id=parent_id)
 

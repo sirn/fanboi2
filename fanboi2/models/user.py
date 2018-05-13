@@ -4,6 +4,7 @@ from sqlalchemy.sql.schema import Column, Table, ForeignKey, UniqueConstraint
 from sqlalchemy.sql.sqltypes import Integer, DateTime, String, Boolean
 
 from ._base import Base
+from ._type import IdentTypeEnum
 
 
 user_group = Table(
@@ -26,6 +27,10 @@ class User(Base):
     username = Column(String, nullable=False)
     encrypted_password = Column(String, nullable=False)
     deactivated = Column(Boolean, nullable=False, index=True, default=False)
+
+    ident = Column(String, nullable=False)
+    ident_type = Column(IdentTypeEnum, default='ident', nullable=False)
+    name = Column(String, nullable=False)
 
     parent = relationship('User',
                           remote_side=[id],

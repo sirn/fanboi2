@@ -78,10 +78,12 @@ class TopicCreateService(object):
         # Create post
 
         ident = None
+        ident_type = 'none'
         if board.settings['use_ident']:
             time_zone = self.setting_query_svc.value_from_key('app.time_zone')
             tz = pytz.timezone(time_zone)
             timestamp = datetime.datetime.now(tz).strftime("%Y%m%d")
+            ident_type = 'ident'
             ident = self.identity_svc.identity_for(
                 board=topic.board.slug,
                 ip_address=ip_address,
@@ -94,6 +96,7 @@ class TopicCreateService(object):
             bumped=True,
             name=board.settings['name'],
             ident=ident,
+            ident_type=ident_type,
             ip_address=ip_address)
 
         self.dbsession.add(post)

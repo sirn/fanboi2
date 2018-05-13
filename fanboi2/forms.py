@@ -59,7 +59,9 @@ class AdminLoginForm(Form):
 
 class AdminSetupForm(Form):
     """A :class:`Form` for creating an initial user."""
-    username = TextField('Username', validators=[Required()])
+    username = TextField('Username', validators=[
+        Required(),
+        Length(2, 32)])
     password = PasswordField('Password', validators=[
         Required(),
         Length(8, 64)])
@@ -68,6 +70,9 @@ class AdminSetupForm(Form):
         validators=[
             Required(),
             EqualTo('password', message='Password must match.')])
+    name = TextField('Name', validators=[
+        Required(),
+        Length(2, 64)])
 
 
 class AdminSettingForm(Form):
