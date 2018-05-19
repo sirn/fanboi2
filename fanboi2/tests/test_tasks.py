@@ -309,7 +309,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         from pytz import timezone
         from ..interfaces import IFilterService, IPostCreateService
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import PostCreateService
+        from ..services import PostCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(
             title='Foobar',
@@ -324,7 +324,8 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
             IPostCreateService: PostCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             topic.id,
             'Hello, world!',
@@ -359,7 +360,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
     def test_add_post_without_bumped(self):
         from ..interfaces import IFilterService, IPostCreateService
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import PostCreateService
+        from ..services import PostCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(title='Foobar', slug='foo'))
         topic = self._make(Topic(board=board, title='Foobar', status='open'))
@@ -371,7 +372,8 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
             IPostCreateService: PostCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             topic.id,
             'Hello, world!',
@@ -391,7 +393,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
     def test_add_post_without_ident(self):
         from ..interfaces import IFilterService, IPostCreateService
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import PostCreateService
+        from ..services import PostCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(
             title='Foobar',
@@ -406,7 +408,8 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
             IPostCreateService: PostCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             topic.id,
             'Hello, world!',
@@ -426,7 +429,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
     def test_add_post_topic_limit(self):
         from ..interfaces import IFilterService, IPostCreateService
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import PostCreateService
+        from ..services import PostCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(
             title='Foobar',
@@ -441,7 +444,8 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
             IPostCreateService: PostCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             topic.id,
             'Hello, world!',
@@ -465,7 +469,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
     def test_add_post_topic_locked(self):
         from ..interfaces import IFilterService, IPostCreateService
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import PostCreateService
+        from ..services import PostCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(title='Foobar', slug='foo'))
         topic = self._make(Topic(
@@ -480,7 +484,8 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
             IPostCreateService: PostCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             topic.id,
             'Hello, world!',
@@ -504,7 +509,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
     def test_add_post_topic_archived(self):
         from ..interfaces import IFilterService, IPostCreateService
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import PostCreateService
+        from ..services import PostCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(title='Foobar', slug='foo'))
         topic = self._make(Topic(
@@ -519,7 +524,8 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
             IPostCreateService: PostCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             topic.id,
             'Hello, world!',
@@ -543,7 +549,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
     def test_add_post_board_restricted(self):
         from ..interfaces import IFilterService, IPostCreateService
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import PostCreateService
+        from ..services import PostCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(
             title='Foobar',
@@ -558,7 +564,8 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
             IPostCreateService: PostCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             topic.id,
             'Hello, world!',
@@ -580,7 +587,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
     def test_add_post_board_locked(self):
         from ..interfaces import IFilterService, IPostCreateService
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import PostCreateService
+        from ..services import PostCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(
             title='Foobar',
@@ -595,7 +602,8 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
             IPostCreateService: PostCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             topic.id,
             'Hello, world!',
@@ -619,7 +627,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
     def test_add_post_board_archived(self):
         from ..interfaces import IFilterService, IPostCreateService
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import PostCreateService
+        from ..services import PostCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(
             title='Foobar',
@@ -634,7 +642,8 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
             IPostCreateService: PostCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             topic.id,
             'Hello, world!',
@@ -658,7 +667,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
     def test_add_post_filter_akismet_rejected(self):
         from ..interfaces import IFilterService, IPostCreateService
         from ..models import Board, Topic, TopicMeta
-        from ..services import PostCreateService
+        from ..services import PostCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(title='Foobar', slug='foo'))
         topic = self._make(Topic(board=board, title='Foobar'))
@@ -670,7 +679,8 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
             IPostCreateService: PostCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             topic.id,
             'Hello, world!',
@@ -691,7 +701,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
     def test_add_post_filter_dnsbl_rejected(self):
         from ..interfaces import IFilterService, IPostCreateService
         from ..models import Board, Topic, TopicMeta
-        from ..services import PostCreateService
+        from ..services import PostCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(title='Foobar', slug='foo'))
         topic = self._make(Topic(board=board, title='Foobar'))
@@ -703,7 +713,8 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
             IPostCreateService: PostCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             topic.id,
             'Hello, world!',
@@ -724,7 +735,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
     def test_add_post_filter_proxy_rejected(self):
         from ..interfaces import IFilterService, IPostCreateService
         from ..models import Board, Topic, TopicMeta
-        from ..services import PostCreateService
+        from ..services import PostCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(title='Foobar', slug='foo'))
         topic = self._make(Topic(board=board, title='Foobar'))
@@ -736,7 +747,8 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
             IPostCreateService: PostCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             topic.id,
             'Hello, world!',
@@ -780,7 +792,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
         from pytz import timezone
         from ..interfaces import IFilterService, ITopicCreateService
         from ..models import Board, Topic, TopicMeta
-        from ..services import TopicCreateService
+        from ..services import TopicCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(
             title='Foobar',
@@ -793,7 +805,8 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             board.slug,
             'Title',
@@ -828,7 +841,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
     def test_add_topic_without_ident(self):
         from ..interfaces import IFilterService, ITopicCreateService
         from ..models import Board, Topic
-        from ..services import TopicCreateService
+        from ..services import TopicCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(
             title='Foobar',
@@ -841,7 +854,8 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             board.slug,
             'Title',
@@ -861,7 +875,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
     def test_add_topic_board_restricted(self):
         from ..interfaces import IFilterService, ITopicCreateService
         from ..models import Board, Topic
-        from ..services import TopicCreateService
+        from ..services import TopicCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(
             title='Foobar',
@@ -874,7 +888,8 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             board.slug,
             'Title',
@@ -896,7 +911,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
     def test_add_topic_board_locked(self):
         from ..interfaces import IFilterService, ITopicCreateService
         from ..models import Board, Topic
-        from ..services import TopicCreateService
+        from ..services import TopicCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(
             title='Foobar',
@@ -909,7 +924,8 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             board.slug,
             'Title',
@@ -931,7 +947,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
     def test_add_topic_board_archived(self):
         from ..interfaces import IFilterService, ITopicCreateService
         from ..models import Board, Topic
-        from ..services import TopicCreateService
+        from ..services import TopicCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(
             title='Foobar',
@@ -944,7 +960,8 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             board.slug,
             'Title',
@@ -966,7 +983,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
     def test_add_topic_filter_akismet_rejected(self):
         from ..interfaces import IFilterService, ITopicCreateService
         from ..models import Board, Topic
-        from ..services import TopicCreateService
+        from ..services import TopicCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(title='Foobar', slug='foo'))
         self.dbsession.commit()
@@ -976,7 +993,8 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             board.slug,
             'Title',
@@ -998,7 +1016,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
     def test_add_topic_filter_dnsbl_rejected(self):
         from ..interfaces import IFilterService, ITopicCreateService
         from ..models import Board, Topic
-        from ..services import TopicCreateService
+        from ..services import TopicCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(title='Foobar', slug='foo'))
         self.dbsession.commit()
@@ -1008,7 +1026,8 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             board.slug,
             'Title',
@@ -1030,7 +1049,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
     def test_add_topic_filter_proxy_rejected(self):
         from ..interfaces import IFilterService, ITopicCreateService
         from ..models import Board, Topic
-        from ..services import TopicCreateService
+        from ..services import TopicCreateService, UserQueryService
         from . import mock_service
         board = self._make(Board(title='Foobar', slug='foo'))
         self.dbsession.commit()
@@ -1040,7 +1059,8 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
             ITopicCreateService: TopicCreateService(
                 self.dbsession,
                 _DummyIdentityService(),
-                _DummySettingQueryService())})
+                _DummySettingQueryService(),
+                UserQueryService(self.dbsession))})
         resp = self._get_target_func()(
             board.slug,
             'Title',

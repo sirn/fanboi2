@@ -45,15 +45,14 @@ body {
 }
 
 .cols-column {
+    $sidebar-width: 180px;
+    overflow: hidden;
     width: 100%;
-
-    &.sidebar {
-    }
 
     @media (min-width: $bound-tablet) {
         &.sidebar {
-            min-width: 180px;
-            max-width: 180px;
+            min-width: $sidebar-width;
+            max-width: $sidebar-width;
             margin: 0 $spacing-horizontal 0 0;
         }
     }

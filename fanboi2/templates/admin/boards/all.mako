@@ -17,7 +17,7 @@
         <tbody class="admin-table-body">
             % for board in boards:
             <tr class="admin-table-row">
-                <th class="admin-table-item title"><a href="${request.route_path('admin_board', board=board.slug)}">${board.title}</a></th>
+                <th class="admin-table-item title"><a href="${request.route_path('admin_board_topics', board=board.slug)}">${board.title}</a></th>
                 <td class="admin-table-item">
                     % if board.status == 'open':
                     Open

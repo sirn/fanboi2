@@ -206,3 +206,18 @@ class UserLoginService(object):
 
         self.dbsession.add(user_session)
         return user_session.token
+
+
+class UserQueryService(object):
+    """User query service provides a service for querying users."""
+
+    def __init__(self, dbsession):
+        self.dbsession = dbsession
+
+    def user_from_id(self, id):
+        """Returns a user matching ID. Raises :class:`NoResultFound` is
+        user could not be found.
+
+        :param id: A user `type`:int: id.
+        """
+        return self.dbsession.query(User).filter_by(id=id).one()

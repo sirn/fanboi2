@@ -68,10 +68,18 @@ class IPageUpdateService(Interface):
 
 
 class IPostCreateService(Interface):
-    def enqueue(topic_id, body, bumped, ip_address, payload={}):
+    def enqueue(topic_id, body, bumped, ip_address):
         pass
 
     def create(topic_id, body, bumped, ip_address, payload={}):
+        pass
+
+    def create_with_user(topic_id, user_id, body, bumped, ip_address):
+        pass
+
+
+class IPostDeleteService(Interface):
+    def delete_from_topic_id(topic_id, number):
         pass
 
 
@@ -148,7 +156,15 @@ class ITopicCreateService(Interface):
     def enqueue(board_slug, title, body, ip_address, payload={}):
         pass
 
-    def create(board_slug, title, body, ip_address, payload={}):
+    def create(board_slug, title, body, ip_address):
+        pass
+
+    def create_with_user(board_slug, user_id, title, body, ip_address):
+        pass
+
+
+class ITopicDeleteService(Interface):
+    def delete(topic_id):
         pass
 
 
@@ -163,6 +179,11 @@ class ITopicQueryService(Interface):
         pass
 
     def topic_from_id(topic_id):
+        pass
+
+
+class ITopicUpdateService(Interface):
+    def update(topic_id, **kwargs):
         pass
 
 
@@ -188,4 +209,9 @@ class IUserLoginService(Interface):
         pass
 
     def token_for(username, ip_address):
+        pass
+
+
+class IUserQueryService(Interface):
+    def user_from_id(id):
         pass

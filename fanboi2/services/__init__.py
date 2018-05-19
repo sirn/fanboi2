@@ -9,6 +9,7 @@ from ..interfaces import \
     IPageQueryService,\
     IPageUpdateService,\
     IPostCreateService,\
+    IPostDeleteService,\
     IPostQueryService,\
     IRateLimiterService,\
     IRuleBanCreateService,\
@@ -18,9 +19,12 @@ from ..interfaces import \
     ISettingUpdateService,\
     ITaskQueryService,\
     ITopicCreateService,\
+    ITopicDeleteService,\
     ITopicQueryService,\
+    ITopicUpdateService,\
     IUserCreateService,\
-    IUserLoginService
+    IUserLoginService,\
+    IUserQueryService
 
 from .board import BoardCreateService, BoardQueryService
 from .board import BoardUpdateService
@@ -28,14 +32,17 @@ from .filter_ import FilterService
 from .identity import IdentityService
 from .page import PageCreateService, PageDeleteService
 from .page import PageQueryService, PageUpdateService
-from .post import PostCreateService, PostQueryService
+from .post import PostCreateService, PostDeleteService
+from .post import PostQueryService
 from .rate_limiter import RateLimiterService
 from .rule import RuleBanCreateService, RuleBanQueryService
 from .rule import RuleBanUpdateService
 from .setting import SettingQueryService, SettingUpdateService
 from .task import TaskQueryService
-from .topic import TopicCreateService, TopicQueryService
+from .topic import TopicCreateService, TopicDeleteService
+from .topic import TopicQueryService, TopicUpdateService
 from .user import UserCreateService, UserLoginService
+from .user import UserQueryService
 
 
 def includeme(config):  # pragma: no cover
@@ -146,11 +153,26 @@ def includeme(config):  # pragma: no cover
         dbsession = request.find_service(name='db')
         identity_svc = request.find_service(IIdentityService)
         setting_query_svc = request.find_service(ISettingQueryService)
-        return PostCreateService(dbsession, identity_svc, setting_query_svc)
+        user_query_svc = request.find_service(IUserQueryService)
+        return PostCreateService(
+            dbsession,
+            identity_svc,
+            setting_query_svc,
+            user_query_svc)
 
     config.register_service_factory(
         post_create_factory,
         IPostCreateService)
+
+    # Post Delete
+
+    def post_delete_factory(context, request):
+        dbsession = request.find_service(name='db')
+        return PostDeleteService(dbsession)
+
+    config.register_service_factory(
+        post_delete_factory,
+        IPostDeleteService)
 
     # Post Query
 
@@ -239,11 +261,26 @@ def includeme(config):  # pragma: no cover
         dbsession = request.find_service(name='db')
         identity_svc = request.find_service(IIdentityService)
         setting_query_svc = request.find_service(ISettingQueryService)
-        return TopicCreateService(dbsession, identity_svc, setting_query_svc)
+        user_query_svc = request.find_service(IUserQueryService)
+        return TopicCreateService(
+            dbsession,
+            identity_svc,
+            setting_query_svc,
+            user_query_svc)
 
     config.register_service_factory(
         topic_create_factory,
         ITopicCreateService)
+
+    # Topic Delete
+
+    def topic_delete_factory(context, request):
+        dbsession = request.find_service(name='db')
+        return TopicDeleteService(dbsession)
+
+    config.register_service_factory(
+        topic_delete_factory,
+        ITopicDeleteService)
 
     # Topic Query
 
@@ -254,6 +291,16 @@ def includeme(config):  # pragma: no cover
     config.register_service_factory(
         topic_query_factory,
         ITopicQueryService)
+
+    # Topic Update
+
+    def topic_update_factory(context, request):
+        dbsession = request.find_service(name='db')
+        return TopicUpdateService(dbsession)
+
+    config.register_service_factory(
+        topic_update_factory,
+        ITopicUpdateService)
 
     # User create
 
@@ -275,3 +322,13 @@ def includeme(config):  # pragma: no cover
     config.register_service_factory(
         user_login_factory,
         IUserLoginService)
+
+    # User Query
+
+    def user_query_factory(context, request):
+        dbsession = request.find_service(name='db')
+        return UserQueryService(dbsession)
+
+    config.register_service_factory(
+        user_query_factory,
+        IUserQueryService)

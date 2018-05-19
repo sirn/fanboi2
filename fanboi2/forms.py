@@ -142,3 +142,10 @@ class AdminPublicPageForm(AdminPageForm):
 class AdminPublicPageNewForm(AdminPublicPageForm):
     """A :class:`Form` for creating public pages."""
     slug = TextField('Slug', validators=[Required()])
+
+
+class AdminTopicForm(Form):
+    """A :class:`Form` for updating topic."""
+    status = SelectField('Status', validators=[Required()], choices=[
+        ('open', 'Open'),
+        ('locked', 'Locked')])

@@ -11,10 +11,11 @@
                 <a href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query="1-%s" % posts[-1].number)}">
                     % if posts[0].number <= 2:
                     <span class="topic-subheader-item number">1</span>
+                    <span class="topic-subheader-item">Load previous post</span>
                     % else:
                     <span class="topic-subheader-item number">1-${posts[0].number - 1}</span>
-                    % endif
                     <span class="topic-subheader-item">Load previous posts</span>
+                    % endif
                 </a>
             </ul>
         </div>

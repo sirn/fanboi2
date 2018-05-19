@@ -43,13 +43,50 @@
     }
 
     .admin-cascade-header {
-        font-weight: bold;
         background-color: $color-tint-lighter;
         border-color: $color-tint-lighter;
+        color: $color-gray-dark;
     }
 
     .admin-cascade-body {
         color: $color-gray-dark;
+    }
+
+    .admin-cascade-footer {
+        border-color: $color-tint-light;
+        color: $color-gray-dark;
+    }
+
+    .admin-post-body {
+        color: $color-text;
+    }
+
+    .admin-post-info {
+        &.number {
+            background-color: #fff;
+            border-color: $color-gray-light;
+            font-weight: bold;
+
+            &.bumped {
+                background-color: $color-gray;
+                border-color: $color-gray;
+                color: #fff;
+            }
+        }
+
+        &.name {
+        }
+
+        &.date {
+            font-weight: bold;
+        }
+
+        &.ident {
+        }
+
+        &.ip-address {
+            font-weight: bold;
+        }
     }
 
     .admin-embed {

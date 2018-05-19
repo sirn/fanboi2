@@ -378,7 +378,7 @@ class TestPageCreateService(ModelSessionMixin, unittest.TestCase):
         page_create_svc = self._get_target_class()(
             self.dbsession,
             cache_region)
-        page = page_create_svc.create_internal(
+        page_create_svc.create_internal(
             'global/foo',
             body='<em>Hello, world!</em>',
             _internal_pages=(('global/foo', 'html'),))
@@ -397,22 +397,30 @@ class TestPageDeleteService(ModelSessionMixin, unittest.TestCase):
         return PageDeleteService
 
     def test_delete(self):
+        from sqlalchemy import inspect
         from ..models import Page
         from . import make_cache_region
         cache_region = make_cache_region({})
-        self._make(Page(
+        page1 = self._make(Page(
             slug='foobar',
             title='Foobar',
             body='**Foobar**',
             namespace='public',
             formatter='markdown'))
+        page2 = self._make(Page(
+            slug='foobar2',
+            title='Foobar2',
+            body='**Foobar2**',
+            namespace='public',
+            formatter='markdown'))
         self.dbsession.commit()
-        self.assertEqual(self.dbsession.query(Page).count(), 1)
         page_delete_svc = self._get_target_class()(
             self.dbsession,
             cache_region)
         page_delete_svc.delete('foobar')
-        self.assertEqual(self.dbsession.query(Page).count(), 0)
+        self.dbsession.flush()
+        self.assertTrue(inspect(page1).was_deleted)
+        self.assertFalse(inspect(page2).was_deleted)
 
     def test_delete_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
@@ -443,22 +451,30 @@ class TestPageDeleteService(ModelSessionMixin, unittest.TestCase):
             page_delete_svc.delete('global/foo')
 
     def test_delete_internal(self):
+        from sqlalchemy import inspect
         from ..models import Page
         from . import make_cache_region
         cache_region = make_cache_region({})
-        self._make(Page(
+        page1 = self._make(Page(
             slug='global/foo',
             title='global/foo',
             body='<em>Foobar</em>',
             namespace='internal',
             formatter='html'))
+        page2 = self._make(Page(
+            slug='global/bar',
+            title='global/bar',
+            body='<em>Baz</em>',
+            namespace='internal',
+            formatter='html'))
         self.dbsession.commit()
-        self.assertEqual(self.dbsession.query(Page).count(), 1)
         page_delete_svc = self._get_target_class()(
             self.dbsession,
             cache_region)
         page_delete_svc.delete_internal('global/foo')
-        self.assertEqual(self.dbsession.query(Page).count(), 0)
+        self.dbsession.flush()
+        self.assertTrue(inspect(page1).was_deleted)
+        self.assertFalse(inspect(page2).was_deleted)
 
     def test_delete_internal_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
@@ -489,18 +505,18 @@ class TestPageDeleteService(ModelSessionMixin, unittest.TestCase):
             page_delete_svc.delete_internal('foobar')
 
     def test_delete_internal_cache(self):
+        from sqlalchemy import inspect
         from ..models import Page
         from ..services import PageQueryService
         from . import make_cache_region
         cache_region = make_cache_region({})
-        self._make(Page(
+        page = self._make(Page(
             slug='global/foo',
             title='global/foo',
             body='<em>Foobar</em>',
             namespace='internal',
             formatter='html'))
         self.dbsession.commit()
-        self.assertEqual(self.dbsession.query(Page).count(), 1)
         page_query_svc = PageQueryService(self.dbsession, cache_region)
         self.assertEqual(
             page_query_svc.internal_body_from_slug(
@@ -511,7 +527,8 @@ class TestPageDeleteService(ModelSessionMixin, unittest.TestCase):
             self.dbsession,
             cache_region)
         page_delete_svc.delete_internal('global/foo')
-        self.assertEqual(self.dbsession.query(Page).count(), 0)
+        self.dbsession.flush()
+        self.assertTrue(inspect(page).was_deleted)
         self.assertEqual(
             page_query_svc.internal_body_from_slug(
                 'global/foo',
@@ -674,7 +691,7 @@ class TestPageQueryService(ModelSessionMixin, unittest.TestCase):
         from ..models import Page
         from . import make_cache_region
         cache_region = make_cache_region({})
-        page = self._make(Page(
+        self._make(Page(
             slug='foo/test',
             title='foo/test',
             body='<em>Test</em>',
@@ -965,7 +982,7 @@ class TestPageUpdateService(ModelSessionMixin, unittest.TestCase):
                 'global/foobar',
                 _internal_pages=(('global/foobar', 'html'),)),
             '<em>Foobar</em>')
-        page = page_update_svc.update_internal(
+        page_update_svc.update_internal(
             'global/foobar',
             body='<em>Baz</em>')
         self.assertEqual(
@@ -982,6 +999,8 @@ class TestPostCreateService(ModelSessionMixin, unittest.TestCase):
         return PostCreateService
 
     def _make_one(self):
+        from ..services import UserQueryService
+
         class _DummyIdentityService(object):
             def identity_for(self, **kwargs):
                 return ','.join(
@@ -994,7 +1013,8 @@ class TestPostCreateService(ModelSessionMixin, unittest.TestCase):
         return self._get_target_class()(
             self.dbsession,
             _DummyIdentityService(),
-            _DummySettingQueryService())
+            _DummySettingQueryService(),
+            UserQueryService(self.dbsession))
 
     def test_create(self):
         from datetime import datetime
@@ -1061,6 +1081,16 @@ class TestPostCreateService(ModelSessionMixin, unittest.TestCase):
             '127.0.0.1')
         self.assertIsNone(post.ident)
         self.assertEqual(post.ident_type, 'none')
+
+    def test_create_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        post_create_svc = self._make_one()
+        with self.assertRaises(NoResultFound):
+            post_create_svc.create(
+                -1,
+                'Hello!',
+                True,
+                '127.0.0.1')
 
     def test_create_topic_limit(self):
         from ..models import Board, Topic, TopicMeta
@@ -1160,6 +1190,325 @@ class TestPostCreateService(ModelSessionMixin, unittest.TestCase):
                 'Hello!',
                 True,
                 '127.0.0.1')
+
+    def test_create_with_user(self):
+        from ..models import Board, Topic, TopicMeta, User
+        board = self._make(Board(
+            slug='foo',
+            title='Foo',
+            settings={'name': 'Nameless Foobar'}))
+        topic = self._make(Topic(board=board, title='Hello', status='open'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        post_create_svc = self._make_one()
+        post = post_create_svc.create_with_user(
+            topic.id,
+            user.id,
+            'Hello!',
+            True,
+            '127.0.0.1')
+        self.assertEqual(post.number, 1)
+        self.assertEqual(post.topic, topic)
+        self.assertTrue(post.bumped)
+        self.assertEqual(post.name, 'Root')
+        self.assertEqual(post.ip_address, '127.0.0.1')
+        self.assertEqual(post.ident, 'fooident')
+        self.assertEqual(post.ident_type, 'ident_admin')
+        topic_meta = self.dbsession.query(TopicMeta).get(topic.id)
+        self.assertEqual(topic_meta.post_count, 1)
+        self.assertIsNotNone(topic_meta.bumped_at)
+
+    def test_create_with_user_without_bumped(self):
+        from ..models import Board, Topic, TopicMeta, User
+        board = self._make(Board(slug='foo', title='Foo'))
+        topic = self._make(Topic(board=board, title='Hello', status='open'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        post_create_svc = self._make_one()
+        post = post_create_svc.create_with_user(
+            topic.id,
+            user.id,
+            'Hello!',
+            False,
+            '127.0.0.1')
+        self.assertFalse(post.bumped)
+        topic_meta = self.dbsession.query(TopicMeta).get(topic.id)
+        self.assertIsNone(topic_meta.bumped_at)
+
+    def test_create_with_user_without_ident(self):
+        from ..models import Board, Topic, TopicMeta, User
+        board = self._make(Board(
+            slug='foo',
+            title='Foo',
+            settings={
+                'name': 'Nameless Foobar',
+                'use_ident': False}))
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        topic = self._make(Topic(board=board, title='Hello', status='open'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        post_create_svc = self._make_one()
+        post = post_create_svc.create_with_user(
+            topic.id,
+            user.id,
+            'Hello!',
+            True,
+            '127.0.0.1')
+        self.assertEqual(post.ident, 'fooident')
+        self.assertEqual(post.ident_type, 'ident_admin')
+
+    def test_create_with_user_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..models import User
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        post_create_svc = self._make_one()
+        with self.assertRaises(NoResultFound):
+            post_create_svc.create_with_user(
+                -1,
+                user.id,
+                'Hello!',
+                True,
+                '127.0.0.1')
+
+    def test_create_with_user_not_found_user(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..models import Board, Topic, TopicMeta
+        board = self._make(Board(slug='foo', title='Foo'))
+        topic = self._make(Topic(board=board, title='Hello', status='open'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        post_create_svc = self._make_one()
+        with self.assertRaises(NoResultFound):
+            post_create_svc.create_with_user(
+                topic.id,
+                -1,
+                'Hello!',
+                True,
+                '127.0.0.1')
+
+    def test_create_with_user_topic_limit(self):
+        from ..models import Board, Topic, TopicMeta, User
+        board = self._make(Board(
+            slug='foo',
+            title='Foo',
+            settings={'max_posts': 10}))
+        topic = self._make(Topic(board=board, title='Hello', status='open'))
+        self._make(TopicMeta(topic=topic, post_count=9))
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        self.assertEqual(topic.status, 'open')
+        post_create_svc = self._make_one()
+        post = post_create_svc.create_with_user(
+            topic.id,
+            user.id,
+            'Hello!',
+            True,
+            '127.0.0.1')
+        topic = self.dbsession.query(Topic).get(topic.id)
+        topic_meta = self.dbsession.query(TopicMeta).get(topic.id)
+        self.assertEqual(post.number, 10)
+        self.assertEqual(topic_meta.post_count, 10)
+        self.assertEqual(topic.status, 'archived')
+
+    def test_create_with_user_topic_locked(self):
+        from ..models import Board, Topic, TopicMeta, User
+        board = self._make(Board(slug='foo', title='Foo'))
+        topic = self._make(Topic(board=board, title='Hello', status='locked'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        post_create_svc = self._make_one()
+        post = post_create_svc.create_with_user(
+            topic.id,
+            user.id,
+            'Hello!',
+            True,
+            '127.0.0.1')
+        self.assertEqual(post.number, 1)
+
+    def test_create_with_user_topic_archived(self):
+        from ..errors import StatusRejectedError
+        from ..models import Board, Topic, TopicMeta, User
+        board = self._make(Board(slug='foo', title='Foo'))
+        topic = self._make(Topic(
+            board=board,
+            title='Hello',
+            status='archived'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        post_create_svc = self._make_one()
+        with self.assertRaises(StatusRejectedError):
+            post_create_svc.create_with_user(
+                topic.id,
+                user.id,
+                'Hello!',
+                True,
+                '127.0.0.1')
+
+    def test_create_with_user_board_restricted(self):
+        from ..models import Board, Topic, TopicMeta, User
+        board = self._make(Board(slug='foo', title='Foo', status='restricted'))
+        topic = self._make(Topic(board=board, title='Hello', status='open'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        post_create_svc = self._make_one()
+        post = post_create_svc.create_with_user(
+            topic.id,
+            user.id,
+            'Hello!',
+            True,
+            '127.0.0.1')
+        self.assertEqual(post.number, 1)
+
+    def test_create_with_user_board_locked(self):
+        from ..models import Board, Topic, TopicMeta, User
+        board = self._make(Board(slug='foo', title='Foo', status='locked'))
+        topic = self._make(Topic(board=board, title='Hello', status='open'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        post_create_svc = self._make_one()
+        post = post_create_svc.create_with_user(
+            topic.id,
+            user.id,
+            'Hello!',
+            True,
+            '127.0.0.1')
+        self.assertEqual(post.number, 1)
+
+    def test_create_with_user_board_archived(self):
+        from ..errors import StatusRejectedError
+        from ..models import Board, Topic, TopicMeta, User
+        board = self._make(Board(slug='foo', title='Foo', status='archived'))
+        topic = self._make(Topic(board=board, title='Hello', status='open'))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        post_create_svc = self._make_one()
+        with self.assertRaises(StatusRejectedError):
+            post_create_svc.create_with_user(
+                topic.id,
+                user.id,
+                'Hello!',
+                True,
+                '127.0.0.1')
+
+
+class TestPostDeleteService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import PostDeleteService
+        return PostDeleteService
+
+    def test_delete_from_topic_id(self):
+        from sqlalchemy import inspect
+        from ..models import Board, Topic, TopicMeta, Post
+        board = self._make(Board(slug='foo', title='Foobar'))
+        topic = self._make(Topic(board=board, title='Foobar Baz'))
+        self._make(TopicMeta(topic=topic, post_count=2))
+        post1 = self._make(Post(
+            topic=topic,
+            number=1,
+            name='Nameless Foobar',
+            body='Foobar Baz',
+            ip_address='127.0.0.1'))
+        post2 = self._make(Post(
+            topic=topic,
+            number=2,
+            name='Nameless Foobar',
+            body='Second Post',
+            ip_address='127.0.0.1'))
+        post3 = self._make(Post(
+            topic=topic,
+            number=3,
+            name='Nameless Foobar',
+            body='Third time the charm',
+            ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        post_delete_svc = self._get_target_class()(self.dbsession)
+        post_delete_svc.delete_from_topic_id(topic.id, 2)
+        self.dbsession.flush()
+        self.assertFalse(inspect(post1).was_deleted)
+        self.assertTrue(inspect(post2).was_deleted)
+        self.assertFalse(inspect(post3).was_deleted)
+
+    def test_delete_from_topic_id_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..models import Board, Topic, TopicMeta, Post
+        board = self._make(Board(slug='foo', title='Foobar'))
+        topic = self._make(Topic(board=board, title='Foobar Baz'))
+        self._make(TopicMeta(topic=topic, post_count=2))
+        self._make(Post(
+            topic=topic,
+            number=1,
+            name='Nameless Foobar',
+            body='Foobar Baz',
+            ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        post_delete_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            post_delete_svc.delete_from_topic_id(topic.id, 2)
+
+    def test_delete_from_topic_id_not_found_topic(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        post_delete_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            post_delete_svc.delete_from_topic_id(-1, 1)
 
 
 class TestPostQueryService(ModelSessionMixin, unittest.TestCase):
@@ -1830,6 +2179,8 @@ class TestTopicCreateService(ModelSessionMixin, unittest.TestCase):
         return TopicCreateService
 
     def _make_one(self):
+        from ..services import UserQueryService
+
         class _DummyIdentityService(object):
             def identity_for(self, **kwargs):
                 return ','.join(
@@ -1842,7 +2193,8 @@ class TestTopicCreateService(ModelSessionMixin, unittest.TestCase):
         return self._get_target_class()(
             self.dbsession,
             _DummyIdentityService(),
-            _DummySettingQueryService())
+            _DummySettingQueryService(),
+            UserQueryService(self.dbsession))
 
     def test_create(self):
         from datetime import datetime
@@ -1890,6 +2242,16 @@ class TestTopicCreateService(ModelSessionMixin, unittest.TestCase):
         self.assertIsNone(topic.posts[0].ident)
         self.assertEqual(topic.posts[0].ident_type, 'none')
 
+    def test_create_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        topic_create_svc = self._make_one()
+        with self.assertRaises(NoResultFound):
+            topic_create_svc.create(
+                'notexists',
+                'Hello, world!',
+                'Hello Eartians',
+                '127.0.0.1')
+
     def test_create_board_restricted(self):
         from ..errors import StatusRejectedError
         from ..models import Board
@@ -1928,6 +2290,222 @@ class TestTopicCreateService(ModelSessionMixin, unittest.TestCase):
                 'Hello, world!',
                 'Hello Eartians',
                 '127.0.0.1')
+
+    def test_create_with_user(self):
+        from ..models import Board, User
+        board = self._make(Board(
+            slug='foo',
+            title='Foo',
+            settings={'name': 'Nameless Foobar'}))
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        topic_create_svc = self._make_one()
+        topic = topic_create_svc.create_with_user(
+            board.slug,
+            user.id,
+            'Hello, world!',
+            'Hello Eartians',
+            '127.0.0.1')
+        self.assertEqual(topic.board, board)
+        self.assertEqual(topic.title, 'Hello, world!')
+        self.assertEqual(topic.meta.post_count, 1)
+        self.assertIsNotNone(topic.meta.bumped_at)
+        self.assertEqual(topic.posts[0].number, 1)
+        self.assertEqual(topic.posts[0].bumped, True)
+        self.assertEqual(topic.posts[0].name, 'Root')
+        self.assertEqual(topic.posts[0].ip_address, '127.0.0.1')
+        self.assertEqual(topic.posts[0].ident, 'fooident')
+        self.assertEqual(topic.posts[0].ident_type, 'ident_admin')
+
+    def test_create_with_user_without_ident(self):
+        from ..models import Board, User
+        board = self._make(Board(
+            slug='foo',
+            title='Foo',
+            settings={
+                'name': 'Nameless Foobar',
+                'use_ident': False}))
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        topic_create_svc = self._make_one()
+        topic = topic_create_svc.create_with_user(
+            board.slug,
+            user.id,
+            'Hello, world!',
+            'Hello Eartians',
+            '127.0.0.1')
+        self.assertEqual(topic.posts[0].ident, 'fooident')
+        self.assertEqual(topic.posts[0].ident_type, 'ident_admin')
+
+    def test_create_with_user_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..models import User
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        topic_create_svc = self._make_one()
+        with self.assertRaises(NoResultFound):
+            topic_create_svc.create_with_user(
+                'notexists',
+                user.id,
+                'Hello, world!',
+                'Hello Eartians',
+                '127.0.0.1')
+
+    def test_create_with_user_not_found_user(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..models import Board
+        board = self._make(Board(
+            slug='foo',
+            title='Foo',
+            settings={
+                'name': 'Nameless Foobar',
+                'use_ident': False}))
+        self.dbsession.commit()
+        topic_create_svc = self._make_one()
+        with self.assertRaises(NoResultFound):
+            topic_create_svc.create_with_user(
+                board.slug,
+                -1,
+                'Hello, world!',
+                'Hello Eartians',
+                '127.0.0.1')
+
+    def test_create_with_user_board_restricted(self):
+        from ..models import Board, User
+        board = self._make(Board(
+            slug='foo',
+            title='Foo',
+            status='restricted'))
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        topic_create_svc = self._make_one()
+        topic = topic_create_svc.create_with_user(
+                board.slug,
+                user.id,
+                'Hello, world!',
+                'Hello Eartians',
+                '127.0.0.1')
+        self.assertEqual(topic.board, board)
+        self.assertEqual(topic.title, 'Hello, world!')
+        self.assertEqual(topic.meta.post_count, 1)
+
+    def test_create_with_user_board_locked(self):
+        from ..models import Board, User
+        board = self._make(Board(
+            slug='foo',
+            title='Foo',
+            status='locked'))
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        topic_create_svc = self._make_one()
+        topic = topic_create_svc.create_with_user(
+            board.slug,
+            user.id,
+            'Hello, world!',
+            'Hello Eartians',
+            '127.0.0.1')
+        self.assertEqual(topic.board, board)
+        self.assertEqual(topic.title, 'Hello, world!')
+        self.assertEqual(topic.meta.post_count, 1)
+
+    def test_create_with_user_board_archived(self):
+        from ..errors import StatusRejectedError
+        from ..models import Board, User
+        board = self._make(Board(
+            slug='foo',
+            title='Foo',
+            status='archived'))
+        user = self._make(User(
+            username='root',
+            encrypted_password='foobar',
+            ident='fooident',
+            ident_type='ident_admin',
+            name='Root'))
+        self.dbsession.commit()
+        topic_create_svc = self._make_one()
+        with self.assertRaises(StatusRejectedError):
+            topic_create_svc.create_with_user(
+                board.slug,
+                user.id,
+                'Hello, world!',
+                'Hello Eartians',
+                '127.0.0.1')
+
+
+class TestTopicDeleteService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import TopicDeleteService
+        return TopicDeleteService
+
+    def test_delete(self):
+        from sqlalchemy import inspect
+        from ..models import Board, Topic, TopicMeta, Post
+        board = self._make(Board(slug='foo', title='Foobar'))
+        topic1 = self._make(Topic(board=board, title='Foobar Baz'))
+        topic2 = self._make(Topic(board=board, title='Baz Bax'))
+        topic_meta1 = self._make(TopicMeta(topic=topic1, post_count=2))
+        topic_meta2 = self._make(TopicMeta(topic=topic2, post_count=1))
+        post1 = self._make(Post(
+            topic=topic1,
+            number=1,
+            name='Nameless Foobar',
+            body='Body',
+            ip_address='127.0.0.1'))
+        post2 = self._make(Post(
+            topic=topic1,
+            number=2,
+            name='Nameless Foobar',
+            body='Foobar',
+            ip_address='127.0.0.1'))
+        post3 = self._make(Post(
+            topic=topic2,
+            number=1,
+            name='Nameless Foobar',
+            body='Hi',
+            ip_address='127.0.0.1'))
+        self.dbsession.commit()
+        topic_delete_svc = self._get_target_class()(self.dbsession)
+        topic_delete_svc.delete(topic1.id)
+        self.dbsession.flush()
+        self.assertTrue(inspect(topic1).was_deleted)
+        self.assertFalse(inspect(topic2).was_deleted)
+        self.assertTrue(inspect(topic_meta1).was_deleted)
+        self.assertFalse(inspect(topic_meta2).was_deleted)
+        self.assertTrue(inspect(post1).was_deleted)
+        self.assertTrue(inspect(post2).was_deleted)
+        self.assertFalse(inspect(post3).was_deleted)
+
+    def test_delete_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        topic_delete_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            topic_delete_svc.delete(-1)
 
 
 class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
@@ -2108,6 +2686,31 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
         topic_query_svc = self._get_target_class()(self.dbsession)
         with self.assertRaises(NoResultFound):
             topic_query_svc.topic_from_id(-1)
+
+
+class TestTopicUpdateService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import TopicUpdateService
+        return TopicUpdateService
+
+    def test_update(self):
+        from ..models import Board, Topic
+        board = self._make(Board(slug='foo', title='Foobar'))
+        topic = self._make(Topic(
+            board=board,
+            title='Foobar Baz',
+            status='open'))
+        self.dbsession.commit()
+        topic_update_svc = self._get_target_class()(self.dbsession)
+        topic_update_svc.update(topic.id, status='locked')
+        self.assertEqual(topic.status, 'locked')
+
+    def test_update_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        topic_update_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            topic_update_svc.update(-1, status='locked')
 
 
 class TestUserCreateService(ModelSessionMixin, unittest.TestCase):
@@ -2649,3 +3252,29 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         user_login_svc = self._get_target_class()(self.dbsession)
         with self.assertRaises(NoResultFound):
             user_login_svc.token_for('foo', '127.0.0.1')
+
+
+class TestUserQueryService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import UserQueryService
+        return UserQueryService
+
+    def test_user_from_id(self):
+        from ..models import User
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            ident='foo',
+            name='Nameless User'))
+        self.dbsession.commit()
+        user_query_svc = self._get_target_class()(self.dbsession)
+        self.assertEqual(
+            user_query_svc.user_from_id(user.id),
+            user)
+
+    def test_user_from_id_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        user_query_svc = self._get_target_class()(self.dbsession)
+        with self.assertRaises(NoResultFound):
+            user_query_svc.user_from_id(-1)

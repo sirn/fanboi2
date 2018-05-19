@@ -2,6 +2,7 @@ import json
 
 from pyramid.csrf import check_csrf_token
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPForbidden
+from pyramid.renderers import render_to_response
 from pyramid.security import remember, forget, authenticated_userid
 from sqlalchemy.orm.exc import NoResultFound
 from webob.multidict import MultiDict
@@ -17,7 +18,10 @@ from ..forms import \
     AdminPublicPageNewForm,\
     AdminRuleBanForm,\
     AdminSettingForm,\
-    AdminSetupForm
+    AdminSetupForm,\
+    AdminTopicForm,\
+    PostForm,\
+    TopicForm
 from ..interfaces import \
     IBoardCreateService,\
     IBoardQueryService,\
@@ -26,12 +30,18 @@ from ..interfaces import \
     IPageDeleteService,\
     IPageQueryService,\
     IPageUpdateService,\
+    IPostCreateService,\
+    IPostDeleteService,\
+    IPostQueryService,\
     IRuleBanCreateService,\
     IRuleBanQueryService,\
     IRuleBanUpdateService,\
     ISettingQueryService,\
     ISettingUpdateService,\
+    ITopicCreateService,\
+    ITopicDeleteService,\
     ITopicQueryService,\
+    ITopicUpdateService,\
     IUserCreateService,\
     IUserLoginService
 
@@ -51,9 +61,8 @@ def login_get(request):
             location=request.route_path(
                 route_name='admin_setup'))
 
-    form = AdminLoginForm(request=request)
     return {
-        'form': form
+        'form': AdminLoginForm(request=request),
     }
 
 
@@ -109,9 +118,8 @@ def setup_get(request):
     if not _setup_required(None, request):
         raise HTTPNotFound()
 
-    form = AdminSetupForm(request=request)
     return {
-        'form': form
+        'form': AdminSetupForm(request=request),
     }
 
 
@@ -150,24 +158,21 @@ def dashboard_get(request):
 
 def bans_get(request):
     rule_ban_query_svc = request.find_service(IRuleBanQueryService)
-    bans = rule_ban_query_svc.list_active()
     return {
-        'bans': bans
+        'bans': rule_ban_query_svc.list_active(),
     }
 
 
 def bans_inactive_get(request):
     rule_ban_query_svc = request.find_service(IRuleBanQueryService)
-    bans = rule_ban_query_svc.list_inactive()
     return {
-        'bans': bans
+        'bans': rule_ban_query_svc.list_inactive(),
     }
 
 
 def ban_new_get(request):
-    form = AdminRuleBanForm(request=request)
     return {
-        'form': form
+        'form': AdminRuleBanForm(request=request),
     }
 
 
@@ -202,9 +207,8 @@ def ban_new_post(request):
 def ban_get(request):
     rule_ban_query_svc = request.find_service(IRuleBanQueryService)
     rule_ban_id = request.matchdict['ban']
-    rule_ban = rule_ban_query_svc.rule_ban_from_id(rule_ban_id)
     return {
-        'ban': rule_ban
+        'ban': rule_ban_query_svc.rule_ban_from_id(rule_ban_id),
     }
 
 
@@ -212,10 +216,9 @@ def ban_edit_get(request):
     rule_ban_query_svc = request.find_service(IRuleBanQueryService)
     rule_ban_id = request.matchdict['ban']
     rule_ban = rule_ban_query_svc.rule_ban_from_id(rule_ban_id)
-    form = AdminRuleBanForm(obj=rule_ban, request=request)
     return {
         'ban': rule_ban,
-        'form': form
+        'form': AdminRuleBanForm(obj=rule_ban, request=request),
     }
 
 
@@ -249,9 +252,8 @@ def ban_edit_post(request):
 
 def boards_get(request):
     board_query_svc = request.find_service(IBoardQueryService)
-    boards = board_query_svc.list_all()
     return {
-        'boards': boards
+        'boards': board_query_svc.list_all(),
     }
 
 
@@ -262,7 +264,7 @@ def board_new_get(request):
         indent=4,
         sort_keys=True)
     return {
-        'form': form
+        'form': form,
     }
 
 
@@ -273,7 +275,7 @@ def board_new_post(request):
     if not form.validate():
         request.response.status = '400 Bad Request'
         return {
-            'form': form
+            'form': form,
         }
 
     board_create_svc = request.find_service(IBoardCreateService)
@@ -294,9 +296,8 @@ def board_new_post(request):
 def board_get(request):
     board_query_svc = request.find_service(IBoardQueryService)
     board_slug = request.matchdict['board']
-    board = board_query_svc.board_from_slug(board_slug)
     return {
-        'board': board,
+        'board': board_query_svc.board_from_slug(board_slug),
     }
 
 
@@ -341,60 +342,317 @@ def board_edit_post(request):
             board=board.slug))
 
 
-def topics_get(request):
+def board_topics_get(request):
+    board_query_svc = request.find_service(IBoardQueryService)
     topic_query_svc = request.find_service(ITopicQueryService)
-    topics = topic_query_svc.list_recent()
+    board_slug = request.matchdict['board']
     return {
-        'topics': topics
+        'board': board_query_svc.board_from_slug(board_slug),
+        'topics': topic_query_svc.list_from_board_slug(board_slug),
     }
 
 
-def topic_new_get(request):
-    return {}
+def board_topic_new_get(request):
+    board_query_svc = request.find_service(IBoardQueryService)
+    user_login_svc = request.find_service(IUserLoginService)
+    board_slug = request.matchdict['board']
+    return {
+        'user': user_login_svc.user_from_token(
+            request.authenticated_userid,
+            request.client_addr),
+        'board': board_query_svc.board_from_slug(board_slug),
+        'form': TopicForm(request=request),
+    }
 
 
-def topic_new_post(request):
+def board_topic_new_post(request):
     check_csrf_token(request)
-    return {}
+
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
+
+    user_login_svc = request.find_service(IUserLoginService)
+    user_ip_address = request.client_addr
+    user = user_login_svc.user_from_token(
+        request.authenticated_userid,
+        user_ip_address)
+
+    form = TopicForm(request.POST, request=request)
+    if not form.validate():
+        request.response.status = '400 Bad Request'
+        return {
+            'board': board,
+            'user': user,
+            'form': form,
+        }
+
+    topic_create_svc = request.find_service(ITopicCreateService)
+    topic = topic_create_svc.create_with_user(
+        board.slug,
+        user.id,
+        form.title.data,
+        form.body.data,
+        user_ip_address)
+
+    dbsession = request.find_service(name='db')
+    dbsession.flush()
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_board_topic',
+            board=board.slug,
+            topic=topic.id))
 
 
-def topic_get(request):
-    return {}
+def board_topic_get(request):
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
+
+    topic_query_svc = request.find_service(ITopicQueryService)
+    topic_id = request.matchdict['topic']
+    topic = topic_query_svc.topic_from_id(topic_id)
+    if topic.board_id != board.id:
+        raise HTTPNotFound(request.path)
+
+    post_query_svc = request.find_service(IPostQueryService)
+    query = None
+    if 'query' in request.matchdict:
+        query = request.matchdict['query']
+
+    posts = post_query_svc.list_from_topic_id(topic_id, query)
+    if not posts:
+        raise HTTPNotFound(request.path)
+
+    user_login_svc = request.find_service(IUserLoginService)
+    return {
+        'board': board,
+        'topic': topic,
+        'posts': posts,
+        'user': user_login_svc.user_from_token(
+            request.authenticated_userid,
+            request.client_addr),
+        'form': PostForm(request=request),
+    }
 
 
-def topic_post(request):
+def board_topic_post(request):
     check_csrf_token(request)
-    return {}
+
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
+
+    topic_query_svc = request.find_service(ITopicQueryService)
+    topic_id = request.matchdict['topic']
+    topic = topic_query_svc.topic_from_id(topic_id)
+    if topic.board_id != board.id:
+        raise HTTPNotFound(request.path)
+
+    user_login_svc = request.find_service(IUserLoginService)
+    user_ip_address = request.client_addr
+    user = user_login_svc.user_from_token(
+        request.authenticated_userid,
+        user_ip_address)
+
+    form = PostForm(request.POST, request=request)
+    if not form.validate():
+        request.response.status = '400 Bad Request'
+        return {
+            'board': board,
+            'topic': topic,
+            'user': user,
+            'form': form,
+        }
+
+    post_create_svc = request.find_service(IPostCreateService)
+    post_create_svc.create_with_user(
+        topic.id,
+        user.id,
+        form.body.data,
+        form.bumped.data,
+        user_ip_address)
+
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_board_topic_posts',
+            board=board.slug,
+            topic=topic.id,
+            query='recent'))
 
 
-def topic_delete_post(request):
+def board_topic_edit_get(request):
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
+
+    topic_query_svc = request.find_service(ITopicQueryService)
+    topic_id = request.matchdict['topic']
+    topic = topic_query_svc.topic_from_id(topic_id)
+    if topic.board_id != board.id:
+        raise HTTPNotFound(request.path)
+
+    return {
+        'board': board,
+        'topic': topic,
+        'form': AdminTopicForm(obj=topic, request=request),
+    }
+
+
+def board_topic_edit_post(request):
     check_csrf_token(request)
-    return {}
+
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
+
+    topic_query_svc = request.find_service(ITopicQueryService)
+    topic_id = request.matchdict['topic']
+    topic = topic_query_svc.topic_from_id(topic_id)
+    if topic.board_id != board.id:
+        raise HTTPNotFound(request.path)
+
+    form = AdminTopicForm(request.POST, obj=topic, request=request)
+    if not form.validate():
+        request.response.status = '400 Bad Request'
+        return {
+            'board': board,
+            'topic': topic,
+            'form': form,
+        }
+
+    topic_update_svc = request.find_service(ITopicUpdateService)
+    topic_update_svc.update(
+        topic.id,
+        status=form.status.data)
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_board_topic_posts',
+            board=board.slug,
+            topic=topic.id,
+            query='recent'))
 
 
-def topic_post_get(request):
-    return {}
+def board_topic_delete_get(request):
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
+
+    topic_query_svc = request.find_service(ITopicQueryService)
+    topic_id = request.matchdict['topic']
+    topic = topic_query_svc.topic_from_id(topic_id)
+    if topic.board_id != board.id:
+        raise HTTPNotFound(request.path)
+
+    return {
+        'board': board,
+        'topic': topic,
+    }
 
 
-def topic_post_delete_post(request):
+def board_topic_delete_post(request):
     check_csrf_token(request)
-    return {}
+
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
+
+    topic_query_svc = request.find_service(ITopicQueryService)
+    topic_id = request.matchdict['topic']
+    topic = topic_query_svc.topic_from_id(topic_id)
+    if topic.board_id != board.id:
+        raise HTTPNotFound(request.path)
+
+    topic_delete_svc = request.find_service(ITopicDeleteService)
+    topic_delete_svc.delete(topic_id)
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_board_topics',
+            board=board.slug))
+
+
+def board_topic_posts_delete_get(request):
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
+
+    topic_query_svc = request.find_service(ITopicQueryService)
+    topic_id = request.matchdict['topic']
+    topic = topic_query_svc.topic_from_id(topic_id)
+    if topic.board_id != board.id:
+        raise HTTPNotFound(request.path)
+
+    post_query_svc = request.find_service(IPostQueryService)
+    query = None
+    if 'query' in request.matchdict:
+        query = request.matchdict['query']
+
+    posts = post_query_svc.list_from_topic_id(topic_id, query)
+    if not posts:
+        raise HTTPNotFound(request.path)
+
+    if posts[0].number == 1:
+        return render_to_response(
+            'admin/boards/topics/posts/delete_error.mako', {
+                'board': board,
+                'topic': topic,
+                'posts': posts,
+                'query': query},
+            request=request)
+
+    return {
+        'board': board,
+        'topic': topic,
+        'posts': posts,
+        'query': query,
+    }
+
+
+def board_topic_posts_delete_post(request):
+    check_csrf_token(request)
+
+    board_query_svc = request.find_service(IBoardQueryService)
+    board_slug = request.matchdict['board']
+    board = board_query_svc.board_from_slug(board_slug)
+
+    topic_query_svc = request.find_service(ITopicQueryService)
+    topic_id = request.matchdict['topic']
+    topic = topic_query_svc.topic_from_id(topic_id)
+    if topic.board_id != board.id:
+        raise HTTPNotFound(request.path)
+
+    post_query_svc = request.find_service(IPostQueryService)
+    query = None
+    if 'query' in request.matchdict:
+        query = request.matchdict['query']
+
+    posts = post_query_svc.list_from_topic_id(topic_id, query)
+    if not posts or posts[0].number == 1:
+        raise HTTPNotFound(request.path)
+
+    post_delete_svc = request.find_service(IPostDeleteService)
+    for post in posts:
+        post_delete_svc.delete_from_topic_id(post.topic_id, post.number)
+
+    return HTTPFound(
+        location=request.route_path(
+            route_name='admin_board_topic_posts',
+            board=board.slug,
+            topic=topic.id,
+            query='recent'))
 
 
 def pages_get(request):
     page_query_svc = request.find_service(IPageQueryService)
-    pages = page_query_svc.list_public()
-    pages_internal = page_query_svc.list_internal()
     return {
-        'pages': pages,
-        'pages_internal': pages_internal,
+        'pages': page_query_svc.list_public(),
+        'pages_internal': page_query_svc.list_internal(),
     }
 
 
 def page_new_get(request):
-    form = AdminPublicPageNewForm(request=request)
     return {
-        'form': form
+        'form': AdminPublicPageNewForm(request=request),
     }
 
 
@@ -423,9 +681,8 @@ def page_new_post(request):
 def page_get(request):
     page_query_svc = request.find_service(IPageQueryService)
     page_slug = request.matchdict['page']
-    page = page_query_svc.public_page_from_slug(page_slug)
     return {
-        'page': page
+        'page': page_query_svc.public_page_from_slug(page_slug),
     }
 
 
@@ -433,10 +690,9 @@ def page_edit_get(request):
     page_query_svc = request.find_service(IPageQueryService)
     page_slug = request.matchdict['page']
     page = page_query_svc.public_page_from_slug(page_slug)
-    form = AdminPublicPageForm(obj=page, request=request)
     return {
         'page': page,
-        'form': form,
+        'form': AdminPublicPageForm(obj=page, request=request),
     }
 
 
@@ -451,7 +707,7 @@ def page_edit_post(request):
         request.response.status = '400 Bad Request'
         return {
             'page': page,
-            'form': form
+            'form': form,
         }
 
     page_update_svc = request.find_service(IPageUpdateService)
@@ -567,9 +823,8 @@ def page_internal_delete_post(request):
 
 def settings_get(request):
     setting_query_svc = request.find_service(ISettingQueryService)
-    settings = setting_query_svc.list_all()
     return {
-        'settings': settings,
+        'settings': setting_query_svc.list_all(),
     }
 
 
@@ -760,6 +1015,23 @@ def includeme(config):  # pragma: no cover
     config.add_route('admin_board_new', '/boards/new/')
     config.add_route('admin_board', '/boards/{board}/')
     config.add_route('admin_board_edit', '/boards/{board}/edit/')
+    config.add_route('admin_board_topics', '/boards/{board}/topics/')
+    config.add_route('admin_board_topic_new', '/boards/{board}/topics/new/')
+    config.add_route(
+        'admin_board_topic',
+        '/boards/{board}/{topic:\d+}/')
+    config.add_route(
+        'admin_board_topic_edit',
+        '/boards/{board}/{topic:\d+}/edit/')
+    config.add_route(
+        'admin_board_topic_delete',
+        '/boards/{board}/{topic:\d+}/delete/')
+    config.add_route(
+        'admin_board_topic_posts_delete',
+        '/boards/{board}/{topic:\d+}/{query}/delete/')
+    config.add_route(
+        'admin_board_topic_posts',
+        '/boards/{board}/{topic:\d+}/{query}/')
 
     config.add_view(
         boards_get,
@@ -803,71 +1075,86 @@ def includeme(config):  # pragma: no cover
         renderer='admin/boards/edit.mako',
         permission='manage')
 
-    #
-    # Topics
-    #
-
-    config.add_route('admin_topics', '/topics/')
-    config.add_route('admin_topic_new', '/topics/new/')
-    config.add_route('admin_topic', '/topics/{topic:\d+}/')
-    config.add_route('admin_topic_delete', '/topics/{topic:\d+}/delete/')
-    config.add_route('admin_topic_post', '/topics/{topic:\d+}/{post:\d+}/')
-    config.add_route(
-        'admin_topic_post_delete',
-        '/topics/{topic:\d+}/{post:\d+}/delete/')
-
     config.add_view(
-        topics_get,
+        board_topics_get,
         request_method='GET',
-        route_name='admin_topics',
-        renderer='admin/topics/all.mako',
+        route_name='admin_board_topics',
+        renderer='admin/boards/topics/all.mako',
         permission='manage')
 
     config.add_view(
-        topic_new_get,
+        board_topic_new_get,
         request_method='GET',
-        route_name='admin_topic_new',
-        renderer='admin/topics/new.mako',
+        route_name='admin_board_topic_new',
+        renderer='admin/boards/topics/new.mako',
         permission='manage')
 
     config.add_view(
-        topic_new_post,
+        board_topic_new_post,
         request_method='POST',
-        route_name='admin_topic_new',
-        renderer='admin/topics/new.mako',
+        route_name='admin_board_topic_new',
+        renderer='admin/boards/topics/new.mako',
         permission='manage')
 
     config.add_view(
-        topic_get,
+        board_topic_get,
         request_method='GET',
-        route_name='admin_topic',
-        renderer='admin/topics/show.mako',
+        route_name='admin_board_topic',
+        renderer='admin/boards/topics/show.mako',
         permission='manage')
 
     config.add_view(
-        topic_post,
+        board_topic_post,
         request_method='POST',
-        route_name='admin_topic',
-        renderer='admin/topics/show.mako',
+        route_name='admin_board_topic',
+        renderer='admin/boards/topics/show.mako',
         permission='manage')
 
     config.add_view(
-        topic_delete_post,
-        request_method='POST',
-        route_name='admin_topic_delete',
-        permission='manage')
-
-    config.add_view(
-        topic_post_get,
+        board_topic_edit_get,
         request_method='GET',
-        route_name='admin_topic_post',
-        renderer='admin/topics/post.mako',
+        route_name='admin_board_topic_edit',
+        renderer='admin/boards/topics/edit.mako',
         permission='manage')
 
     config.add_view(
-        topic_post_delete_post,
+        board_topic_edit_post,
         request_method='POST',
-        route_name='admin_topic_post_delete',
+        route_name='admin_board_topic_edit',
+        renderer='admin/boards/topics/edit.mako',
+        permission='manage')
+
+    config.add_view(
+        board_topic_delete_get,
+        request_method='GET',
+        route_name='admin_board_topic_delete',
+        renderer='admin/boards/topics/delete.mako',
+        permission='manage')
+
+    config.add_view(
+        board_topic_delete_post,
+        request_method='POST',
+        route_name='admin_board_topic_delete',
+        permission='manage')
+
+    config.add_view(
+        board_topic_posts_delete_get,
+        request_method='GET',
+        route_name='admin_board_topic_posts_delete',
+        renderer='admin/boards/topics/posts/delete.mako',
+        permission='manage')
+
+    config.add_view(
+        board_topic_posts_delete_post,
+        request_method='POST',
+        route_name='admin_board_topic_posts_delete',
+        permission='manage')
+
+    config.add_view(
+        board_topic_get,
+        request_method='GET',
+        route_name='admin_board_topic_posts',
+        renderer='admin/boards/topics/show.mako',
         permission='manage')
 
     #

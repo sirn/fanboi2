@@ -666,3 +666,28 @@ class TestAdminPublicPageNewForm(_FormMixin, unittest.TestCase):
         self.assertListEqual(
             form.title.errors,
             ['This field is required.'])
+
+
+class TestAdminTopicForm(_FormMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..forms import AdminTopicForm
+        return AdminTopicForm
+
+    def test_validated(self):
+        form = self._make_one({'status': 'open'})
+        self.assertTrue(form.validate())
+
+    def test_status_missing(self):
+        form = self._make_one({})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.status.errors,
+            ['Not a valid choice'])
+
+    def test_status_not_allowed(self):
+        form = self._make_one({'status': 'foobar'})
+        self.assertFalse(form.validate())
+        self.assertListEqual(
+            form.status.errors,
+            ['Not a valid choice'])

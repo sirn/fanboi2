@@ -1,4 +1,5 @@
 @import "../../app/stylesheets/variables";
+@import "../../app/stylesheets/mixins";
 
 /* Admin table
  * ------------------------------------------------------------------------ */
@@ -93,12 +94,18 @@
     @media (min-width: $bound-tablet) {
         padding: $spacing-vertical-small $spacing-horizontal;
     }
+
+    &.small {
+        font-size: $font-size-small;
+        line-height: $line-height-content;
+    }
 }
 
 .admin-cascade-body {
     font-size: $font-size;
     line-height: $line-height-content;
     padding: $spacing-vertical-small $spacing-horizontal-small;
+    overflow-x: auto;
 
     @media (min-width: $bound-tablet) {
         padding: $spacing-vertical-small $spacing-horizontal;
@@ -109,10 +116,94 @@
     }
 }
 
+.admin-cascade-footer {
+    font-size: $font-size;
+    line-height: $line-height-content;
+    border-top: 1px solid;
+    padding: $spacing-vertical-small $spacing-horizontal-small;
+
+    @media (min-width: $bound-tablet) {
+        padding: $spacing-vertical-small $spacing-horizontal;
+    }
+}
+
+/* Admin post
+ * ------------------------------------------------------------------------ */
+
+.admin-post-body {
+    p.thumbnails {
+        @include clearfix();
+        margin: $spacing-vertical-small 0 0;
+    }
+
+    a.thumbnail {
+        display: block;
+        float: left;
+        height: 90px;
+        margin: 0 $spacing-horizontal-smaller $spacing-vertical-smaller 0;
+        overflow: hidden;
+        position: relative;
+        text-align: center;
+        width: 90px;
+
+        img {
+            left: 50%;
+            max-height: 90px;
+            object-fit: cover;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
+}
+
+.admin-post-info {
+    display: block;
+
+    &.number {
+        border: 1px solid;
+        display: inline-block;
+        font-size: $font-size-small;
+        line-height: $font-size-small;
+        padding: $spacing-vertical-smaller $spacing-horizontal-small;
+        width: auto;
+    }
+
+    &.name {
+        display: inline;
+    }
+
+    &.date {
+    }
+
+    &.ident {
+    }
+
+    &.ip-address {
+    }
+
+    @media (min-width: $bound-tablet) {
+        display: inline;
+        margin: 0 $spacing-horizontal-small 0 0;
+    }
+}
+
 /* Admin embed
  * ------------------------------------------------------------------------ */
 
 .admin-embed {
     margin: 0;
     padding: $spacing-vertical $spacing-horizontal;
+}
+
+/* Admin button
+ * ------------------------------------------------------------------------ */
+
+.admin-button-context {
+    display: inline;
+
+    @media (min-width: $bound-tablet) {
+        display: block;
+        float: right;
+    }
 }
