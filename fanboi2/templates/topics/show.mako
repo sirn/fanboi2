@@ -2,7 +2,8 @@
 <%include file='_subheader.mako' />
 <%inherit file='../partials/_layout.mako' />
 <%def name='title()'>${topic.title} - ${board.title}</%def>
-<%def name='body_args()'>data-topic="${topic.id}"</%def>
+<%def name='body_args()' filter="n">data-topic="${topic.id}"</%def>
+<%def name='header()'><link rel="canonical" href="${request.route_url('topic', board=board.slug, topic=topic.id)}"></%def>
 % if posts:
     % if posts[0].number != 1:
     <div class="topic-subheader">
