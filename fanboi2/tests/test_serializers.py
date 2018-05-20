@@ -296,6 +296,7 @@ class TestJSONRendererWithModel(
         self.assertIn('bumped', response)
         self.assertIn('created_at', response)
         self.assertIn('ident', response)
+        self.assertIn('ident_type', response)
         self.assertIn('name', response)
         self.assertIn('number', response)
         self.assertNotIn('ip_address', response)

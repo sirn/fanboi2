@@ -138,6 +138,18 @@
                             </td>
                         </tr>
                         <tr class="api-table-row">
+                            <th class="api-table-item title">ident_type</th>
+                            <td class="api-table-item type">String</td>
+                            <td class="api-table-item">
+                                <p>The type of the user ident to distinguish user info.</p>
+                                <ul>
+                                    <li><strong>ident</strong> — normal user ident</li>
+                                    <li><strong>ident_admin</strong> — admin ident</li>
+                                </ul>
+                                <pre class="codeblock">"ident_type":"ident"</pre>
+                            </td>
+                        </tr>
+                        <tr class="api-table-row">
                             <th class="api-table-item title">name</th>
                             <td class="api-table-item type">String</td>
                             <td class="api-table-item">
