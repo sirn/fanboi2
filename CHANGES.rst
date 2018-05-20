@@ -1,10 +1,14 @@
-r30
+0.30.0
 ======
 
+- [Add] Admin panel at /admin.
+- [Add] Topic view now has canonical link.
 - [Change] Major refactoring to utilizes `pyramid_services <https://github.com/mmerickel/pyramid_services>`.
 - [Change] Application now uses environment variable as a primary means for configuration.
 - [Change] Switch to use `Pyramid's native CSRF checking <https://docs.pylonsproject.org/projects/pyramid/en/latest/api/csrf.html>`.
 - [Change] Switch to use `PyNaCl <https://github.com/Pylons/pyramid_nacl_session/>`_ for session factory.
+- [Remove] Override rules are now removed as it add unnecessary complexity.
+- [Remove] Country configuration for post filter is now removed in favor for recently seen.
 
 0.10.2
 ------
