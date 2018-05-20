@@ -721,6 +721,14 @@ def page_edit_post(request):
             page=page.slug))
 
 
+def page_delete_get(request):
+    page_query_svc = request.find_service(IPageQueryService)
+    page_slug = request.matchdict['page']
+    return {
+        'page': page_query_svc.public_page_from_slug(page_slug),
+    }
+
+
 def page_delete_post(request):
     check_csrf_token(request)
 
@@ -808,6 +816,20 @@ def page_internal_edit_post(request):
         location=request.route_path(
             route_name='admin_page_internal',
             page=page.slug))
+
+
+def page_internal_delete_get(request):
+    page_query_svc = request.find_service(IPageQueryService)
+    page_slug = request.matchdict['page']
+
+    try:
+        page = page_query_svc.internal_page_from_slug(page_slug)
+    except ValueError:
+        raise HTTPNotFound()
+
+    return {
+        'page': page
+    }
 
 
 def page_internal_delete_post(request):
@@ -1217,6 +1239,13 @@ def includeme(config):  # pragma: no cover
         permission='manage')
 
     config.add_view(
+        page_delete_get,
+        request_method='GET',
+        route_name='admin_page_delete',
+        renderer='admin/pages/delete.mako',
+        permission='manage')
+
+    config.add_view(
         page_delete_post,
         request_method='POST',
         route_name='admin_page_delete',
@@ -1241,6 +1270,13 @@ def includeme(config):  # pragma: no cover
         request_method='POST',
         route_name='admin_page_internal_edit',
         renderer='admin/pages/edit_internal.mako',
+        permission='manage')
+
+    config.add_view(
+        page_internal_delete_get,
+        request_method='GET',
+        route_name='admin_page_internal_delete',
+        renderer='admin/pages/delete_internal.mako',
         permission='manage')
 
     config.add_view(

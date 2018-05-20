@@ -6083,6 +6083,45 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(page.namespace, 'public')
         self.assertEqual(page.formatter, 'markdown')
 
+    def test_page_delete_get(self):
+        from ..interfaces import IPageQueryService
+        from ..models import Page
+        from ..services import PageQueryService
+        from ..views.admin import page_delete_get
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
+        page = self._make(Page(
+            slug='foobar',
+            title='Foobar',
+            body='**Hello**',
+            namespace='public',
+            formatter='markdown'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'foobar'
+        response = page_delete_get(request)
+        self.assertEqual(response['page'], page)
+
+    def test_page_delete_get_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IPageQueryService
+        from ..services import PageQueryService
+        from ..views.admin import page_delete_get
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
+        request = mock_service(self.request, {
+            IPageQueryService: PageQueryService(
+                self.dbsession,
+                cache_region)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'notexists'
+        with self.assertRaises(NoResultFound):
+            page_delete_get(request)
+
     def test_page_delete_post(self):
         from ..interfaces import IPageDeleteService
         from ..models import Page
@@ -6622,6 +6661,85 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
                 'global/foobar',
                 _internal_pages=(('global/foobar', 'html'),)),
             '<em>World</em>')
+
+    def test_page_internal_delete_get(self):
+        from ..interfaces import IPageQueryService
+        from ..models import Page
+        from ..services import PageQueryService
+        from ..views.admin import page_internal_delete_get
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=(('global/foobar', 'html'),))
+
+        page = self._make(Page(
+            slug='global/foobar',
+            title='global/foobar',
+            body='<em>Hello</em>',
+            namespace='internal',
+            formatter='html'))
+        self.dbsession.commit()
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/foobar'
+        response = page_internal_delete_get(request)
+        self.assertEqual(response['page'], page)
+
+    def test_page_internal_delete_get_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IPageQueryService
+        from ..services import PageQueryService
+        from ..views.admin import page_internal_delete_get
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=(('global/notexists', 'none'),))
+
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/notexists'
+        with self.assertRaises(NoResultFound):
+            page_internal_delete_get(request)
+
+    def test_page_internal_delete_get_not_allowed(self):
+        from pyramid.httpexceptions import HTTPNotFound
+        from ..interfaces import IPageQueryService
+        from ..services import PageQueryService
+        from ..views.admin import page_internal_delete_get
+        from . import mock_service, make_cache_region
+        cache_region = make_cache_region({})
+
+        class _WrappedPageQueryService(PageQueryService):
+            def internal_page_from_slug(self, slug):
+                return super(_WrappedPageQueryService, self).\
+                    internal_page_from_slug(
+                        slug,
+                        _internal_pages=tuple())
+
+        request = mock_service(self.request, {
+            IPageQueryService: _WrappedPageQueryService(
+                self.dbsession,
+                cache_region)})
+        request.method = 'GET'
+        request.matchdict['page'] = 'global/foobar'
+        with self.assertRaises(HTTPNotFound):
+            page_internal_delete_get(request)
 
     def test_page_internal_delete_post(self):
         from ..interfaces import IPageDeleteService

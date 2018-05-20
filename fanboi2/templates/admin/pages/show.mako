@@ -48,9 +48,6 @@
     </div>
 </div>
 <div class="sheet-body">
-    <form class="form noshade" action="${request.route_path('admin_page_delete', page=page.slug)}" method="post">
-        <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
-        <a class="button brand" href="${request.route_path('admin_page_edit', page=page.slug)}">Edit Public Page</a>
-        <button class="button default" type="submit">Delete Public Page</button>
-    </form>
+    <a class="button brand" href="${request.route_path('admin_page_edit', page=page.slug)}">Edit Public Page</a>
+    <a class="button default" href="${request.route_path('admin_page_delete', page=page.slug)}">Delete Public Page</a>
 </div>
