@@ -397,6 +397,12 @@
         &.date {
             font-weight: normal;
         }
+
+        &.ident-admin {
+            background-color: $color-gray-dark;
+            color: $color-brand;
+        }
+
     }
 
     .post-body {

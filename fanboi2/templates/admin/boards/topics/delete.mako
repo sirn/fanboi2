@@ -1,4 +1,4 @@
-<%namespace name='formatters' module='fanboi2.helpers.formatters' />
+<%namespace name='datetime' file='../../../partials/_datetime.mako' />
 <%inherit file='../../_layout.mako' />
 <%def name='title()'>${board.title} - Admin Panel</%def>
 <%def name='subheader_title()'>Topics</%def>
@@ -27,7 +27,7 @@
             <tr class="admin-table-row">
                 <th class="admin-table-item title lead">Last posted</th>
                 <td class="admin-table-item">
-                    ${formatters.format_datetime(request, topic.meta.posted_at)}
+                    ${datetime.render_datetime(topic.meta.posted_at)}
                 </td>
             </tr>
             <tr class="admin-table-row">

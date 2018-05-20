@@ -30,30 +30,6 @@
 </head>
 <body id="${request.route_name}" class="${formatters.user_theme(request)}"${' ' + self.body_args() if hasattr(self, 'body_args') else ''}>
 
-% if request.session:
-    % for message in request.session.pop_flash():
-    <header class="noticebar error">
-        <div class="container">
-            <p>${message}</p>
-        </div>
-    </header>
-    % endfor
-    % for message in request.session.pop_flash(queue='error'):
-    <header class="noticebar error">
-        <div class="container">
-            <p>${message}</p>
-        </div>
-    </header>
-    % endfor
-    % for message in request.session.pop_flash(queue='success'):
-    <header class="noticebar success">
-        <div class="container">
-            <p>${message}</p>
-        </div>
-    </header>
-    % endfor
-% endif
-
 <header id="top" class="header" data-board-selector="true">
     <div class="container">
         <h1 class="header-brand"><a href="/">Fanboi Channel</a></h1>

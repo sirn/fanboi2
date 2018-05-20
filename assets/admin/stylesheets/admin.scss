@@ -131,9 +131,15 @@
  * ------------------------------------------------------------------------ */
 
 .admin-post-body {
+    margin: 0 0 (-$spacing-vertical);
+
+    p {
+        margin: 0 0 $spacing-vertical;
+    }
+
     p.thumbnails {
         @include clearfix();
-        margin: $spacing-vertical-small 0 0;
+        margin: 0 0 $spacing-vertical;
     }
 
     a.thumbnail {
@@ -177,6 +183,9 @@
     }
 
     &.ident {
+    }
+
+    &.ident-admin {
     }
 
     &.ip-address {

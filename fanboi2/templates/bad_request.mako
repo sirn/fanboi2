@@ -1,4 +1,3 @@
-<%namespace name='formatters' module='fanboi2.helpers.formatters' />
 <%inherit file='partials/_layout.mako' />
 <%def name='title()'>Bad Request</%def>
 <header class="subheader">

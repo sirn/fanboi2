@@ -1,4 +1,6 @@
 <%namespace name='formatters' module='fanboi2.helpers.formatters' />
+<%namespace name='datetime' file='../../../../partials/_datetime.mako' />
+<%namespace name='ident' file='../../../../partials/_ident.mako' />
 <%inherit file='../../../_layout.mako' />
 <%def name='title()'>${board.title} - Admin Panel</%def>
 <%def name='subheader_title()'>Topics</%def>
@@ -10,7 +12,7 @@
     <div class="admin-cascade-header">
         <span class="admin-post-info number${' bumped' if post.bumped else ''}">${post.number}</a></span>
         <span class="admin-post-info name">${post.name}</span>
-        <time class="admin-post-info date">Posted ${formatters.format_datetime(request, post.created_at)}</time>
+        <time class="admin-post-info date">Posted ${datetime.render_datetime(post.created_at)}</time>
     </div>
     <div class="admin-cascade-body admin-post-body">
         ${formatters.format_post(request, post)}
@@ -18,7 +20,7 @@
     <div class="admin-cascade-footer">
         <span class="admin-post-info ip-address">${post.ip_address}</span>
         % if post.ident:
-            <span class="admin-post-info ident">ID:${post.ident}</span>
+            <span class="admin-post-info ident">ID:${ident.render_ident(post.ident, post.ident_type)}</span>
         % endif
     </div>
 </div>

@@ -1,4 +1,4 @@
-<%namespace name='formatters' module='fanboi2.helpers.formatters' />
+<%namespace name='datetime' file='../../partials/_datetime.mako' />
 <%inherit file='../_layout.mako' />
 <%def name='title()'>Bans - Admin Panel</%def>
 <%def name='subheader_title()'>Bans</%def>
@@ -31,7 +31,7 @@
                 <th class="admin-table-item title lead">Active until</th>
                 <td class="admin-table-item">
                 % if ban.active_until:
-                    ${formatters.format_datetime(request, ban.active_until)}
+                    ${datetime.render_datetime(ban.active_until)}
                     % if ban.duration == 1:
                         (1 day)
                     % else:

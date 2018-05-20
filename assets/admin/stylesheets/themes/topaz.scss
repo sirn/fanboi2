@@ -84,6 +84,11 @@
         &.ident {
         }
 
+        &.ident-admin {
+            font-weight: bold;
+            color: $color-brand;
+        }
+
         &.ip-address {
             font-weight: bold;
         }

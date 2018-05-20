@@ -1,4 +1,4 @@
-<%namespace name='formatters' module='fanboi2.helpers.formatters' />
+<%namespace name='datetime' file='../../partials/_datetime.mako' />
 <%inherit file='../_layout.mako' />
 <%def name='title()'>Pages - Admin Panel</%def>
 <%def name='subheader_title()'>Pages</%def>
@@ -17,7 +17,7 @@
             % for page in pages:
             <tr class="admin-table-row">
                 <th class="admin-table-item title"><a href="${request.route_path('admin_page', page=page.slug)}">${page.slug}</a></th>
-                <td class="admin-table-item">${formatters.format_datetime(request, page.updated_at or page.created_at)}</td>
+                <td class="admin-table-item">${datetime.render_datetime(page.updated_at or page.created_at)}</td>
             </tr>
             % endfor
         </tbody>
@@ -37,7 +37,7 @@
                 <th class="admin-table-item title"><a href="${request.route_path('admin_page_internal', page=page.slug)}">${page.slug}</a></th>
                 <td class="admin-table-item">
                 % if page.created_at or page_updated_at:
-                    ${formatters.format_datetime(request, page.updated_at or page.created_at)}
+                    ${datetime.render_datetime(page.updated_at or page.created_at)}
                 % else:
                     <em>Not created</em>
                 % endif

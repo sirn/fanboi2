@@ -1,4 +1,4 @@
-<%namespace name='formatters' module='fanboi2.helpers.formatters' />
+<%namespace name='datetime' file='../../partials/_datetime.mako' />
 <%inherit file='../_layout.mako' />
 <%def name='title()'>Boards - Admin Panel</%def>
 <%def name='subheader_title()'>Boards</%def>
@@ -29,7 +29,7 @@
                     Archived
                     % endif
                 </td>
-                <td class="admin-table-item">${formatters.format_datetime(request, board.updated_at or board.created_at)}</td>
+                <td class="admin-table-item">${datetime.render_datetime(board.updated_at or board.created_at)}</td>
             </tr>
             % endfor
         </tbody>

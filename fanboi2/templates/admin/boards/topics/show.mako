@@ -1,4 +1,6 @@
 <%namespace name='formatters' module='fanboi2.helpers.formatters' />
+<%namespace name='datetime' file='../../../partials/_datetime.mako' />
+<%namespace name='ident' file='../../../partials/_ident.mako' />
 <%inherit file='../../_layout.mako' />
 <%def name='title()'>${board.title} - Admin Panel</%def>
 <%def name='subheader_title()'>Topics</%def>
@@ -27,7 +29,7 @@
             <tr class="admin-table-row">
                 <th class="admin-table-item title lead">Last posted</th>
                 <td class="admin-table-item">
-                    ${formatters.format_datetime(request, topic.meta.posted_at)}
+                    ${datetime.render_datetime(topic.meta.posted_at)}
                 </td>
             </tr>
             <tr class="admin-table-row">
@@ -60,16 +62,14 @@
         <div class="admin-cascade-header">
             <span class="admin-post-info number${' bumped' if post.bumped else ''}">${post.number}</a></span>
             <span class="admin-post-info name">${post.name}</span>
-            <time class="admin-post-info date">Posted ${formatters.format_datetime(request, post.created_at)}</time>
+            <time class="admin-post-info date">Posted ${datetime.render_datetime(post.created_at)}</time>
         </div>
         <div class="admin-cascade-body admin-post-body">
             ${formatters.format_post(request, post)}
         </div>
         <div class="admin-cascade-footer">
             <span class="admin-post-info ip-address">${post.ip_address}</span>
-            % if post.ident:
-            <span class="admin-post-info ident">ID:${post.ident}</span>
-            % endif
+            ${ident.render_ident(post.ident, post.ident_type, class_='admin-post-info')}
             % if post.number != 1:
             <a href="${request.route_path('admin_board_topic_posts_delete', board=board.slug, topic=topic.id, query=post.number)}">Delete</a>
             % endif
@@ -94,7 +94,7 @@
             % endif
         </div>
         <div class="form-item">
-            <p>Posting as <strong>${user.name}</strong> with ident <strong>${user.ident}</strong></p>
+            <p>Posting as <strong>${user.name}</strong> with ident <strong>${ident.render_ident(user.ident, user.ident_type)}</strong></p>
             % if topic.status == 'locked':
             <p>Topic is currently <strong>locked</strong>. You can post, but other users won't be able to respond.</p>
             % elif board.status == 'locked':

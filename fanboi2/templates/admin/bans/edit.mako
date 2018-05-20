@@ -1,4 +1,3 @@
-<%namespace name='formatters' module='fanboi2.helpers.formatters' />
 <%inherit file='../_layout.mako' />
 <%def name='title()'>Bans - Admin Panel</%def>
 <%def name='subheader_title()'>Bans</%def>

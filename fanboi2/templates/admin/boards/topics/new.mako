@@ -1,4 +1,4 @@
-<%namespace name='formatters' module='fanboi2.helpers.formatters' />
+<%namespace name='ident' file='../../../partials/_ident.mako' />
 <%inherit file='../../_layout.mako' />
 <%def name='title()'>${board.title} - Admin Panel</%def>
 <%def name='subheader_title()'>Topics</%def>
@@ -22,7 +22,7 @@
         % endif
     </div>
     <div class="form-item">
-        <p>Posting as <strong>${user.name}</strong> with ident <strong>${user.ident}</strong></p>
+        <p>Posting as <strong>${user.name}</strong> with ident <strong>${ident.render_ident(user.ident, user.ident_type)}</strong></p>
         % if board.status == 'restricted':
         <p>Board is currently <strong>restricted</strong>. You can create a new topic and user will be able to respond.</p>
         % elif board.status == 'locked':

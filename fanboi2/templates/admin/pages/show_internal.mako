@@ -1,4 +1,5 @@
 <%namespace name='formatters' module='fanboi2.helpers.formatters' />
+<%namespace name='datetime' file='../../partials/_datetime.mako' />
 <%inherit file='../_layout.mako' />
 <%def name='title()'>Pages - Admin Panel</%def>
 <%def name='subheader_title()'>Pages</%def>
@@ -28,7 +29,7 @@
             <tr class="admin-table-row">
                 <th class="admin-table-item title lead">Last updated</th>
                 <td class="admin-table-item">
-                    ${formatters.format_datetime(request, page.updated_at or page.created_at)}
+                    ${datetime.render_datetime(page.updated_at or page.created_at)}
                 </td>
             </tr>
             % else:

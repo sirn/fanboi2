@@ -414,6 +414,11 @@
             color: $color-tint-darker;
         }
 
+        &.ident-admin {
+            background-color: #fff;
+            color: $color-brand;
+        }
+
         @media (min-width: $bound-tablet) {
             &.date {
                 font-weight: inherit;
