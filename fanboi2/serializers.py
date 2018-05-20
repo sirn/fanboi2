@@ -106,6 +106,7 @@ def _post_serializer(obj, request):
         'bumped': obj.bumped,
         'created_at': obj.created_at,
         'ident': obj.ident,
+        'ident_type': obj.ident_type,
         'name': obj.name,
         'number': obj.number,
         'topic_id': obj.topic_id,

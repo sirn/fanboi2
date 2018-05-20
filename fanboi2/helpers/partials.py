@@ -1,16 +1,7 @@
 from markupsafe import Markup
-from sqlalchemy.orm.exc import NoResultFound
 
 from ..interfaces import IPageQueryService
 from .formatters import format_markdown
-
-
-def _get_cache_key(slug):
-    """Returns a cache key for given partial.
-
-    :param slug: An internal page slug.
-    """
-    return 'helpers.partials:slug=%s' % (slug,)
 
 
 def get_partial(request, slug):
@@ -20,32 +11,10 @@ def get_partial(request, slug):
     :param slug: An internal page slug.
     """
     page_query_svc = request.find_service(IPageQueryService)
-    cache_region = request.find_service(name='cache')
-
-    def _creator():
-        try:
-            page = page_query_svc.internal_page_from_slug(slug)
-        except NoResultFound:
-            return
-        if page:
-            return page.body
-
-    return cache_region.get_or_create(
-        _get_cache_key(slug),
-        _creator,
-        expiration_time=43200)
-
-
-def reload_partial(request, slug):
-    """Delete the key for the given slug from the cache to force
-    reloading of partials the next time it is accessed.
-
-    :param request: A :class:`pyramid.request.Request` object.
-    :param slug: An internal page slug.
-    """
-    cache_region = request.find_service(name='cache')
-    cache_key = _get_cache_key(slug)
-    return cache_region.delete(cache_key)
+    try:
+        return page_query_svc.internal_body_from_slug(slug)
+    except ValueError:
+        return None
 
 
 def global_css(context, request):

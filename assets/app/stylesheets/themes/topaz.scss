@@ -1,23 +1,5 @@
 @import "../variables";
-
-$color-gray-base:        #1b2326;
-$color-gray-darker:      lighten($color-gray-base, 22.0%);
-$color-gray-dark:        lighten($color-gray-base, 33.0%);
-$color-gray:             lighten($color-gray-base, 44.0%);
-$color-gray-light:       lighten($color-gray-base, 70.0%);
-$color-gray-lighter:     lighten($color-gray-base, 80.0%);
-
-$color-tint-base:        #f2f5f7;
-$color-tint-darker:      darken($color-tint-base, 28%);
-$color-tint-dark:        darken($color-tint-base, 10%);
-$color-tint:             darken($color-tint-base, 6%);
-$color-tint-light:       darken($color-tint-base, 4%);
-$color-tint-lighter:     $color-tint-base;
-
-$color-background:       #f0f0f0;
-$color-background-dark:  darken($color-background, 3%);
-
-$color-text:             #333;
+@import "variables_topaz";
 
 /* Topaz theme, the default
  * ------------------------------------------------------------------------ */
@@ -38,6 +20,20 @@ $color-text:             #333;
 
     /* app.scss
      * -------------------------------------------------------------------- */
+
+    .noticebar {
+        background-color: #fff;
+        color: $color-gray-dark;
+        font-weight: bold;
+
+        &.error {
+            color: $color-red;
+        }
+
+        &.success {
+            color: $color-green;
+        }
+    }
 
     .header {
         background-color: $color-brand;
@@ -220,10 +216,36 @@ $color-text:             #333;
     .codeblock {
         background-color: $color-gray-lighter;
         color: $color-gray-darker;
+
+        &.noshade {
+            background: none;
+        }
     }
 
     .content {
         h1, h2, h3, h4, h5 { color: $color-brand; }
+    }
+
+    .menu {
+        background-color: $color-tint-lighter;
+        border-color: $color-tint-light;
+
+        @media (min-width: $bound-tablet) {
+            border-radius: 2px;
+            overflow: hidden;
+        }
+    }
+
+    .menu-header {
+        color: $color-gray-dark;
+    }
+
+    .menu-actions {
+        background-color: #fff;
+    }
+
+    .menu-actions-item {
+        border-color: $color-tint-light;
     }
 
     /* api.scss
@@ -247,7 +269,7 @@ $color-text:             #333;
     }
 
     .api-request-verb {
-        border-radius: 3px;
+        border-radius: 2px;
         font-weight: bold;
         color: #fff;
 
@@ -304,6 +326,24 @@ $color-text:             #333;
     .topic-header {
         border-color: #fff;
         color: $color-gray-dark;
+    }
+
+    .topic-subheader {
+        background-color: $color-tint-light;
+        border-color: #fff;
+
+        a {
+            color: $color-gray-dark;
+        }
+    }
+
+    .topic-subheader-item {
+        &.number {
+            background-color: $color-gray;
+            border-color: $color-gray;
+            color: #fff;
+            font-weight: bold;
+        }
     }
 
     .topic-footer {
@@ -372,6 +412,11 @@ $color-text:             #333;
 
         &.ident {
             color: $color-tint-darker;
+        }
+
+        &.ident-admin {
+            background-color: #fff;
+            color: $color-brand;
         }
 
         @media (min-width: $bound-tablet) {

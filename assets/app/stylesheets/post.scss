@@ -72,6 +72,10 @@ $post-date-size: round($font-size-small);
             position: inherit;
         }
     }
+
+    &.ident-admin {
+        padding: $post-item-spacing $post-item-spacing;
+    }
 }
 
 .post-body {

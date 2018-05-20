@@ -97,18 +97,6 @@ class ProxyDetector(object):
     """Base class for dispatching proxy detection into multiple providers."""
 
     __use_services__ = ('cache',)
-    __default_settings__ = {
-        'blackbox': {
-            'enabled': False,
-            'url': 'http://proxy.mind-media.com/block/proxycheck.php',
-        },
-        'getipintel': {
-            'enabled': False,
-            'url':  'http://check.getipintel.net/check.php',
-            'email': None,
-            'flags': None,
-        },
-    }
 
     def __init__(self, settings=None, services={}):
         if not settings:

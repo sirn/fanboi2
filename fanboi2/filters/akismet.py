@@ -8,8 +8,6 @@ from . import register_filter
 class Akismet(object):
     """Basic integration between Pyramid and Akismet."""
 
-    __default_settings__ = None
-
     def __init__(self, key, services={}):
         self.key = key
 

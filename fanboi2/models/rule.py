@@ -37,3 +37,11 @@ class Rule(Base):
             cls.ip_address.op('>>=')(ip_address),
             or_(cls.active_until == None,  # noqa: E712
                 cls.active_until >= func.now()))
+
+    @property
+    def duration(self):
+        """Returns the duration of this ban in days."""
+        if not self.active_until:
+            return 0
+        secs = (self.active_until - self.created_at).total_seconds()
+        return round(secs/86400)

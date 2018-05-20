@@ -37,7 +37,7 @@
     </div>
 </header>
 
-${self.body()}
+${next.body()}
 
 <% global_appendix = partials.global_appendix(request) %>
 % if global_appendix:

@@ -16,7 +16,7 @@ class IdentityService(object):
         self.ident_size = ident_size
 
     def _get_key(self, **kwargs):
-        return 'services.identity.%s' % (
+        return 'services.identity:%s' % (
             (','.join('%s=%s' % (k, v) for k, v in sorted(kwargs.items()))),)
 
     def identity_for(self, **kwargs):

@@ -7,6 +7,7 @@ import zope.sqlalchemy
 from ._base import Base
 from ._versioned import make_history_event, setup_versioned
 from .board import Board
+from .group import Group
 from .page import Page
 from .post import Post
 from .rule import Rule
@@ -14,11 +15,14 @@ from .rule_ban import RuleBan
 from .setting import Setting
 from .topic import Topic
 from .topic_meta import TopicMeta
+from .user import User
+from .user_session import UserSession
 
 
 __all__ = [
     'Base',
     'Board',
+    'Group',
     'Page',
     'Post',
     'Rule',
@@ -26,11 +30,14 @@ __all__ = [
     'Setting',
     'Topic',
     'TopicMeta',
+    'User',
+    'UserSession',
 ]
 
 
 _MODELS = {
     'board': Board,
+    'group': Group,
     'page': Page,
     'post': Post,
     'rule': Rule,
@@ -38,6 +45,8 @@ _MODELS = {
     'setting': Setting,
     'topic': Topic,
     'topic_meta': TopicMeta,
+    'user': User,
+    'user_session': UserSession,
 }
 
 
@@ -83,7 +92,7 @@ def includeme(config):  # pragma: no cover
 
     def dbsession_factory(context, request):
         dbsession = dbmaker()
-        init_dbsession(dbmaker, tm=request.tm)
+        init_dbsession(dbsession, tm=request.tm)
         return dbsession
 
     config.register_service_factory(dbsession_factory, name='db')

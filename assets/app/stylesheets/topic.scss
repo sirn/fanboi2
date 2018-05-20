@@ -1,4 +1,5 @@
 @import "variables";
+@import "mixins";
 
 /* Topic
  * ------------------------------------------------------------------------ */
@@ -26,6 +27,33 @@
     font-size: $font-size-small;
     line-height: $font-size-small;
     margin: 0 0 $spacing-vertical-small;
+}
+
+.topic-subheader {
+    border-bottom: 1px solid;
+    font-size: $font-size-small;
+    line-height: $font-size-small;
+
+    a {
+        @include clearfix();
+        display: block;
+        padding: $spacing-vertical 0;
+    }
+}
+
+.topic-subheader-item {
+    $item-spacing: 5px;
+
+    /* Matching metrics with .post-header-items */
+    display: block;
+    float: left;
+    margin: 0 $spacing-horizontal-small 0 0;
+    padding: $item-spacing 0;
+
+    &.number {
+        border: 1px solid;
+        padding: ($item-spacing - 1) ($item-spacing - 1);
+    }
 }
 
 .topic-footer {

@@ -1,4 +1,5 @@
 import html
+import json
 import re
 import urllib
 import urllib.parse as urlparse
@@ -298,6 +299,16 @@ def format_isotime(context, request, dt):
     :param dt: A :class:`datetime.datetime` object.
     """
     return isodate.datetime_isoformat(dt.astimezone(pytz.utc))
+
+
+def format_json(context, request, data):
+    """Format the given data structure into JSON string.
+
+    :param context: A :class:`mako.runtime.Context` object.
+    :param request: A :class:`pyramid.request.Request` object.
+    :param data: A data to format to JSON.
+    """
+    return json.dumps(data, indent=4, sort_keys=True)
 
 
 def unquoted_path(context, request, *args, **kwargs):

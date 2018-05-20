@@ -1,4 +1,4 @@
-<%namespace name='formatters' module='fanboi2.helpers.formatters' />
+<%namespace name='datetime' file='../partials/_datetime.mako' />
 <%namespace name='post' file='../partials/_post.mako' />
 <%include file='_subheader.mako' />
 <%inherit file='../partials/_layout.mako' />
@@ -8,12 +8,14 @@
         <div class="topic-header">
             <div class="container">
                 <h3 class="topic-header-title"><a href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='recent')}">${topic.title}</a></h3>
-                <p class="topic-header-item">Last posted <strong>${formatters.format_datetime(request, topic.meta.posted_at)}</strong></p>
+                <p class="topic-header-item">Last posted <strong>${datetime.render_datetime(topic.meta.posted_at)}</strong></p>
                 <p class="topic-header-item">Total of <strong>${topic.meta.post_count} posts</strong></p>
             </div>
         </div>
         <div class="topic-body">
-            ${post.render_posts(topic, topic.recent_posts(5), shorten=500)}
+            % for p in topic.recent_posts(5):
+                ${post.render_post(topic, p, shorten=500)}
+            % endfor
         </div>
         <div class="topic-footer">
             <div class="container">

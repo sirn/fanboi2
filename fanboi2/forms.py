@@ -1,6 +1,10 @@
+import json
+import ipaddress
+
 from wtforms import TextField, TextAreaField, Form, BooleanField
+from wtforms import PasswordField, IntegerField, SelectField
 from wtforms.validators import Length as _Length
-from wtforms.validators import Required, ValidationError
+from wtforms.validators import Required, EqualTo, ValidationError
 
 
 class Length(_Length):
@@ -45,3 +49,103 @@ class PostForm(Form):
     """
     body = TextAreaField('Body', validators=[Required(), Length(5, 4000)])
     bumped = BooleanField('Bump this topic', default=True)
+
+
+class AdminLoginForm(Form):
+    """A :class:`Form` for logging into a moderation system."""
+    username = TextField('Username', validators=[Required()])
+    password = PasswordField('Password', validators=[Required()])
+
+
+class AdminSetupForm(Form):
+    """A :class:`Form` for creating an initial user."""
+    username = TextField('Username', validators=[
+        Required(),
+        Length(2, 32)])
+    password = PasswordField('Password', validators=[
+        Required(),
+        Length(8, 64)])
+    password_confirm = PasswordField(
+        'Password confirmation',
+        validators=[
+            Required(),
+            EqualTo('password', message='Password must match.')])
+    name = TextField('Name', validators=[
+        Required(),
+        Length(2, 64)])
+
+
+class AdminSettingForm(Form):
+    """A :class:`Form` for updating settings."""
+    value = TextAreaField('Value', validators=[Required()])
+
+    def validate_value(form, field):
+        """Custom field validator that ensure value is a valid JSON."""
+        try:
+            json.loads(field.data)
+        except json.decoder.JSONDecodeError:
+            raise ValidationError('Must be a valid JSON.')
+
+
+class AdminRuleBanForm(Form):
+    """A :class:`Form` for creating and updating bans."""
+    ip_address = TextField('IP address', validators=[Required()])
+    description = TextField('Description')
+    duration = IntegerField('Duration', default=0)
+    scope = TextField('Scope')
+    active = BooleanField('Active', default=True)
+
+    def validate_ip_address(form, field):
+        """Custom field validator that ensure IP address is valid."""
+        try:
+            ipaddress.ip_network(field.data)
+        except ValueError:
+            raise ValidationError('Must be a valid IP address.')
+
+
+class AdminBoardForm(Form):
+    """A :class:`Form` for updating a board."""
+    title = TextField('Title', validators=[Required()])
+    description = TextField('Description', validators=[Required()])
+    status = SelectField('Status', validators=[Required()], choices=[
+        ('open', 'Open'),
+        ('restricted', 'Restricted'),
+        ('locked', 'Locked'),
+        ('archived', 'Archived')])
+
+    agreements = TextAreaField('Agreements', validators=[Required()])
+    settings = TextAreaField('Settings', validators=[Required()])
+
+    def validate_settings(form, field):
+        """Custom field validator that ensure value is a valid JSON."""
+        try:
+            json.loads(field.data)
+        except json.decoder.JSONDecodeError:
+            raise ValidationError('Must be a valid JSON.')
+
+
+class AdminBoardNewForm(AdminBoardForm):
+    """A :class:`Form` for creating a board."""
+    slug = TextField('Slug', validators=[Required()])
+
+
+class AdminPageForm(Form):
+    """A :class:`Form` for creating and updating pages."""
+    body = TextAreaField('Body', validators=[Required()])
+
+
+class AdminPublicPageForm(AdminPageForm):
+    """A :class:`Form` for updating public pages."""
+    title = TextField('Title', validators=[Required()])
+
+
+class AdminPublicPageNewForm(AdminPublicPageForm):
+    """A :class:`Form` for creating public pages."""
+    slug = TextField('Slug', validators=[Required()])
+
+
+class AdminTopicForm(Form):
+    """A :class:`Form` for updating topic."""
+    status = SelectField('Status', validators=[Required()], choices=[
+        ('open', 'Open'),
+        ('locked', 'Locked')])

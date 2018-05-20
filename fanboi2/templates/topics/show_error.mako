@@ -40,7 +40,7 @@
                 <p>There's no point in acting surprised about it.</p>
                 % if topic.status == 'locked':
                     <p><em>Topic has been locked by moderator due to requests.</em></p>
-                % else
+                % else:
                     <p><em>Board has been locked by moderator.</em></p>
                 % endif
             </div>
@@ -50,7 +50,7 @@
                 <p>Nothing the god of biomechanics wouldn't let you in heaven for.</p>
                 % if topic.status == 'locked':
                     <p><em>Topic has reached maximum number of posts.</em></p>
-                % else
+                % else:
                     <p><em>Board has been archived.</em></p>
                 % endif
             </div>

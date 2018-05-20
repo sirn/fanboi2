@@ -2,10 +2,11 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import synonym
 from sqlalchemy.sql import func
 from sqlalchemy.sql.schema import Column
-from sqlalchemy.sql.sqltypes import DateTime, Enum, Integer, String
+from sqlalchemy.sql.sqltypes import DateTime, Integer, String
 from sqlalchemy.sql.sqltypes import Text, Unicode, JSON
 
 from ._base import Base, Versioned
+from ._type import BoardStatusEnum
 
 
 DEFAULT_BOARD_CONFIG = {
@@ -14,14 +15,6 @@ DEFAULT_BOARD_CONFIG = {
     'max_posts': 1000,
     'post_delay': 10,
 }
-
-
-BoardStatusEnum = Enum(
-    'open',
-    'restricted',
-    'locked',
-    'archived',
-    name='board_status')
 
 
 class Board(Versioned, Base):

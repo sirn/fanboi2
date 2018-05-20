@@ -1,22 +1,5 @@
 @import "../variables";
-
-$color-gray-base:        #161b1e;
-$color-gray-darker:      lighten($color-gray-base, 3.0%);
-$color-gray-dark:        lighten($color-gray-base, 5.0%);
-$color-gray:             lighten($color-gray-base, 8.0%);
-$color-gray-light:       lighten($color-gray-base, 44.0%);
-$color-gray-lighter:     lighten($color-gray-base, 80.0%);
-
-$color-muted-base:       #293033;
-$color-muted-darker:     lighten($color-muted-base, 2.0%);
-$color-muted-dark:       lighten($color-muted-base, 10.0%);
-$color-muted:            lighten($color-muted-base, 20.0%);
-$color-muted-light:      lighten($color-muted-base, 30.0%);
-$color-muted-lighter:    lighten($color-muted-base, 50.0%);
-
-$color-background:       $color-gray-base;
-$color-background-light: lighten($color-gray-base, 1.5%);
-$color-text:             #cfcfcf;
+@import "variables_obsidian";
 
 /* Obsidian theme, the dark theme
  * ------------------------------------------------------------------------ */
@@ -36,6 +19,20 @@ $color-text:             #cfcfcf;
 
     /* app.scss
      * -------------------------------------------------------------------- */
+
+    .noticebar {
+        background-color: #fff;
+        color: $color-gray-dark;
+        font-weight: bold;
+
+        &.error {
+            color: $color-red;
+        }
+
+        &.success {
+            color: $color-green;
+        }
+    }
 
     .header {
         background-color: $color-brand;
@@ -203,10 +200,36 @@ $color-text:             #cfcfcf;
     .codeblock {
         background-color: $color-gray-dark;
         color: $color-gray-light;
+
+        &.noshade {
+            background: none;
+        }
     }
 
     .content {
         h1, h2, h3, h4, h5 { color: $color-brand; }
+    }
+
+    .menu {
+        background-color: $color-gray-darker;
+        border-color: $color-gray;
+
+        @media (min-width: $bound-tablet) {
+            border-radius: 2px;
+            overflow: hidden;
+        }
+    }
+
+    .menu-header {
+        color: $color-gray-light;
+    }
+
+    .menu-actions {
+        background-color: $color-gray-dark;
+    }
+
+    .menu-actions-item {
+        border-color: $color-gray;
     }
 
     /* api.scss
@@ -288,6 +311,29 @@ $color-text:             #cfcfcf;
         border-color: $color-gray-dark;
     }
 
+    .topic-subheader {
+        background-color: $color-background-light;
+        border-color: $color-gray-dark;
+
+        a {
+            color: $color-gray-light;
+
+            &:hover {
+                color: $color-gray-lighter;
+            }
+        }
+    }
+
+    .topic-subheader-item {
+        &.number {
+            background-color: $color-muted-dark;
+            color: $color-muted-lighter;
+            border-color: $color-muted-dark;
+            font-weight: bold;
+        }
+    }
+
+
     .topic-footer {
         background-color: $color-background-light;
         border-color: $color-gray-dark;
@@ -351,6 +397,12 @@ $color-text:             #cfcfcf;
         &.date {
             font-weight: normal;
         }
+
+        &.ident-admin {
+            background-color: $color-gray-dark;
+            color: $color-brand;
+        }
+
     }
 
     .post-body {

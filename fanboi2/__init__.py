@@ -25,12 +25,14 @@ NO_VALUE = NoValue()
 
 
 ENV_SETTINGS_MAP = (
+    ('AUTH_SECRET', 'auth.secret', NO_VALUE, None),
     ('CELERY_BROKER_URL', 'celery.broker', NO_VALUE, None),
     ('DATABASE_URL', 'sqlalchemy.url', NO_VALUE, None),
-    ('MEMCACHED_URL', 'dogpile.arguments.url', NO_VALUE, None),
     ('GEOIP_PATH', 'geoip.path', None, None),
+    ('MEMCACHED_URL', 'dogpile.arguments.url', NO_VALUE, None),
     ('REDIS_URL', 'redis.url', NO_VALUE, None),
     ('SERVER_DEV', 'server.development', False, asbool),
+    ('SERVER_SECURE', 'server.secure', False, asbool),
     ('SESSION_SECRET', 'session.secret', NO_VALUE, None),
 )
 
@@ -147,6 +149,7 @@ def make_config(settings):  # pragma: no cover
     config.add_request_method(tagged_static_path)
     config.add_route('robots', '/robots.txt')
 
+    config.include('fanboi2.auth')
     config.include('fanboi2.cache')
     config.include('fanboi2.filters')
     config.include('fanboi2.geoip')
@@ -156,6 +159,7 @@ def make_config(settings):  # pragma: no cover
     config.include('fanboi2.services')
     config.include('fanboi2.tasks')
 
+    config.include('fanboi2.views.admin', route_prefix='/admin')
     config.include('fanboi2.views.api', route_prefix='/api')
     config.include('fanboi2.views.pages', route_prefix='/pages')
     config.include('fanboi2.views.boards', route_prefix='/')

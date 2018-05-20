@@ -4,11 +4,30 @@
 <%def name='title()'>${topic.title} - ${board.title}</%def>
 <%def name='body_args()'>data-topic="${topic.id}"</%def>
 % if posts:
-    ${post.render_posts(topic, posts)}
+    % if posts[0].number != 1:
+    <div class="topic-subheader">
+        <div class="container">
+            <ul class="actions">
+                <a href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query="1-%s" % posts[-1].number)}">
+                    % if posts[0].number <= 2:
+                    <span class="topic-subheader-item number">1</span>
+                    <span class="topic-subheader-item">Load previous post</span>
+                    % else:
+                    <span class="topic-subheader-item number">1-${posts[0].number - 1}</span>
+                    <span class="topic-subheader-item">Load previous posts</span>
+                    % endif
+                </a>
+            </ul>
+        </div>
+    </div>
+    % endif
+    % for p in posts:
+        ${post.render_post(topic, p)}
+    % endfor
     <div class="topic-footer">
         <div class="container">
             <ul class="actions">
-                <li class="actions-item"><a class="button action" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='recent')}">Latest posts</a></li>
+                <li class="actions-item"><a class="button action" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query='recent')}">Recent posts</a></li>
                 <li class="actions-item"><a class="button action" href="${request.route_path('topic', board=board.slug, topic=topic.id)}">All posts</a></li>
                 % if posts and topic.status == 'open' and posts[-1].number == topic.meta.post_count:
                     <li class="actions-item"><a class="button brand" href="${request.route_path('topic_scoped', board=board.slug, topic=topic.id, query="%s-" % topic.meta.post_count)}" data-topic-reloader="true">Reload posts</a></li>

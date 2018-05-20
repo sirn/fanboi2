@@ -5,6 +5,7 @@ from sqlalchemy.sql.schema import Column, ForeignKey, UniqueConstraint
 from sqlalchemy.sql.sqltypes import Integer, DateTime, String, Text, Boolean
 
 from ._base import Base, Versioned
+from ._type import IdentTypeEnum
 
 
 class Post(Versioned, Base):
@@ -22,6 +23,7 @@ class Post(Versioned, Base):
     topic_id = Column(Integer, ForeignKey('topic.id'), nullable=False)
     ip_address = Column(INET, nullable=False)
     ident = Column(String(32), nullable=True)
+    ident_type = Column(IdentTypeEnum, default='none', nullable=False)
     number = Column(Integer, nullable=False)
     name = Column(String, nullable=False)
     body = Column(Text, nullable=False)
