@@ -1,3 +1,4 @@
+import logging
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
@@ -5,7 +6,21 @@ from fanboi2 import setup_logger, settings_from_env
 from fanboi2.models import Base
 
 settings = settings_from_env()
+
+
+# Logger
+
 setup_logger(settings)
+
+log_level = logging.WARN
+if settings['server.development']:
+    log_level = logging.INFO
+
+logger = logging.getLogger('sqlalchemy.engine.base.Engine')
+logger.setLevel(log_level)
+
+
+# SQLAlchemy
 
 target_metadata = Base.metadata
 config = context.config

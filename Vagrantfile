@@ -63,6 +63,7 @@ Vagrant.configure("2") do |config|
     echo 'SERVER_HOST="0.0.0.0"; export SERVER_HOST' >> $HOME/.profile
     echo 'SERVER_PORT=6543; export SERVER_PORT' >> $HOME/.profile
     echo "SESSION_SECRET=$(openssl rand -hex 32); export SESSION_SECRET" >> $HOME/.profile
+    echo "AUTH_SECRET=$(openssl rand -hex 32); export AUTH_SECRET" >> $HOME/.profile
 
     cd /vagrant
     $HOME/python3.6/bin/pip3 install -e .

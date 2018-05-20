@@ -83,6 +83,7 @@
 
     @media (min-width: $bound-tablet) {
         display: table;
+        table-layout: fixed;
     }
 }
 
@@ -91,6 +92,9 @@
 
     @media (min-width: $bound-tablet) {
         display: table-row-group;
+
+        .lead { width: 120px; }
+        .sublead { width: 80px; }
     }
 }
 
@@ -99,10 +103,6 @@
 
     @media (min-width: $bound-tablet) {
         display: table-row-group;
-
-        .api-table-item.title {
-            width: 120px;
-        }
     }
 }
 
@@ -124,7 +124,6 @@
     line-height: $line-height-content;
     overflow-x: auto;
     padding: $spacing-vertical-small $spacing-horizontal-small;
-    word-wrap: break-word;
 
     ul,
     p {
@@ -133,22 +132,11 @@
 
     &.title {
         line-height: $line-height-content;
-        margin: 0 0 $spacing-vertical-smaller;
         text-align: left;
-    }
-
-    &.argument {
-    }
-
-    &.type {
     }
 
     @media (min-width: $bound-tablet) {
         display: table-cell;
         vertical-align: top;
-
-        &.type {
-            width: 80px;
-        }
     }
 }

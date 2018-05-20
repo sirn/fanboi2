@@ -3,9 +3,10 @@ import re
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import desc, func, select
 from sqlalchemy.sql.schema import Column, ForeignKey
-from sqlalchemy.sql.sqltypes import Integer, DateTime, Enum, Unicode
+from sqlalchemy.sql.sqltypes import Integer, DateTime, Unicode
 
 from ._base import Base, Versioned
+from ._type import TopicStatusEnum
 from .post import Post
 from .topic_meta import TopicMeta
 
@@ -23,9 +24,7 @@ class Topic(Versioned, Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     board_id = Column(Integer, ForeignKey('board.id'), nullable=False)
     title = Column(Unicode(255), nullable=False)
-    status = Column(Enum('open', 'locked', 'archived', name='topic_status'),
-                    default='open',
-                    nullable=False)
+    status = Column(TopicStatusEnum, default='open', nullable=False)
 
     board = relationship('Board',
                          backref=backref('topics',

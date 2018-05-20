@@ -3,7 +3,7 @@
 <header class="subheader">
     <div class="container">
         <h2 class="subheader-title">API documentation</h2>
-        <div class="subheader-body"><p>Last updated <strong>Feb 12, 2017</strong></p></div>
+        <div class="subheader-body"><p>Last updated <strong><time datetime="2018-05-20">May 20, 2018</time></strong></p></div>
     </div>
 </header>
 <%include file='_boards.mako' />

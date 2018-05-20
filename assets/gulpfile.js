@@ -34,6 +34,15 @@ var paths = {
         }
     },
 
+    /* Path for storing admin-specific assets. */
+    admin: {
+        assets: 'admin/assets/*',
+        stylesheets: [
+            'admin/stylesheets/*.scss',
+            'admin/stylesheets/themes/*.scss'
+        ]
+    },
+
     /* Path for storing third-party assets. */
     vendor: {
         assets: 'vendor/assets/*',
@@ -61,6 +70,7 @@ var paths = {
 gulp.task('assets', function(){
     return es.merge([
             gulp.src(paths.app.assets),
+            gulp.src(paths.admin.assets),
             gulp.src(paths.vendor.assets),
             gulp.src(paths.legacy.assets)]).
         pipe(gulp.dest(paths.dest));
@@ -96,6 +106,17 @@ gulp.task('styles/app', ['assets'], function(){
         pipe(gulp.dest(paths.dest));
 });
 
+gulp.task('styles/admin', ['assets'], function(){
+    return gulp.
+        src(paths.admin.stylesheets).
+        pipe(sourcemaps.init()).
+            pipe(sass().on('error', sass.logError)).
+            pipe(concat('admin.css')).
+            pipe(postcss(postcssProcessors)).
+        pipe(sourcemaps.write('.')).
+        pipe(gulp.dest(paths.dest));
+});
+
 gulp.task('styles/vendor', function(){
     return gulp.
         src(paths.vendor.stylesheets).
@@ -108,6 +129,7 @@ gulp.task('styles/vendor', function(){
 
 gulp.task('styles', [
     'styles/app',
+    'styles/admin',
     'styles/vendor'
 ]);
 
@@ -182,6 +204,7 @@ gulp.task('default', ['assets', 'styles', 'javascripts']);
 
 gulp.task('watch', ['default'], function(){
     gulp.watch(paths.app.stylesheets, ['styles/app']);
+    gulp.watch(paths.admin.stylesheets, ['styles/admin']);
     gulp.watch(paths.vendor.stylesheets, ['styles/vendor']);
 
     gulp.watch(paths.app.javascripts.glob, ['javascripts/app']);

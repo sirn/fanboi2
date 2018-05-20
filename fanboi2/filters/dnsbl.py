@@ -8,11 +8,6 @@ from . import register_filter
 class DNSBL(object):
     """Utility class for checking IP address against DNSBL providers."""
 
-    __default_settings__ = (
-        'proxies.dnsbl.sorbs.net',
-        'xbl.spamhaus.org',
-    )
-
     def __init__(self, providers, services={}):
         if not providers:
             providers = tuple()

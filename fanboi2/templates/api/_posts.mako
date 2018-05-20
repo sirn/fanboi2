@@ -9,8 +9,8 @@
                 <table class="api-table">
                     <thead class="api-table-header">
                         <tr class="api-table-row">
-                            <th class="api-table-item title">Parameters</th>
-                            <th class="api-table-item title">Type</th>
+                            <th class="api-table-item title lead">Parameters</th>
+                            <th class="api-table-item title sublead">Type</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>
@@ -50,7 +50,7 @@
                 <table class="api-table">
                     <thead class="api-table-header">
                         <tr class="api-table-row">
-                            <th class="api-table-item title">Query string</th>
+                            <th class="api-table-item title lead">Query string</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>
@@ -75,8 +75,8 @@
                 <table class="api-table inner">
                     <thead class="api-table-header">
                         <tr class="api-table-row">
-                            <th class="api-table-item title">Field</th>
-                            <th class="api-table-item title">Type</th>
+                            <th class="api-table-item title lead">Field</th>
+                            <th class="api-table-item title sublead">Type</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>
@@ -138,6 +138,18 @@
                             </td>
                         </tr>
                         <tr class="api-table-row">
+                            <th class="api-table-item title">ident_type</th>
+                            <td class="api-table-item type">String</td>
+                            <td class="api-table-item">
+                                <p>The type of the user ident to distinguish user info.</p>
+                                <ul>
+                                    <li><strong>ident</strong> — normal user ident</li>
+                                    <li><strong>ident_admin</strong> — admin ident</li>
+                                </ul>
+                                <pre class="codeblock">"ident_type":"ident"</pre>
+                            </td>
+                        </tr>
+                        <tr class="api-table-row">
                             <th class="api-table-item title">name</th>
                             <td class="api-table-item type">String</td>
                             <td class="api-table-item">
@@ -186,7 +198,7 @@
                 <table class="api-table">
                     <thead class="api-table-header">
                         <tr class="api-table-row">
-                            <th class="api-table-item title">Query</th>
+                            <th class="api-table-item title lead">Query</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>
@@ -212,7 +224,7 @@
                 <table class="api-table">
                     <thead class="api-table-header">
                         <tr class="api-table-row">
-                            <th class="api-table-item title">Query string</th>
+                            <th class="api-table-item title lead">Query string</th>
                             <th class="api-table-item title">Description</th>
                         </tr>
                     </thead>

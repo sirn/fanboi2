@@ -28,6 +28,7 @@ def add_post(
             request=_request,
             registry=_registry) as env:
         request = env['request']
+        dbsession = request.find_service(name='db')
 
         filter_svc = request.find_service(IFilterService)
         filter_result = filter_svc.evaluate(payload={
@@ -46,4 +47,6 @@ def add_post(
                 ip_address)
         except StatusRejectedError as e:
             return 'failure', e.name, e.status
+
+        dbsession.flush()
         return 'post', post.id

@@ -41,7 +41,7 @@ Then setup the application::
 
   $ fbctl serve
 
-And you're done! Please visit `http://localhost:6543/panel <http://localhost:6543/panel>`_ to perform initial configuration.
+And you're done! Please visit `http://localhost:6543/admin/ <http://localhost:6543/admin/>`_ to perform initial configuration.
 
 Development
 -----------
