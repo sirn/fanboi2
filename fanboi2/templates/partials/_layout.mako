@@ -28,7 +28,11 @@
         </style>
     % endif
 </head>
-<body id="${request.route_name}" class="${formatters.user_theme(request)}"${' ' + self.body_args() if hasattr(self, 'body_args') else ''}>
+% if hasattr(self, 'body_args'):
+<body id="${request.route_name}" class="${formatters.user_theme(request)}" ${self.body_args()}>
+% else:
+<body id="${request.route_name}" class="${formatters.user_theme(request)}">
+% endif
 
 <header id="top" class="header" data-board-selector="true">
     <div class="container">
