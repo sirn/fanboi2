@@ -48,7 +48,7 @@ requires = [
     ]
 
 setup(name='fanboi2',
-      version='0.29.9',
+      version='0.30.0',
       description='board engine behind fanboi.ch',
       long_description=readme + '\n\n' + changes,
       classifiers=[
