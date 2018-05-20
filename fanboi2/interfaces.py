@@ -215,3 +215,8 @@ class IUserLoginService(Interface):
 class IUserQueryService(Interface):
     def user_from_id(id):
         pass
+
+
+class IUserSessionQueryService(Interface):
+    def list_recent_from_user_id(user_id):
+        pass

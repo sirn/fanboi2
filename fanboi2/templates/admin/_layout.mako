@@ -17,7 +17,6 @@
                         <h3 class="menu-header">My Actions</h3>
                         <ul class="menu-actions">
                             <li class="menu-actions-item"><a href="${request.route_path('admin_dashboard')}">Dashboard</a></li>
-                            <li class="menu-actions-item"><a href="${request.route_path('admin_logout')}">Logout</a></li>
                         </ul>
                         <h3 class="menu-header">Moderation</h3>
                         <ul class="menu-actions">

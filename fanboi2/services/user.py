@@ -2,7 +2,7 @@ import datetime
 import secrets
 
 from passlib.context import CryptContext
-from sqlalchemy.sql import and_, or_, func
+from sqlalchemy.sql import and_, or_, func, desc
 from sqlalchemy.orm import joinedload
 
 from ..auth import SESSION_TOKEN_VALIDITY
@@ -221,3 +221,24 @@ class UserQueryService(object):
         :param id: A user `type`:int: id.
         """
         return self.dbsession.query(User).filter_by(id=id).one()
+
+
+class UserSessionQueryService(object):
+    """User session query service provides a service for querying
+    user sessions.
+    """
+
+    def __init__(self, dbsession):
+        self.dbsession = dbsession
+
+    def list_recent_from_user_id(self, user_id):
+        """Query recent sessions for the given user ID.
+
+        :param user_id: A user `type`:int: id.
+        """
+        return list(
+            self.dbsession.query(UserSession).
+            filter_by(user_id=user_id).
+            order_by(desc(UserSession.last_seen_at)).
+            limit(5).
+            all())

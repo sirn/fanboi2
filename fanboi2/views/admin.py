@@ -43,7 +43,8 @@ from ..interfaces import \
     ITopicQueryService,\
     ITopicUpdateService,\
     IUserCreateService,\
-    IUserLoginService
+    IUserLoginService,\
+    IUserSessionQueryService
 
 
 def login_get(request):
@@ -153,7 +154,16 @@ def setup_post(request):
 
 
 def dashboard_get(request):
-    return {}
+    user_login_svc = request.find_service(IUserLoginService)
+    user = user_login_svc.user_from_token(
+        request.authenticated_userid,
+        request.client_addr)
+
+    user_session_query_svc = request.find_service(IUserSessionQueryService)
+    return {
+        'user': user,
+        'sessions': user_session_query_svc.list_recent_from_user_id(user.id),
+    }
 
 
 def bans_get(request):

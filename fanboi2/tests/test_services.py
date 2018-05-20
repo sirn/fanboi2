@@ -3278,3 +3278,71 @@ class TestUserQueryService(ModelSessionMixin, unittest.TestCase):
         user_query_svc = self._get_target_class()(self.dbsession)
         with self.assertRaises(NoResultFound):
             user_query_svc.user_from_id(-1)
+
+
+class TestUserSessionQueryService(ModelSessionMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..services import UserSessionQueryService
+        return UserSessionQueryService
+
+    def test_list_recent_from_user_id(self):
+        from datetime import datetime, timedelta
+        from ..models import User, UserSession
+        user1 = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            ident='foo',
+            ident_type='ident_admin',
+            name='Nameless Foo'))
+        user2 = self._make(User(
+            username='baz',
+            encrypted_password='none',
+            ident='baz',
+            ident_type='ident_admin',
+            name='Nameless Baz'))
+        user_session1 = self._make(UserSession(
+            user=user1,
+            token='user1_token1',
+            ip_address='127.0.0.1',
+            last_seen_at=datetime.now() - timedelta(days=2)))
+        user_session2 = self._make(UserSession(
+            user=user1,
+            token='user1_token2',
+            ip_address='127.0.0.1',
+            last_seen_at=datetime.now() - timedelta(days=3)))
+        user_session3 = self._make(UserSession(
+            user=user1,
+            token='user1_token3',
+            ip_address='127.0.0.1',
+            last_seen_at=datetime.now() - timedelta(days=1)))
+        self._make(UserSession(
+            user=user2,
+            token='user2_token1',
+            ip_address='127.0.0.1',
+            last_seen_at=datetime.now()))
+        self.dbsession.commit()
+        user_session_query_svc = self._get_target_class()(self.dbsession)
+        self.assertEqual(
+            user_session_query_svc.list_recent_from_user_id(user1.id),
+            [user_session3, user_session1, user_session2])
+
+    def test_list_recent_from_user_id_empty(self):
+        from ..models import User
+        user = self._make(User(
+            username='foo',
+            encrypted_password='none',
+            ident='foo',
+            ident_type='ident_admin',
+            name='Nameless Foo'))
+        self.dbsession.commit()
+        user_session_query_svc = self._get_target_class()(self.dbsession)
+        self.assertEqual(
+            user_session_query_svc.list_recent_from_user_id(user.id),
+            [])
+
+    def test_list_recent_from_user_id_not_found(self):
+        user_session_query_svc = self._get_target_class()(self.dbsession)
+        self.assertEqual(
+            user_session_query_svc.list_recent_from_user_id(-1),
+            [])

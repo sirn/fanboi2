@@ -24,7 +24,8 @@ from ..interfaces import \
     ITopicUpdateService,\
     IUserCreateService,\
     IUserLoginService,\
-    IUserQueryService
+    IUserQueryService,\
+    IUserSessionQueryService
 
 from .board import BoardCreateService, BoardQueryService
 from .board import BoardUpdateService
@@ -42,7 +43,7 @@ from .task import TaskQueryService
 from .topic import TopicCreateService, TopicDeleteService
 from .topic import TopicQueryService, TopicUpdateService
 from .user import UserCreateService, UserLoginService
-from .user import UserQueryService
+from .user import UserQueryService, UserSessionQueryService
 
 
 def includeme(config):  # pragma: no cover
@@ -332,3 +333,13 @@ def includeme(config):  # pragma: no cover
     config.register_service_factory(
         user_query_factory,
         IUserQueryService)
+
+    # User Query
+
+    def user_session_query_factory(context, request):
+        dbsession = request.find_service(name='db')
+        return UserSessionQueryService(dbsession)
+
+    config.register_service_factory(
+        user_session_query_factory,
+        IUserSessionQueryService)
