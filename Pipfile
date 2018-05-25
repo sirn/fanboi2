@@ -14,6 +14,7 @@ rednose = "*"
 "flake8-bugbear" = "*"
 pre-commit = "*"
 black = "*"
+honcho = "*"
 
 [requires]
 python_version = "3.6"

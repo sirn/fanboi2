@@ -52,25 +52,18 @@ Vagrant.configure("2") do |config|
     psql template1 -c "CREATE DATABASE fanboi2_dev;"
     psql template1 -c "CREATE DATABASE fanboi2_test;"
 
-    echo 'CELERY_BROKER_URL="redis://127.0.0.1:6379/1"; export CELERY_BROKER_URL' >> $HOME/.profile
-    echo 'DATABASE_URL="postgresql://vagrant:@127.0.0.1:5432/fanboi2_dev"; export DATABASE_URL' >> $HOME/.profile
-    echo 'MEMCACHED_URL="127.0.0.1:11211"; export MEMCACHED_URL' >> $HOME/.profile
-    echo 'REDIS_URL="redis://127.0.0.1:6379/0"; export REDIS_URL' >> $HOME/.profile
-    echo 'SERVER_DEV=true; export SERVER_DEV' >> $HOME/.profile
-    echo 'SERVER_HOST="0.0.0.0"; export SERVER_HOST' >> $HOME/.profile
-    echo 'SERVER_PORT=6543; export SERVER_PORT' >> $HOME/.profile
-    echo "SESSION_SECRET=$(openssl rand -hex 32); export SESSION_SECRET" >> $HOME/.profile
-    echo "AUTH_SECRET=$(openssl rand -hex 32); export AUTH_SECRET" >> $HOME/.profile
+    echo 'CELERY_BROKER_URL="redis://127.0.0.1:6379/1"' > /vagrant/.env
+    echo 'DATABASE_URL="postgresql://vagrant:@127.0.0.1:5432/fanboi2_dev"' >> /vagrant/.env
+    echo 'MEMCACHED_URL="127.0.0.1:11211"' >> /vagrant/.env
+    echo 'REDIS_URL="redis://127.0.0.1:6379/0"' >> /vagrant/.env
+    echo 'SERVER_DEV=true' >> /vagrant/.env
+    echo 'SERVER_HOST="0.0.0.0"' >> /vagrant/.env
+    echo 'SERVER_PORT=6543' >> /vagrant/.env
+    echo "SESSION_SECRET=$(openssl rand -hex 32)" >> /vagrant/.env
+    echo "AUTH_SECRET=$(openssl rand -hex 32)" >> /vagrant/.env
 
-    . $HOME/.profile
     cd /vagrant
-
-    /usr/local/bin/pipenv install --dev
-    /usr/local/bin/pipenv run alembic upgrade head
-
-    cd /vagrant/assets
-    /usr/local/bin/yarn
-    /usr/local/bin/yarn run typings install
-    /usr/local/bin/yarn run gulp
+    make develop
+    make migrate
   EOF
 end

@@ -1,14 +1,16 @@
 language: python
-script: nosetests
 
 python:
   - "3.6"
 
 install:
-  - 'pip install -e .'
+  - make devinit
 
 before_script:
-  - 'psql -c "create database fanboi2;" -U postgres'
+  - psql -c "create database fanboi2;" -U postgres
+
+script:
+  - make test
 
 env:
   - POSTGRESQL_TEST_DATABASE=postgresql://postgres@localhost:5432/fanboi2
