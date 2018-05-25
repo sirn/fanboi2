@@ -4,6 +4,7 @@ from pyramid import testing
 
 
 class _DummyUserLoginService(object):
+
     def __init__(self, groups):
         self.groups = groups
         self._groups_token = None
@@ -34,56 +35,49 @@ class TestGroupFinder(unittest.TestCase):
 
     def _get_target_function(self):
         from ..auth import groupfinder
+
         return groupfinder
 
     def test_groupfinder(self):
         from ..interfaces import IUserLoginService
         from . import mock_service
-        user_login_svc = _DummyUserLoginService(['mod', 'admin'])
-        request = mock_service(self.request, {
-            IUserLoginService: user_login_svc})
-        request.client_addr = '127.0.0.1'
+
+        user_login_svc = _DummyUserLoginService(["mod", "admin"])
+        request = mock_service(self.request, {IUserLoginService: user_login_svc})
+        request.client_addr = "127.0.0.1"
         self.assertEqual(
-            self._get_target_function()('foobar', request),
-            ['g:mod', 'g:admin'])
-        self.assertEqual(user_login_svc._groups_token, 'foobar')
-        self.assertEqual(user_login_svc._groups_ip_address, '127.0.0.1')
-        self.assertEqual(user_login_svc._seen_token, 'foobar')
-        self.assertEqual(user_login_svc._seen_ip_address, '127.0.0.1')
+            self._get_target_function()("foobar", request), ["g:mod", "g:admin"]
+        )
+        self.assertEqual(user_login_svc._groups_token, "foobar")
+        self.assertEqual(user_login_svc._groups_ip_address, "127.0.0.1")
+        self.assertEqual(user_login_svc._seen_token, "foobar")
+        self.assertEqual(user_login_svc._seen_ip_address, "127.0.0.1")
 
     def test_groupfinder_none(self):
         from ..interfaces import IUserLoginService
         from . import mock_service
+
         user_login_svc = _DummyUserLoginService(None)
-        request = mock_service(self.request, {
-            IUserLoginService: user_login_svc})
-        request.client_addr = '127.0.0.1'
-        self.assertIsNone(self._get_target_function()('foobar', request))
-        self.assertEqual(
-            user_login_svc._groups_token,
-            'foobar')
-        self.assertEqual(
-            user_login_svc._groups_ip_address,
-            '127.0.0.1')
+        request = mock_service(self.request, {IUserLoginService: user_login_svc})
+        request.client_addr = "127.0.0.1"
+        self.assertIsNone(self._get_target_function()("foobar", request))
+        self.assertEqual(user_login_svc._groups_token, "foobar")
+        self.assertEqual(user_login_svc._groups_ip_address, "127.0.0.1")
         self.assertIsNone(user_login_svc._seen_token)
         self.assertIsNone(user_login_svc._seen_ip_address)
 
     def test_groupfinder_no_groups(self):
         from ..interfaces import IUserLoginService
         from . import mock_service
+
         user_login_svc = _DummyUserLoginService([])
-        request = mock_service(self.request, {
-            IUserLoginService: user_login_svc})
-        request.client_addr = '127.0.0.1'
-        self.assertEqual(
-            self._get_target_function()('foobar', request),
-            [])
-        self.assertEqual(user_login_svc._groups_token, 'foobar')
-        self.assertEqual(user_login_svc._groups_ip_address, '127.0.0.1')
-        self.assertEqual(user_login_svc._seen_token, 'foobar')
-        self.assertEqual(user_login_svc._seen_ip_address, '127.0.0.1')
+        request = mock_service(self.request, {IUserLoginService: user_login_svc})
+        request.client_addr = "127.0.0.1"
+        self.assertEqual(self._get_target_function()("foobar", request), [])
+        self.assertEqual(user_login_svc._groups_token, "foobar")
+        self.assertEqual(user_login_svc._groups_ip_address, "127.0.0.1")
+        self.assertEqual(user_login_svc._seen_token, "foobar")
+        self.assertEqual(user_login_svc._seen_ip_address, "127.0.0.1")
 
     def test_groupfinder_no_user(self):
-        self.assertIsNone(self._get_target_function()(
-            None,
-            self.request))
+        self.assertIsNone(self._get_target_function()(None, self.request))

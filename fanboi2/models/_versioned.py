@@ -45,11 +45,11 @@ def _copy_history_column(column):
     new_column.default = new_column.server_default = None
     if new_column.primary_key:
         new_column.autoincrement = False
-    column.info['history_copy'] = new_column
+    column.info["history_copy"] = new_column
     return new_column
 
 
-def _history_mapper(model_mapper):
+def _history_mapper(model_mapper):  # noqa: C901
     """Configure SQLAlchemy mapper and enable history support.
 
     :param model_mapper: SQLAlchemy mapper object for a model.
@@ -61,7 +61,7 @@ def _history_mapper(model_mapper):
         getattr(model_class, prop.key).impl.active_history = True
 
     super_mapper = model_mapper.inherits
-    super_history_mapper = getattr(model_class, '__history_mapper__', None)
+    super_history_mapper = getattr(model_class, "__history_mapper__", None)
     super_fks = []
 
     properties = OrderedDict()
@@ -83,54 +83,62 @@ def _history_mapper(model_mapper):
             new_column = _copy_history_column(column)
             new_columns.append(new_column)
 
-            if super_mapper and \
-               _is_fk_column(column, super_mapper.local_table):
+            if super_mapper and _is_fk_column(column, super_mapper.local_table):
                 super_fks.append(
-                    (new_column.key,
-                     list(super_history_mapper.local_table.primary_key)[0]))
+                    (
+                        new_column.key,
+                        list(super_history_mapper.local_table.primary_key)[0],
+                    )
+                )
 
             if column is model_mapper.polymorphic_on:
                 polymorphic_on = new_column
 
-            if len(original_prop.columns) > 1 or \
-               original_prop.columns[0].key != original_prop.key:
+            if (
+                len(original_prop.columns) > 1
+                or original_prop.columns[0].key != original_prop.key
+            ):
                 properties[original_prop.key] = tuple(
-                    c.info['history_copy'] for c in original_prop.columns)
+                    c.info["history_copy"] for c in original_prop.columns
+                )
 
         if super_mapper:
-            super_fks.append((
-                'version',
-                super_history_mapper.local_table.c.version))
+            super_fks.append(("version", super_history_mapper.local_table.c.version))
 
         new_columns.append(
-            Column('version',
-                   Integer,
-                   primary_key=True,
-                   autoincrement=False,
-                   nullable=False,
-                   info=version_meta))
+            Column(
+                "version",
+                Integer,
+                primary_key=True,
+                autoincrement=False,
+                nullable=False,
+                info=version_meta,
+            )
+        )
 
         new_columns.append(
-            Column('change_type',
-                   String,
-                   nullable=False,
-                   info=version_meta))
+            Column("change_type", String, nullable=False, info=version_meta)
+        )
 
         new_columns.append(
-            Column('changed_at',
-                   DateTime(timezone=True),
-                   default=func.now(),
-                   nullable=False,
-                   info=version_meta))
+            Column(
+                "changed_at",
+                DateTime(timezone=True),
+                default=func.now(),
+                nullable=False,
+                info=version_meta,
+            )
+        )
 
         if super_fks:
             new_columns.append(ForeignKeyConstraint(*zip(*super_fks)))
 
         new_table = Table(
-            model_table.name + '_history',
+            model_table.name + "_history",
             model_table.metadata,
             *new_columns,
-            schema=model_table.schema)
+            schema=model_table.schema
+        )
     else:
         for column in model_mapper.c:
             if column.key not in super_history_mapper.local_table.c:
@@ -141,12 +149,12 @@ def _history_mapper(model_mapper):
     if super_history_mapper:
         bases = (super_history_mapper.class_,)
         if new_table is not None:
-            properties['change_type'] = (
-                (new_table.c.change_type,) + tuple(
-                    super_history_mapper.attrs.change_type.columns))
-            properties['changed_at'] = (
-                (new_table.c.changed_at,) + tuple(
-                    super_history_mapper.attrs.changed_at.columns))
+            properties["change_type"] = (new_table.c.change_type,) + tuple(
+                super_history_mapper.attrs.change_type.columns
+            )
+            properties["changed_at"] = (new_table.c.changed_at,) + tuple(
+                super_history_mapper.attrs.changed_at.columns
+            )
     else:
         bases = model_mapper.base_mapper.class_.__bases__
 
@@ -156,15 +164,12 @@ def _history_mapper(model_mapper):
         inherits=super_history_mapper,
         polymorphic_on=polymorphic_on,
         polymorphic_identity=model_mapper.polymorphic_identity,
-        properties=properties)
+        properties=properties,
+    )
 
     if not super_history_mapper:
-        model_table.append_column(
-            Column('version',
-                   Integer,
-                   default=1,
-                   nullable=False))
-        model_mapper.add_property('version', model_table.c.version)
+        model_table.append_column(Column("version", Integer, default=1, nullable=False))
+        model_mapper.add_property("version", model_table.c.version)
 
 
 def setup_versioned(retrieve=None):
@@ -195,11 +200,13 @@ def make_versioned_class(register=None):
         """Mixin for enabling versioning for a model."""
 
         @declared_attr
-        def __mapper_cls__(cls):
-            def _map(cls, *args, **kwargs):
-                model_mapper = mapper(cls, *args, **kwargs)
+        def __mapper_cls__(self):
+
+            def _map(self, *args, **kwargs):
+                model_mapper = mapper(self, *args, **kwargs)
                 register(model_mapper)
                 return model_mapper
+
             return _map
 
     return _Versioned
@@ -210,10 +217,10 @@ def _is_versioned_object(obj):
 
     :param obj: SQLAlchemy model object.
     """
-    return hasattr(obj, '__history_mapper__')
+    return hasattr(obj, "__history_mapper__")
 
 
-def _create_version(obj, session, type_=None, force=False):
+def _create_version(obj, session, type_=None, force=False):  # noqa: C901
     """Create a new version for the given :attr:`obj`.
 
     :param obj: SQLAlchemy model object.
@@ -230,8 +237,8 @@ def _create_version(obj, session, type_=None, force=False):
     attr = {}
 
     for obj_mapper_, history_mapper_ in zip(
-            obj_mapper.iterate_to_root(),
-            history_mapper.iterate_to_root()):
+        obj_mapper.iterate_to_root(), history_mapper.iterate_to_root()
+    ):
 
         if history_mapper_.single:
             continue
@@ -251,9 +258,7 @@ def _create_version(obj, session, type_=None, force=False):
             if prop.key not in obj_state.dict:
                 getattr(obj, prop.key)
 
-            added_, unchanged_, deleted_ = attributes.get_history(
-                obj,
-                prop.key)
+            added_, unchanged_, deleted_ = attributes.get_history(obj, prop.key)
 
             if deleted_:
                 attr[prop.key] = deleted_[0]
@@ -265,11 +270,12 @@ def _create_version(obj, session, type_=None, force=False):
 
     if not obj_changed:
         for prop in obj_mapper.iterate_properties:
-            if isinstance(prop, RelationshipProperty) and \
-               attributes.get_history(
-                   obj,
-                   prop.key,
-                   passive=attributes.PASSIVE_NO_INITIALIZE).has_changes():
+            if (
+                isinstance(prop, RelationshipProperty)
+                and attributes.get_history(
+                    obj, prop.key, passive=attributes.PASSIVE_NO_INITIALIZE
+                ).has_changes()
+            ):
                 for p in prop.local_columns:
                     if p.foreign_keys:
                         obj_changed = True
@@ -280,8 +286,8 @@ def _create_version(obj, session, type_=None, force=False):
     if not obj_changed and not force:  # pragma: no cover
         return
 
-    attr['version'] = obj.version
-    attr['change_type'] = type_
+    attr["version"] = obj.version
+    attr["change_type"] = type_
     history = history_class()
     for key, value in attr.items():
         setattr(history, key, value)
@@ -298,7 +304,7 @@ def _create_history_dirty(session, objs):
     """
     for obj in objs:
         if _is_versioned_object(obj):
-            _create_version(obj, session, type_='update')
+            _create_version(obj, session, type_="update")
 
 
 def _create_history_deleted(session, objs):
@@ -311,7 +317,7 @@ def _create_history_deleted(session, objs):
     """
     for obj in objs:
         if _is_versioned_object(obj):
-            _create_version(obj, session, type_='delete', force=True)
+            _create_version(obj, session, type_="delete", force=True)
 
         # Also handle NULL fks from SQLAlchemy Cascades. See also:
         # 6e1f34 lib/sqlalchemy/orm/dependency.py#L423-L424
@@ -320,16 +326,15 @@ def _create_history_deleted(session, objs):
 
         def _create_cascade_version(target_obj):
             if target_obj not in objs:
-                _create_version(target_obj,
-                                session,
-                                type_='update.cascade',
-                                force=True)
+                _create_version(target_obj, session, type_="update.cascade", force=True)
 
         for prop in obj_mapper.iterate_properties:
-            if isinstance(prop, RelationshipProperty) and \
-               not prop.cascade.delete and \
-               not prop.passive_deletes == 'all' and \
-               _is_versioned_object(prop.mapper.class_):
+            if (
+                isinstance(prop, RelationshipProperty)
+                and not prop.cascade.delete
+                and not prop.passive_deletes == "all"
+                and _is_versioned_object(prop.mapper.class_)
+            ):
                 skip_history = False
                 for c in prop.local_columns:
                     if c.foreign_keys:
@@ -350,8 +355,10 @@ def make_history_event(session):
 
     :param session: SQLAlchemy session object.
     """
-    @event.listens_for(session, 'before_flush')
+
+    @event.listens_for(session, "before_flush")
     def update_history(session_, context, instances):
         _create_history_dirty(session_, session_.dirty)
         _create_history_deleted(session_, session_.deleted)
+
     return session

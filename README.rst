@@ -65,8 +65,14 @@ Fanboi2 is open to any contributors, whether you're learning Python or an expert
 
 - It's always a good idea to open `an issue <https://github.com/forloopend/fanboi2/issues>`_ prior to starting.
 - No need for 100% coverage but please make sure new features has bare minimum tests.
-- Remember to run `flake8 <https://pypi.python.org/pypi/flake8>`_ and fix any styling issues.
+- Use `black <https://github.com/ambv/black>`_ to format your code.
+- Remember to run `flake8 <https://pypi.python.org/pypi/flake8>`_ (with `flake8-bugbear <https://github.com/PyCQA/flake8-bugbear>`_) and fix any issues.
 - After done, simply open a `pull request <https://github.com/forloopend/fanboi2/pulls>`_ against **master** branch.
+
+We also have pre-commit hooks installed, in which will perform code formatting with black, and run flake8 for you::
+
+  $ pipenv install --dev
+  $ pipenv run pre-commit install
 
 License
 -------

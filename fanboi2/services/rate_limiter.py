@@ -7,8 +7,9 @@ class RateLimiterService(object):
         self.redis_conn = redis_conn
 
     def _get_key(self, **kwargs):
-        return 'services.rate_limiter:%s' % (
-            (','.join('%s=%s' % (k, v) for k, v in sorted(kwargs.items()))),)
+        return "services.rate_limiter:%s" % (
+            (",".join("%s=%s" % (k, v) for k, v in sorted(kwargs.items()))),
+        )
 
     def limit_for(self, expiration=10, **kwargs):
         """Set the rate limited key for the user and expire at least

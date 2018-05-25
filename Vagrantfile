@@ -16,7 +16,7 @@ Vagrant.configure("2") do |config|
     pkg install -y ca_root_nss git-lite curl ntp
     pkg install -y postgresql10-server node redis memcached yarn
     pkg install -y bzip2 sqlite3 gmake
-    pkg install -y python36
+    pkg install -y python36 py36-sqlite3
 
     ntpd -qg
 

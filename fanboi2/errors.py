@@ -11,17 +11,17 @@ class BaseError(Exception):
 
         :param request: A :class:`pyramid.request.Request` object.
         """
-        return 'An exception error occurred.'
+        return "An exception error occurred."
 
     @property
     def name(self):
         """The short globally recognizable name of this error."""
-        return 'unknown'
+        return "unknown"
 
     @property
     def http_status(self):
         """The HTTP status code to response as."""
-        return '500 Internal Server Error'
+        return "500 Internal Server Error"
 
 
 class RateLimitedError(BaseError):
@@ -36,15 +36,15 @@ class RateLimitedError(BaseError):
         self.timeleft = timeleft
 
     def message(self, request):
-        return 'Please wait %s seconds before retrying.' % self.timeleft
+        return "Please wait %s seconds before retrying." % self.timeleft
 
     @property
     def name(self):
-        return 'rate_limited'
+        return "rate_limited"
 
     @property
     def http_status(self):
-        return '429 Too Many Requests'
+        return "429 Too Many Requests"
 
 
 class ParamsInvalidError(BaseError):
@@ -63,11 +63,11 @@ class ParamsInvalidError(BaseError):
 
     @property
     def name(self):
-        return 'params_invalid'
+        return "params_invalid"
 
     @property
     def http_status(self):
-        return '400 Bad Request'
+        return "400 Bad Request"
 
 
 class AkismetRejectedError(BaseError):
@@ -76,16 +76,18 @@ class AkismetRejectedError(BaseError):
     """
 
     def message(self, request):
-        return 'The request has been identified as spam ' +\
-            'by Akismet and therefore rejected.'
+        return (
+            "The request has been identified as spam "
+            + "by Akismet and therefore rejected."
+        )
 
     @property
     def name(self):
-        return 'akismet_rejected'
+        return "akismet_rejected"
 
     @property
     def http_status(self):
-        return '422 Unprocessable Entity'
+        return "422 Unprocessable Entity"
 
 
 class DNSBLRejectedError(BaseError):
@@ -94,16 +96,18 @@ class DNSBLRejectedError(BaseError):
     """
 
     def message(self, request):
-        return 'The IP address is being listed in one of DNSBL databases ' +\
-            'and therefore rejected.'
+        return (
+            "The IP address is being listed in one of DNSBL databases "
+            + "and therefore rejected."
+        )
 
     @property
     def name(self):
-        return 'dnsbl_rejected'
+        return "dnsbl_rejected"
 
     @property
     def http_status(self):
-        return '422 Unprocessable Entity'
+        return "422 Unprocessable Entity"
 
 
 class BanRejectedError(BaseError):
@@ -112,16 +116,18 @@ class BanRejectedError(BaseError):
     """
 
     def message(self, request):
-        return 'The IP address is being listed in the ban list ' +\
-            'and therefore rejected.'
+        return (
+            "The IP address is being listed in the ban list "
+            + "and therefore rejected."
+        )
 
     @property
     def name(self):
-        return 'ban_rejected'
+        return "ban_rejected"
 
     @property
     def http_status(self):
-        return '422 Unprocessable Entity'
+        return "422 Unprocessable Entity"
 
 
 class StatusRejectedError(BaseError):
@@ -136,15 +142,15 @@ class StatusRejectedError(BaseError):
         self.status = status
 
     def message(self, request):
-        return 'The topic or the board is currently locked.'
+        return "The topic or the board is currently locked."
 
     @property
     def name(self):
-        return 'status_rejected'
+        return "status_rejected"
 
     @property
     def http_status(self):
-        return '422 Unprocessable Entity'
+        return "422 Unprocessable Entity"
 
 
 class ProxyRejectedError(BaseError):
@@ -153,26 +159,28 @@ class ProxyRejectedError(BaseError):
     """
 
     def message(self, request):
-        return 'The IP address has been identified as an open proxy ' +\
-            'or VPN service and therefore rejected.'
+        return (
+            "The IP address has been identified as an open proxy "
+            + "or VPN service and therefore rejected."
+        )
 
     @property
     def name(self):
-        return 'proxy_rejected'
+        return "proxy_rejected"
 
     @property
     def http_status(self):
-        return '422 Unprocessable Entity'
+        return "422 Unprocessable Entity"
 
 
 _ERRORS = {
-    'rate_limited': RateLimitedError,
-    'params_invalid': ParamsInvalidError,
-    'akismet_rejected': AkismetRejectedError,
-    'dnsbl_rejected': DNSBLRejectedError,
-    'ban_rejected': BanRejectedError,
-    'status_rejected': StatusRejectedError,
-    'proxy_rejected': ProxyRejectedError,
+    "rate_limited": RateLimitedError,
+    "params_invalid": ParamsInvalidError,
+    "akismet_rejected": AkismetRejectedError,
+    "dnsbl_rejected": DNSBLRejectedError,
+    "ban_rejected": BanRejectedError,
+    "status_rejected": StatusRejectedError,
+    "proxy_rejected": ProxyRejectedError,
 }
 
 

@@ -11,18 +11,13 @@ from ..tasks import add_post
 class PostCreateService(object):
     """Post create service provides a service for creating a post."""
 
-    def __init__(
-            self,
-            dbsession,
-            identity_svc,
-            setting_query_svc,
-            user_query_svc):
+    def __init__(self, dbsession, identity_svc, setting_query_svc, user_query_svc):
         self.dbsession = dbsession
         self.identity_svc = identity_svc
         self.setting_query_svc = setting_query_svc
         self.user_query_svc = user_query_svc
 
-    def enqueue(self, topic_id, body, bumped, ip_address, payload={}):
+    def enqueue(self, topic_id, body, bumped, ip_address, payload):
         """Enqueues the post creation to the posting queue. Posts that are
         queued will be processed with pre-posting filters using the given
         :param:`payload`.
@@ -33,19 +28,9 @@ class PostCreateService(object):
         :param ip_address: An IP address of the topic creator.
         :param payload: A request payload containing request metadata.
         """
-        return add_post.delay(
-            topic_id,
-            body,
-            bumped,
-            ip_address,
-            payload=payload)
+        return add_post.delay(topic_id, body, bumped, ip_address, payload=payload)
 
-    def _prepare_c(
-            self,
-            topic_id,
-            bumped,
-            allowed_board_status,
-            allowed_topic_status):
+    def _prepare_c(self, topic_id, bumped, allowed_board_status, allowed_topic_status):
         """Internal method performing preparatory work to create a new post.
         Returns a 3-tuple of ``(board, topic, topic_meta)``.
 
@@ -54,10 +39,9 @@ class PostCreateService(object):
         :param allowed_board_status: Tuple of board status to allow posting.
         :param allowed_topic_status: Tuple of topic status to allow posting.
         """
-        topic = self.dbsession.query(Topic).\
-            with_for_update().\
-            filter_by(id=topic_id).\
-            one()
+        topic = (
+            self.dbsession.query(Topic).with_for_update().filter_by(id=topic_id).one()
+        )
 
         if topic.status not in allowed_topic_status:
             raise StatusRejectedError(topic.status)
@@ -77,9 +61,9 @@ class PostCreateService(object):
 
         # Update topic
 
-        max_posts = board.settings['max_posts']
-        if topic.status == 'open' and topic_meta.post_count >= max_posts:
-            topic.status = 'archived'
+        max_posts = board.settings["max_posts"]
+        if topic.status == "open" and topic_meta.post_count >= max_posts:
+            topic.status = "archived"
             self.dbsession.add(topic)
 
         return board, topic, topic_meta
@@ -96,30 +80,31 @@ class PostCreateService(object):
         board, topic, topic_meta = self._prepare_c(
             topic_id,
             bumped,
-            allowed_board_status=('open', 'restricted'),
-            allowed_topic_status=('open',))
+            allowed_board_status=("open", "restricted"),
+            allowed_topic_status=("open",),
+        )
 
         ident = None
-        ident_type = 'none'
-        if board.settings['use_ident']:
-            time_zone = self.setting_query_svc.value_from_key('app.time_zone')
+        ident_type = "none"
+        if board.settings["use_ident"]:
+            time_zone = self.setting_query_svc.value_from_key("app.time_zone")
             tz = pytz.timezone(time_zone)
             timestamp = datetime.datetime.now(tz).strftime("%Y%m%d")
-            ident_type = 'ident'
+            ident_type = "ident"
             ident = self.identity_svc.identity_for(
-                board=board.slug,
-                ip_address=ip_address,
-                timestamp=timestamp)
+                board=board.slug, ip_address=ip_address, timestamp=timestamp
+            )
 
         post = Post(
             topic=topic,
             number=topic_meta.post_count,
             body=body,
             bumped=bumped,
-            name=board.settings['name'],
+            name=board.settings["name"],
             ident=ident,
             ident_type=ident_type,
-            ip_address=ip_address)
+            ip_address=ip_address,
+        )
 
         self.dbsession.add(post)
         return post
@@ -141,8 +126,9 @@ class PostCreateService(object):
         board, topic, topic_meta = self._prepare_c(
             topic_id,
             bumped,
-            allowed_board_status=('open', 'restricted', 'locked'),
-            allowed_topic_status=('open', 'locked'))
+            allowed_board_status=("open", "restricted", "locked"),
+            allowed_topic_status=("open", "locked"),
+        )
 
         ident = user.ident
         ident_type = user.ident_type
@@ -156,7 +142,8 @@ class PostCreateService(object):
             name=name,
             ident=ident,
             ident_type=ident_type,
-            ip_address=ip_address)
+            ip_address=ip_address,
+        )
 
         self.dbsession.add(post)
         return post
@@ -176,9 +163,9 @@ class PostDeleteService(object):
         :param topic_id: A topic ID :type:`int` to delete the post.
         :param number: A post number in the topic.
         """
-        post = self.dbsession.query(Post).\
-            filter_by(topic_id=topic_id, number=number).\
-            one()
+        post = (
+            self.dbsession.query(Post).filter_by(topic_id=topic_id, number=number).one()
+        )
 
         self.dbsession.delete(post)
         return post
@@ -207,9 +194,9 @@ class PostQueryService(object):
         :param ip_address: An :type:`str` IP address to lookup.
         """
         anchor = datetime.datetime.now() - datetime.timedelta(days=3)
-        q = self.dbsession.query(Post).\
-            filter(
-                Post.created_at >= anchor,
-                Post.ip_address == ip_address).\
-            exists()
+        q = (
+            self.dbsession.query(Post)
+            .filter(Post.created_at >= anchor, Post.ip_address == ip_address)
+            .exists()
+        )
         return self.dbsession.query(q).scalar()

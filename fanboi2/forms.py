@@ -1,10 +1,16 @@
 import json
 import ipaddress
 
-from wtforms import TextField, TextAreaField, Form, BooleanField
-from wtforms import PasswordField, IntegerField, SelectField
-from wtforms.validators import Length as _Length
-from wtforms.validators import Required, EqualTo, ValidationError
+from wtforms import (
+    TextField,
+    TextAreaField,
+    Form,
+    BooleanField,
+    PasswordField,
+    IntegerField,
+    SelectField,
+)
+from wtforms.validators import Length as _Length, Required, EqualTo, ValidationError
 
 
 class Length(_Length):
@@ -14,23 +20,26 @@ class Length(_Length):
     """
 
     def __call__(self, form, field):
-        length = field.data and len(field.data.replace('\r\n', '\n')) or 0
+        length = field.data and len(field.data.replace("\r\n", "\n")) or 0
         if length < self.min or self.max != -1 and length > self.max:
             message = self.message
             if message is None:
                 if self.max == -1:
                     message = field.ngettext(
-                        'Field must be at least %(min)d character long.',
-                        'Field must be at least %(min)d characters long.',
-                        self.min)
+                        "Field must be at least %(min)d character long.",
+                        "Field must be at least %(min)d characters long.",
+                        self.min,
+                    )
                 elif self.min == -1:
                     message = field.ngettext(
-                        'Field cannot be longer than %(max)d character.',
-                        'Field cannot be longer than %(max)d characters.',
-                        self.max)
+                        "Field cannot be longer than %(max)d character.",
+                        "Field cannot be longer than %(max)d characters.",
+                        self.max,
+                    )
                 else:
-                    message = field.gettext('Field must be between %(min)d '
-                                            'and %(max)d characters long.')
+                    message = field.gettext(
+                        "Field must be between %(min)d " "and %(max)d characters long."
+                    )
             raise ValidationError(message % dict(min=self.min, max=self.max))
 
 
@@ -39,113 +48,113 @@ class TopicForm(Form):
     to two objects, :attr:`title` to :class:`Topic` and :attr:`body` to
     :class:`Post`.
     """
-    title = TextField('Title', validators=[Required(), Length(5, 200)])
-    body = TextAreaField('Body', validators=[Required(), Length(5, 4000)])
+    title = TextField("Title", validators=[Required(), Length(5, 200)])
+    body = TextAreaField("Body", validators=[Required(), Length(5, 4000)])
 
 
 class PostForm(Form):
     """A :class:`Form` for replying to a topic. The :attr:`body` field should
     be populated to :class:`Post`.
     """
-    body = TextAreaField('Body', validators=[Required(), Length(5, 4000)])
-    bumped = BooleanField('Bump this topic', default=True)
+    body = TextAreaField("Body", validators=[Required(), Length(5, 4000)])
+    bumped = BooleanField("Bump this topic", default=True)
 
 
 class AdminLoginForm(Form):
     """A :class:`Form` for logging into a moderation system."""
-    username = TextField('Username', validators=[Required()])
-    password = PasswordField('Password', validators=[Required()])
+    username = TextField("Username", validators=[Required()])
+    password = PasswordField("Password", validators=[Required()])
 
 
 class AdminSetupForm(Form):
     """A :class:`Form` for creating an initial user."""
-    username = TextField('Username', validators=[
-        Required(),
-        Length(2, 32)])
-    password = PasswordField('Password', validators=[
-        Required(),
-        Length(8, 64)])
+    username = TextField("Username", validators=[Required(), Length(2, 32)])
+    password = PasswordField("Password", validators=[Required(), Length(8, 64)])
     password_confirm = PasswordField(
-        'Password confirmation',
-        validators=[
-            Required(),
-            EqualTo('password', message='Password must match.')])
-    name = TextField('Name', validators=[
-        Required(),
-        Length(2, 64)])
+        "Password confirmation",
+        validators=[Required(), EqualTo("password", message="Password must match.")],
+    )
+    name = TextField("Name", validators=[Required(), Length(2, 64)])
 
 
 class AdminSettingForm(Form):
     """A :class:`Form` for updating settings."""
-    value = TextAreaField('Value', validators=[Required()])
+    value = TextAreaField("Value", validators=[Required()])
 
-    def validate_value(form, field):
+    def validate_value(self, field):
         """Custom field validator that ensure value is a valid JSON."""
         try:
             json.loads(field.data)
         except json.decoder.JSONDecodeError:
-            raise ValidationError('Must be a valid JSON.')
+            raise ValidationError("Must be a valid JSON.")
 
 
 class AdminRuleBanForm(Form):
     """A :class:`Form` for creating and updating bans."""
-    ip_address = TextField('IP address', validators=[Required()])
-    description = TextField('Description')
-    duration = IntegerField('Duration', default=0)
-    scope = TextField('Scope')
-    active = BooleanField('Active', default=True)
+    ip_address = TextField("IP address", validators=[Required()])
+    description = TextField("Description")
+    duration = IntegerField("Duration", default=0)
+    scope = TextField("Scope")
+    active = BooleanField("Active", default=True)
 
-    def validate_ip_address(form, field):
+    def validate_ip_address(self, field):
         """Custom field validator that ensure IP address is valid."""
         try:
             ipaddress.ip_network(field.data)
         except ValueError:
-            raise ValidationError('Must be a valid IP address.')
+            raise ValidationError("Must be a valid IP address.")
 
 
 class AdminBoardForm(Form):
     """A :class:`Form` for updating a board."""
-    title = TextField('Title', validators=[Required()])
-    description = TextField('Description', validators=[Required()])
-    status = SelectField('Status', validators=[Required()], choices=[
-        ('open', 'Open'),
-        ('restricted', 'Restricted'),
-        ('locked', 'Locked'),
-        ('archived', 'Archived')])
+    title = TextField("Title", validators=[Required()])
+    description = TextField("Description", validators=[Required()])
+    status = SelectField(
+        "Status",
+        validators=[Required()],
+        choices=[
+            ("open", "Open"),
+            ("restricted", "Restricted"),
+            ("locked", "Locked"),
+            ("archived", "Archived"),
+        ],
+    )
 
-    agreements = TextAreaField('Agreements', validators=[Required()])
-    settings = TextAreaField('Settings', validators=[Required()])
+    agreements = TextAreaField("Agreements", validators=[Required()])
+    settings = TextAreaField("Settings", validators=[Required()])
 
-    def validate_settings(form, field):
+    def validate_settings(self, field):
         """Custom field validator that ensure value is a valid JSON."""
         try:
             json.loads(field.data)
         except json.decoder.JSONDecodeError:
-            raise ValidationError('Must be a valid JSON.')
+            raise ValidationError("Must be a valid JSON.")
 
 
 class AdminBoardNewForm(AdminBoardForm):
     """A :class:`Form` for creating a board."""
-    slug = TextField('Slug', validators=[Required()])
+    slug = TextField("Slug", validators=[Required()])
 
 
 class AdminPageForm(Form):
     """A :class:`Form` for creating and updating pages."""
-    body = TextAreaField('Body', validators=[Required()])
+    body = TextAreaField("Body", validators=[Required()])
 
 
 class AdminPublicPageForm(AdminPageForm):
     """A :class:`Form` for updating public pages."""
-    title = TextField('Title', validators=[Required()])
+    title = TextField("Title", validators=[Required()])
 
 
 class AdminPublicPageNewForm(AdminPublicPageForm):
     """A :class:`Form` for creating public pages."""
-    slug = TextField('Slug', validators=[Required()])
+    slug = TextField("Slug", validators=[Required()])
 
 
 class AdminTopicForm(Form):
     """A :class:`Form` for updating topic."""
-    status = SelectField('Status', validators=[Required()], choices=[
-        ('open', 'Open'),
-        ('locked', 'Locked')])
+    status = SelectField(
+        "Status",
+        validators=[Required()],
+        choices=[("open", "Open"), ("locked", "Locked")],
+    )

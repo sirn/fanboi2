@@ -20,12 +20,12 @@ class ResultProxy(object):
         """Deserializing the result into Python object."""
         if self._object is None:
             obj, id_, *args = self._result.get()
-            if obj == 'failure':
+            if obj == "failure":
                 class_ = deserialize_error(id_)
                 if class_ is not None:
                     self._object = class_(*args)
             else:
-                dbsession = request.find_service(name='db')
+                dbsession = request.find_service(name="db")
                 class_ = deserialize_model(obj)
                 if class_ is not None:
                     self._object = dbsession.query(class_).get(id_)

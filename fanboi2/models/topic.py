@@ -17,24 +17,31 @@ class Topic(Versioned, Base):
     to :class:`Post`.
     """
 
-    __tablename__ = 'topic'
+    __tablename__ = "topic"
 
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    board_id = Column(Integer, ForeignKey('board.id'), nullable=False)
+    board_id = Column(Integer, ForeignKey("board.id"), nullable=False)
     title = Column(Unicode(255), nullable=False)
-    status = Column(TopicStatusEnum, default='open', nullable=False)
+    status = Column(TopicStatusEnum, default="open", nullable=False)
 
-    board = relationship('Board',
-                         backref=backref('topics',
-                                         lazy='dynamic',
-                                         cascade='all,delete',
-                                         order_by=desc(func.coalesce(
-                                             select([TopicMeta.bumped_at]).
-                                             where(TopicMeta.topic_id == id).
-                                             as_scalar(),
-                                             created_at))))
+    board = relationship(
+        "Board",
+        backref=backref(
+            "topics",
+            lazy="dynamic",
+            cascade="all,delete",
+            order_by=desc(
+                func.coalesce(
+                    select([TopicMeta.bumped_at])
+                    .where(TopicMeta.topic_id == id)
+                    .as_scalar(),
+                    created_at,
+                )
+            ),
+        ),
+    )
 
     QUERY = (
         ("single_post", re.compile("^(\d+)$")),
@@ -98,6 +105,9 @@ class Topic(Versioned, Base):
         """Returns recent `count` number of posts associated with this topic.
         Defaults to 30 posts if `count` is not given.
         """
-        return self.posts.order_by(False).\
-            order_by(desc(Post.number)).\
-            limit(count).all()[::-1]
+        return (
+            self.posts.order_by(False)
+            .order_by(desc(Post.number))
+            .limit(count)
+            .all()[::-1]
+        )

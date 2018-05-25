@@ -6,7 +6,7 @@ def _get_cache_key(key):
 
     :param key: The setting key.
     """
-    return 'services.setting:key=%s' % (key,)
+    return "services.setting:key=%s" % (key,)
 
 
 class SettingQueryService(object):
@@ -37,11 +37,8 @@ class SettingQueryService(object):
         return sorted(safe_settings)
 
     def value_from_key(
-            self,
-            key,
-            use_cache=True,
-            safe_keys=False,
-            _default=DEFAULT_SETTINGS):
+        self, key, use_cache=True, safe_keys=False, _default=DEFAULT_SETTINGS
+    ):
         """Returns a setting value either from a cache, from a database
         or the default value. The value returned by this method will be
         cached for 3600 seconds (1 hour).
@@ -49,18 +46,19 @@ class SettingQueryService(object):
         :param key: The :type:`str` setting key.
         :param use_cache: A :type:`bool` flag whether to load from cache.
         """
+
         def _creator_fn():
             setting = self.dbsession.query(Setting).filter_by(key=key).first()
             if not setting:
                 return _default.get(key, None)
             return setting.value
+
         if safe_keys and key not in _default:
             raise KeyError(key)
         if use_cache:
             return self.cache_region.get_or_create(
-                _get_cache_key(key),
-                _creator_fn,
-                expiration_time=3600)
+                _get_cache_key(key), _creator_fn, expiration_time=3600
+            )
         return _creator_fn()
 
     def reload_cache(self, key):

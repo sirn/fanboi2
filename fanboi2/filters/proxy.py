@@ -8,9 +8,9 @@ class BlackBoxProxyDetector(object):
     """Provides integration with Black Block Proxy Block service."""
 
     def __init__(self, **kwargs):
-        self.url = kwargs.get('url')
+        self.url = kwargs.get("url")
         if not self.url:
-            self.url = 'http://proxy.mind-media.com/block/proxycheck.php'
+            self.url = "http://proxy.mind-media.com/block/proxycheck.php"
 
     def check(self, ip_address):
         """Request for IP evaluation and return raw results. Return the
@@ -22,12 +22,13 @@ class BlackBoxProxyDetector(object):
         try:
             result = requests.get(
                 self.url,
-                headers={'User-Agent': "fanboi2/%s" % __VERSION__},
-                params={'ip': ip_address},
-                timeout=2)
+                headers={"User-Agent": "fanboi2/%s" % __VERSION__},
+                params={"ip": ip_address},
+                timeout=2,
+            )
         except requests.Timeout:
             return
-        if result.status_code == 200 and result.content != b'X':
+        if result.status_code == 200 and result.content != b"X":
             return result.content
 
     def evaluate(self, result):
@@ -36,7 +37,7 @@ class BlackBoxProxyDetector(object):
 
         :param result: A result from evaluation request.
         """
-        if result == b'Y':
+        if result == b"Y":
             return True
         return False
 
@@ -45,13 +46,13 @@ class GetIPIntelProxyDetector(object):
     """Provides integration with GetIPIntel proxy detection service."""
 
     def __init__(self, **kwargs):
-        self.url = kwargs.get('url')
-        self.flags = kwargs.get('flags')
-        self.email = kwargs.get('email')
+        self.url = kwargs.get("url")
+        self.flags = kwargs.get("flags")
+        self.email = kwargs.get("email")
         if not self.url:
-            self.url = 'http://check.getipintel.net/check.php'
+            self.url = "http://check.getipintel.net/check.php"
         if not self.email:
-            raise ValueError('GetIPIntel require an email to be present.')
+            raise ValueError("GetIPIntel require an email to be present.")
 
     def check(self, ip_address):
         """Request for IP evaluation and return raw results. Return the
@@ -60,15 +61,16 @@ class GetIPIntelProxyDetector(object):
 
         :param ip_address: An :type:`str` IP address.
         """
-        params = {'contact': self.email, 'ip': ip_address}
+        params = {"contact": self.email, "ip": ip_address}
         if self.flags:
-            params['flags'] = self.flags
+            params["flags"] = self.flags
         try:
             result = requests.get(
                 self.url,
-                headers={'User-Agent': "fanboi2/%s" % __VERSION__},
+                headers={"User-Agent": "fanboi2/%s" % __VERSION__},
                 params=params,
-                timeout=5)
+                timeout=5,
+            )
         except requests.Timeout:
             return
         if result.status_code == 200 and float(result.content) >= 0:
@@ -87,27 +89,27 @@ class GetIPIntelProxyDetector(object):
 
 
 DETECTOR_PROVIDERS = {
-    'blackbox': BlackBoxProxyDetector,
-    'getipintel': GetIPIntelProxyDetector,
+    "blackbox": BlackBoxProxyDetector,
+    "getipintel": GetIPIntelProxyDetector,
 }
 
 
-@register_filter(name='proxy')
+@register_filter(name="proxy")
 class ProxyDetector(object):
     """Base class for dispatching proxy detection into multiple providers."""
 
-    __use_services__ = ('cache',)
+    __use_services__ = ("cache",)
 
-    def __init__(self, settings=None, services={}):
+    def __init__(self, settings=None, services=None):
         if not settings:
             settings = {}
+        if not services:
+            services = {}
         self.settings = settings
-        self.cache_region = services['cache']
+        self.cache_region = services["cache"]
 
     def _get_cache_key(self, provider, ip_address):
-        return 'filters.proxy:provider=%s,ip_address=%s' % (
-            provider,
-            ip_address)
+        return "filters.proxy:provider=%s,ip_address=%s" % (provider, ip_address)
 
     def should_reject(self, payload):
         """Returns :type:`True` if the given IP address is identified as
@@ -117,13 +119,14 @@ class ProxyDetector(object):
         :param payload: A filter payload.
         """
         for provider, settings in self.settings.items():
-            if settings['enabled']:
+            if settings["enabled"]:
                 detector = DETECTOR_PROVIDERS[provider](**settings)
                 result = self.cache_region.get_or_create(
-                    self._get_cache_key(provider, payload['ip_address']),
-                    lambda: detector.check(payload['ip_address']),
+                    self._get_cache_key(provider, payload["ip_address"]),
+                    lambda: detector.check(payload["ip_address"]),
                     should_cache_fn=lambda v: v is not None,
-                    expiration_time=21600)
+                    expiration_time=21600,
+                )
                 if result is not None and detector.evaluate(result):
                     return True
         return False

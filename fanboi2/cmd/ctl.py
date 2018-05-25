@@ -27,20 +27,19 @@ def shell(args):
     """Run the interactive shell for the application."""
     from ..wsgi import app, config
     import pyramid.scripting
+
     with pyramid.scripting.prepare() as env:
         code.interact(
             SHELL_BANNER % (__VERSION__, __PYRAMID__),
-            local={
-                "app": app,
-                "config": config,
-                **env
-            })
+            local={"app": app, "config": config, **env},
+        )
 
 
 def serve(args):
     """Run the web server for the application."""
     from ..wsgi import app
     from waitress import serve as waitress_serve
+
     waitress_serve(app, host=args.host, port=args.port)
     sys.exit(0)
 
@@ -48,24 +47,25 @@ def serve(args):
 def gensecret(args):
     """Generates a NaCl secret."""
     from pyramid_nacl_session import generate_secret
-    print(generate_secret(as_hex=True).decode('utf-8'))
+
+    print(generate_secret(as_hex=True).decode("utf-8"))
     sys.exit(0)
 
 
 def main():
     """Parse the command line arguments."""
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest='subparser', title='subcommands')
+    subparsers = parser.add_subparsers(dest="subparser", title="subcommands")
 
-    pshell = subparsers.add_parser('shell')
+    pshell = subparsers.add_parser("shell")
     pshell.set_defaults(func=shell)
 
-    pserve = subparsers.add_parser('serve')
-    pserve.add_argument('--port', type=int, default=6543)
-    pserve.add_argument('--host', default='0.0.0.0')
+    pserve = subparsers.add_parser("serve")
+    pserve.add_argument("--port", type=int, default=6543)
+    pserve.add_argument("--host", default="0.0.0.0")
     pserve.set_defaults(func=serve)
 
-    gsecret = subparsers.add_parser('gensecret')
+    gsecret = subparsers.add_parser("gensecret")
     gsecret.set_defaults(func=gensecret)
 
     args = parser.parse_args()
