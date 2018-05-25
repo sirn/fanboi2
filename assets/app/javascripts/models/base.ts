@@ -1,10 +1,8 @@
-import {NotImplementedError, ResourceError} from '../utils/errors';
-
+import { NotImplementedError, ResourceError } from "../utils/errors";
 
 export interface IModelData {
     [key: string]: any;
 }
-
 
 export class Model {
     constructor(data: IModelData) {
@@ -13,23 +11,20 @@ export class Model {
     }
 
     protected serialize(data: IModelData) {
-        throw new NotImplementedError;
+        throw new NotImplementedError();
     }
 
     private throwError(data: IModelData) {
-        if (data['type'] == 'error') {
-            throw new ResourceError(
-                'An error object was returned from the API.',
-                data
-            );
+        if (data["type"] == "error") {
+            throw new ResourceError("An error object was returned from the API.", data);
         }
     }
 
     static assertType(data: IModelData, type: string) {
-        if (data['type'] != type) {
+        if (data["type"] != type) {
             throw new ResourceError(
-                `Expected ${type} type but got ${data['type']}.`,
-                data
+                `Expected ${type} type but got ${data["type"]}.`,
+                data,
             );
         }
     }

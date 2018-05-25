@@ -93,8 +93,12 @@
     @media (min-width: $bound-tablet) {
         display: table-row-group;
 
-        .lead { width: 120px; }
-        .sublead { width: 80px; }
+        .lead {
+            width: 120px;
+        }
+        .sublead {
+            width: 80px;
+        }
     }
 }
 

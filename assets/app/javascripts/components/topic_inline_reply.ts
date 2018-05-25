@@ -1,28 +1,27 @@
-import {create, h} from 'virtual-dom';
+import { create, h } from "virtual-dom";
 
-import {SingletonComponent} from './base';
-import {ResourceError} from '../utils/errors';
-import {dispatchCustomEvent} from '../utils/elements';
-import {attachErrors, detachErrors, serializeForm} from '../utils/forms';
-import {LoadingState} from '../utils/loading';
-
+import { SingletonComponent } from "./base";
+import { ResourceError } from "../utils/errors";
+import { dispatchCustomEvent } from "../utils/elements";
+import { attachErrors, detachErrors, serializeForm } from "../utils/forms";
+import { LoadingState } from "../utils/loading";
 
 export class TopicInlineReply extends SingletonComponent {
-    public targetSelector = '[data-topic-inline-reply]';
+    public targetSelector = "[data-topic-inline-reply]";
 
     protected bindOne($target: Element) {
         let $form = $target;
 
         if ($form instanceof HTMLFormElement) {
-            let $button = $target.querySelector('button');
+            let $button = $target.querySelector("button");
             let loadingState = new LoadingState();
 
-            $form.addEventListener('submit', (e: Event): void => {
+            $form.addEventListener("submit", (e: Event): void => {
                 e.preventDefault();
                 loadingState.bind(() => {
-                    return new Promise((resolve) => {
+                    return new Promise(resolve => {
                         if ($form instanceof HTMLFormElement) {
-                            dispatchCustomEvent($form, 'newPost', {
+                            dispatchCustomEvent($form, "newPost", {
                                 params: serializeForm($form),
                                 callback: () => {
                                     if ($form instanceof HTMLFormElement) {
@@ -37,7 +36,7 @@ export class TopicInlineReply extends SingletonComponent {
                                         attachErrors($form, error);
                                         resolve();
                                     }
-                                }
+                                },
                             });
                         }
                     });

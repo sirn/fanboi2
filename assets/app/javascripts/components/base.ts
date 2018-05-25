@@ -1,10 +1,8 @@
-import {NotImplementedError} from '../utils/errors';
-
+import { NotImplementedError } from "../utils/errors";
 
 export interface IComponent {
     targetSelector: string;
 }
-
 
 export class DelegationComponent implements IComponent {
     public targetSelector: string;
@@ -16,10 +14,9 @@ export class DelegationComponent implements IComponent {
     }
 
     protected bindGlobal(): void {
-        throw new NotImplementedError;
+        throw new NotImplementedError();
     }
 }
-
 
 export class SingletonComponent implements IComponent {
     public targetSelector: string;
@@ -40,10 +37,9 @@ export class SingletonComponent implements IComponent {
     }
 
     protected bindOne(element: Element): void {
-        throw new NotImplementedError;
+        throw new NotImplementedError();
     }
 }
-
 
 export class CollectionComponent implements IComponent {
     public targetSelector: string;
@@ -68,6 +64,6 @@ export class CollectionComponent implements IComponent {
     }
 
     protected bindOne($target: Element): void {
-        throw new NotImplementedError;
+        throw new NotImplementedError();
     }
 }

@@ -1,5 +1,4 @@
-import {addClass, removeClass} from './elements';
-
+import { addClass, removeClass } from "./elements";
 
 export class LoadingState {
     isLoading: boolean = false;
@@ -9,12 +8,16 @@ export class LoadingState {
             this.isLoading = true;
 
             if (buttonElement) {
-                addClass(buttonElement, ['js-button-loading']);
+                addClass(buttonElement, ["js-button-loading"]);
             }
 
-            fn().
-                then(() => { this.unbind(buttonElement); }).
-                catch(() => { this.unbind(buttonElement); });
+            fn()
+                .then(() => {
+                    this.unbind(buttonElement);
+                })
+                .catch(() => {
+                    this.unbind(buttonElement);
+                });
         }
     }
 
@@ -22,7 +25,7 @@ export class LoadingState {
         this.isLoading = false;
 
         if (buttonElement) {
-            removeClass(buttonElement, ['js-button-loading']);
+            removeClass(buttonElement, ["js-button-loading"]);
         }
     }
 }

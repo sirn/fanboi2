@@ -4,24 +4,20 @@ export interface Error {
     object?: any;
 }
 
-
 export class NotImplementedError implements Error {
-    public name = 'NotImplementedError';
+    public name = "NotImplementedError";
 
     constructor(
-        public message: string = 'The method was called but not implemented.',
+        public message: string = "The method was called but not implemented.",
         public object?: any,
-    ) {
-    }
+    ) {}
 }
 
-
 export class ResourceError implements Error {
-    public name = 'ResourceError';
+    public name = "ResourceError";
 
     constructor(
-        public message: string = 'The resource could not be retrieved.',
+        public message: string = "The resource could not be retrieved.",
         public object?: any,
-    ) {
-    }
+    ) {}
 }
