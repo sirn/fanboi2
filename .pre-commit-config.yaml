@@ -1,13 +1,14 @@
 repos:
-  - repo: local
+  - repo: https://github.com/ambv/black
+    rev: stable
     hooks:
       - id: black
-        name: black
-        entry: pipenv run black
-        language: system
-        types: [python]
+        args: [--line-length=88, --safe]
+        language_version: python3.6
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v1.2.3
+    hooks:
       - id: flake8
         name: flake8
-        entry: pipenv run flake8
-        language: system
-        types: [python]
+        additional_dependencies: ['flake8-bugbear']
+        args: [--config=setup.cfg]
