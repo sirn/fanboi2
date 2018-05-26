@@ -117,13 +117,6 @@
             ],
             "version": "==3.0.4"
         },
-        "coloredlogs": {
-            "hashes": [
-                "sha256:34fad2e342d5a559c31b6c889e8d14f97cb62c47d9a2ae7b5ed14ea10a79eff8",
-                "sha256:b869a2dda3fa88154b9dd850e27828d8755bfab5a838a1c97fbc850c6e377c36"
-            ],
-            "version": "==10.0"
-        },
         "dogpile.cache": {
             "hashes": [
                 "sha256:631197e78b4471bb0e93d0a86264c45736bc9ae43b4205d581dcc34fbe9b5f31"
@@ -133,15 +126,6 @@
         "e1839a8": {
             "editable": true,
             "path": "."
-        },
-        "enum34": {
-            "hashes": [
-                "sha256:2d81cbbe0e73112bdfe6ef8576f2238f2ba27dd0d55752a776c41d38b7da2850",
-                "sha256:644837f692e5f550741432dd3f223bbb9852018674981b1664e5dc339387588a",
-                "sha256:6bd0f6ad48ec2aa117d3d141940d484deccda84d4fcd884f5c3d93c23ecd8c79",
-                "sha256:8ad8c4783bf61ded74527bffb48ed9b54166685e4230386a9ed9b1279e2df5b1"
-            ],
-            "version": "==1.1.6"
         },
         "geoip2": {
             "hashes": [
@@ -155,13 +139,6 @@
                 "sha256:ca958e13128e49674aa4a96f02746f5de5973f39b57297b84d59fd44d314d5b5"
             ],
             "version": "==0.2.0"
-        },
-        "humanfriendly": {
-            "hashes": [
-                "sha256:72a2efa8b477abb4fbdb3e5e224942c13e201c1df8c70fc244ef13b982ceb010",
-                "sha256:937b4d2c99d29007023ebcab23579429541bfb3357a97e5df38fc5d851a112a3"
-            ],
-            "version": "==4.12.1"
         },
         "hupper": {
             "hashes": [

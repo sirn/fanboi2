@@ -36,7 +36,7 @@ ENV_SETTINGS_MAP = (
     ("SESSION_SECRET", "session.secret", NO_VALUE, None),
 )
 
-LOGGING_FMT = "%(asctime)s %(levelname)6s %(name)s[%(process)d] %(message)s"
+LOGGING_FMT = "%(asctime)s %(levelname)s %(name)s[%(process)d] %(message)s"
 LOGGING_DATEFMT = "%H:%M:%S"
 
 
@@ -101,16 +101,10 @@ def tm_maybe_activate(request):
 
 def setup_logger(settings):  # pragma: no cover
     """Setup logger per configured in settings."""
+    log_level = logging.WARN
     if settings["server.development"]:
-        import coloredlogs
-
-        coloredlogs.install(
-            level=logging.DEBUG, fmt=LOGGING_FMT, datefmt=LOGGING_DATEFMT
-        )
-    else:
-        logging.basicConfig(
-            level=logging.WARN, format=LOGGING_FMT, datefmt=LOGGING_DATEFMT
-        )
+        log_level = logging.DEBUG
+    logging.basicConfig(level=log_level, format=LOGGING_FMT, datefmt=LOGGING_DATEFMT)
 
 
 def make_config(settings):  # pragma: no cover

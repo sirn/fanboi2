@@ -19,10 +19,10 @@ install_requires = [
     "alembic >=0.9, <0.10",
     "argon2_cffi",
     "celery >=4.1, <4.2",
-    "coloredlogs",
     "dogpile.cache",
     "geoip2",
     "hiredis",
+    "hupper",
     "passlib",
     "psycopg2",
     "python3-memcached",
@@ -65,6 +65,7 @@ setup(
     test_suite="fanboi2.tests",
     install_requires=install_requires,
     test_requires=test_requires,
+    python_requires=">=3.6",
     entry_points="""
     [console_scripts]
     fbctl = fanboi2.cmd.ctl:main
