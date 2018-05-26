@@ -23,7 +23,6 @@ tmp/
 
 # Development
 /out/
-/venv/
 *.iml
 *.ini
 !alembic.ini
@@ -32,4 +31,5 @@ tmp/
 .coverage
 .noseids
 .idea
+.venv
 .vagrant
