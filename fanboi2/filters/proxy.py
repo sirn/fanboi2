@@ -104,7 +104,7 @@ class ProxyDetector(object):
         if not settings:
             settings = {}
         if not services:
-            services = {}
+            raise RuntimeError("cache service is required")
         self.settings = settings
         self.cache_region = services["cache"]
 

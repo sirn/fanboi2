@@ -319,10 +319,13 @@ class TestBlackBoxProxyDetector(unittest.TestCase):
 
 class TestProxyDetector(unittest.TestCase):
 
-    def _make_one(self, settings, cache_svc):
+    def _get_target_class(self):
         from ..filters.proxy import ProxyDetector
 
-        return ProxyDetector(settings, {"cache": cache_svc})
+        return ProxyDetector
+
+    def _make_one(self, settings, cache_svc):
+        return self._get_target_class()(settings, {"cache": cache_svc})
 
     def _make_config(self):
         return {
@@ -350,6 +353,11 @@ class TestProxyDetector(unittest.TestCase):
         cache_svc = make_cache_region({})
         proxy_detector = self._make_one(None, cache_svc)
         self.assertEqual(proxy_detector.settings, {})
+
+    def test_init_no_service(self):
+        settings = self._make_config()
+        with self.assertRaises(RuntimeError):
+            self._get_target_class()(settings, None)
 
     @unittest.mock.patch("fanboi2.filters.proxy.BlackBoxProxyDetector.check")
     @unittest.mock.patch("fanboi2.filters.proxy.GetIPIntelProxyDetector.check")

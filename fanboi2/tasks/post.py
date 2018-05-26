@@ -7,14 +7,7 @@ from ._base import celery, ModelTask
 
 @celery.task(base=ModelTask, bind=True)
 def add_post(
-    self,
-    topic_id,
-    body,
-    bumped,
-    ip_address,
-    payload=None,
-    _request=None,
-    _registry=None,
+    self, topic_id, body, bumped, ip_address, payload, _request=None, _registry=None
 ):
     """Insert a post to a topic.
 
@@ -25,8 +18,6 @@ def add_post(
     :param ip_address: An IP address of the poster.
     :param payload: A request payload containing request metadata.
     """
-    if not payload:
-        payload = {}
     with pyramid.scripting.prepare(request=_request, registry=_registry) as env:
         request = env["request"]
         dbsession = request.find_service(name="db")

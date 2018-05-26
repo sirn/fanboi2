@@ -25,9 +25,7 @@ def make_cache_region(store=None):
     )
 
 
-def mock_service(request, mappings=None):
-    if not mappings:
-        mappings = {}
+def mock_service(request, mappings):
 
     def _find_service(iface=None, name=None):
         for l in (iface, name):
