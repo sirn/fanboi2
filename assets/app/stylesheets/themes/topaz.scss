@@ -223,7 +223,13 @@
     }
 
     .content {
-        h1, h2, h3, h4, h5 { color: $color-brand; }
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            color: $color-brand;
+        }
     }
 
     .menu {
@@ -516,7 +522,7 @@
     }
 
     .js-popover-inner {
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .3);
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
         border-color: #fff;
     }
 

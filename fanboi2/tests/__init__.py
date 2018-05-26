@@ -7,8 +7,8 @@ from ..models import make_history_event
 
 
 DATABASE_URL = os.environ.get(
-    'POSTGRESQL_TEST_DATABASE',
-    'postgresql://fanboi2:@localhost:5432/fanboi2_test')
+    "POSTGRESQL_TEST_DATABASE", "postgresql://fanboi2:@localhost:5432/fanboi2_test"
+)
 
 engine = create_engine(DATABASE_URL)
 dbmaker = sessionmaker()
@@ -17,14 +17,16 @@ make_history_event(dbmaker)
 
 def make_cache_region(store=None):
     from dogpile.cache import make_region
+
     if store is None:
         store = {}
     return make_region().configure(
-        'dogpile.cache.memory',
-        arguments={'cache_dict': store})
+        "dogpile.cache.memory", arguments={"cache_dict": store}
+    )
 
 
-def mock_service(request, mappings={}):
+def mock_service(request, mappings):
+
     def _find_service(iface=None, name=None):
         for l in (iface, name):
             if l in mappings:
@@ -45,7 +47,7 @@ class DummyRedis(object):
 
     def set(self, key, value):
         try:
-            value = bytes(value.encode('utf-8'))
+            value = bytes(value.encode("utf-8"))
         except AttributeError:
             pass
         self._store[key] = value
@@ -69,6 +71,7 @@ class DummyRedis(object):
 
 
 class DummyAsyncResult(object):
+
     def __init__(self, id_, status, result=None):
         self._id = id_
         self._status = status
@@ -85,6 +88,7 @@ class DummyAsyncResult(object):
     @property
     def state(self):
         from celery import states
+
         return getattr(states, self.status)
 
     def get(self):
@@ -110,6 +114,7 @@ class ModelSessionMixin(ModelTransactionEngineMixin, object):
         super(ModelSessionMixin, self).setUp()
         from sqlalchemy import event
         from ..models import Base
+
         self.dbsession = dbmaker(bind=self.connection)
         Base.metadata.bind = self.connection
         Base.metadata.create_all()

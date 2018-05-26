@@ -7,7 +7,7 @@ from .rule import Rule
 class RuleBan(Rule):
     """Model class that provides a banlist on top of rule model."""
 
-    __tablename__ = 'rule_ban'
-    __mapper_args__ = {'polymorphic_identity': 'ban'}
+    __tablename__ = "rule_ban"
+    __mapper_args__ = {"polymorphic_identity": "ban"}
 
-    rule_id = Column(Integer, ForeignKey('rule.id'), primary_key=True)
+    rule_id = Column(Integer, ForeignKey("rule.id"), primary_key=True)

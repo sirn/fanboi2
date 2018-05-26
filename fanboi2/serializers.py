@@ -6,7 +6,7 @@ from .helpers.formatters import format_post, format_page
 from .interfaces import ISettingQueryService
 
 
-TRUTHY_RE = re.compile('^Y|y|T|t|[1-9]')
+TRUTHY_RE = re.compile("^Y|y|T|t|[1-9]")
 
 
 def _truthy(request, key):
@@ -17,7 +17,7 @@ def _truthy(request, key):
     """
     if key not in request.params:
         return False
-    val = str(request.params.get(key, 'false'))
+    val = str(request.params.get(key, "false"))
     return bool(TRUTHY_RE.match(val))
 
 
@@ -28,7 +28,7 @@ def _datetime_adapter(obj, request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     setting_query_svc = request.find_service(ISettingQueryService)
-    tz = pytz.timezone(setting_query_svc.value_from_key('app.time_zone'))
+    tz = pytz.timezone(setting_query_svc.value_from_key("app.time_zone"))
     return obj.astimezone(tz).isoformat()
 
 
@@ -48,18 +48,18 @@ def _board_serializer(obj, request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     result = {
-        'type': 'board',
-        'id': obj.id,
-        'agreements': obj.agreements,
-        'description': obj.description,
-        'settings': obj.settings,
-        'slug': obj.slug,
-        'status': obj.status,
-        'title': obj.title,
-        'path': request.route_path('api_board', board=obj.slug),
+        "type": "board",
+        "id": obj.id,
+        "agreements": obj.agreements,
+        "description": obj.description,
+        "settings": obj.settings,
+        "slug": obj.slug,
+        "status": obj.status,
+        "title": obj.title,
+        "path": request.route_path("api_board", board=obj.slug),
     }
-    if _truthy(request, 'topics') and not _truthy(request, 'board'):
-        result['topics'] = obj.topics.limit(10)
+    if _truthy(request, "topics") and not _truthy(request, "board"):
+        result["topics"] = obj.topics.limit(10)
     return result
 
 
@@ -70,21 +70,21 @@ def _topic_serializer(obj, request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     result = {
-        'type': 'topic',
-        'id': obj.id,
-        'board_id': obj.board_id,
-        'bumped_at': obj.meta.bumped_at,
-        'created_at': obj.created_at,
-        'post_count': obj.meta.post_count,
-        'posted_at': obj.meta.posted_at,
-        'status': obj.status,
-        'title': obj.title,
-        'path': request.route_path('api_topic', topic=obj.id),
+        "type": "topic",
+        "id": obj.id,
+        "board_id": obj.board_id,
+        "bumped_at": obj.meta.bumped_at,
+        "created_at": obj.created_at,
+        "post_count": obj.meta.post_count,
+        "posted_at": obj.meta.posted_at,
+        "status": obj.status,
+        "title": obj.title,
+        "path": request.route_path("api_topic", topic=obj.id),
     }
-    if _truthy(request, 'board'):
-        result['board'] = obj.board
-    if _truthy(request, 'posts') and not _truthy(request, 'topic'):
-        result['posts'] = obj.recent_posts()
+    if _truthy(request, "board"):
+        result["board"] = obj.board
+    if _truthy(request, "posts") and not _truthy(request, "topic"):
+        result["posts"] = obj.recent_posts()
     return result
 
 
@@ -99,25 +99,23 @@ def _post_serializer(obj, request):
     :rtype: dict
     """
     result = {
-        'type': 'post',
-        'id': obj.id,
-        'body': obj.body,
-        'body_formatted': format_post(None, request, obj),
-        'bumped': obj.bumped,
-        'created_at': obj.created_at,
-        'ident': obj.ident,
-        'ident_type': obj.ident_type,
-        'name': obj.name,
-        'number': obj.number,
-        'topic_id': obj.topic_id,
-        'path': request.route_path(
-            'api_topic_posts_scoped',
-            topic=obj.topic_id,
-            query=obj.number,
+        "type": "post",
+        "id": obj.id,
+        "body": obj.body,
+        "body_formatted": format_post(None, request, obj),
+        "bumped": obj.bumped,
+        "created_at": obj.created_at,
+        "ident": obj.ident,
+        "ident_type": obj.ident_type,
+        "name": obj.name,
+        "number": obj.number,
+        "topic_id": obj.topic_id,
+        "path": request.route_path(
+            "api_topic_posts_scoped", topic=obj.topic_id, query=obj.number
         ),
     }
-    if _truthy(request, 'topic'):
-        result['topic'] = obj.topic
+    if _truthy(request, "topic"):
+        result["topic"] = obj.topic
     return result
 
 
@@ -128,19 +126,16 @@ def _page_serializer(obj, request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     return {
-        'type': 'page',
-        'id': obj.id,
-        'body': obj.body,
-        'body_formatted': format_page(None, request, obj),
-        'formatter': obj.formatter,
-        'namespace': obj.namespace,
-        'slug': obj.slug,
-        'title': obj.title,
-        'updated_at': obj.updated_at or obj.created_at,
-        'path': request.route_path(
-            'api_page',
-            page=obj.slug,
-        ),
+        "type": "page",
+        "id": obj.id,
+        "body": obj.body,
+        "body_formatted": format_page(None, request, obj),
+        "formatter": obj.formatter,
+        "namespace": obj.namespace,
+        "slug": obj.slug,
+        "title": obj.title,
+        "updated_at": obj.updated_at or obj.created_at,
+        "path": request.route_path("api_page", page=obj.slug),
     }
 
 
@@ -151,13 +146,13 @@ def _result_proxy_serializer(obj, request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     result = {
-        'type': 'task',
-        'id': obj.id,
-        'status': obj.status.lower(),
-        'path': request.route_path('api_task', task=obj.id),
+        "type": "task",
+        "id": obj.id,
+        "status": obj.status.lower(),
+        "path": request.route_path("api_task", task=obj.id),
     }
     if obj.success():
-        result['data'] = obj.deserialize(request)
+        result["data"] = obj.deserialize(request)
     return result
 
 
@@ -168,10 +163,10 @@ def _async_result_serializer(obj, request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     return {
-        'type': 'task',
-        'id': obj.id,
-        'status': 'queued',
-        'path': request.route_path('api_task', task=obj.id),
+        "type": "task",
+        "id": obj.id,
+        "status": "queued",
+        "path": request.route_path("api_task", task=obj.id),
     }
 
 
@@ -182,11 +177,7 @@ def _base_error_serializer(obj, request):
     :param obj: A :class:`fanboi2.errors.BaseError` object.
     :param request: A :class:`pyramid.request.Request` object.
     """
-    return {
-        'type': 'error',
-        'status': obj.name,
-        'message': obj.message(request)
-    }
+    return {"type": "error", "status": obj.name, "message": obj.message(request)}
 
 
 def initialize_renderer():
@@ -196,6 +187,7 @@ def initialize_renderer():
     from fanboi2.models import Board, Topic, Post, Page
     from fanboi2.errors import BaseError
     from fanboi2.tasks import ResultProxy
+
     json_renderer = JSON()
     json_renderer.add_adapter(datetime.datetime, _datetime_adapter)
     json_renderer.add_adapter(Query, _sqlalchemy_query_adapter)
@@ -211,4 +203,4 @@ def initialize_renderer():
 
 def includeme(config):  # pragma: no cover
     json_renderer = initialize_renderer()
-    config.add_renderer('json', json_renderer)
+    config.add_renderer("json", json_renderer)

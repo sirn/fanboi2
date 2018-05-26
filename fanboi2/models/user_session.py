@@ -9,20 +9,23 @@ from ._base import Base
 class UserSession(Base):
     """Model class that provides a user session for managing logins."""
 
-    __tablename__ = 'user_session'
-    __table_args__ = (UniqueConstraint('token'),)
+    __tablename__ = "user_session"
+    __table_args__ = (UniqueConstraint("token"),)
 
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime(timezone=True), default=func.now())
     last_seen_at = Column(DateTime(timezone=True))
     revoked_at = Column(DateTime(timezone=True))
-    user_id = Column(Integer, ForeignKey('user.id'))
+    user_id = Column(Integer, ForeignKey("user.id"))
     token = Column(String, nullable=False)
     ip_address = Column(INET, nullable=False)
 
-    user = relationship('User',
-                        backref=backref(
-                            'sessions',
-                            lazy='dynamic',
-                            cascade='all,delete',
-                            order_by='desc(UserSession.created_at)'))
+    user = relationship(
+        "User",
+        backref=backref(
+            "sessions",
+            lazy="dynamic",
+            cascade="all,delete",
+            order_by="desc(UserSession.created_at)",
+        ),
+    )

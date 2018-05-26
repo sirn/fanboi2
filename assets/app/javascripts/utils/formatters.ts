@@ -1,18 +1,17 @@
 const monthNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
 ];
-
 
 export let formatDate = (date: Date): string => {
     let yyyy = date.getFullYear();
@@ -25,4 +24,4 @@ export let formatDate = (date: Date): string => {
     let timeFormatted = `${hh}:${nn}:${ss}`;
 
     return `${dateFormatted} at ${timeFormatted}`;
-}
+};

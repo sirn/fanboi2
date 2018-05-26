@@ -12,18 +12,13 @@ from ..tasks import add_topic
 class TopicCreateService(object):
     """Topic create service provides a service for creating a topic."""
 
-    def __init__(
-            self,
-            dbsession,
-            identity_svc,
-            setting_query_svc,
-            user_query_svc):
+    def __init__(self, dbsession, identity_svc, setting_query_svc, user_query_svc):
         self.dbsession = dbsession
         self.identity_svc = identity_svc
         self.setting_query_svc = setting_query_svc
         self.user_query_svc = user_query_svc
 
-    def enqueue(self, board_slug, title, body, ip_address, payload={}):
+    def enqueue(self, board_slug, title, body, ip_address, payload):
         """Enqueues the topic creation to the posting queue. Topics that are
         queued will be processed with pre-posting filters using the given
         :param:`payload`.
@@ -34,12 +29,7 @@ class TopicCreateService(object):
         :param ip_address: An IP address of the topic creator.
         :param payload: A request payload containing request metadata.
         """
-        return add_topic.delay(
-            board_slug,
-            title,
-            body,
-            ip_address,
-            payload=payload)
+        return add_topic.delay(board_slug, title, body, ip_address, payload=payload)
 
     def _prepare_c(self, board_slug, allowed_board_status):
         """Internal method performing preparatory work to creat a new topic.
@@ -47,9 +37,7 @@ class TopicCreateService(object):
 
         :param board_slug: A slug :type:`str` identifying a board.
         """
-        board = self.dbsession.query(Board).\
-            filter(Board.slug == board_slug).\
-            one()
+        board = self.dbsession.query(Board).filter(Board.slug == board_slug).one()
 
         if board.status not in allowed_board_status:
             raise StatusRejectedError(board.status)
@@ -65,9 +53,7 @@ class TopicCreateService(object):
         :param body: A :type:`str` topic body.
         :param ip_address: An IP address of the topic creator.
         """
-        board = self._prepare_c(
-            board_slug,
-            allowed_board_status=('open',))
+        board = self._prepare_c(board_slug, allowed_board_status=("open",))
 
         # Create topic
 
@@ -76,43 +62,42 @@ class TopicCreateService(object):
             title=title,
             created_at=func.now(),
             updated_at=func.now(),
-            status='open')
+            status="open",
+        )
 
         self.dbsession.add(topic)
 
         # Create topic meta
 
         topic_meta = TopicMeta(
-            topic=topic,
-            post_count=1,
-            posted_at=func.now(),
-            bumped_at=func.now())
+            topic=topic, post_count=1, posted_at=func.now(), bumped_at=func.now()
+        )
 
         self.dbsession.add(topic_meta)
 
         # Create post
 
         ident = None
-        ident_type = 'none'
-        if board.settings['use_ident']:
-            time_zone = self.setting_query_svc.value_from_key('app.time_zone')
+        ident_type = "none"
+        if board.settings["use_ident"]:
+            time_zone = self.setting_query_svc.value_from_key("app.time_zone")
             tz = pytz.timezone(time_zone)
             timestamp = datetime.datetime.now(tz).strftime("%Y%m%d")
-            ident_type = 'ident'
+            ident_type = "ident"
             ident = self.identity_svc.identity_for(
-                board=topic.board.slug,
-                ip_address=ip_address,
-                timestamp=timestamp)
+                board=topic.board.slug, ip_address=ip_address, timestamp=timestamp
+            )
 
         post = Post(
             topic=topic,
             number=topic_meta.post_count,
             body=body,
             bumped=True,
-            name=board.settings['name'],
+            name=board.settings["name"],
             ident=ident,
             ident_type=ident_type,
-            ip_address=ip_address)
+            ip_address=ip_address,
+        )
 
         self.dbsession.add(post)
         return topic
@@ -132,8 +117,8 @@ class TopicCreateService(object):
         """
         user = self.user_query_svc.user_from_id(user_id)
         board = self._prepare_c(
-            board_slug,
-            allowed_board_status=('open', 'restricted', 'locked'))
+            board_slug, allowed_board_status=("open", "restricted", "locked")
+        )
 
         # Create topic
 
@@ -142,17 +127,16 @@ class TopicCreateService(object):
             title=title,
             created_at=func.now(),
             updated_at=func.now(),
-            status='open')
+            status="open",
+        )
 
         self.dbsession.add(topic)
 
         # Create topic meta
 
         topic_meta = TopicMeta(
-            topic=topic,
-            post_count=1,
-            posted_at=func.now(),
-            bumped_at=func.now())
+            topic=topic, post_count=1, posted_at=func.now(), bumped_at=func.now()
+        )
 
         self.dbsession.add(topic_meta)
 
@@ -170,7 +154,8 @@ class TopicCreateService(object):
             name=name,
             ident=ident,
             ident_type=ident_type,
-            ip_address=ip_address)
+            ip_address=ip_address,
+        )
 
         self.dbsession.add(post)
         return topic
@@ -189,9 +174,7 @@ class TopicDeleteService(object):
 
         :param topic_id: An :type:`int` ID of the topic to delete.
         """
-        topic = self.dbsession.query(Topic).\
-            filter_by(id=topic_id).\
-            one()
+        topic = self.dbsession.query(Topic).filter_by(id=topic_id).one()
 
         self.dbsession.delete(topic)
         return topic
@@ -211,16 +194,21 @@ class TopicQueryService(object):
         :param board_slug: The slug :type:`str` identifying a board.
         """
         anchor = datetime.datetime.now() - datetime.timedelta(days=7)
-        return self.dbsession.query(Topic).\
-            join(Topic.board, Topic.meta).\
-            options(contains_eager(Topic.meta)).\
-            filter(and_(Board.slug == board_slug,
-                        or_(Topic.status == "open",
-                            and_(Topic.status != "open",
-                                 TopicMeta.bumped_at >= anchor)))).\
-            order_by(desc(func.coalesce(
-                TopicMeta.bumped_at,
-                Topic.created_at)))
+        return (
+            self.dbsession.query(Topic)
+            .join(Topic.board, Topic.meta)
+            .options(contains_eager(Topic.meta))
+            .filter(
+                and_(
+                    Board.slug == board_slug,
+                    or_(
+                        Topic.status == "open",
+                        and_(Topic.status != "open", TopicMeta.bumped_at >= anchor),
+                    ),
+                )
+            )
+            .order_by(desc(func.coalesce(TopicMeta.bumped_at, Topic.created_at)))
+        )
 
     def list_from_board_slug(self, board_slug):
         """Query topics for the given board slug.
@@ -240,25 +228,27 @@ class TopicQueryService(object):
         """Query recent topics regardless of the board."""
         anchor = datetime.datetime.now() - datetime.timedelta(days=7)
         return list(
-            self.dbsession.query(Topic).
-            join(Topic.meta).
-            options(contains_eager(Topic.meta), joinedload(Topic.board)).
-            filter(and_(or_(Topic.status == "open",
-                            and_(Topic.status != "open",
-                                 TopicMeta.bumped_at >= anchor)))).
-            order_by(desc(func.coalesce(
-                TopicMeta.bumped_at,
-                Topic.created_at))).
-            limit(_limit))
+            self.dbsession.query(Topic)
+            .join(Topic.meta)
+            .options(contains_eager(Topic.meta), joinedload(Topic.board))
+            .filter(
+                and_(
+                    or_(
+                        Topic.status == "open",
+                        and_(Topic.status != "open", TopicMeta.bumped_at >= anchor),
+                    )
+                )
+            )
+            .order_by(desc(func.coalesce(TopicMeta.bumped_at, Topic.created_at)))
+            .limit(_limit)
+        )
 
     def topic_from_id(self, topic_id):
         """Query a topic from the given topic ID.
 
         :param topic_id: The ID :type:`int` identifying a topic.
         """
-        return self.dbsession.query(Topic).\
-            filter_by(id=topic_id).\
-            one()
+        return self.dbsession.query(Topic).filter_by(id=topic_id).one()
 
 
 class TopicUpdateService(object):
@@ -273,11 +263,9 @@ class TopicUpdateService(object):
         :param topic_id: The ID :type:`int` of the topic to update.
         :param **kwargs: Attributes to update.
         """
-        topic = self.dbsession.query(Topic).\
-            filter_by(id=topic_id).\
-            one()
+        topic = self.dbsession.query(Topic).filter_by(id=topic_id).one()
 
-        for key in ('status',):
+        for key in ("status",):
             if key in kwargs:
                 setattr(topic, key, kwargs[key])
 

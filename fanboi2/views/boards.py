@@ -5,11 +5,16 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from ..errors import BaseError
 from ..forms import PostForm, TopicForm
-from ..interfaces import IBoardQueryService
-from ..interfaces import IPostCreateService, IPostQueryService
-from ..interfaces import IRateLimiterService, IRuleBanQueryService
-from ..interfaces import ITaskQueryService
-from ..interfaces import ITopicCreateService, ITopicQueryService
+from ..interfaces import (
+    IBoardQueryService,
+    IPostCreateService,
+    IPostQueryService,
+    IRateLimiterService,
+    IRuleBanQueryService,
+    ITaskQueryService,
+    ITopicCreateService,
+    ITopicQueryService,
+)
 
 
 def root(request):
@@ -18,9 +23,7 @@ def root(request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     board_query_svc = request.find_service(IBoardQueryService)
-    return {
-        'boards': board_query_svc.list_active()
-    }
+    return {"boards": board_query_svc.list_active()}
 
 
 def board_show(request):
@@ -30,10 +33,10 @@ def board_show(request):
     """
     board_query_svc = request.find_service(IBoardQueryService)
     topic_query_svc = request.find_service(ITopicQueryService)
-    board_slug = request.matchdict['board']
+    board_slug = request.matchdict["board"]
     return {
-        'board': board_query_svc.board_from_slug(board_slug),
-        'topics': topic_query_svc.list_recent_from_board_slug(board_slug),
+        "board": board_query_svc.board_from_slug(board_slug),
+        "topics": topic_query_svc.list_recent_from_board_slug(board_slug),
     }
 
 
@@ -44,10 +47,10 @@ def board_all(request):
     """
     board_query_svc = request.find_service(IBoardQueryService)
     topic_query_svc = request.find_service(ITopicQueryService)
-    board_slug = request.matchdict['board']
+    board_slug = request.matchdict["board"]
     return {
-        'board': board_query_svc.board_from_slug(board_slug),
-        'topics': topic_query_svc.list_from_board_slug(board_slug),
+        "board": board_query_svc.board_from_slug(board_slug),
+        "topics": topic_query_svc.list_from_board_slug(board_slug),
     }
 
 
@@ -59,49 +62,44 @@ def board_new_get(request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     board_query_svc = request.find_service(IBoardQueryService)
-    board_slug = request.matchdict['board']
+    board_slug = request.matchdict["board"]
     board = board_query_svc.board_from_slug(board_slug)
 
-    if board.status != 'open':
+    if board.status != "open":
         raise HTTPForbidden
 
-    if request.GET.get('task'):
+    if request.GET.get("task"):
         task_query_svc = request.find_service(ITaskQueryService)
-        task_uid = request.GET['task']
+        task_uid = request.GET["task"]
         result_proxy = task_query_svc.result_from_uid(task_uid)
 
         if result_proxy.success():
             obj = result_proxy.deserialize(request)
             if isinstance(obj, BaseError):
                 extra_locals = {}
-                if hasattr(obj, 'status'):
-                    extra_locals['status'] = obj.status
+                if hasattr(obj, "status"):
+                    extra_locals["status"] = obj.status
 
                 response = render_to_response(
-                    'boards/new_error.mako', {
-                        'board': board,
-                        'name': obj.name,
-                        **extra_locals},
-                    request=request)
+                    "boards/new_error.mako",
+                    {"board": board, "name": obj.name, **extra_locals},
+                    request=request,
+                )
                 response.status = obj.http_status
                 return response
 
             return HTTPFound(
                 location=request.route_path(
-                    route_name='topic',
-                    board=board.slug,
-                    topic=obj.id))
+                    route_name="topic", board=board.slug, topic=obj.id
+                )
+            )
 
         return render_to_response(
-            'boards/new_wait.mako', {
-                'board': board},
-            request=request)
+            "boards/new_wait.mako", {"board": board}, request=request
+        )
 
     form = TopicForm(request=request)
-    return {
-        'board': board,
-        'form': form,
-    }
+    return {"board": board, "form": form}
 
 
 def board_new_post(request):
@@ -112,45 +110,43 @@ def board_new_post(request):
     check_csrf_token(request)
 
     board_query_svc = request.find_service(IBoardQueryService)
-    board_slug = request.matchdict['board']
+    board_slug = request.matchdict["board"]
     board = board_query_svc.board_from_slug(board_slug)
 
     form = TopicForm(request.POST, request=request)
     if not form.validate():
-        request.response.status = '400 Bad Request'
-        return {
-            'board': board,
-            'form': form,
-        }
+        request.response.status = "400 Bad Request"
+        return {"board": board, "form": form}
 
     rule_ban_query_svc = request.find_service(IRuleBanQueryService)
     if rule_ban_query_svc.is_banned(
-            request.client_addr,
-            scopes=("board:%s" % (board.slug,),)):
+        request.client_addr, scopes=("board:%s" % (board.slug,),)
+    ):
         response = render_to_response(
-            'boards/new_error.mako', {
-                'board': board,
-                'name': 'ban_rejected'},
-            request=request)
-        response.status = '403 Forbidden'
+            "boards/new_error.mako",
+            {"board": board, "name": "ban_rejected"},
+            request=request,
+        )
+        response.status = "403 Forbidden"
         return response
 
     rate_limiter_svc = request.find_service(IRateLimiterService)
     if rate_limiter_svc:
-        payload = {'ip_address': request.client_addr, 'board': board.slug}
+        payload = {"ip_address": request.client_addr, "board": board.slug}
         if rate_limiter_svc.is_limited(**payload):
             response = render_to_response(
-                'boards/new_error.mako', {
-                    'board': board,
-                    'name': 'rate_limited',
-                    'time_left': rate_limiter_svc.time_left(**payload)},
-                request=request)
-            response.status = '429 Too Many Requests'
+                "boards/new_error.mako",
+                {
+                    "board": board,
+                    "name": "rate_limited",
+                    "time_left": rate_limiter_svc.time_left(**payload),
+                },
+                request=request,
+            )
+            response.status = "429 Too Many Requests"
             return response
 
-        rate_limiter_svc.limit_for(
-            board.settings['post_delay'],
-            **payload)
+        rate_limiter_svc.limit_for(board.settings["post_delay"], **payload)
 
     topic_create_svc = request.find_service(ITopicCreateService)
     task = topic_create_svc.enqueue(
@@ -159,15 +155,18 @@ def board_new_post(request):
         form.body.data,
         request.client_addr,
         payload={
-            'application_url': request.application_url,
-            'referrer': request.referrer,
-            'url': request.url,
-            'user_agent': request.user_agent})
+            "application_url": request.application_url,
+            "referrer": request.referrer,
+            "url": request.url,
+            "user_agent": request.user_agent,
+        },
+    )
 
-    return HTTPFound(location=request.route_path(
-        route_name='board_new',
-        board=board.slug,
-        _query={'task': task.id}))
+    return HTTPFound(
+        location=request.route_path(
+            route_name="board_new", board=board.slug, _query={"task": task.id}
+        )
+    )
 
 
 def topic_show_get(request):
@@ -179,66 +178,67 @@ def topic_show_get(request):
     """
     board_query_svc = request.find_service(IBoardQueryService)
     topic_query_svc = request.find_service(ITopicQueryService)
-    board_slug = request.matchdict['board']
-    topic_id = request.matchdict['topic']
+    board_slug = request.matchdict["board"]
+    topic_id = request.matchdict["topic"]
 
     board = board_query_svc.board_from_slug(board_slug)
     topic = topic_query_svc.topic_from_id(topic_id)
 
     query = None
-    if 'query' in request.matchdict:
-        query = request.matchdict['query']
+    if "query" in request.matchdict:
+        query = request.matchdict["query"]
 
     if topic.board_id != board.id:
         if query:
             return HTTPFound(
                 location=request.route_path(
-                    route_name='topic_scoped',
+                    route_name="topic_scoped",
                     board=topic.board.slug,
                     topic=topic.id,
-                    query=query))
+                    query=query,
+                )
+            )
         else:
             return HTTPFound(
                 location=request.route_path(
-                    route_name='topic',
-                    board=topic.board.slug,
-                    topic=topic.id))
+                    route_name="topic", board=topic.board.slug, topic=topic.id
+                )
+            )
 
-    if request.GET.get('task'):
+    if request.GET.get("task"):
         task_query_svc = request.find_service(ITaskQueryService)
-        task_uid = request.GET['task']
+        task_uid = request.GET["task"]
         result_proxy = task_query_svc.result_from_uid(task_uid)
 
         if result_proxy.success():
             obj = result_proxy.deserialize(request)
             if isinstance(obj, BaseError):
                 extra_locals = {}
-                if hasattr(obj, 'status'):
-                    extra_locals['status'] = obj.status
+                if hasattr(obj, "status"):
+                    extra_locals["status"] = obj.status
 
                 response = render_to_response(
-                    'topics/show_error.mako', {
-                        'board': board,
-                        'topic': topic,
-                        'name': obj.name,
-                        **extra_locals},
-                    request=request)
+                    "topics/show_error.mako",
+                    {"board": board, "topic": topic, "name": obj.name, **extra_locals},
+                    request=request,
+                )
                 response.status = obj.http_status
                 return response
 
             return HTTPFound(
                 location=request.route_path(
-                    route_name='topic_scoped',
+                    route_name="topic_scoped",
                     board=board.slug,
                     topic=topic.id,
-                    query='l10'))
+                    query="l10",
+                )
+            )
 
         return render_to_response(
-            'topics/show_wait.mako', {
-                'request': request,
-                'board': board,
-                'topic': topic},
-            request=request)
+            "topics/show_wait.mako",
+            {"request": request, "board": board, "topic": topic},
+            request=request,
+        )
 
     post_query_svc = request.find_service(IPostQueryService)
     posts = post_query_svc.list_from_topic_id(topic_id, query)
@@ -246,12 +246,7 @@ def topic_show_get(request):
         raise HTTPNotFound(request.path)
 
     form = PostForm(request=request)
-    return {
-        'board': board,
-        'form': form,
-        'posts': posts,
-        'topic': topic,
-    }
+    return {"board": board, "form": form, "posts": posts, "topic": topic}
 
 
 def topic_show_post(request):
@@ -263,8 +258,8 @@ def topic_show_post(request):
 
     board_query_svc = request.find_service(IBoardQueryService)
     topic_query_svc = request.find_service(ITopicQueryService)
-    board_slug = request.matchdict['board']
-    topic_id = request.matchdict['topic']
+    board_slug = request.matchdict["board"]
+    topic_id = request.matchdict["topic"]
 
     board = board_query_svc.board_from_slug(board_slug)
     topic = topic_query_svc.topic_from_id(topic_id)
@@ -275,43 +270,39 @@ def topic_show_post(request):
     post_create_svc = request.find_service(IPostCreateService)
     form = PostForm(request.POST, request=request)
     if not form.validate():
-        request.response.status = '400 Bad Request'
-        return {
-            'board': board,
-            'topic': topic,
-            'form': form,
-        }
+        request.response.status = "400 Bad Request"
+        return {"board": board, "topic": topic, "form": form}
 
     rule_ban_query_svc = request.find_service(IRuleBanQueryService)
     if rule_ban_query_svc.is_banned(
-            request.client_addr,
-            scopes=("board:%s" % (board.slug,),)):
+        request.client_addr, scopes=("board:%s" % (board.slug,),)
+    ):
         response = render_to_response(
-            'topics/show_error.mako', {
-                'board': board,
-                'topic': topic,
-                'name': 'ban_rejected'},
-            request=request)
-        response.status = '403 Forbidden'
+            "topics/show_error.mako",
+            {"board": board, "topic": topic, "name": "ban_rejected"},
+            request=request,
+        )
+        response.status = "403 Forbidden"
         return response
 
     rate_limiter_svc = request.find_service(IRateLimiterService)
     if rate_limiter_svc:
-        payload = {'ip_address': request.client_addr, 'board': board.slug}
+        payload = {"ip_address": request.client_addr, "board": board.slug}
         if rate_limiter_svc.is_limited(**payload):
             response = render_to_response(
-                'topics/show_error.mako', {
-                    'board': board,
-                    'topic': topic,
-                    'name': 'rate_limited',
-                    'time_left': rate_limiter_svc.time_left(**payload)},
-                request=request)
-            response.status = '429 Too Many Requests'
+                "topics/show_error.mako",
+                {
+                    "board": board,
+                    "topic": topic,
+                    "name": "rate_limited",
+                    "time_left": rate_limiter_svc.time_left(**payload),
+                },
+                request=request,
+            )
+            response.status = "429 Too Many Requests"
             return response
 
-        rate_limiter_svc.limit_for(
-            board.settings['post_delay'],
-            **payload)
+        rate_limiter_svc.limit_for(board.settings["post_delay"], **payload)
 
     post_create_svc = request.find_service(IPostCreateService)
     task = post_create_svc.enqueue(
@@ -320,16 +311,21 @@ def topic_show_post(request):
         form.bumped.data,
         request.client_addr,
         payload={
-            'application_url': request.application_url,
-            'referrer': request.referrer,
-            'url': request.url,
-            'user_agent': request.user_agent})
+            "application_url": request.application_url,
+            "referrer": request.referrer,
+            "url": request.url,
+            "user_agent": request.user_agent,
+        },
+    )
 
-    return HTTPFound(location=request.route_path(
-        route_name='topic',
-        board=topic.board.slug,
-        topic=topic.id,
-        _query={'task': task.id}))
+    return HTTPFound(
+        location=request.route_path(
+            route_name="topic",
+            board=topic.board.slug,
+            topic=topic.id,
+            _query={"task": task.id},
+        )
+    )
 
 
 def error_not_found(exc, request):
@@ -340,8 +336,8 @@ def error_not_found(exc, request):
     :param exc: An :class:`Exception`.
     :param request: A :class:`pyramid.request.Request` object.
     """
-    response = render_to_response('not_found.mako', {}, request=request)
-    response.status = '404 Not Found'
+    response = render_to_response("not_found.mako", {}, request=request)
+    response.status = "404 Not Found"
     return response
 
 
@@ -352,76 +348,79 @@ def error_bad_request(exc, request):
     :param exc: An :class:`Exception`.
     :param request: A :class:`pyramid.request.Request` object.
     """
-    response = render_to_response('bad_request.mako', {}, request=request)
-    response.status = '400 Bad Request'
+    response = render_to_response("bad_request.mako", {}, request=request)
+    response.status = "400 Bad Request"
     return response
 
 
 def includeme(config):  # pragma: no cover
-    config.add_route('root', '/')
+    config.add_route("root", "/")
 
-    config.add_view(
-        root,
-        request_method='GET',
-        route_name='root',
-        renderer='root.mako')
+    config.add_view(root, request_method="GET", route_name="root", renderer="root.mako")
 
     #
     # Board
     #
 
-    config.add_route('board', '/{board}/')
-    config.add_route('board_all', '/{board}/all/')
-    config.add_route('board_new', '/{board}/new/')
+    config.add_route("board", "/{board}/")
+    config.add_route("board_all", "/{board}/all/")
+    config.add_route("board_new", "/{board}/new/")
 
     config.add_view(
         board_show,
-        request_method='GET',
-        route_name='board',
-        renderer='boards/show.mako')
+        request_method="GET",
+        route_name="board",
+        renderer="boards/show.mako",
+    )
 
     config.add_view(
         board_all,
-        request_method='GET',
-        route_name='board_all',
-        renderer='boards/all.mako')
+        request_method="GET",
+        route_name="board_all",
+        renderer="boards/all.mako",
+    )
 
     config.add_view(
         board_new_get,
-        request_method='GET',
-        route_name='board_new',
-        renderer='boards/new.mako')
+        request_method="GET",
+        route_name="board_new",
+        renderer="boards/new.mako",
+    )
 
     config.add_view(
         board_new_post,
-        request_method='POST',
-        route_name='board_new',
-        renderer='boards/new.mako')
+        request_method="POST",
+        route_name="board_new",
+        renderer="boards/new.mako",
+    )
 
     #
     # Topics
     #
 
-    config.add_route('topic', '/{board:\w+}/{topic:\d+}/')
-    config.add_route('topic_scoped', '/{board:\w+}/{topic:\d+}/{query}/')
+    config.add_route("topic", "/{board:\w+}/{topic:\d+}/")
+    config.add_route("topic_scoped", "/{board:\w+}/{topic:\d+}/{query}/")
 
     config.add_view(
         topic_show_get,
-        request_method='GET',
-        route_name='topic',
-        renderer='topics/show.mako')
+        request_method="GET",
+        route_name="topic",
+        renderer="topics/show.mako",
+    )
 
     config.add_view(
         topic_show_post,
-        request_method='POST',
-        route_name='topic',
-        renderer='topics/show.mako')
+        request_method="POST",
+        route_name="topic",
+        renderer="topics/show.mako",
+    )
 
     config.add_view(
         topic_show_get,
-        request_method='GET',
-        route_name='topic_scoped',
-        renderer='topics/show.mako')
+        request_method="GET",
+        route_name="topic_scoped",
+        renderer="topics/show.mako",
+    )
 
     #
     # Error handling

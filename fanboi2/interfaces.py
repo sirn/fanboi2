@@ -1,12 +1,16 @@
+# flake8: noqa B902
+
 from zope.interface import Interface
 
 
 class IBoardCreateService(Interface):
+
     def create(slug, title, description, status, agreements, settings):
         pass
 
 
 class IBoardQueryService(Interface):
+
     def list_all():
         pass
 
@@ -18,31 +22,37 @@ class IBoardQueryService(Interface):
 
 
 class IBoardUpdateService(Interface):
+
     def update(slug, **kwargs):
         pass
 
 
 class IFilterService(Interface):
-    def evaluate(payload={}):
+
+    def evaluate(payload):
         pass
 
 
 class IIdentityService(Interface):
+
     def identity_for(**kwargs):
         pass
 
 
 class IPageCreateService(Interface):
+
     def create(slug, title, body):
         pass
 
 
 class IPageDeleteService(Interface):
+
     def delete(slug):
         pass
 
 
 class IPageQueryService(Interface):
+
     def list_public():
         pass
 
@@ -60,6 +70,7 @@ class IPageQueryService(Interface):
 
 
 class IPageUpdateService(Interface):
+
     def update(slug, **kwargs):
         pass
 
@@ -68,10 +79,11 @@ class IPageUpdateService(Interface):
 
 
 class IPostCreateService(Interface):
+
     def enqueue(topic_id, body, bumped, ip_address):
         pass
 
-    def create(topic_id, body, bumped, ip_address, payload={}):
+    def create(topic_id, body, bumped, ip_address, payload):
         pass
 
     def create_with_user(topic_id, user_id, body, bumped, ip_address):
@@ -79,11 +91,13 @@ class IPostCreateService(Interface):
 
 
 class IPostDeleteService(Interface):
+
     def delete_from_topic_id(topic_id, number):
         pass
 
 
 class IPostQueryService(Interface):
+
     def list_from_topic_id(topic_id, query=None):
         pass
 
@@ -92,6 +106,7 @@ class IPostQueryService(Interface):
 
 
 class IRateLimiterService(Interface):
+
     def limit_for(seconds, **kwargs):
         pass
 
@@ -103,16 +118,13 @@ class IRateLimiterService(Interface):
 
 
 class IRuleBanCreateService(Interface):
-    def create(
-            ip_address,
-            description=None,
-            duration=None,
-            scope=None,
-            active=True):
+
+    def create(ip_address, description=None, duration=None, scope=None, active=True):
         pass
 
 
 class IRuleBanQueryService(Interface):
+
     def list_active():
         pass
 
@@ -127,11 +139,13 @@ class IRuleBanQueryService(Interface):
 
 
 class IRuleBanUpdateService(Interface):
+
     def update(rule_ban_id, **kwargs):
         pass
 
 
 class ISettingQueryService(Interface):
+
     def list_all():
         pass
 
@@ -143,17 +157,20 @@ class ISettingQueryService(Interface):
 
 
 class ISettingUpdateService(Interface):
+
     def update(key, value):
         pass
 
 
 class ITaskQueryService(Interface):
+
     def result_from_uid(task_uid):
         pass
 
 
 class ITopicCreateService(Interface):
-    def enqueue(board_slug, title, body, ip_address, payload={}):
+
+    def enqueue(board_slug, title, body, ip_address, payload):
         pass
 
     def create(board_slug, title, body, ip_address):
@@ -164,11 +181,13 @@ class ITopicCreateService(Interface):
 
 
 class ITopicDeleteService(Interface):
+
     def delete(topic_id):
         pass
 
 
 class ITopicQueryService(Interface):
+
     def list_from_board_slug(board_slug):
         pass
 
@@ -183,16 +202,19 @@ class ITopicQueryService(Interface):
 
 
 class ITopicUpdateService(Interface):
+
     def update(topic_id, **kwargs):
         pass
 
 
 class IUserCreateService(Interface):
+
     def create(username, password, parent, groups):
         pass
 
 
 class IUserLoginService(Interface):
+
     def authenticate(username, password):
         pass
 
@@ -213,10 +235,12 @@ class IUserLoginService(Interface):
 
 
 class IUserQueryService(Interface):
+
     def user_from_id(id):
         pass
 
 
 class IUserSessionQueryService(Interface):
+
     def list_recent_from_user_id(user_id):
         pass

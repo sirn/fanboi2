@@ -1,39 +1,33 @@
-import {VNode, create, diff, patch} from 'virtual-dom';
+import { VNode, create, diff, patch } from "virtual-dom";
 
-import {DelegationComponent} from './base';
-import {TopicInlineReply} from './topic_inline_reply';
-import {TopicStateTracker} from './topic_state_tracker';
+import { DelegationComponent } from "./base";
+import { TopicInlineReply } from "./topic_inline_reply";
+import { TopicStateTracker } from "./topic_state_tracker";
 
-import {PopoverView} from '../views/popover_view';
-import {PostForm} from '../views/post_form';
-import {dispatchCustomEvent} from '../utils/elements';
-
+import { PopoverView } from "../views/popover_view";
+import { PostForm } from "../views/post_form";
+import { dispatchCustomEvent } from "../utils/elements";
 
 export class TopicQuickReply extends DelegationComponent {
-    public targetSelector = '[data-topic-quick-reply]';
+    public targetSelector = "[data-topic-quick-reply]";
 
     protected bindGlobal(): void {
-        document.body.addEventListener('click', (e: Event): void => {
+        document.body.addEventListener("click", (e: Event): void => {
             let $target = e.target;
 
-            if (
-                $target instanceof Element &&
-                $target.matches(this.targetSelector)
-            ) {
-                let anchor = $target.getAttribute('data-topic-quick-reply');
-                let $topic = $target.closest('[data-topic]');
+            if ($target instanceof Element && $target.matches(this.targetSelector)) {
+                let anchor = $target.getAttribute("data-topic-quick-reply");
+                let $topic = $target.closest("[data-topic]");
                 let $input: Element;
 
                 e.preventDefault();
 
                 if (!anchor) {
-                    throw new Error('Reply anchor is empty when it should not.');
+                    throw new Error("Reply anchor is empty when it should not.");
                 }
 
                 if ($topic) {
-                    $input = $topic.querySelector(
-                        '[data-topic-quick-reply-input]'
-                    );
+                    $input = $topic.querySelector("[data-topic-quick-reply-input]");
 
                     if ($input instanceof HTMLTextAreaElement) {
                         this.insertTextAtCursor($input, anchor);
@@ -45,10 +39,7 @@ export class TopicQuickReply extends DelegationComponent {
         });
     }
 
-    private insertTextAtCursor(
-        $input: HTMLTextAreaElement,
-        anchor: string
-    ): void {
+    private insertTextAtCursor($input: HTMLTextAreaElement, anchor: string): void {
         let anchorText = `>>${anchor} `;
         let startPos = $input.selectionStart;
         let endPos = $input.selectionEnd;
@@ -60,16 +51,12 @@ export class TopicQuickReply extends DelegationComponent {
             currentValue.substring(endPos, currentValue.length);
 
         $input.focus();
-        $input.dispatchEvent(new Event('change'));
+        $input.dispatchEvent(new Event("change"));
         $input.selectionStart = startPos + anchorText.length;
     }
 
-    private attachForm(
-        $target: Element,
-        $topic: Element,
-        anchor: string
-    ): void {
-        let $parent = $target.closest('.js-popover');
+    private attachForm($target: Element, $topic: Element, anchor: string): void {
+        let $parent = $target.closest(".js-popover");
         let $popover: Element;
         let $textarea: Element;
         let popoverView: PopoverView;
@@ -81,19 +68,19 @@ export class TopicQuickReply extends DelegationComponent {
         }
 
         let _removePopover = () => {
-            $topic.removeEventListener('postCreated', _removePopover);
-            document.body.removeEventListener('click', _clickRemovePopover);
-            window.removeEventListener('resize', _repositionPopover);
+            $topic.removeEventListener("postCreated", _removePopover);
+            document.body.removeEventListener("click", _clickRemovePopover);
+            window.removeEventListener("resize", _repositionPopover);
 
             if ($parent) {
-              $parent.removeChild($popover);
+                $parent.removeChild($popover);
             }
-        }
+        };
 
         popoverView = new PopoverView(
             new PostForm().render(),
             "Quick Reply",
-            _removePopover
+            _removePopover,
         );
 
         let _repositionPopover = () => {
@@ -107,7 +94,7 @@ export class TopicQuickReply extends DelegationComponent {
                     popoverNode = newPopoverNode;
                 }
             }, 100);
-        }
+        };
 
         let _clickRemovePopover = (e: Event) => {
             let _n = e.target;
@@ -119,7 +106,7 @@ export class TopicQuickReply extends DelegationComponent {
             if (_n != $popover) {
                 _removePopover();
             }
-        }
+        };
 
         popoverNode = popoverView.render($target);
         $popover = create(popoverNode);
@@ -128,13 +115,13 @@ export class TopicQuickReply extends DelegationComponent {
         new TopicInlineReply($popover);
         new TopicStateTracker($popover);
 
-        $textarea = $popover.querySelector('textarea');
+        $textarea = $popover.querySelector("textarea");
         if ($textarea instanceof HTMLTextAreaElement) {
             this.insertTextAtCursor($textarea, anchor);
         }
 
-        document.body.addEventListener('click', _clickRemovePopover);
-        $topic.addEventListener('postCreated', _removePopover);
-        window.addEventListener('resize', _repositionPopover);
+        document.body.addEventListener("click", _clickRemovePopover);
+        $topic.addEventListener("postCreated", _removePopover);
+        window.addEventListener("resize", _repositionPopover);
     }
 }

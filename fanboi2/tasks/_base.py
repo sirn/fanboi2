@@ -1,6 +1,5 @@
 import transaction
-from celery import Celery
-from celery import Task as BaseTask
+from celery import Celery, Task as BaseTask
 
 
 celery = Celery()

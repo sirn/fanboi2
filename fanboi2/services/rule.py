@@ -12,12 +12,8 @@ class RuleBanCreateService(object):
         self.dbsession = dbsession
 
     def create(
-            self,
-            ip_address,
-            description=None,
-            duration=None,
-            scope=None,
-            active=True):
+        self, ip_address, description=None, duration=None, scope=None, active=True
+    ):
         """Create a new rule ban.
 
         :param ip_address: An IP address or IP network to ban.
@@ -42,7 +38,8 @@ class RuleBanCreateService(object):
             description=description,
             scope=scope,
             active_until=active_until,
-            active=bool(active))
+            active=bool(active),
+        )
 
         self.dbsession.add(rule_ban)
         return rule_ban
@@ -57,25 +54,33 @@ class RuleBanQueryService(object):
     def list_active(self):
         """Returns a list of bans that are currently active."""
         return list(
-            self.dbsession.query(RuleBan).
-            filter(
-                and_(RuleBan.active == True,  # noqa: E712
-                     or_(RuleBan.active_until == None,  # noqa: E712
-                         RuleBan.active_until >= func.now()))).
-            order_by(desc(RuleBan.active_until),
-                     desc(RuleBan.created_at)).
-            all())
+            self.dbsession.query(RuleBan)
+            .filter(
+                and_(
+                    RuleBan.active == True,  # noqa: E712
+                    or_(
+                        RuleBan.active_until == None,  # noqa: E712
+                        RuleBan.active_until >= func.now(),
+                    ),
+                )
+            )
+            .order_by(desc(RuleBan.active_until), desc(RuleBan.created_at))
+            .all()
+        )
 
     def list_inactive(self):
         """Returns a list of bans that are currently inactive."""
         return list(
-            self.dbsession.query(RuleBan).
-            filter(
-                or_(RuleBan.active == False,  # noqa: E712
-                    RuleBan.active_until <= func.now())).
-            order_by(desc(RuleBan.active_until),
-                     desc(RuleBan.created_at)).
-            all())
+            self.dbsession.query(RuleBan)
+            .filter(
+                or_(
+                    RuleBan.active == False,  # noqa: E712
+                    RuleBan.active_until <= func.now(),
+                )
+            )
+            .order_by(desc(RuleBan.active_until), desc(RuleBan.created_at))
+            .all()
+        )
 
     def is_banned(self, ip_address, scopes=None):
         """Verify whether the IP address is in the ban list.
@@ -83,9 +88,11 @@ class RuleBanQueryService(object):
         :param ip_address: An IP address :type:`str` to lookup for.
         :param scopes: A scope :type:`str` to lookup for.
         """
-        q = self.dbsession.query(RuleBan).\
-            filter(RuleBan.listed(ip_address, scopes)).\
-            exists()
+        q = (
+            self.dbsession.query(RuleBan)
+            .filter(RuleBan.listed(ip_address, scopes))
+            .exists()
+        )
         return self.dbsession.query(q).scalar()
 
     def rule_ban_from_id(self, id_):
@@ -113,17 +120,17 @@ class RuleBanUpdateService(object):
         """
         rule_ban = self.dbsession.query(RuleBan).filter_by(id=id_).one()
 
-        if 'duration' in kwargs and kwargs['duration'] != rule_ban.duration:
+        if "duration" in kwargs and kwargs["duration"] != rule_ban.duration:
             active_until = None
-            if kwargs['duration']:
-                duration_delta = datetime.timedelta(days=kwargs['duration'])
+            if kwargs["duration"]:
+                duration_delta = datetime.timedelta(days=kwargs["duration"])
                 active_until = rule_ban.created_at + duration_delta
             rule_ban.active_until = active_until
 
-        if 'active' in kwargs:
-            rule_ban.active = bool(kwargs['active'])
+        if "active" in kwargs:
+            rule_ban.active = bool(kwargs["active"])
 
-        for key in ('ip_address', 'description', 'scope'):
+        for key in ("ip_address", "description", "scope"):
             if key in kwargs:
                 value = kwargs[key]
                 if not value:

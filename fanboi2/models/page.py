@@ -6,10 +6,10 @@ from ._base import Base, Versioned
 
 
 INTERNAL_PAGES = (
-    ('global/css', 'none'),
-    ('global/robots', 'none'),
-    ('global/appendix', 'markdown'),
-    ('global/footer', 'html'),
+    ("global/css", "none"),
+    ("global/robots", "none"),
+    ("global/appendix", "markdown"),
+    ("global/footer", "html"),
 )
 
 
@@ -19,14 +19,14 @@ class Page(Versioned, Base):
     custom CSS or board guidelines.
     """
 
-    __tablename__ = 'page'
-    __table_args__ = (UniqueConstraint('namespace', 'slug'),)
+    __tablename__ = "page"
+    __table_args__ = (UniqueConstraint("namespace", "slug"),)
 
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    namespace = Column(String, nullable=False, default='public')
+    namespace = Column(String, nullable=False, default="public")
     title = Column(Unicode, nullable=False)
     slug = Column(String, nullable=False)
     body = Column(Text, nullable=False)
-    formatter = Column(String, nullable=False, default='markdown')
+    formatter = Column(String, nullable=False, default="markdown")

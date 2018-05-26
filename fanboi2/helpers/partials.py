@@ -24,7 +24,7 @@ def global_css(context, request):
     :param context: A :class:`mako.runtime.Context` object.
     :param request: A :class:`pyramid.request.Request` object.
     """
-    page = get_partial(request, 'global/css')
+    page = get_partial(request, "global/css")
     if page:
         return Markup(page)
 
@@ -36,7 +36,7 @@ def global_appendix(context, request):
     :param context: A :class:`mako.runtime.Context` object.
     :param request: A :class:`pyramid.request.Request` object.
     """
-    page = get_partial(request, 'global/appendix')
+    page = get_partial(request, "global/appendix")
     if page:
         return format_markdown(context, request, page)
 
@@ -49,6 +49,6 @@ def global_footer(context, request):
     :param request: A :class:`pyramid.request.Request` object.
     :param cache_region: Optional cache region to cache this partial.
     """
-    page = get_partial(request, 'global/footer')
+    page = get_partial(request, "global/footer")
     if page:
         return Markup(page)

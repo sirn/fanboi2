@@ -39,6 +39,13 @@
                 <span class="form-item-error">${form.password_confirm.errors[0]}</span>
             % endif
         </div>
+        <div class="form-item${' error' if form.name.errors else ''}">
+            <label class="form-item-label" for="${form.name.id}">Name</label>
+            ${form.name(class_="input block font-large")}
+            % if form.name.errors:
+                <span class="form-item-error">${form.name.errors[0]}</span>
+            % endif
+        </div>
         <div class="form-item">
             <button class="button brand" type="submit">Create account</button>
         </div>
