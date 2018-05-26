@@ -3001,10 +3001,6 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         response = login_post(request)
         self.assertEqual(self.dbsession.query(UserSession).count(), 0)
         self.assertIsInstance(response["form"], AdminLoginForm)
-        self.assertEqual(
-            request.session.pop_flash(queue="error"),
-            ["Username or password is invalid."],
-        )
 
     def test_login_post_bad_csrf(self):
         from pyramid.csrf import BadCSRFToken
@@ -3054,10 +3050,6 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         response = login_post(request)
         self.assertEqual(self.dbsession.query(UserSession).count(), 0)
         self.assertIsInstance(response["form"], AdminLoginForm)
-        self.assertEqual(
-            request.session.pop_flash(queue="error"),
-            ["Username or password is invalid."],
-        )
 
     def test_login_post_not_found(self):
         from ..forms import AdminLoginForm
@@ -3080,10 +3072,6 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         response = login_post(request)
         self.assertEqual(self.dbsession.query(UserSession).count(), 0)
         self.assertIsInstance(response["form"], AdminLoginForm)
-        self.assertEqual(
-            request.session.pop_flash(queue="error"),
-            ["Username or password is invalid."],
-        )
 
     def test_login_post_invalid_username(self):
         from ..models import UserSession
@@ -3257,10 +3245,6 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         self.assertNotEqual(user.encrypted_password, "passw0rd")
         self.assertEqual(self.dbsession.query(UserSession).count(), 0)
         self.assertEqual(setting_query_svc.value_from_key("setup.version"), __VERSION__)
-        self.assertEqual(
-            request.session.pop_flash(queue="success"),
-            ["Successfully setup initial user."],
-        )
 
     def test_setup_post_bad_csrf(self):
         from pyramid.csrf import BadCSRFToken

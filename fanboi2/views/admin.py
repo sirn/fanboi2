@@ -79,7 +79,6 @@ def login_post(request):
 
     user_login_svc = request.find_service(IUserLoginService)
     if not user_login_svc.authenticate(form.username.data, form.password.data):
-        request.session.flash("Username or password is invalid.", "error")
         return {"form": form}
 
     token = user_login_svc.token_for(form.username.data, request.client_addr)
@@ -130,7 +129,6 @@ def setup_post(request):
         None, form.username.data, form.password.data, form.name.data, ["admin"]
     )
 
-    request.session.flash("Successfully setup initial user.", "success")
     return HTTPFound(location=request.route_path(route_name="admin_root"))
 
 
