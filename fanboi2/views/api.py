@@ -1,16 +1,19 @@
 from sqlalchemy.orm.exc import NoResultFound
 from webob.multidict import MultiDict
 
-from ..errors import ParamsInvalidError, RateLimitedError, BanRejectedError
-from ..errors import BaseError
+from ..errors import ParamsInvalidError, RateLimitedError, BanRejectedError, BaseError
 from ..forms import TopicForm, PostForm
-from ..interfaces import IBoardQueryService
-from ..interfaces import IPageQueryService
-from ..interfaces import IPostCreateService, IPostQueryService
-from ..interfaces import IRateLimiterService
-from ..interfaces import IRuleBanQueryService
-from ..interfaces import ITaskQueryService
-from ..interfaces import ITopicCreateService, ITopicQueryService
+from ..interfaces import (
+    IBoardQueryService,
+    IPageQueryService,
+    IPostCreateService,
+    IPostQueryService,
+    IRateLimiterService,
+    IRuleBanQueryService,
+    ITaskQueryService,
+    ITopicCreateService,
+    ITopicQueryService,
+)
 
 
 def _get_params(request):
@@ -20,7 +23,7 @@ def _get_params(request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     params = request.POST
-    if request.content_type.startswith('application/json'):
+    if request.content_type.startswith("application/json"):
         try:
             params = MultiDict(request.json_body)
         except ValueError:  # pragma: no cover
@@ -48,7 +51,7 @@ def board_get(request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     board_query_svc = request.find_service(IBoardQueryService)
-    board_slug = request.matchdict['board']
+    board_slug = request.matchdict["board"]
     return board_query_svc.board_from_slug(board_slug)
 
 
@@ -59,7 +62,7 @@ def board_topics_get(request):
     """
     board_query_svc = request.find_service(IBoardQueryService)
     topic_query_svc = request.find_service(ITopicQueryService)
-    board_slug = request.matchdict['board']
+    board_slug = request.matchdict["board"]
     board_query_svc.board_from_slug(board_slug)  # ensure exists
     topics = topic_query_svc.list_from_board_slug(board_slug)
     return topics
@@ -71,7 +74,7 @@ def board_topics_post(request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     board_query_svc = request.find_service(IBoardQueryService)
-    board_slug = request.matchdict['board']
+    board_slug = request.matchdict["board"]
     board = board_query_svc.board_from_slug(board_slug)
 
     params = _get_params(request)
@@ -82,20 +85,18 @@ def board_topics_post(request):
 
     rule_ban_query_svc = request.find_service(IRuleBanQueryService)
     if rule_ban_query_svc.is_banned(
-            request.client_addr,
-            scopes=("board:%s" % (board.slug,),)):
+        request.client_addr, scopes=("board:%s" % (board.slug,),)
+    ):
         raise BanRejectedError()
 
     rate_limiter_svc = request.find_service(IRateLimiterService)
     if rate_limiter_svc:
-        payload = {'ip_address': request.client_addr, 'board': board.slug}
+        payload = {"ip_address": request.client_addr, "board": board.slug}
         if rate_limiter_svc.is_limited(**payload):
             time_left = rate_limiter_svc.time_left(**payload)
             raise RateLimitedError(time_left)
 
-        rate_limiter_svc.limit_for(
-            board.settings['post_delay'],
-            **payload)
+        rate_limiter_svc.limit_for(board.settings["post_delay"], **payload)
 
     topic_create_svc = request.find_service(ITopicCreateService)
     return topic_create_svc.enqueue(
@@ -104,10 +105,12 @@ def board_topics_post(request):
         form.body.data,
         request.client_addr,
         payload={
-            'application_url': request.application_url,
-            'referrer': request.referrer,
-            'url': request.url,
-            'user_agent': request.user_agent})
+            "application_url": request.application_url,
+            "referrer": request.referrer,
+            "url": request.url,
+            "user_agent": request.user_agent,
+        },
+    )
 
 
 def task_get(request):
@@ -116,7 +119,7 @@ def task_get(request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     task_query_svc = request.find_service(ITaskQueryService)
-    task_uid = request.matchdict['task']
+    task_uid = request.matchdict["task"]
     result_proxy = task_query_svc.result_from_uid(task_uid)
 
     if result_proxy.success():
@@ -133,7 +136,7 @@ def topic_get(request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     topic_query_svc = request.find_service(ITopicQueryService)
-    topic_id = request.matchdict['topic']
+    topic_id = request.matchdict["topic"]
     return topic_query_svc.topic_from_id(topic_id)
 
 
@@ -143,11 +146,11 @@ def topic_posts_get(request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     post_query_svc = request.find_service(IPostQueryService)
-    topic_id = request.matchdict['topic']
+    topic_id = request.matchdict["topic"]
     query = None
 
-    if 'query' in request.matchdict:
-        query = request.matchdict['query']
+    if "query" in request.matchdict:
+        query = request.matchdict["query"]
 
     return post_query_svc.list_from_topic_id(topic_id, query)
 
@@ -158,7 +161,7 @@ def topic_posts_post(request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     topic_query_svc = request.find_service(ITopicQueryService)
-    topic_id = request.matchdict['topic']
+    topic_id = request.matchdict["topic"]
 
     topic = topic_query_svc.topic_from_id(topic_id)
     board = topic.board
@@ -171,20 +174,18 @@ def topic_posts_post(request):
 
     rule_ban_query_svc = request.find_service(IRuleBanQueryService)
     if rule_ban_query_svc.is_banned(
-            request.client_addr,
-            scopes=("board:%s" % (board.slug,),)):
+        request.client_addr, scopes=("board:%s" % (board.slug,),)
+    ):
         raise BanRejectedError()
 
     rate_limiter_svc = request.find_service(IRateLimiterService)
     if rate_limiter_svc:
-        payload = {'ip_address': request.client_addr, 'board': board.slug}
+        payload = {"ip_address": request.client_addr, "board": board.slug}
         if rate_limiter_svc.is_limited(**payload):
             time_left = rate_limiter_svc.time_left(**payload)
             raise RateLimitedError(time_left)
 
-        rate_limiter_svc.limit_for(
-            board.settings['post_delay'],
-            **payload)
+        rate_limiter_svc.limit_for(board.settings["post_delay"], **payload)
 
     post_create_svc = request.find_service(IPostCreateService)
     return post_create_svc.enqueue(
@@ -193,10 +194,12 @@ def topic_posts_post(request):
         form.bumped.data,
         request.client_addr,
         payload={
-            'application_url': request.application_url,
-            'referrer': request.referrer,
-            'url': request.url,
-            'user_agent': request.user_agent})
+            "application_url": request.application_url,
+            "referrer": request.referrer,
+            "url": request.url,
+            "user_agent": request.user_agent,
+        },
+    )
 
 
 def pages_get(request):
@@ -216,7 +219,7 @@ def page_get(request):
     :param namespace: Page namespace to retrieve from.
     """
     page_query_svc = request.find_service(IPageQueryService)
-    page_slug = request.matchdict['page']
+    page_slug = request.matchdict["page"]
     return page_query_svc.public_page_from_slug(page_slug)
 
 
@@ -228,14 +231,12 @@ def error_not_found(exc, request):
     :param exc: An :class:`Exception`.
     :param request: A :class:`pyramid.request.Request` object.
     """
-    request.response.status = '404 Not Found'
+    request.response.status = "404 Not Found"
     return {
-        'type': 'error',
-        'status': 'not_found',
-        'message': 'The resource %s %s could not be found.' % (
-            request.method,
-            request.path,
-        )
+        "type": "error",
+        "status": "not_found",
+        "message": "The resource %s %s could not be found."
+        % (request.method, request.path),
     }
 
 
@@ -254,113 +255,102 @@ def _api_routes_only(context, request):
     """A predicate for :meth:`pyramid.config.add_view` that returns true
     if the requested route is an API route.
     """
-    return request.path.startswith('/api/')
+    return request.path.startswith("/api/")
 
 
 def includeme(config):  # pragma: no cover
-    config.add_route('api_root', '/')
+    config.add_route("api_root", "/")
     config.add_view(
-        root,
-        request_method='GET',
-        route_name='api_root',
-        renderer='api/show.mako')
+        root, request_method="GET", route_name="api_root", renderer="api/show.mako"
+    )
 
     #
     # Pages API
     #
 
-    config.add_route('api_pages', '/1.0/pages/')
-    config.add_route('api_page', '/1.0/pages/{page:.*}/')
+    config.add_route("api_pages", "/1.0/pages/")
+    config.add_route("api_page", "/1.0/pages/{page:.*}/")
 
     config.add_view(
-        pages_get,
-        request_method='GET',
-        route_name='api_pages',
-        renderer='json')
+        pages_get, request_method="GET", route_name="api_pages", renderer="json"
+    )
 
     config.add_view(
-        page_get,
-        request_method='GET',
-        route_name='api_page',
-        renderer='json')
+        page_get, request_method="GET", route_name="api_page", renderer="json"
+    )
 
     #
     # Boards API
     #
 
-    config.add_route('api_boards', '/1.0/boards/')
-    config.add_route('api_board', '/1.0/boards/{board}/')
-    config.add_route('api_board_topics', '/1.0/boards/{board}/topics/')
+    config.add_route("api_boards", "/1.0/boards/")
+    config.add_route("api_board", "/1.0/boards/{board}/")
+    config.add_route("api_board_topics", "/1.0/boards/{board}/topics/")
 
     config.add_view(
-        boards_get,
-        request_method='GET',
-        route_name='api_boards',
-        renderer='json')
+        boards_get, request_method="GET", route_name="api_boards", renderer="json"
+    )
 
     config.add_view(
-        board_get,
-        request_method='GET',
-        route_name='api_board',
-        renderer='json')
+        board_get, request_method="GET", route_name="api_board", renderer="json"
+    )
 
     config.add_view(
         board_topics_get,
-        request_method='GET',
-        route_name='api_board_topics',
-        renderer='json')
+        request_method="GET",
+        route_name="api_board_topics",
+        renderer="json",
+    )
 
     config.add_view(
         board_topics_post,
-        request_method='POST',
-        route_name='api_board_topics',
-        renderer='json')
+        request_method="POST",
+        route_name="api_board_topics",
+        renderer="json",
+    )
 
     #
     # Task API
     #
 
-    config.add_route('api_task', '/1.0/tasks/{task}/')
+    config.add_route("api_task", "/1.0/tasks/{task}/")
 
     config.add_view(
-        task_get,
-        request_method='GET',
-        route_name='api_task',
-        renderer='json')
+        task_get, request_method="GET", route_name="api_task", renderer="json"
+    )
 
     #
     # Topics API
     #
 
-    config.add_route('api_topic', '/1.0/topics/{topic:\d+}/')
-    config.add_route('api_topic_posts', '/1.0/topics/{topic:\d+}/posts/')
-    config.add_route(
-        'api_topic_posts_scoped',
-        '/1.0/topics/{topic:\d+}/posts/{query}/')
+    config.add_route("api_topic", "/1.0/topics/{topic:\d+}/")
+    config.add_route("api_topic_posts", "/1.0/topics/{topic:\d+}/posts/")
+    config.add_route("api_topic_posts_scoped", "/1.0/topics/{topic:\d+}/posts/{query}/")
 
     config.add_view(
-        topic_get,
-        request_method='GET',
-        route_name='api_topic',
-        renderer='json')
+        topic_get, request_method="GET", route_name="api_topic", renderer="json"
+    )
 
     config.add_view(
         topic_posts_get,
-        request_method='GET',
-        route_name='api_topic_posts',
-        renderer='json')
+        request_method="GET",
+        route_name="api_topic_posts",
+        renderer="json",
+    )
 
     config.add_view(
         topic_posts_post,
-        request_method='POST',
-        route_name='api_topic_posts',
-        renderer='json')
+        request_method="POST",
+        route_name="api_topic_posts",
+        renderer="json",
+    )
 
     config.add_view(
         topic_posts_get,
-        request_method='GET',
-        route_name='api_topic_posts_scoped',
-        renderer='json')
+        request_method="GET",
+        route_name="api_topic_posts_scoped",
+        renderer="json",
+    )
 
     #
     # Error handling
@@ -369,19 +359,22 @@ def includeme(config):  # pragma: no cover
     config.add_view(
         error_base_handler,
         context=BaseError,
-        renderer='json',
-        custom_predicates=[_api_routes_only])
+        renderer="json",
+        custom_predicates=[_api_routes_only],
+    )
 
     config.add_view(
         error_not_found,
         context=NoResultFound,
-        renderer='json',
-        custom_predicates=[_api_routes_only])
+        renderer="json",
+        custom_predicates=[_api_routes_only],
+    )
 
     config.add_notfound_view(
         error_not_found,
         append_slash=True,
-        renderer='json',
-        custom_predicates=[_api_routes_only])
+        renderer="json",
+        custom_predicates=[_api_routes_only],
+    )
 
     config.scan()

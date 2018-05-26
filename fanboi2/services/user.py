@@ -16,12 +16,13 @@ ARGON2_ROUNDS = 6
 
 def _create_crypt_context():
     return CryptContext(
-        schemes=['argon2'],
-        deprecated=['auto'],
+        schemes=["argon2"],
+        deprecated=["auto"],
         truncate_error=True,
         argon2__memory_cost=ARGON2_MEMORY_COST,
         argon2__parallelism=ARGON2_PARALLELISM,
-        argon2__rounds=ARGON2_ROUNDS)
+        argon2__rounds=ARGON2_ROUNDS,
+    )
 
 
 class UserCreateService(object):
@@ -32,7 +33,7 @@ class UserCreateService(object):
         self.identity_svc = identity_svc
         self.crypt_context = _create_crypt_context()
 
-    def create(self, parent_id, username, password, name, groups=[]):
+    def create(self, parent_id, username, password, name, groups=None):
         """Creates a user. :param:`parent_id` must be present for all users
         except the root user, usually the user who created this specific user.
 
@@ -42,9 +43,12 @@ class UserCreateService(object):
         :param name: A default name to use when posted in board.
         :param groups: Group the user belongs to.
         """
-        ident_type = 'ident'
-        if 'admin' in groups:
-            ident_type = 'ident_admin'
+        if not groups:
+            groups = []
+
+        ident_type = "ident"
+        if "admin" in groups:
+            ident_type = "ident_admin"
 
         user = User(
             username=username,
@@ -52,7 +56,8 @@ class UserCreateService(object):
             ident_type=ident_type,
             ident=self.identity_svc.identity_for(username=username),
             encrypted_password=self.crypt_context.hash(password),
-            parent_id=parent_id)
+            parent_id=parent_id,
+        )
 
         for g in groups:
             group = self.dbsession.query(Group).filter_by(name=g).first()
@@ -83,16 +88,19 @@ class UserLoginService(object):
         :param username: A username :type:`str` to authenticate.
         :param password: A password :type:`str` to authenticate.
         """
-        user = self.dbsession.query(User).\
-            filter(and_(User.deactivated == False,  # noqa: E711
-                        User.username == username)).\
-            first()
+        user = (
+            self.dbsession.query(User)
+            .filter(
+                and_(User.deactivated == False, User.username == username)  # noqa: E711
+            )
+            .first()
+        )
         if not user:
             return False
 
         ok, new_hash = self.crypt_context.verify_and_update(
-            password,
-            user.encrypted_password)
+            password, user.encrypted_password
+        )
         if not ok:
             return False
 
@@ -109,13 +117,21 @@ class UserLoginService(object):
         :param ip_address: IP address of the user.
         """
         if not (token, ip_address) in self.sessions_map:
-            user_session = self.dbsession.query(UserSession).\
-                options(joinedload(UserSession.user)).\
-                filter(and_(UserSession.token == token,
-                            UserSession.ip_address == ip_address,
-                            or_(UserSession.revoked_at == None,  # noqa: E711
-                                UserSession.revoked_at >= func.now()))).\
-                first()
+            user_session = (
+                self.dbsession.query(UserSession)
+                .options(joinedload(UserSession.user))
+                .filter(
+                    and_(
+                        UserSession.token == token,
+                        UserSession.ip_address == ip_address,
+                        or_(
+                            UserSession.revoked_at == None,  # noqa: E711
+                            UserSession.revoked_at >= func.now(),
+                        ),
+                    )
+                )
+                .first()
+            )
             self.sessions_map[(token, ip_address)] = user_session
         return self.sessions_map[(token, ip_address)]
 
@@ -194,15 +210,17 @@ class UserLoginService(object):
         :param username: A username to create token for.
         :param ip_address: IP address that used to retrieve this token.
         """
-        user = self.dbsession.query(User).\
-            filter(and_(User.deactivated == False,  # noqa: E711
-                        User.username == username)).\
-            one()
+        user = (
+            self.dbsession.query(User)
+            .filter(
+                and_(User.deactivated == False, User.username == username)  # noqa: E711
+            )
+            .one()
+        )
 
         user_session = UserSession(
-            user=user,
-            ip_address=ip_address,
-            token=self._generate_token())
+            user=user, ip_address=ip_address, token=self._generate_token()
+        )
 
         self.dbsession.add(user_session)
         return user_session.token
@@ -237,8 +255,9 @@ class UserSessionQueryService(object):
         :param user_id: A user `type`:int: id.
         """
         return list(
-            self.dbsession.query(UserSession).
-            filter_by(user_id=user_id).
-            order_by(desc(UserSession.last_seen_at)).
-            limit(5).
-            all())
+            self.dbsession.query(UserSession)
+            .filter_by(user_id=user_id)
+            .order_by(desc(UserSession.last_seen_at))
+            .limit(5)
+            .all()
+        )

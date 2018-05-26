@@ -20,33 +20,33 @@ from .user_session import UserSession
 
 
 __all__ = [
-    'Base',
-    'Board',
-    'Group',
-    'Page',
-    'Post',
-    'Rule',
-    'RuleBan',
-    'Setting',
-    'Topic',
-    'TopicMeta',
-    'User',
-    'UserSession',
+    "Base",
+    "Board",
+    "Group",
+    "Page",
+    "Post",
+    "Rule",
+    "RuleBan",
+    "Setting",
+    "Topic",
+    "TopicMeta",
+    "User",
+    "UserSession",
 ]
 
 
 _MODELS = {
-    'board': Board,
-    'group': Group,
-    'page': Page,
-    'post': Post,
-    'rule': Rule,
-    'rule_ban': RuleBan,
-    'setting': Setting,
-    'topic': Topic,
-    'topic_meta': TopicMeta,
-    'user': User,
-    'user_session': UserSession,
+    "board": Board,
+    "group": Group,
+    "page": Page,
+    "post": Post,
+    "rule": Rule,
+    "rule_ban": RuleBan,
+    "setting": Setting,
+    "topic": Topic,
+    "topic_meta": TopicMeta,
+    "user": User,
+    "user_session": UserSession,
 }
 
 
@@ -71,7 +71,7 @@ def init_dbsession(dbsession, tm=None):  # pragma: no cover
 
 def configure_sqlalchemy(settings):  # pragma: no cover
     """Configure SQLAlchemy with the given settings."""
-    engine = engine_from_config(settings, 'sqlalchemy.')
+    engine = engine_from_config(settings, "sqlalchemy.")
     Base.metadata.bind = engine
     dbmaker = sessionmaker()
     dbmaker.configure(bind=engine)
@@ -79,15 +79,15 @@ def configure_sqlalchemy(settings):  # pragma: no cover
 
 
 def includeme(config):  # pragma: no cover
-    config.include('pyramid_tm')
+    config.include("pyramid_tm")
     dbmaker = configure_sqlalchemy(config.registry.settings)
     make_history_event(dbmaker)
 
     log_level = logging.WARN
-    if config.registry.settings['server.development']:
+    if config.registry.settings["server.development"]:
         log_level = logging.INFO
 
-    logger = logging.getLogger('sqlalchemy.engine.base.Engine')
+    logger = logging.getLogger("sqlalchemy.engine.base.Engine")
     logger.setLevel(log_level)
 
     def dbsession_factory(context, request):
@@ -95,4 +95,4 @@ def includeme(config):  # pragma: no cover
         init_dbsession(dbsession, tm=request.tm)
         return dbsession
 
-    config.register_service_factory(dbsession_factory, name='db')
+    config.register_service_factory(dbsession_factory, name="db")

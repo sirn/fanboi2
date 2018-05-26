@@ -12,6 +12,7 @@ tmp/
 *.log
 *.tmp
 *.dump
+.env
 
 # Assets
 /assets/*/

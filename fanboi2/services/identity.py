@@ -16,8 +16,9 @@ class IdentityService(object):
         self.ident_size = ident_size
 
     def _get_key(self, **kwargs):
-        return 'services.identity:%s' % (
-            (','.join('%s=%s' % (k, v) for k, v in sorted(kwargs.items()))),)
+        return "services.identity:%s" % (
+            (",".join("%s=%s" % (k, v) for k, v in sorted(kwargs.items()))),
+        )
 
     def identity_for(self, **kwargs):
         """Query the identity for user matching :param:`kwargs` payload
@@ -29,9 +30,9 @@ class IdentityService(object):
         ident = self.redis_conn.get(key)
 
         if ident is not None:
-            return ident.decode('utf-8')
+            return ident.decode("utf-8")
 
-        ident = ''.join(random.choice(STRINGS) for x in range(self.ident_size))
+        ident = "".join(random.choice(STRINGS) for x in range(self.ident_size))
         self.redis_conn.setnx(key, ident)
         self.redis_conn.expire(key, 86400)
         return ident

@@ -9,9 +9,9 @@ def robots_show(request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     page_query_svc = request.find_service(IPageQueryService)
-    page = page_query_svc.internal_page_from_slug('global/robots')
+    page = page_query_svc.internal_page_from_slug("global/robots")
     response = Response(page.body)
-    response.content_type = 'text/plain'
+    response.content_type = "text/plain"
     return response
 
 
@@ -21,26 +21,20 @@ def page_show(request):
     :param request: A :class:`pyramid.request.Request` object.
     """
     page_query_svc = request.find_service(IPageQueryService)
-    page_slug = request.matchdict['page']
+    page_slug = request.matchdict["page"]
     page = page_query_svc.public_page_from_slug(page_slug)
-    return {
-        'page': page,
-    }
+    return {"page": page}
 
 
 def includeme(config):  # pragma: no cover
-    config.add_route('page', '/{page:.*}/')
+    config.add_route("page", "/{page:.*}/")
 
     config.add_view(
-        robots_show,
-        request_method='GET',
-        route_name='robots',
-        renderer='string')
+        robots_show, request_method="GET", route_name="robots", renderer="string"
+    )
 
     config.add_view(
-        page_show,
-        request_method='GET',
-        route_name='page',
-        renderer='pages/show.mako')
+        page_show, request_method="GET", route_name="page", renderer="pages/show.mako"
+    )
 
     config.scan()

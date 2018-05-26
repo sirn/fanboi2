@@ -23,7 +23,8 @@ class BoardCreateService(object):
             description=description,
             status=status,
             agreements=agreements,
-            settings=settings)
+            settings=settings,
+        )
 
         self.dbsession.add(board)
         return board
@@ -39,27 +40,23 @@ class BoardQueryService(object):
 
     def list_all(self):
         """Query all boards."""
-        return list(
-            self.dbsession.query(Board).
-            order_by(Board.title).
-            all())
+        return list(self.dbsession.query(Board).order_by(Board.title).all())
 
     def list_active(self):
         """Query all boards that are not archived."""
         return list(
-            self.dbsession.query(Board).
-            order_by(Board.title).
-            filter(Board.status != 'archived').
-            all())
+            self.dbsession.query(Board)
+            .order_by(Board.title)
+            .filter(Board.status != "archived")
+            .all()
+        )
 
     def board_from_slug(self, board_slug):
         """Query a board from the given board slug.
 
         :param board_slug: The slug :type:`str` identifying a board.
         """
-        return self.dbsession.query(Board).\
-            filter_by(slug=board_slug).\
-            one()
+        return self.dbsession.query(Board).filter_by(slug=board_slug).one()
 
 
 class BoardUpdateService(object):
@@ -78,12 +75,7 @@ class BoardUpdateService(object):
         """
         board = self.dbsession.query(Board).filter_by(slug=slug).one()
 
-        for key in (
-                'title',
-                'description',
-                'status',
-                'agreements',
-                'settings'):
+        for key in ("title", "description", "status", "agreements", "settings"):
             if key in kwargs:
                 setattr(board, key, kwargs[key])
 

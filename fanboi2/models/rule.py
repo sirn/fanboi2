@@ -9,7 +9,7 @@ from ._base import Base
 class Rule(Base):
     """Model class that provides an IP rule."""
 
-    __tablename__ = 'rule'
+    __tablename__ = "rule"
 
     id = Column(Integer, primary_key=True)
     type = Column(String, nullable=False)
@@ -21,10 +21,7 @@ class Rule(Base):
     active_until = Column(DateTime(timezone=True))
     description = Column(Unicode)
 
-    __mapper_args__ = {
-        'polymorphic_on': type,
-        'polymorphic_identity': 'base',
-    }
+    __mapper_args__ = {"polymorphic_on": type, "polymorphic_identity": "base"}
 
     @classmethod
     def listed(cls, ip_address, scopes=None):
@@ -34,9 +31,9 @@ class Rule(Base):
         return and_(
             scope_q,
             cls.active == True,  # noqa: E712
-            cls.ip_address.op('>>=')(ip_address),
-            or_(cls.active_until == None,  # noqa: E712
-                cls.active_until >= func.now()))
+            cls.ip_address.op(">>=")(ip_address),
+            or_(cls.active_until == None, cls.active_until >= func.now()),  # noqa: E712
+        )
 
     @property
     def duration(self):
@@ -44,4 +41,4 @@ class Rule(Base):
         if not self.active_until:
             return 0
         secs = (self.active_until - self.created_at).total_seconds()
-        return round(secs/86400)
+        return round(secs / 86400)

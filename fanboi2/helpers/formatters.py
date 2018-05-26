@@ -14,26 +14,29 @@ from markupsafe import Markup
 from ..interfaces import ISettingQueryService
 
 
-RE_PARAGRAPH = re.compile(r'(?:(?P<newline>\r\n|\n|\r)(?P=newline)+)')
+RE_PARAGRAPH = re.compile(r"(?:(?P<newline>\r\n|\n|\r)(?P=newline)+)")
 RE_THUMBNAILS = (
-    (re.compile(
-        r"https?://(?:(?:\w+\.)?imgur\.com)/((?!a/|gallery/)\w+)",
-        re.ASCII),
-     '//i.imgur.com/{}b.jpg',
-     '//imgur.com/{}'),
-    (re.compile(
-        r"https?://(?:www\.)?youtube\.com/watch\S+v=([a-zA-Z0-9_\-]+)",
-        re.ASCII),
-     '//i1.ytimg.com/vi/{}/mqdefault.jpg',
-     '//www.youtube.com/watch?v={}'),
-    (re.compile(
-        r"https?://youtu\.be/([a-zA-Z0-9_\-]+)",
-        re.ASCII),
-     '//i1.ytimg.com/vi/{}/mqdefault.jpg',
-     '//www.youtube.com/watch?v={}'),
+    (
+        re.compile(r"https?://(?:(?:\w+\.)?imgur\.com)/((?!a/|gallery/)\w+)", re.ASCII),
+        "//i.imgur.com/{}b.jpg",
+        "//imgur.com/{}",
+    ),
+    (
+        re.compile(
+            r"https?://(?:www\.)?youtube\.com/watch\S+v=([a-zA-Z0-9_\-]+)", re.ASCII
+        ),
+        "//i1.ytimg.com/vi/{}/mqdefault.jpg",
+        "//www.youtube.com/watch?v={}",
+    ),
+    (
+        re.compile(r"https?://youtu\.be/([a-zA-Z0-9_\-]+)", re.ASCII),
+        "//i1.ytimg.com/vi/{}/mqdefault.jpg",
+        "//www.youtube.com/watch?v={}",
+    ),
 )
 
-RE_LINK = re.compile(r"""
+RE_LINK = re.compile(
+    r"""
  (                     # Group start
    (http|ftp|https)    # Protocols
  \:\/\/                # Separator
@@ -43,7 +46,9 @@ RE_LINK = re.compile(r"""
  \/                    # Slash
    ?([^\s<*]+)         # Link, all characters except space and end tag
  )
-""", re.VERBOSE)
+""",
+    re.VERBOSE,
+)
 
 
 class PostMarkup(Markup):
@@ -51,10 +56,10 @@ class PostMarkup(Markup):
     formatting such as raw data length or shortened status.
     """
 
-    def __new__(self, *args, **kwargs):
-        self.length = None
-        self.shortened = False
-        return super(PostMarkup, self).__new__(self, *args, **kwargs)
+    def __new__(cls, *args, **kwargs):
+        cls.length = None
+        cls.shortened = False
+        return super(PostMarkup, cls).__new__(cls, *args, **kwargs)
 
     def __len__(self):
         if not self.length:
@@ -83,7 +88,7 @@ def extract_thumbnail(text):
 
 TP_THUMB = '<a href="%s" class="thumbnail" target="_blank"><img src="%s"></a>'
 TP_LINK = '<a href="%s" class="link" target="_blank" rel="nofollow">%s</a>'
-TP_PARAGRAPH = '<p>%s</p>'
+TP_PARAGRAPH = "<p>%s</p>"
 TP_THUMB_PARAGRAPH = '<p class="thumbnails">%s</p>'
 
 
@@ -99,8 +104,8 @@ def url_fix(string):
     :param string: A :type:`str` containing URL to fix.
     """
     scheme, netloc, path, qs, anchor = urlparse.urlsplit(string)
-    path = urlparse.quote(path, '/%')
-    qs = urlparse.quote_plus(qs, ':&=')
+    path = urlparse.quote(path, "/%")
+    qs = urlparse.quote_plus(qs, ":&=")
     return urlparse.urlunsplit((scheme, netloc, path, qs, anchor))
 
 
@@ -123,9 +128,7 @@ def format_text(text, shorten=None):
     # Auto-link
     def _replace_link(match):
         link = HTMLParser().unescape(urlparse.unquote(match.group(0)))
-        return Markup(TP_LINK % (
-            url_fix(link),
-            html.escape(link)))
+        return Markup(TP_LINK % (url_fix(link), html.escape(link)))
 
     # Turns text into paragraph.
     text = "\n".join((t.strip() for t in text.splitlines()))  # Cleanup
@@ -139,7 +142,7 @@ def format_text(text, shorten=None):
                     break
                 lines.append(html.escape(line))
                 length += len(line)
-            paragraph = TP_PARAGRAPH % '<br>'.join(lines)
+            paragraph = TP_PARAGRAPH % "<br>".join(lines)
             paragraph = RE_LINK.sub(_replace_link, paragraph)
             output.append(paragraph)
             if shortened:
@@ -150,9 +153,9 @@ def format_text(text, shorten=None):
     if thumbnails:
         for thumbnail, link in extract_thumbnail(text):
             thumbs.append(TP_THUMB % (link, thumbnail))
-        output.append(TP_THUMB_PARAGRAPH % ''.join(thumbs))
+        output.append(TP_THUMB_PARAGRAPH % "".join(thumbs))
 
-    markup = PostMarkup('\n'.join(output))
+    markup = PostMarkup("\n".join(output))
     markup.length = length
     markup.shortened = shortened
     return markup
@@ -169,21 +172,28 @@ def format_markdown(context, request, text):
         return Markup(misaka.html(str(text)))
 
 
-RE_ANCHOR = re.compile(r'%s(\d+)(\-)?(\d+)?' % html.escape('>>'))
-TP_ANCHOR = ''.join("""
+RE_ANCHOR = re.compile(r"%s(\d+)(\-)?(\d+)?" % html.escape(">>"))
+TP_ANCHOR = "".join(
+    """
 <a data-anchor-topic="%s" data-anchor="%s" href="%s" class="anchor">
 %s
 </a>
-""".splitlines())
+""".splitlines()
+)
 
-RE_ANCHOR_CROSS = re.compile(r"""
+RE_ANCHOR_CROSS = re.compile(
+    r"""
   %s\/                       # Syntax start
   (\w+)                      # Board name
   (?:\/(\d+))?               # Topic id
   (?:\/(\d+)(\-)?(\d+)?)     # Post id
   ?(\/?)                     # Trailing slash
-""" % html.escape('>>>'), re.VERBOSE)
-TP_ANCHOR_CROSS = ''.join("""
+"""
+    % html.escape(">>>"),
+    re.VERBOSE,
+)
+TP_ANCHOR_CROSS = "".join(
+    """
 <a data-anchor-board="%s"
  data-anchor-topic="%s"
  data-anchor="%s"
@@ -191,13 +201,16 @@ TP_ANCHOR_CROSS = ''.join("""
  class="anchor">
 %s
 </a>
-""".splitlines())
+""".splitlines()
+)
 
-TP_SHORTENED = ''.join("""
+TP_SHORTENED = "".join(
+    """
 <p class="shortened">
 Post shortened. <a href="%s" class="anchor">See full post</a>.
 </p>
-""".splitlines())
+""".splitlines()
+)
 
 
 def format_post(context, request, post, shorten=None):
@@ -216,49 +229,63 @@ def format_post(context, request, post, shorten=None):
     # Append click to see more link if post is shortened.
     try:
         if text.shortened:
-            text += Markup("\n" + TP_SHORTENED % (
-                request.route_path('topic_scoped',
-                                   board=post.topic.board.slug,
-                                   topic=post.topic.id,
-                                   query="%s-" % post.number)))
+            text += Markup(
+                "\n"
+                + TP_SHORTENED
+                % (
+                    request.route_path(
+                        "topic_scoped",
+                        board=post.topic.board.slug,
+                        topic=post.topic.id,
+                        query="%s-" % post.number,
+                    )
+                )
+            )
     except AttributeError:  # pragma: no cover
         pass
 
     # Convert cross anchor (>>>/demo/123/1-10) into link.
     def _anchor_cross(match):
         board = match.groups()[0]
-        topic = match.groups()[1] if match.groups()[1] else ''
-        anchor = ''.join([m for m in match.groups()[2:-1] if m is not None])
+        topic = match.groups()[1] if match.groups()[1] else ""
+        anchor = "".join([m for m in match.groups()[2:-1] if m is not None])
         trail = match.groups()[-1]
 
         if board and topic:
-            args = {'board': board, 'topic': topic, 'query': anchor}
-            args['query'] = anchor if anchor else 'recent'
-            path = request.route_path('topic_scoped', **args)
+            args = {"board": board, "topic": topic, "query": anchor}
+            args["query"] = anchor if anchor else "recent"
+            path = request.route_path("topic_scoped", **args)
         else:
-            path = request.route_path('board', board=board)
+            path = request.route_path("board", board=board)
 
         text = []
         for part in (board, topic, anchor):
             if part:
                 text.append(part)
-        text = html.escape(">>>/%s" % '/'.join(text))
-        text += str(trail) if trail else ''
+        text = html.escape(">>>/%s" % "/".join(text))
+        text += str(trail) if trail else ""
         return Markup(TP_ANCHOR_CROSS % (board, topic, anchor, path, text))
 
     text = RE_ANCHOR_CROSS.sub(_anchor_cross, text)
 
     # Convert post anchor (>>123) into link.
     def _anchor(match):
-        anchor = ''.join([m for m in match.groups() if m is not None])
-        return Markup(TP_ANCHOR % (
-            post.topic.id,
-            anchor,
-            request.route_path('topic_scoped',
-                               board=post.topic.board.slug,
-                               topic=post.topic.id,
-                               query=anchor),
-            html.escape(">>%s" % anchor),))
+        anchor = "".join([m for m in match.groups() if m is not None])
+        return Markup(
+            TP_ANCHOR
+            % (
+                post.topic.id,
+                anchor,
+                request.route_path(
+                    "topic_scoped",
+                    board=post.topic.board.slug,
+                    topic=post.topic.id,
+                    query=anchor,
+                ),
+                html.escape(">>%s" % anchor),
+            )
+        )
+
     text = RE_ANCHOR.sub(_anchor, text)
 
     return Markup(text)
@@ -272,9 +299,9 @@ def format_page(context, request, page):
     :param request: A :class:`pyramid.request.Request` object.
     :param page: A :class:`fanboi2.models.Page` object.
     """
-    if page.formatter == 'markdown':
+    if page.formatter == "markdown":
         return format_markdown(context, request, page.body)
-    elif page.formatter == 'html':
+    elif page.formatter == "html":
         return Markup(page.body)
     return Markup(html.escape(page.body))
 
@@ -287,8 +314,8 @@ def format_datetime(context, request, dt):
     :param dt: A :class:`datetime.datetime` object.
     """
     setting_query_svc = request.find_service(ISettingQueryService)
-    tz = pytz.timezone(setting_query_svc.value_from_key('app.time_zone'))
-    return dt.astimezone(tz).strftime('%b %d, %Y at %H:%M:%S')
+    tz = pytz.timezone(setting_query_svc.value_from_key("app.time_zone"))
+    return dt.astimezone(tz).strftime("%b %d, %Y at %H:%M:%S")
 
 
 def format_isotime(context, request, dt):
@@ -320,14 +347,10 @@ def unquoted_path(context, request, *args, **kwargs):
     return urllib.parse.unquote(request.route_path(*args, **kwargs))
 
 
-THEMES = [
-    'topaz',
-    'obsidian',
-    'debug',
-]
+THEMES = ["topaz", "obsidian", "debug"]
 
 
-def user_theme(context, request, cookie='_theme'):
+def user_theme(context, request, cookie="_theme"):
     """Returns the current theme set by the user. If no theme was set
     in the :param:`cookie`, or one was set but invalid, the default
     theme will be returned.

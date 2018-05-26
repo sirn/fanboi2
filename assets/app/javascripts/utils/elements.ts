@@ -1,8 +1,5 @@
-export const addClass = (
-    element: Element,
-    newClasses: string[]
-): void => {
-    let classNames = element.className.split(' ');
+export const addClass = (element: Element, newClasses: string[]): void => {
+    let classNames = element.className.split(" ");
 
     for (let i = 0, len = newClasses.length; i < len; i++) {
         let newClass = newClasses[i];
@@ -12,15 +9,11 @@ export const addClass = (
         }
     }
 
-    element.className = classNames.join(' ');
-}
+    element.className = classNames.join(" ");
+};
 
-
-export const removeClass = (
-    element: Element,
-    removeClasses: string[]
-): void => {
-    let classNames = element.className.split(' ');
+export const removeClass = (element: Element, removeClasses: string[]): void => {
+    let classNames = element.className.split(" ");
 
     for (let i = 0, len = removeClasses.length; i < len; i++) {
         let removeClass = removeClasses[i];
@@ -31,17 +24,18 @@ export const removeClass = (
         }
     }
 
-    element.className = classNames.join(' ');
-}
-
+    element.className = classNames.join(" ");
+};
 
 export const dispatchCustomEvent = (
     element: Element,
     eventName: string,
     opts: any = {},
 ): void => {
-    element.dispatchEvent(new CustomEvent(eventName, {
-        bubbles: true,
-        detail: opts
-    }));
-}
+    element.dispatchEvent(
+        new CustomEvent(eventName, {
+            bubbles: true,
+            detail: opts,
+        }),
+    );
+};

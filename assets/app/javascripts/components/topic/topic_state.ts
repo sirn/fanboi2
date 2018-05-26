@@ -1,5 +1,4 @@
-import {ITopicEventHandler} from './base';
-
+import { ITopicEventHandler } from "./base";
 
 export class TopicState implements ITopicEventHandler {
     stateName: string;
@@ -10,12 +9,12 @@ export class TopicState implements ITopicEventHandler {
 
     bind(event: CustomEvent): void {
         switch (event.type) {
-        case 'readState':
-            this.bindReadState(event);
-            break;
-        case 'updateState':
-            this.bindUpdateState(event);
-            break;
+            case "readState":
+                this.bindReadState(event);
+                break;
+            case "updateState":
+                this.bindUpdateState(event);
+                break;
         }
     }
 
@@ -23,8 +22,12 @@ export class TopicState implements ITopicEventHandler {
         let name: string = e.detail.name;
         let callback: ((name: string, value: any) => void) = e.detail.callback;
 
-        if (!name) { throw new Error('readState require a name'); }
-        if (!callback) { throw new Error('readState require a callback'); }
+        if (!name) {
+            throw new Error("readState require a name");
+        }
+        if (!callback) {
+            throw new Error("readState require a callback");
+        }
 
         let state = this.readState();
         callback(name, state[name]);
@@ -35,7 +38,9 @@ export class TopicState implements ITopicEventHandler {
         let value: any = e.detail.value;
         let callback: ((name: string, value: any) => void) = e.detail.callback;
 
-        if (!name) { throw new Error('updateState require a name'); }
+        if (!name) {
+            throw new Error("updateState require a name");
+        }
 
         let state = this.readState();
         state[name] = value;

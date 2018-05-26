@@ -1,71 +1,88 @@
-import {VNode, h} from 'virtual-dom';
-
+import { VNode, h } from "virtual-dom";
 
 export class PopoverView {
     popoverChildNodes: VNode[];
 
     constructor(childNode: VNode, title?: string, dismissFn?: (() => void)) {
-        this.popoverChildNodes = PopoverView.renderChild(
-            childNode,
-            title,
-            dismissFn,
-        );
+        this.popoverChildNodes = PopoverView.renderChild(childNode, title, dismissFn);
     }
 
     render(targetElement: Element, args: any = {}): VNode {
         let pos = PopoverView.computePosition(targetElement);
 
-        return h('div', PopoverView.getViewClassName(args), [
-            h('div', {
-                className: 'js-popover-inner',
-                style: {
-                    position: 'absolute',
-                    top: `${pos.posX}px`,
-                    left: `${pos.posY}px`,
-                }
-            }, this.popoverChildNodes)
+        return h("div", PopoverView.getViewClassName(args), [
+            h(
+                "div",
+                {
+                    className: "js-popover-inner",
+                    style: {
+                        position: "absolute",
+                        top: `${pos.posX}px`,
+                        left: `${pos.posY}px`,
+                    },
+                },
+                this.popoverChildNodes,
+            ),
         ]);
     }
 
     private static renderChild(
         childNode: VNode,
         title?: string,
-        dismissFn?: (() => void)
+        dismissFn?: (() => void),
     ): VNode[] {
         let popoverChildNodes: VNode[] = [];
 
         if (title) {
             let titleChildNodes = [
-                h('span', {
-                    className: 'js-popover-inner-title-label'
-                }, [title])
+                h(
+                    "span",
+                    {
+                        className: "js-popover-inner-title-label",
+                    },
+                    [title],
+                ),
             ];
 
             if (dismissFn) {
-                titleChildNodes.push(h('a', {
-                    className: 'js-popover-inner-title-dismiss',
-                    href: '#',
-                    onclick: (e: Event): void => {
-                        e.preventDefault();
-                        if (dismissFn) {
-                            dismissFn();
-                        }
-                    },
-                }, ['Close']));
+                titleChildNodes.push(
+                    h(
+                        "a",
+                        {
+                            className: "js-popover-inner-title-dismiss",
+                            href: "#",
+                            onclick: (e: Event): void => {
+                                e.preventDefault();
+                                if (dismissFn) {
+                                    dismissFn();
+                                }
+                            },
+                        },
+                        ["Close"],
+                    ),
+                );
             }
 
-            popoverChildNodes.push(h('div', {
-                className: 'js-popover-inner-title',
-            }, titleChildNodes));
+            popoverChildNodes.push(
+                h(
+                    "div",
+                    {
+                        className: "js-popover-inner-title",
+                    },
+                    titleChildNodes,
+                ),
+            );
         }
 
         popoverChildNodes.push(childNode);
         return popoverChildNodes;
     }
 
-    private static computePosition(targetElement: Element): {
-        posX: number,
-        posY: number
+    private static computePosition(
+        targetElement: Element,
+    ): {
+        posX: number;
+        posY: number;
     } {
         let bodyRect = document.body.getBoundingClientRect();
         let elemRect = targetElement.getBoundingClientRect();
@@ -73,24 +90,24 @@ export class PopoverView {
 
         // Indent relative to container rather than element if there is
         // container in element ancestor.
-        let containerElement = targetElement.closest('.container');
+        let containerElement = targetElement.closest(".container");
         if (containerElement) {
             yRefRect = containerElement.getBoundingClientRect();
         }
 
         return {
-            posX: (elemRect.bottom + 5) - bodyRect.top,
+            posX: elemRect.bottom + 5 - bodyRect.top,
             posY: yRefRect.left - bodyRect.left,
-        }
+        };
     }
 
     private static getViewClassName(args: any): any {
-        const className = 'js-popover';
+        const className = "js-popover";
 
         if (args.className) {
-            let classNames = args.className.split(' ');
+            let classNames = args.className.split(" ");
             classNames.push(className);
-            args.className = classNames.join(' ');
+            args.className = classNames.join(" ");
         } else {
             args.className = className;
         }

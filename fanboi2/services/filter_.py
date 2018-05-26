@@ -3,7 +3,7 @@ from collections import namedtuple
 from ..interfaces import ISettingQueryService, IPostQueryService
 
 
-FilterResult = namedtuple('FilterResult', ('rejected_by', 'filters'))
+FilterResult = namedtuple("FilterResult", ("rejected_by", "filters"))
 
 
 class FilterService(object):
@@ -23,15 +23,15 @@ class FilterService(object):
         filters_chain = []
         setting_query_svc = self.service_query_fn(ISettingQueryService)
 
-        if 'ip_address' in payload:
+        if "ip_address" in payload:
             post_query_svc = self.service_query_fn(IPostQueryService)
-            if post_query_svc.was_recently_seen(payload['ip_address']):
+            if post_query_svc.was_recently_seen(payload["ip_address"]):
                 return FilterResult(rejected_by=None, filters=[])
 
         for name, cls in self.filters:
             services = {}
             filters_chain.append(name)
-            if hasattr(cls, '__use_services__'):
+            if hasattr(cls, "__use_services__"):
                 for s in cls.__use_services__:
                     services[s] = self.service_query_fn(name=s)
 
