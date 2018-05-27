@@ -15,11 +15,7 @@ tmp/
 .env
 
 # Assets
-/assets/*/
-!/assets/app/
-!/assets/admin/
-!/assets/vendor/
-!/assets/legacy/
+node_modules/
 
 # Development
 !alembic.ini

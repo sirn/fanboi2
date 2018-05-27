@@ -126,4 +126,3 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 .. _VirtualBox: https://www.virtualbox.org/
 .. _Yarn: https://yarnpkg.com/
 .. _Gulp: http://gulpjs.com/
-.. _Typings: https://github.com/typings/typings

@@ -42,7 +42,7 @@ var paths = {
 
     /* Path for storing third-party assets. */
     vendor: {
-        assets: "vendor/assets/*",
+        assets: "assets/vendor/assets/*",
         stylesheets: "assets/vendor/stylesheets/**/*.css",
         javascripts: ["assets/vendor/javascripts/**/*.js"],
     },
@@ -95,7 +95,7 @@ var postcssProcessors = [
             return url + "?h=" + hash.slice(0, 8);
         },
     }),
-    require("csswring"),
+    require("cssnano")({ preset: "default" }),
 ];
 
 gulp.task("styles/app", ["assets"], function() {
