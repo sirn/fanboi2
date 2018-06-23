@@ -1857,10 +1857,10 @@ class TestBanModel(ModelSessionMixin, unittest.TestCase):
         from datetime import datetime, timedelta
         from ..models import Ban
 
-        rule1 = self._make(Ban(ip_address="10.0.1.0/24"))
-        rule2 = self._make(Ban(ip_address="10.0.2.0/24"))
-        rule3 = self._make(Ban(ip_address="10.0.3.1"))
-        rule4 = self._make(Ban(ip_address="10.0.4.0/24", scope="foo:bar"))
+        ban1 = self._make(Ban(ip_address="10.0.1.0/24"))
+        ban2 = self._make(Ban(ip_address="10.0.2.0/24"))
+        ban3 = self._make(Ban(ip_address="10.0.3.1"))
+        ban4 = self._make(Ban(ip_address="10.0.4.0/24", scope="foo:bar"))
         self._make(Ban(ip_address="10.0.5.0/24", active=False))
         self._make(
             Ban(
@@ -1877,11 +1877,11 @@ class TestBanModel(ModelSessionMixin, unittest.TestCase):
                 .first()
             )
 
-        self.assertEqual(rule1, _makeQuery("10.0.1.1"))
-        self.assertEqual(rule2, _makeQuery("10.0.2.1"))
-        self.assertEqual(rule3, _makeQuery("10.0.3.1"))
-        self.assertEqual(rule3, _makeQuery("10.0.3.1", scopes=["foo:bar"]))
-        self.assertEqual(rule4, _makeQuery("10.0.4.1", scopes=["foo:bar"]))
+        self.assertEqual(ban1, _makeQuery("10.0.1.1"))
+        self.assertEqual(ban2, _makeQuery("10.0.2.1"))
+        self.assertEqual(ban3, _makeQuery("10.0.3.1"))
+        self.assertEqual(ban3, _makeQuery("10.0.3.1", scopes=["foo:bar"]))
+        self.assertEqual(ban4, _makeQuery("10.0.4.1", scopes=["foo:bar"]))
         self.assertEqual(None, _makeQuery("10.0.4.1"))
         self.assertEqual(None, _makeQuery("10.0.5.1"))
         self.assertEqual(None, _makeQuery("10.0.6.1"))
@@ -1890,21 +1890,21 @@ class TestBanModel(ModelSessionMixin, unittest.TestCase):
         from datetime import datetime, timedelta
         from ..models import Ban
 
-        rule = self._make(
+        ban = self._make(
             Ban(
                 ip_address="10.0.1.0/24",
                 active_until=datetime.now() + timedelta(days=30),
             )
         )
         self.dbsession.commit()
-        self.assertEqual(rule.duration, 30)
+        self.assertEqual(ban.duration, 30)
 
     def test_duration_no_duration(self):
         from ..models import Ban
 
-        rule = self._make(Ban(ip_address="10.0.1.0/24"))
+        ban = self._make(Ban(ip_address="10.0.1.0/24"))
         self.dbsession.commit()
-        self.assertEqual(rule.duration, 0)
+        self.assertEqual(ban.duration, 0)
 
 
 class TestSettingModel(ModelSessionMixin, unittest.TestCase):

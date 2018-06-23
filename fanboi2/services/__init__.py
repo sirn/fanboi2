@@ -60,27 +60,27 @@ def includeme(config):  # pragma: no cover  # noqa: C901
 
     # Ban create
 
-    def rule_ban_create_factory(context, request):
+    def ban_create_factory(context, request):
         dbsession = request.find_service(name="db")
         return BanCreateService(dbsession)
 
-    config.register_service_factory(rule_ban_create_factory, IBanCreateService)
+    config.register_service_factory(ban_create_factory, IBanCreateService)
 
     # Ban query
 
-    def rule_ban_query_factory(context, request):
+    def ban_query_factory(context, request):
         dbsession = request.find_service(name="db")
         return BanQueryService(dbsession)
 
-    config.register_service_factory(rule_ban_query_factory, IBanQueryService)
+    config.register_service_factory(ban_query_factory, IBanQueryService)
 
     # Ban update
 
-    def rule_ban_update_factory(context, request):
+    def ban_update_factory(context, request):
         dbsession = request.find_service(name="db")
         return BanUpdateService(dbsession)
 
-    config.register_service_factory(rule_ban_update_factory, IBanUpdateService)
+    config.register_service_factory(ban_update_factory, IBanUpdateService)
 
     # Board Create
 
