@@ -9,15 +9,14 @@ class TestDeserializeModel(unittest.TestCase):
 
     def test_serialize(self):
         from ..models import deserialize_model
-        from ..models import Board, Group, Page, Post, Rule, RuleBan
+        from ..models import Ban, Board, Group, Page, Post
         from ..models import Setting, Topic, TopicMeta, User, UserSession
 
         self.assertEqual(deserialize_model("board"), Board)
         self.assertEqual(deserialize_model("group"), Group)
         self.assertEqual(deserialize_model("page"), Page)
         self.assertEqual(deserialize_model("post"), Post)
-        self.assertEqual(deserialize_model("rule"), Rule)
-        self.assertEqual(deserialize_model("rule_ban"), RuleBan)
+        self.assertEqual(deserialize_model("ban"), Ban)
         self.assertEqual(deserialize_model("setting"), Setting)
         self.assertEqual(deserialize_model("topic"), Topic)
         self.assertEqual(deserialize_model("topic_meta"), TopicMeta)
@@ -1852,29 +1851,19 @@ class TestPageModel(ModelSessionMixin, unittest.TestCase):
         self.assertIsNone(page_1.updated_at)
 
 
-class TestRuleModel(ModelSessionMixin, unittest.TestCase):
-
-    def test_inheritance(self):
-        from ..models import Rule, RuleBan
-
-        rule = self._make(Rule(ip_address="127.0.0.1"))
-        rule_ban = self._make(RuleBan(ip_address="127.0.0.1"))
-        self.dbsession.commit()
-        self.assertListEqual(
-            list(self.dbsession.query(Rule).order_by(Rule.id).all()), [rule, rule_ban]
-        )
+class TestBanModel(ModelSessionMixin, unittest.TestCase):
 
     def test_listed(self):
         from datetime import datetime, timedelta
-        from ..models import Rule
+        from ..models import Ban
 
-        rule1 = self._make(Rule(ip_address="10.0.1.0/24"))
-        rule2 = self._make(Rule(ip_address="10.0.2.0/24"))
-        rule3 = self._make(Rule(ip_address="10.0.3.1"))
-        rule4 = self._make(Rule(ip_address="10.0.4.0/24", scope="foo:bar"))
-        self._make(Rule(ip_address="10.0.5.0/24", active=False))
+        ban1 = self._make(Ban(ip_address="10.0.1.0/24"))
+        ban2 = self._make(Ban(ip_address="10.0.2.0/24"))
+        ban3 = self._make(Ban(ip_address="10.0.3.1"))
+        ban4 = self._make(Ban(ip_address="10.0.4.0/24", scope="foo:bar"))
+        self._make(Ban(ip_address="10.0.5.0/24", active=False))
         self._make(
-            Rule(
+            Ban(
                 ip_address="10.0.6.0/24",
                 active_until=datetime.now() - timedelta(days=1),
             )
@@ -1883,106 +1872,39 @@ class TestRuleModel(ModelSessionMixin, unittest.TestCase):
 
         def _makeQuery(ip_address, **kwargs):
             return (
-                self.dbsession.query(Rule)
-                .filter(Rule.listed(ip_address, **kwargs))
+                self.dbsession.query(Ban)
+                .filter(Ban.listed(ip_address, **kwargs))
                 .first()
             )
 
-        self.assertEqual(rule1, _makeQuery("10.0.1.1"))
-        self.assertEqual(rule2, _makeQuery("10.0.2.1"))
-        self.assertEqual(rule3, _makeQuery("10.0.3.1"))
-        self.assertEqual(rule3, _makeQuery("10.0.3.1", scopes=["foo:bar"]))
-        self.assertEqual(rule4, _makeQuery("10.0.4.1", scopes=["foo:bar"]))
+        self.assertEqual(ban1, _makeQuery("10.0.1.1"))
+        self.assertEqual(ban2, _makeQuery("10.0.2.1"))
+        self.assertEqual(ban3, _makeQuery("10.0.3.1"))
+        self.assertEqual(ban3, _makeQuery("10.0.3.1", scopes=["foo:bar"]))
+        self.assertEqual(ban4, _makeQuery("10.0.4.1", scopes=["foo:bar"]))
         self.assertEqual(None, _makeQuery("10.0.4.1"))
         self.assertEqual(None, _makeQuery("10.0.5.1"))
         self.assertEqual(None, _makeQuery("10.0.6.1"))
 
     def test_duration(self):
         from datetime import datetime, timedelta
-        from ..models import Rule
+        from ..models import Ban
 
-        rule = self._make(
-            Rule(
+        ban = self._make(
+            Ban(
                 ip_address="10.0.1.0/24",
                 active_until=datetime.now() + timedelta(days=30),
             )
         )
         self.dbsession.commit()
-        self.assertEqual(rule.duration, 30)
+        self.assertEqual(ban.duration, 30)
 
     def test_duration_no_duration(self):
-        from ..models import Rule
+        from ..models import Ban
 
-        rule = self._make(Rule(ip_address="10.0.1.0/24"))
+        ban = self._make(Ban(ip_address="10.0.1.0/24"))
         self.dbsession.commit()
-        self.assertEqual(rule.duration, 0)
-
-
-class TestRuleBanModel(ModelSessionMixin, unittest.TestCase):
-
-    def test_inheritance(self):
-        from ..models import RuleBan
-
-        rule_ban = self._make(RuleBan(ip_address="127.0.0.1"))
-        self.dbsession.commit()
-        self.assertEqual(rule_ban.type, "ban")
-        self.assertEqual(rule_ban.ip_address, "127.0.0.1")
-
-    def test_listed(self):
-        from datetime import datetime, timedelta
-        from ..models import Rule, RuleBan
-
-        rule_ban1 = self._make(RuleBan(ip_address="10.0.1.0/24"))
-        rule_ban2 = self._make(RuleBan(ip_address="10.0.2.0/24"))
-        rule_ban3 = self._make(RuleBan(ip_address="10.0.3.1"))
-        rule_ban4 = self._make(RuleBan(ip_address="10.0.4.0/24", scope="foo:bar"))
-        self._make(Rule(ip_address="10.0.5.0/24"))
-        self._make(RuleBan(ip_address="10.0.7.0/24", active=False))
-        self._make(
-            RuleBan(
-                ip_address="10.0.8.0/24",
-                active_until=datetime.now() - timedelta(days=1),
-            )
-        )
-        self.dbsession.commit()
-
-        def _makeQuery(ip_address, **kwargs):
-            return (
-                self.dbsession.query(RuleBan)
-                .filter(RuleBan.listed(ip_address, **kwargs))
-                .first()
-            )
-
-        self.assertEqual(rule_ban1, _makeQuery("10.0.1.1"))
-        self.assertEqual(rule_ban2, _makeQuery("10.0.2.1"))
-        self.assertEqual(rule_ban3, _makeQuery("10.0.3.1"))
-        self.assertEqual(rule_ban3, _makeQuery("10.0.3.1", scopes=["foo:bar"]))
-        self.assertEqual(rule_ban4, _makeQuery("10.0.4.1", scopes=["foo:bar"]))
-        self.assertEqual(None, _makeQuery("10.0.4.1"))
-        self.assertEqual(None, _makeQuery("10.0.5.1"))
-        self.assertEqual(None, _makeQuery("10.0.6.1"))
-        self.assertEqual(None, _makeQuery("10.0.7.1"))
-        self.assertEqual(None, _makeQuery("10.0.8.1"))
-
-    def test_duration(self):
-        from datetime import datetime, timedelta
-        from ..models import RuleBan
-
-        rule_ban = self._make(
-            RuleBan(
-                ip_address="10.0.1.0/24",
-                active_until=datetime.now() + timedelta(days=30),
-            )
-        )
-        self.dbsession.commit()
-        self.assertEqual(rule_ban.duration, 30)
-
-    def test_duration_no_duration(self):
-        from ..models import RuleBan
-
-        rule_ban = self._make(RuleBan(ip_address="10.0.1.0/24"))
-        self.dbsession.commit()
-        self.assertEqual(rule_ban.duration, 0)
+        self.assertEqual(ban.duration, 0)
 
 
 class TestSettingModel(ModelSessionMixin, unittest.TestCase):

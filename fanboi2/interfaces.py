@@ -3,6 +3,33 @@
 from zope.interface import Interface
 
 
+class IBanCreateService(Interface):
+
+    def create(ip_address, description=None, duration=None, scope=None, active=True):
+        pass
+
+
+class IBanQueryService(Interface):
+
+    def list_active():
+        pass
+
+    def list_inactive():
+        pass
+
+    def is_banned(ip_address, scopes):
+        pass
+
+    def ban_from_id(id):
+        pass
+
+
+class IBanUpdateService(Interface):
+
+    def update(ban_id, **kwargs):
+        pass
+
+
 class IBoardCreateService(Interface):
 
     def create(slug, title, description, status, agreements, settings):
@@ -114,33 +141,6 @@ class IRateLimiterService(Interface):
         pass
 
     def time_left(**kwargs):
-        pass
-
-
-class IRuleBanCreateService(Interface):
-
-    def create(ip_address, description=None, duration=None, scope=None, active=True):
-        pass
-
-
-class IRuleBanQueryService(Interface):
-
-    def list_active():
-        pass
-
-    def list_inactive():
-        pass
-
-    def is_banned(ip_address, scopes):
-        pass
-
-    def rule_ban_from_id(id):
-        pass
-
-
-class IRuleBanUpdateService(Interface):
-
-    def update(rule_ban_id, **kwargs):
         pass
 
 

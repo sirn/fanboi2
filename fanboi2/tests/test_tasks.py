@@ -91,29 +91,17 @@ class TestResultProxyWithModel(ModelSessionMixin, unittest.TestCase):
         request = mock_service(self.request, {"db": self.dbsession})
         self.assertEqual(result_proxy.deserialize(request), post)
 
-    def test_deserialize_rule(self):
-        from ..models import Rule
+    def test_deserialize_ban(self):
+        from ..models import Ban
         from . import mock_service, DummyAsyncResult
 
-        rule = self._make(Rule(ip_address="127.0.0.1"))
+        ban = self._make(Ban(ip_address="127.0.0.1"))
         self.dbsession.commit()
         result_proxy = self._get_target_class()(
-            DummyAsyncResult("demo", "success", ["rule", rule.id])
+            DummyAsyncResult("demo", "success", ["ban", ban.id])
         )
         request = mock_service(self.request, {"db": self.dbsession})
-        self.assertEqual(result_proxy.deserialize(request), rule)
-
-    def test_deserialize_rule_ban(self):
-        from ..models import RuleBan
-        from . import mock_service, DummyAsyncResult
-
-        rule_ban = self._make(RuleBan(ip_address="127.0.0.1"))
-        self.dbsession.commit()
-        result_proxy = self._get_target_class()(
-            DummyAsyncResult("demo", "success", ["rule_ban", rule_ban.id])
-        )
-        request = mock_service(self.request, {"db": self.dbsession})
-        self.assertEqual(result_proxy.deserialize(request), rule_ban)
+        self.assertEqual(result_proxy.deserialize(request), ban)
 
     def test_deserialize_setting(self):
         from ..models import Setting

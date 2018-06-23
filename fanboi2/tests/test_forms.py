@@ -371,12 +371,12 @@ class TestAdminSettingForm(_FormMixin, unittest.TestCase):
         self.assertListEqual(form.value.errors, ["Must be a valid JSON."])
 
 
-class TestAdminRuleBanForm(_FormMixin, unittest.TestCase):
+class TestAdminBanForm(_FormMixin, unittest.TestCase):
 
     def _get_target_class(self):
-        from ..forms import AdminRuleBanForm
+        from ..forms import AdminBanForm
 
-        return AdminRuleBanForm
+        return AdminBanForm
 
     def test_validated(self):
         form = self._make_one({"ip_address": "10.0.0.0/24"})

@@ -10,13 +10,13 @@ from webob.multidict import MultiDict
 from ..version import __VERSION__
 from ..models.board import DEFAULT_BOARD_CONFIG
 from ..forms import (
+    AdminBanForm,
     AdminBoardForm,
     AdminBoardNewForm,
     AdminLoginForm,
     AdminPageForm,
     AdminPublicPageForm,
     AdminPublicPageNewForm,
-    AdminRuleBanForm,
     AdminSettingForm,
     AdminSetupForm,
     AdminTopicForm,
@@ -24,6 +24,9 @@ from ..forms import (
     TopicForm,
 )
 from ..interfaces import (
+    IBanCreateService,
+    IBanQueryService,
+    IBanUpdateService,
     IBoardCreateService,
     IBoardQueryService,
     IBoardUpdateService,
@@ -34,9 +37,6 @@ from ..interfaces import (
     IPostCreateService,
     IPostDeleteService,
     IPostQueryService,
-    IRuleBanCreateService,
-    IRuleBanQueryService,
-    IRuleBanUpdateService,
     ISettingQueryService,
     ISettingUpdateService,
     ITopicCreateService,
@@ -146,29 +146,29 @@ def dashboard_get(request):
 
 
 def bans_get(request):
-    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
-    return {"bans": rule_ban_query_svc.list_active()}
+    ban_query_svc = request.find_service(IBanQueryService)
+    return {"bans": ban_query_svc.list_active()}
 
 
 def bans_inactive_get(request):
-    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
-    return {"bans": rule_ban_query_svc.list_inactive()}
+    ban_query_svc = request.find_service(IBanQueryService)
+    return {"bans": ban_query_svc.list_inactive()}
 
 
 def ban_new_get(request):
-    return {"form": AdminRuleBanForm(request=request)}
+    return {"form": AdminBanForm(request=request)}
 
 
 def ban_new_post(request):
     check_csrf_token(request)
 
-    form = AdminRuleBanForm(request.POST, request=request)
+    form = AdminBanForm(request.POST, request=request)
     if not form.validate():
         request.response.status = "400 Bad Request"
         return {"form": form}
 
-    rule_ban_create_svc = request.find_service(IRuleBanCreateService)
-    rule_ban = rule_ban_create_svc.create(
+    ban_create_svc = request.find_service(IBanCreateService)
+    ban = ban_create_svc.create(
         form.ip_address.data,
         description=form.description.data,
         duration=form.duration.data,
@@ -180,47 +180,43 @@ def ban_new_post(request):
     dbsession = request.find_service(name="db")
     dbsession.flush()
 
-    return HTTPFound(
-        location=request.route_path(route_name="admin_ban", ban=rule_ban.id)
-    )
+    return HTTPFound(location=request.route_path(route_name="admin_ban", ban=ban.id))
 
 
 def ban_get(request):
-    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
-    rule_ban_id = request.matchdict["ban"]
-    return {"ban": rule_ban_query_svc.rule_ban_from_id(rule_ban_id)}
+    ban_query_svc = request.find_service(IBanQueryService)
+    ban_id = request.matchdict["ban"]
+    return {"ban": ban_query_svc.ban_from_id(ban_id)}
 
 
 def ban_edit_get(request):
-    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
-    rule_ban_id = request.matchdict["ban"]
-    rule_ban = rule_ban_query_svc.rule_ban_from_id(rule_ban_id)
-    return {"ban": rule_ban, "form": AdminRuleBanForm(obj=rule_ban, request=request)}
+    ban_query_svc = request.find_service(IBanQueryService)
+    ban_id = request.matchdict["ban"]
+    ban = ban_query_svc.ban_from_id(ban_id)
+    return {"ban": ban, "form": AdminBanForm(obj=ban, request=request)}
 
 
 def ban_edit_post(request):
     check_csrf_token(request)
 
-    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
-    rule_ban_id = request.matchdict["ban"]
-    rule_ban = rule_ban_query_svc.rule_ban_from_id(rule_ban_id)
-    form = AdminRuleBanForm(request.POST, obj=rule_ban, request=request)
+    ban_query_svc = request.find_service(IBanQueryService)
+    ban_id = request.matchdict["ban"]
+    ban = ban_query_svc.ban_from_id(ban_id)
+    form = AdminBanForm(request.POST, obj=ban, request=request)
     if not form.validate():
         request.response.status = "400 Bad Request"
-        return {"ban": rule_ban, "form": form}
+        return {"ban": ban, "form": form}
 
-    rule_ban_update_svc = request.find_service(IRuleBanUpdateService)
-    rule_ban = rule_ban_update_svc.update(
-        rule_ban.id,
+    ban_update_svc = request.find_service(IBanUpdateService)
+    ban = ban_update_svc.update(
+        ban.id,
         ip_address=form.ip_address.data,
         description=form.description.data,
         duration=form.duration.data,
         scope=form.scope.data,
         active=form.active.data,
     )
-    return HTTPFound(
-        location=request.route_path(route_name="admin_ban", ban=rule_ban.id)
-    )
+    return HTTPFound(location=request.route_path(route_name="admin_ban", ban=ban.id))
 
 
 def boards_get(request):

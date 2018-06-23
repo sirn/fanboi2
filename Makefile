@@ -14,7 +14,7 @@ init:
 	env \
 		LDFLAGS=$(LDFLAGS) \
 		CFLAGS=$(CFLAGS) \
-	pipenv install
+	pipenv install $(ARGS)
 
 # ----------------------------------------------------------------------
 # Development
@@ -29,13 +29,13 @@ devinit:
 	env \
 		LDFLAGS=$(LDFLAGS) \
 		CFLAGS=$(CFLAGS) \
-	pipenv install --dev
+	pipenv install --dev $(ARGS)
 
 devhook:
-	pipenv run pre-commit install
+	pipenv run pre-commit install $(ARGS)
 
 devserver:
-	pipenv run honcho start -f Procfile.dev
+	pipenv run honcho start -f Procfile.dev $(ARGS)
 
 # ----------------------------------------------------------------------
 # Assets
@@ -53,7 +53,7 @@ assets:
 .PHONY: test
 
 test:
-	pipenv run nosetests
+	pipenv run nosetests $(ARGS)
 
 # ----------------------------------------------------------------------
 # Misc
@@ -62,4 +62,4 @@ test:
 .PHONY: migrate
 
 migrate:
-	pipenv run alembic upgrade head
+	pipenv run alembic upgrade head $(ARGS)

@@ -205,11 +205,11 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
     @unittest.mock.patch("fanboi2.tasks.topic.add_topic.delay")
     def test_board_topics_post(self, add_):
         from ..interfaces import IBoardQueryService, ITopicCreateService
-        from ..interfaces import IRateLimiterService, IRuleBanQueryService
+        from ..interfaces import IRateLimiterService, IBanQueryService
         from ..models import Board
         from ..services import BoardQueryService, TopicCreateService
         from ..services import IdentityService, SettingQueryService
-        from ..services import RateLimiterService, RuleBanQueryService
+        from ..services import RateLimiterService, BanQueryService
         from ..services import UserQueryService
         from ..views.api import board_topics_post
         from . import mock_service, make_cache_region, DummyRedis
@@ -224,7 +224,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
                 ITopicCreateService: TopicCreateService(
                     self.dbsession,
                     IdentityService(redis_conn, 10),
@@ -270,11 +270,11 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
     @unittest.mock.patch("fanboi2.tasks.topic.add_topic.delay")
     def test_board_topics_post_wwwform(self, add_):
         from ..interfaces import IBoardQueryService, ITopicCreateService
-        from ..interfaces import IRateLimiterService, IRuleBanQueryService
+        from ..interfaces import IRateLimiterService, IBanQueryService
         from ..models import Board
         from ..services import BoardQueryService, TopicCreateService
         from ..services import IdentityService, SettingQueryService
-        from ..services import RateLimiterService, RuleBanQueryService
+        from ..services import RateLimiterService, BanQueryService
         from ..services import UserQueryService
         from ..views.api import board_topics_post
         from . import mock_service, make_cache_region, DummyRedis
@@ -289,7 +289,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
                 ITopicCreateService: TopicCreateService(
                     self.dbsession,
                     IdentityService(redis_conn, 10),
@@ -395,20 +395,20 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
 
     def test_board_topics_post_banned(self):
         from ..errors import BanRejectedError
-        from ..interfaces import IBoardQueryService, IRuleBanQueryService
-        from ..models import Board, Topic, RuleBan
-        from ..services import BoardQueryService, RuleBanQueryService
+        from ..interfaces import IBoardQueryService, IBanQueryService
+        from ..models import Board, Topic, Ban
+        from ..services import BoardQueryService, BanQueryService
         from ..views.api import board_topics_post
         from . import mock_service
 
         board = self._make(Board(title="Foobar", slug="foo"))
-        self._make(RuleBan(ip_address="127.0.0.0/24", scope="board:foo"))
+        self._make(Ban(ip_address="127.0.0.0/24", scope="board:foo"))
         self.dbsession.commit()
         request = mock_service(
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -424,20 +424,20 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
 
     def test_board_topics_post_banned_unscoped(self):
         from ..errors import BanRejectedError
-        from ..interfaces import IBoardQueryService, IRuleBanQueryService
-        from ..models import Board, Topic, RuleBan
-        from ..services import BoardQueryService, RuleBanQueryService
+        from ..interfaces import IBoardQueryService, IBanQueryService
+        from ..models import Board, Topic, Ban
+        from ..services import BoardQueryService, BanQueryService
         from ..views.api import board_topics_post
         from . import mock_service
 
         board = self._make(Board(title="Foobar", slug="foo"))
-        self._make(RuleBan(ip_address="127.0.0.0/24"))
+        self._make(Ban(ip_address="127.0.0.0/24"))
         self.dbsession.commit()
         request = mock_service(
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -454,10 +454,10 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
     def test_board_topics_post_rate_limited(self):
         from ..errors import RateLimitedError
         from ..interfaces import IBoardQueryService
-        from ..interfaces import IRateLimiterService, IRuleBanQueryService
+        from ..interfaces import IRateLimiterService, IBanQueryService
         from ..models import Board, Topic
         from ..services import BoardQueryService
-        from ..services import RateLimiterService, RuleBanQueryService
+        from ..services import RateLimiterService, BanQueryService
         from ..views.api import board_topics_post
         from . import mock_service, DummyRedis
 
@@ -470,7 +470,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -685,11 +685,11 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.post.add_post.delay")
     def test_topic_posts_post(self, add_):
-        from ..interfaces import IRateLimiterService, IRuleBanQueryService
+        from ..interfaces import IRateLimiterService, IBanQueryService
         from ..interfaces import ITopicQueryService, IPostCreateService
         from ..models import Board, Topic, TopicMeta
         from ..services import IdentityService, SettingQueryService
-        from ..services import RateLimiterService, RuleBanQueryService
+        from ..services import RateLimiterService, BanQueryService
         from ..services import TopicQueryService, PostCreateService
         from ..services import UserQueryService
         from ..views.api import topic_posts_post
@@ -707,7 +707,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             {
                 ITopicQueryService: TopicQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
                 IPostCreateService: PostCreateService(
                     self.dbsession,
                     IdentityService(redis_conn, 10),
@@ -752,11 +752,11 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.post.add_post.delay")
     def test_topic_posts_post_wwwform(self, add_):
-        from ..interfaces import IRateLimiterService, IRuleBanQueryService
+        from ..interfaces import IRateLimiterService, IBanQueryService
         from ..interfaces import ITopicQueryService, IPostCreateService
         from ..models import Board, Topic, TopicMeta
         from ..services import IdentityService, SettingQueryService
-        from ..services import RateLimiterService, RuleBanQueryService
+        from ..services import RateLimiterService, BanQueryService
         from ..services import TopicQueryService, PostCreateService
         from ..services import UserQueryService
         from ..views.api import topic_posts_post
@@ -774,7 +774,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             {
                 ITopicQueryService: TopicQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
                 IPostCreateService: PostCreateService(
                     self.dbsession,
                     IdentityService(redis_conn, 10),
@@ -859,22 +859,22 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
 
     def test_topic_posts_post_banned(self):
         from ..errors import BanRejectedError
-        from ..interfaces import ITopicQueryService, IRuleBanQueryService
-        from ..models import Board, Topic, TopicMeta, Post, RuleBan
-        from ..services import TopicQueryService, RuleBanQueryService
+        from ..interfaces import ITopicQueryService, IBanQueryService
+        from ..models import Board, Topic, TopicMeta, Post, Ban
+        from ..services import TopicQueryService, BanQueryService
         from ..views.api import topic_posts_post
         from . import mock_service
 
         board = self._make(Board(title="Foobar", slug="foobar"))
         topic = self._make(Topic(board=board, title="Foobar"))
-        self._make(RuleBan(ip_address="127.0.0.0/24", scope="board:foobar"))
+        self._make(Ban(ip_address="127.0.0.0/24", scope="board:foobar"))
         self._make(TopicMeta(topic=topic, post_count=0))
         self.dbsession.commit()
         request = mock_service(
             self.request,
             {
                 ITopicQueryService: TopicQueryService(self.dbsession),
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -890,22 +890,22 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
 
     def test_topic_posts_post_banned_unscoped(self):
         from ..errors import BanRejectedError
-        from ..interfaces import ITopicQueryService, IRuleBanQueryService
-        from ..models import Board, Topic, TopicMeta, Post, RuleBan
-        from ..services import TopicQueryService, RuleBanQueryService
+        from ..interfaces import ITopicQueryService, IBanQueryService
+        from ..models import Board, Topic, TopicMeta, Post, Ban
+        from ..services import TopicQueryService, BanQueryService
         from ..views.api import topic_posts_post
         from . import mock_service
 
         board = self._make(Board(title="Foobar", slug="foobar"))
         topic = self._make(Topic(board=board, title="Foobar"))
-        self._make(RuleBan(ip_address="127.0.0.0/24"))
+        self._make(Ban(ip_address="127.0.0.0/24"))
         self._make(TopicMeta(topic=topic, post_count=0))
         self.dbsession.commit()
         request = mock_service(
             self.request,
             {
                 ITopicQueryService: TopicQueryService(self.dbsession),
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -921,10 +921,10 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
 
     def test_topic_posts_post_rate_limited(self):
         from ..errors import RateLimitedError
-        from ..interfaces import IRateLimiterService, IRuleBanQueryService
+        from ..interfaces import IRateLimiterService, IBanQueryService
         from ..interfaces import ITopicQueryService
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import RateLimiterService, RuleBanQueryService
+        from ..services import RateLimiterService, BanQueryService
         from ..services import TopicQueryService
         from ..views.api import topic_posts_post
         from . import mock_service, DummyRedis
@@ -940,7 +940,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             {
                 ITopicQueryService: TopicQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -1614,11 +1614,11 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
     @unittest.mock.patch("fanboi2.tasks.topic.add_topic.delay")
     def test_board_new_post(self, add_):
         from ..interfaces import IBoardQueryService, ITopicCreateService
-        from ..interfaces import IRateLimiterService, IRuleBanQueryService
+        from ..interfaces import IRateLimiterService, IBanQueryService
         from ..models import Board
         from ..services import BoardQueryService, TopicCreateService
         from ..services import IdentityService, SettingQueryService
-        from ..services import RateLimiterService, RuleBanQueryService
+        from ..services import RateLimiterService, BanQueryService
         from ..services import UserQueryService
         from ..views.boards import board_new_post
         from . import mock_service, make_cache_region, DummyRedis
@@ -1633,7 +1633,7 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
                 ITopicCreateService: TopicCreateService(
                     self.dbsession,
                     IdentityService(redis_conn, 10),
@@ -1780,20 +1780,20 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     def test_board_new_post_banned(self):
         from ..interfaces import IBoardQueryService
-        from ..interfaces import IRuleBanQueryService
-        from ..models import Board, Topic, RuleBan
-        from ..services import BoardQueryService, RuleBanQueryService
+        from ..interfaces import IBanQueryService
+        from ..models import Board, Topic, Ban
+        from ..services import BoardQueryService, BanQueryService
         from ..views.boards import board_new_post
         from . import mock_service
 
         board = self._make(Board(title="Foobar", slug="foo"))
-        self._make(RuleBan(ip_address="127.0.0.0/24", scope="board:foo"))
+        self._make(Ban(ip_address="127.0.0.0/24", scope="board:foo"))
         self.dbsession.commit()
         request = mock_service(
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -1812,20 +1812,20 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     def test_board_new_post_banned_unscoped(self):
         from ..interfaces import IBoardQueryService
-        from ..interfaces import IRuleBanQueryService
-        from ..models import Board, Topic, RuleBan
-        from ..services import BoardQueryService, RuleBanQueryService
+        from ..interfaces import IBanQueryService
+        from ..models import Board, Topic, Ban
+        from ..services import BoardQueryService, BanQueryService
         from ..views.boards import board_new_post
         from . import mock_service
 
         board = self._make(Board(title="Foobar", slug="foo"))
-        self._make(RuleBan(ip_address="127.0.0.0/24"))
+        self._make(Ban(ip_address="127.0.0.0/24"))
         self.dbsession.commit()
         request = mock_service(
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -1844,10 +1844,10 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     def test_board_new_post_rate_limited(self):
         from ..interfaces import IBoardQueryService
-        from ..interfaces import IRateLimiterService, IRuleBanQueryService
+        from ..interfaces import IRateLimiterService, IBanQueryService
         from ..models import Board, Topic
         from ..services import BoardQueryService
-        from ..services import RateLimiterService, RuleBanQueryService
+        from ..services import RateLimiterService, BanQueryService
         from ..views.boards import board_new_post
         from . import mock_service, DummyRedis
 
@@ -1860,7 +1860,7 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -2398,12 +2398,12 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
     def test_topic_show_post(self, add_):
         from ..interfaces import IBoardQueryService, ITopicQueryService
         from ..interfaces import IPostCreateService
-        from ..interfaces import IRateLimiterService, IRuleBanQueryService
+        from ..interfaces import IRateLimiterService, IBanQueryService
         from ..models import Board, Topic, TopicMeta
         from ..services import BoardQueryService, TopicQueryService
         from ..services import IdentityService, SettingQueryService
         from ..services import PostCreateService, UserQueryService
-        from ..services import RateLimiterService, RuleBanQueryService
+        from ..services import RateLimiterService, BanQueryService
         from ..views.boards import topic_show_post
         from . import mock_service, make_cache_region, DummyRedis
 
@@ -2420,7 +2420,7 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 ITopicQueryService: TopicQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
                 IPostCreateService: PostCreateService(
                     self.dbsession,
                     IdentityService(redis_conn, 10),
@@ -2615,10 +2615,10 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
         )
 
     def test_topic_show_post_banned(self):
-        from ..interfaces import IRuleBanQueryService
+        from ..interfaces import IBanQueryService
         from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..models import Board, Topic, TopicMeta, Post, RuleBan
-        from ..services import RuleBanQueryService
+        from ..models import Board, Topic, TopicMeta, Post, Ban
+        from ..services import BanQueryService
         from ..services import BoardQueryService, TopicQueryService
         from ..views.boards import topic_show_post
         from . import mock_service
@@ -2626,14 +2626,14 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
         board = self._make(Board(title="Foobar", slug="foobar"))
         topic = self._make(Topic(board=board, title="Foobar"))
         self._make(TopicMeta(topic=topic, post_count=0))
-        self._make(RuleBan(ip_address="127.0.0.0/24", scope="board:foobar"))
+        self._make(Ban(ip_address="127.0.0.0/24", scope="board:foobar"))
         self.dbsession.commit()
         request = mock_service(
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 ITopicQueryService: TopicQueryService(self.dbsession),
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -2652,10 +2652,10 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(self.dbsession.query(Post).count(), 0)
 
     def test_topic_show_post_banned_unscoped(self):
-        from ..interfaces import IRuleBanQueryService
+        from ..interfaces import IBanQueryService
         from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..models import Board, Topic, TopicMeta, Post, RuleBan
-        from ..services import RuleBanQueryService
+        from ..models import Board, Topic, TopicMeta, Post, Ban
+        from ..services import BanQueryService
         from ..services import BoardQueryService, TopicQueryService
         from ..views.boards import topic_show_post
         from . import mock_service
@@ -2663,14 +2663,14 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
         board = self._make(Board(title="Foobar", slug="foobar"))
         topic = self._make(Topic(board=board, title="Foobar"))
         self._make(TopicMeta(topic=topic, post_count=0))
-        self._make(RuleBan(ip_address="127.0.0.0/24"))
+        self._make(Ban(ip_address="127.0.0.0/24"))
         self.dbsession.commit()
         request = mock_service(
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 ITopicQueryService: TopicQueryService(self.dbsession),
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -2689,10 +2689,10 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(self.dbsession.query(Post).count(), 0)
 
     def test_topic_show_post_rate_limited(self):
-        from ..interfaces import IRateLimiterService, IRuleBanQueryService
+        from ..interfaces import IRateLimiterService, IBanQueryService
         from ..interfaces import IBoardQueryService, ITopicQueryService
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import RateLimiterService, RuleBanQueryService
+        from ..services import RateLimiterService, BanQueryService
         from ..services import BoardQueryService, TopicQueryService
         from ..views.boards import topic_show_post
         from . import mock_service, DummyRedis
@@ -2709,7 +2709,7 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 ITopicQueryService: TopicQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -3650,76 +3650,76 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_bans_get(self):
         from datetime import datetime, timedelta
-        from ..interfaces import IRuleBanQueryService
-        from ..models import RuleBan
-        from ..services import RuleBanQueryService
+        from ..interfaces import IBanQueryService
+        from ..models import Ban
+        from ..services import BanQueryService
         from ..views.admin import bans_get
         from . import mock_service
 
-        rule_ban1 = self._make(
-            RuleBan(
+        ban1 = self._make(
+            Ban(
                 ip_address="10.0.1.0/24",
                 active_until=datetime.now() + timedelta(hours=1),
             )
         )
         self._make(
-            RuleBan(
+            Ban(
                 ip_address="10.0.2.0/24",
                 active_until=datetime.now() - timedelta(hours=1),
             )
         )
-        rule_ban3 = self._make(RuleBan(ip_address="10.0.3.0/24"))
-        self._make(RuleBan(ip_address="10.0.3.0/24", active=False))
-        rule_ban5 = self._make(
-            RuleBan(
+        ban3 = self._make(Ban(ip_address="10.0.3.0/24"))
+        self._make(Ban(ip_address="10.0.3.0/24", active=False))
+        ban5 = self._make(
+            Ban(
                 ip_address="10.0.3.0/24",
                 active_until=datetime.now() + timedelta(hours=2),
             )
         )
-        rule_ban6 = self._make(
-            RuleBan(
+        ban6 = self._make(
+            Ban(
                 ip_address="10.0.3.0/24",
                 created_at=datetime.now() + timedelta(minutes=5),
             )
         )
         self.dbsession.commit()
         request = mock_service(
-            self.request, {IRuleBanQueryService: RuleBanQueryService(self.dbsession)}
+            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
         )
         request.method = "GET"
         response = bans_get(request)
-        self.assertEqual(response["bans"], [rule_ban6, rule_ban3, rule_ban5, rule_ban1])
+        self.assertEqual(response["bans"], [ban6, ban3, ban5, ban1])
 
     def test_bans_inactive_get(self):
         from datetime import datetime, timedelta
-        from ..interfaces import IRuleBanQueryService
-        from ..models import RuleBan
-        from ..services import RuleBanQueryService
+        from ..interfaces import IBanQueryService
+        from ..models import Ban
+        from ..services import BanQueryService
         from ..views.admin import bans_inactive_get
         from . import mock_service
 
         self._make(
-            RuleBan(
+            Ban(
                 ip_address="10.0.1.0/24",
                 active_until=datetime.now() + timedelta(hours=1),
             )
         )
-        rule_ban2 = self._make(
-            RuleBan(
+        ban2 = self._make(
+            Ban(
                 ip_address="10.0.2.0/24",
                 active_until=datetime.now() - timedelta(hours=1),
             )
         )
-        self._make(RuleBan(ip_address="10.0.3.0/24"))
-        rule_ban4 = self._make(RuleBan(ip_address="10.0.3.0/24", active=False))
-        rule_ban5 = self._make(
-            RuleBan(
+        self._make(Ban(ip_address="10.0.3.0/24"))
+        ban4 = self._make(Ban(ip_address="10.0.3.0/24", active=False))
+        ban5 = self._make(
+            Ban(
                 ip_address="10.0.3.0/24",
                 active_until=datetime.now() - timedelta(hours=2),
             )
         )
-        rule_ban6 = self._make(
-            RuleBan(
+        ban6 = self._make(
+            Ban(
                 ip_address="10.0.3.0/24",
                 created_at=datetime.now() + timedelta(minutes=5),
                 active=False,
@@ -3727,35 +3727,32 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         )
         self.dbsession.commit()
         request = mock_service(
-            self.request, {IRuleBanQueryService: RuleBanQueryService(self.dbsession)}
+            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
         )
         request.method = "GET"
         response = bans_inactive_get(request)
-        self.assertEqual(response["bans"], [rule_ban6, rule_ban4, rule_ban2, rule_ban5])
+        self.assertEqual(response["bans"], [ban6, ban4, ban2, ban5])
 
     def test_ban_new_get(self):
-        from ..forms import AdminRuleBanForm
+        from ..forms import AdminBanForm
         from ..views.admin import ban_new_get
 
         self.request.method = "GET"
         response = ban_new_get(self.request)
-        self.assertIsInstance(response["form"], AdminRuleBanForm)
+        self.assertIsInstance(response["form"], AdminBanForm)
 
     def test_ban_new_post(self):
         import pytz
         from datetime import datetime, timedelta
-        from ..interfaces import IRuleBanCreateService
-        from ..models import RuleBan
-        from ..services import RuleBanCreateService
+        from ..interfaces import IBanCreateService
+        from ..models import Ban
+        from ..services import BanCreateService
         from ..views.admin import ban_new_post
         from . import mock_service
 
         request = mock_service(
             self.request,
-            {
-                "db": self.dbsession,
-                IRuleBanCreateService: RuleBanCreateService(self.dbsession),
-            },
+            {"db": self.dbsession, IBanCreateService: BanCreateService(self.dbsession)},
         )
         request.method = "POST"
         request.content_type = "application/x-www-form-urlencoded"
@@ -3768,16 +3765,16 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         request.POST["csrf_token"] = request.session.get_csrf_token()
         self.config.add_route("admin_ban", "/admin/bans/{ban}")
         response = ban_new_post(request)
-        rule_ban = self.dbsession.query(RuleBan).first()
-        self.assertEqual(response.location, "/admin/bans/%s" % rule_ban.id)
-        self.assertEqual(self.dbsession.query(RuleBan).count(), 1)
-        self.assertEqual(rule_ban.ip_address, "10.0.1.0/24")
-        self.assertEqual(rule_ban.description, "Violation of galactic law")
+        ban = self.dbsession.query(Ban).first()
+        self.assertEqual(response.location, "/admin/bans/%s" % ban.id)
+        self.assertEqual(self.dbsession.query(Ban).count(), 1)
+        self.assertEqual(ban.ip_address, "10.0.1.0/24")
+        self.assertEqual(ban.description, "Violation of galactic law")
         self.assertGreaterEqual(
-            rule_ban.active_until, datetime.now(pytz.utc) + timedelta(days=29, hours=23)
+            ban.active_until, datetime.now(pytz.utc) + timedelta(days=29, hours=23)
         )
-        self.assertEqual(rule_ban.scope, "galaxy_far_away")
-        self.assertTrue(rule_ban.active)
+        self.assertEqual(ban.scope, "galaxy_far_away")
+        self.assertTrue(ban.active)
 
     def test_ban_new_post_bad_csrf(self):
         from pyramid.csrf import BadCSRFToken
@@ -3795,14 +3792,14 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             ban_new_post(self.request)
 
     def test_ban_new_post_invalid_ip_address(self):
-        from ..interfaces import IRuleBanCreateService
-        from ..models import RuleBan
-        from ..services import RuleBanCreateService
+        from ..interfaces import IBanCreateService
+        from ..models import Ban
+        from ..services import BanCreateService
         from ..views.admin import ban_new_post
         from . import mock_service
 
         request = mock_service(
-            self.request, {IRuleBanCreateService: RuleBanCreateService(self.dbsession)}
+            self.request, {IBanCreateService: BanCreateService(self.dbsession)}
         )
         request.method = "POST"
         request.content_type = "application/x-www-form-urlencoded"
@@ -3814,38 +3811,38 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         request.POST["active"] = "1"
         request.POST["csrf_token"] = request.session.get_csrf_token()
         response = ban_new_post(request)
-        self.assertEqual(self.dbsession.query(RuleBan).count(), 0)
+        self.assertEqual(self.dbsession.query(Ban).count(), 0)
         self.assertEqual(response["form"].ip_address.data, "foobar")
         self.assertDictEqual(
             response["form"].errors, {"ip_address": ["Must be a valid IP address."]}
         )
 
     def test_ban_get(self):
-        from ..models import RuleBan
-        from ..interfaces import IRuleBanQueryService
-        from ..services import RuleBanQueryService
+        from ..models import Ban
+        from ..interfaces import IBanQueryService
+        from ..services import BanQueryService
         from ..views.admin import ban_get
         from . import mock_service
 
-        rule_ban = self._make(RuleBan(ip_address="10.0.0.0/24"))
+        ban = self._make(Ban(ip_address="10.0.0.0/24"))
         self.dbsession.commit()
         request = mock_service(
-            self.request, {IRuleBanQueryService: RuleBanQueryService(self.dbsession)}
+            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
         )
         request.method = "GET"
-        request.matchdict["ban"] = str(rule_ban.id)
+        request.matchdict["ban"] = str(ban.id)
         response = ban_get(request)
-        self.assertEqual(response["ban"], rule_ban)
+        self.assertEqual(response["ban"], ban)
 
     def test_ban_get_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
-        from ..interfaces import IRuleBanQueryService
-        from ..services import RuleBanQueryService
+        from ..interfaces import IBanQueryService
+        from ..services import BanQueryService
         from ..views.admin import ban_get
         from . import mock_service
 
         request = mock_service(
-            self.request, {IRuleBanQueryService: RuleBanQueryService(self.dbsession)}
+            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
         )
         request.method = "GET"
         request.matchdict["ban"] = "-1"
@@ -3854,15 +3851,15 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_ban_edit_get(self):
         from datetime import datetime, timedelta
-        from ..models import RuleBan
-        from ..interfaces import IRuleBanQueryService
-        from ..services import RuleBanQueryService
+        from ..models import Ban
+        from ..interfaces import IBanQueryService
+        from ..services import BanQueryService
         from ..views.admin import ban_edit_get
         from . import mock_service
 
         now = datetime.now()
-        rule_ban = self._make(
-            RuleBan(
+        ban = self._make(
+            Ban(
                 ip_address="10.0.0.0/24",
                 description="Violation of galactic law",
                 active_until=now + timedelta(days=30),
@@ -3873,12 +3870,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         )
         self.dbsession.commit()
         request = mock_service(
-            self.request, {IRuleBanQueryService: RuleBanQueryService(self.dbsession)}
+            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
         )
         request.method = "GET"
-        request.matchdict["ban"] = str(rule_ban.id)
+        request.matchdict["ban"] = str(ban.id)
         response = ban_edit_get(request)
-        self.assertEqual(response["ban"], rule_ban)
+        self.assertEqual(response["ban"], ban)
         self.assertEqual(response["form"].ip_address.data, "10.0.0.0/24")
         self.assertEqual(response["form"].description.data, "Violation of galactic law")
         self.assertEqual(response["form"].duration.data, 30)
@@ -3886,31 +3883,31 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         self.assertTrue(response["form"].active.data)
 
     def test_ban_edit_get_no_duration(self):
-        from ..models import RuleBan
-        from ..interfaces import IRuleBanQueryService
-        from ..services import RuleBanQueryService
+        from ..models import Ban
+        from ..interfaces import IBanQueryService
+        from ..services import BanQueryService
         from ..views.admin import ban_edit_get
         from . import mock_service
 
-        rule_ban = self._make(RuleBan(ip_address="10.0.0.0/24"))
+        ban = self._make(Ban(ip_address="10.0.0.0/24"))
         self.dbsession.commit()
         request = mock_service(
-            self.request, {IRuleBanQueryService: RuleBanQueryService(self.dbsession)}
+            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
         )
         request.method = "GET"
-        request.matchdict["ban"] = str(rule_ban.id)
+        request.matchdict["ban"] = str(ban.id)
         response = ban_edit_get(request)
         self.assertEqual(response["form"].duration.data, 0)
 
     def test_ban_edit_get_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
-        from ..interfaces import IRuleBanQueryService
-        from ..services import RuleBanQueryService
+        from ..interfaces import IBanQueryService
+        from ..services import BanQueryService
         from ..views.admin import ban_edit_get
         from . import mock_service
 
         request = mock_service(
-            self.request, {IRuleBanQueryService: RuleBanQueryService(self.dbsession)}
+            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
         )
         request.method = "GET"
         request.matchdict["ban"] = "-1"
@@ -3920,23 +3917,23 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
     def test_ban_edit_post(self):
         import pytz
         from datetime import datetime, timedelta
-        from ..models import RuleBan
-        from ..interfaces import IRuleBanQueryService, IRuleBanUpdateService
-        from ..services import RuleBanQueryService, RuleBanUpdateService
+        from ..models import Ban
+        from ..interfaces import IBanQueryService, IBanUpdateService
+        from ..services import BanQueryService, BanUpdateService
         from ..views.admin import ban_edit_post
         from . import mock_service
 
-        rule_ban = self._make(RuleBan(ip_address="10.0.0.0/24"))
+        ban = self._make(Ban(ip_address="10.0.0.0/24"))
         self.dbsession.commit()
         request = mock_service(
             self.request,
             {
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
-                IRuleBanUpdateService: RuleBanUpdateService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
+                IBanUpdateService: BanUpdateService(self.dbsession),
             },
         )
         request.method = "POST"
-        request.matchdict["ban"] = str(rule_ban.id)
+        request.matchdict["ban"] = str(ban.id)
         request.content_type = "application/x-www-form-urlencoded"
         request.POST = MultiDict({})
         request.POST["ip_address"] = "10.0.1.0/24"
@@ -3947,24 +3944,24 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         request.POST["csrf_token"] = request.session.get_csrf_token()
         self.config.add_route("admin_ban", "/admin/bans/{ban}")
         response = ban_edit_post(request)
-        self.assertEqual(response.location, "/admin/bans/%s" % rule_ban.id)
-        self.assertEqual(rule_ban.ip_address, "10.0.1.0/24")
-        self.assertEqual(rule_ban.description, "Violation of galactic law")
+        self.assertEqual(response.location, "/admin/bans/%s" % ban.id)
+        self.assertEqual(ban.ip_address, "10.0.1.0/24")
+        self.assertEqual(ban.description, "Violation of galactic law")
         self.assertGreaterEqual(
-            rule_ban.active_until, datetime.now(pytz.utc) + timedelta(days=29, hours=23)
+            ban.active_until, datetime.now(pytz.utc) + timedelta(days=29, hours=23)
         )
-        self.assertEqual(rule_ban.scope, "galaxy_far_away")
-        self.assertFalse(rule_ban.active)
+        self.assertEqual(ban.scope, "galaxy_far_away")
+        self.assertFalse(ban.active)
 
     def test_ban_edit_post_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
-        from ..interfaces import IRuleBanQueryService
-        from ..services import RuleBanQueryService
+        from ..interfaces import IBanQueryService
+        from ..services import BanQueryService
         from ..views.admin import ban_edit_post
         from . import mock_service
 
         request = mock_service(
-            self.request, {IRuleBanQueryService: RuleBanQueryService(self.dbsession)}
+            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
         )
         request.method = "POST"
         request.matchdict["ban"] = "-1"
@@ -3976,12 +3973,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_ban_edit_post_bad_csrf(self):
         from pyramid.csrf import BadCSRFToken
-        from ..models import RuleBan
+        from ..models import Ban
         from ..views.admin import ban_edit_post
 
-        rule_ban = self._make(RuleBan(ip_address="10.0.0.0/24"))
+        ban = self._make(Ban(ip_address="10.0.0.0/24"))
         self.request.method = "POST"
-        self.request.matchdict["ban"] = str(rule_ban.id)
+        self.request.matchdict["ban"] = str(ban.id)
         self.request.content_type = "application/x-www-form-urlencoded"
         self.request.POST = MultiDict({})
         self.request.POST["ip_address"] = "10.0.1.0/24"
@@ -3995,15 +3992,15 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
     def test_ban_edit_post_duration(self):
         import pytz
         from datetime import datetime, timedelta
-        from ..models import RuleBan
-        from ..interfaces import IRuleBanQueryService, IRuleBanUpdateService
-        from ..services import RuleBanQueryService, RuleBanUpdateService
+        from ..models import Ban
+        from ..interfaces import IBanQueryService, IBanUpdateService
+        from ..services import BanQueryService, BanUpdateService
         from ..views.admin import ban_edit_post
         from . import mock_service
 
         past_now = datetime.now() - timedelta(days=30)
-        rule_ban = self._make(
-            RuleBan(
+        ban = self._make(
+            Ban(
                 ip_address="10.0.0.0/24",
                 created_at=past_now,
                 active_until=past_now + timedelta(days=7),
@@ -4013,12 +4010,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
-                IRuleBanUpdateService: RuleBanUpdateService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
+                IBanUpdateService: BanUpdateService(self.dbsession),
             },
         )
         request.method = "POST"
-        request.matchdict["ban"] = str(rule_ban.id)
+        request.matchdict["ban"] = str(ban.id)
         request.content_type = "application/x-www-form-urlencoded"
         request.POST = MultiDict({})
         request.POST["ip_address"] = "10.0.0.0/24"
@@ -4028,24 +4025,24 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         request.POST["active"] = ""
         request.POST["csrf_token"] = request.session.get_csrf_token()
         self.config.add_route("admin_ban", "/admin/bans/{ban}")
-        active_until = rule_ban.active_until
+        active_until = ban.active_until
         response = ban_edit_post(request)
-        self.assertEqual(response.location, "/admin/bans/%s" % rule_ban.id)
-        self.assertEqual(rule_ban.duration, 14)
-        self.assertGreater(rule_ban.active_until, active_until)
-        self.assertLess(rule_ban.active_until, datetime.now(pytz.utc))
+        self.assertEqual(response.location, "/admin/bans/%s" % ban.id)
+        self.assertEqual(ban.duration, 14)
+        self.assertGreater(ban.active_until, active_until)
+        self.assertLess(ban.active_until, datetime.now(pytz.utc))
 
     def test_ban_edit_post_duration_no_change(self):
         from datetime import datetime, timedelta
-        from ..models import RuleBan
-        from ..interfaces import IRuleBanQueryService, IRuleBanUpdateService
-        from ..services import RuleBanQueryService, RuleBanUpdateService
+        from ..models import Ban
+        from ..interfaces import IBanQueryService, IBanUpdateService
+        from ..services import BanQueryService, BanUpdateService
         from ..views.admin import ban_edit_post
         from . import mock_service
 
         past_now = datetime.now() - timedelta(days=30)
-        rule_ban = self._make(
-            RuleBan(
+        ban = self._make(
+            Ban(
                 ip_address="10.0.0.0/24",
                 created_at=past_now,
                 active_until=past_now + timedelta(days=7),
@@ -4055,12 +4052,12 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
-                IRuleBanUpdateService: RuleBanUpdateService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
+                IBanUpdateService: BanUpdateService(self.dbsession),
             },
         )
         request.method = "POST"
-        request.matchdict["ban"] = str(rule_ban.id)
+        request.matchdict["ban"] = str(ban.id)
         request.content_type = "application/x-www-form-urlencoded"
         request.POST = MultiDict({})
         request.POST["ip_address"] = "10.0.0.0/24"
@@ -4070,36 +4067,36 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         request.POST["active"] = ""
         request.POST["csrf_token"] = request.session.get_csrf_token()
         self.config.add_route("admin_ban", "/admin/bans/{ban}")
-        active_until = rule_ban.active_until
+        active_until = ban.active_until
         response = ban_edit_post(request)
-        self.assertEqual(response.location, "/admin/bans/%s" % rule_ban.id)
-        self.assertEqual(rule_ban.active_until, active_until)
+        self.assertEqual(response.location, "/admin/bans/%s" % ban.id)
+        self.assertEqual(ban.active_until, active_until)
 
     def test_ban_edit_post_invalid_ip_address(self):
-        from ..models import RuleBan
-        from ..interfaces import IRuleBanQueryService, IRuleBanUpdateService
-        from ..services import RuleBanQueryService, RuleBanUpdateService
+        from ..models import Ban
+        from ..interfaces import IBanQueryService, IBanUpdateService
+        from ..services import BanQueryService, BanUpdateService
         from ..views.admin import ban_edit_post
         from . import mock_service
 
-        rule_ban = self._make(RuleBan(ip_address="10.0.0.0/24"))
+        ban = self._make(Ban(ip_address="10.0.0.0/24"))
         self.dbsession.commit()
         request = mock_service(
             self.request,
             {
-                IRuleBanQueryService: RuleBanQueryService(self.dbsession),
-                IRuleBanUpdateService: RuleBanUpdateService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
+                IBanUpdateService: BanUpdateService(self.dbsession),
             },
         )
         request.method = "POST"
-        request.matchdict["ban"] = str(rule_ban.id)
+        request.matchdict["ban"] = str(ban.id)
         request.content_type = "application/x-www-form-urlencoded"
         request.POST = MultiDict({})
         request.POST["ip_address"] = "foobar"
         request.POST["csrf_token"] = request.session.get_csrf_token()
         response = ban_edit_post(request)
-        self.assertEqual(rule_ban.ip_address, "10.0.0.0/24")
-        self.assertEqual(response["ban"], rule_ban)
+        self.assertEqual(ban.ip_address, "10.0.0.0/24")
+        self.assertEqual(response["ban"], ban)
         self.assertEqual(response["form"].ip_address.data, "foobar")
         self.assertDictEqual(
             response["form"].errors, {"ip_address": ["Must be a valid IP address."]}

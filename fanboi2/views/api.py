@@ -4,12 +4,12 @@ from webob.multidict import MultiDict
 from ..errors import ParamsInvalidError, RateLimitedError, BanRejectedError, BaseError
 from ..forms import TopicForm, PostForm
 from ..interfaces import (
+    IBanQueryService,
     IBoardQueryService,
     IPageQueryService,
     IPostCreateService,
     IPostQueryService,
     IRateLimiterService,
-    IRuleBanQueryService,
     ITaskQueryService,
     ITopicCreateService,
     ITopicQueryService,
@@ -83,8 +83,8 @@ def board_topics_post(request):
     if not form.validate():
         raise ParamsInvalidError(form.errors)
 
-    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
-    if rule_ban_query_svc.is_banned(
+    ban_query_svc = request.find_service(IBanQueryService)
+    if ban_query_svc.is_banned(
         request.client_addr, scopes=("board:%s" % (board.slug,),)
     ):
         raise BanRejectedError()
@@ -172,8 +172,8 @@ def topic_posts_post(request):
     if not form.validate():
         raise ParamsInvalidError(form.errors)
 
-    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
-    if rule_ban_query_svc.is_banned(
+    ban_query_svc = request.find_service(IBanQueryService)
+    if ban_query_svc.is_banned(
         request.client_addr, scopes=("board:%s" % (board.slug,),)
     ):
         raise BanRejectedError()
