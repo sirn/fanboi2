@@ -7,6 +7,7 @@ import zope.sqlalchemy
 from ._base import Base
 from ._versioned import make_history_event, setup_versioned
 from .ban import Ban
+from .banword import Banword
 from .board import Board
 from .group import Group
 from .page import Page
@@ -21,6 +22,7 @@ from .user_session import UserSession
 __all__ = [
     "Base",
     "Ban",
+    "Banword",
     "Board",
     "Group",
     "Page",
@@ -35,6 +37,7 @@ __all__ = [
 
 _MODELS = {
     "ban": Ban,
+    "banword": Banword,
     "board": Board,
     "group": Group,
     "page": Page,

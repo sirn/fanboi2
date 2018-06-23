@@ -9,14 +9,26 @@ class TestDeserializeModel(unittest.TestCase):
 
     def test_serialize(self):
         from ..models import deserialize_model
-        from ..models import Ban, Board, Group, Page, Post
-        from ..models import Setting, Topic, TopicMeta, User, UserSession
+        from ..models import (
+            Ban,
+            Banword,
+            Board,
+            Group,
+            Page,
+            Post,
+            Setting,
+            Topic,
+            TopicMeta,
+            User,
+            UserSession,
+        )
 
+        self.assertEqual(deserialize_model("ban"), Ban)
+        self.assertEqual(deserialize_model("banword"), Banword)
         self.assertEqual(deserialize_model("board"), Board)
         self.assertEqual(deserialize_model("group"), Group)
         self.assertEqual(deserialize_model("page"), Page)
         self.assertEqual(deserialize_model("post"), Post)
-        self.assertEqual(deserialize_model("ban"), Ban)
         self.assertEqual(deserialize_model("setting"), Setting)
         self.assertEqual(deserialize_model("topic"), Topic)
         self.assertEqual(deserialize_model("topic_meta"), TopicMeta)
@@ -1905,6 +1917,15 @@ class TestBanModel(ModelSessionMixin, unittest.TestCase):
         ban = self._make(Ban(ip_address="10.0.1.0/24"))
         self.dbsession.commit()
         self.assertEqual(ban.duration, 0)
+
+
+class TestBanwordModel(ModelSessionMixin, unittest.TestCase):
+
+    def test_import(self):
+        from ..models import Banword
+
+        banword = Banword(expression="foobar")
+        self.assertEqual(banword.expression, "foobar")
 
 
 class TestSettingModel(ModelSessionMixin, unittest.TestCase):
