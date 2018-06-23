@@ -1,4 +1,7 @@
 from ..interfaces import (
+    IBanCreateService,
+    IBanQueryService,
+    IBanUpdateService,
     IBoardCreateService,
     IBoardQueryService,
     IBoardUpdateService,
@@ -12,9 +15,6 @@ from ..interfaces import (
     IPostDeleteService,
     IPostQueryService,
     IRateLimiterService,
-    IRuleBanCreateService,
-    IRuleBanQueryService,
-    IRuleBanUpdateService,
     ISettingQueryService,
     ISettingUpdateService,
     ITaskQueryService,
@@ -28,6 +28,7 @@ from ..interfaces import (
     IUserSessionQueryService,
 )
 
+from .ban import BanCreateService, BanQueryService, BanUpdateService
 from .board import BoardCreateService, BoardQueryService, BoardUpdateService
 from .filter_ import FilterService
 from .identity import IdentityService
@@ -39,7 +40,6 @@ from .page import (
 )
 from .post import PostCreateService, PostDeleteService, PostQueryService
 from .rate_limiter import RateLimiterService
-from .rule import RuleBanCreateService, RuleBanQueryService, RuleBanUpdateService
 from .setting import SettingQueryService, SettingUpdateService
 from .task import TaskQueryService
 from .topic import (
@@ -57,6 +57,30 @@ from .user import (
 
 
 def includeme(config):  # pragma: no cover  # noqa: C901
+
+    # Ban create
+
+    def rule_ban_create_factory(context, request):
+        dbsession = request.find_service(name="db")
+        return BanCreateService(dbsession)
+
+    config.register_service_factory(rule_ban_create_factory, IBanCreateService)
+
+    # Ban query
+
+    def rule_ban_query_factory(context, request):
+        dbsession = request.find_service(name="db")
+        return BanQueryService(dbsession)
+
+    config.register_service_factory(rule_ban_query_factory, IBanQueryService)
+
+    # Ban update
+
+    def rule_ban_update_factory(context, request):
+        dbsession = request.find_service(name="db")
+        return BanUpdateService(dbsession)
+
+    config.register_service_factory(rule_ban_update_factory, IBanUpdateService)
 
     # Board Create
 
@@ -176,30 +200,6 @@ def includeme(config):  # pragma: no cover  # noqa: C901
         return RateLimiterService(redis_conn)
 
     config.register_service_factory(rate_limiter_factory, IRateLimiterService)
-
-    # RuleBan create
-
-    def rule_ban_create_factory(context, request):
-        dbsession = request.find_service(name="db")
-        return RuleBanCreateService(dbsession)
-
-    config.register_service_factory(rule_ban_create_factory, IRuleBanCreateService)
-
-    # RuleBan query
-
-    def rule_ban_query_factory(context, request):
-        dbsession = request.find_service(name="db")
-        return RuleBanQueryService(dbsession)
-
-    config.register_service_factory(rule_ban_query_factory, IRuleBanQueryService)
-
-    # RuleBan update
-
-    def rule_ban_update_factory(context, request):
-        dbsession = request.find_service(name="db")
-        return RuleBanUpdateService(dbsession)
-
-    config.register_service_factory(rule_ban_update_factory, IRuleBanUpdateService)
 
     # Setting Query
 

@@ -89,7 +89,7 @@ class AdminSettingForm(Form):
             raise ValidationError("Must be a valid JSON.")
 
 
-class AdminRuleBanForm(Form):
+class AdminBanForm(Form):
     """A :class:`Form` for creating and updating bans."""
     ip_address = TextField("IP address", validators=[Required()])
     description = TextField("Description")

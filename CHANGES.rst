@@ -1,5 +1,10 @@
-0.30.0
+0.31.0
 ======
+
+- [Change] Merge based rule and banning rules as override rules no longer exists.
+
+0.30.0
+------
 
 - [Add] Admin panel at /admin.
 - [Add] Topic view now has canonical link.
@@ -170,4 +175,4 @@
 0.1.0
 -----
 
--  Initial version
+- Initial version

@@ -6,11 +6,11 @@ from sqlalchemy.orm.exc import NoResultFound
 from ..errors import BaseError
 from ..forms import PostForm, TopicForm
 from ..interfaces import (
+    IBanQueryService,
     IBoardQueryService,
     IPostCreateService,
     IPostQueryService,
     IRateLimiterService,
-    IRuleBanQueryService,
     ITaskQueryService,
     ITopicCreateService,
     ITopicQueryService,
@@ -118,8 +118,8 @@ def board_new_post(request):
         request.response.status = "400 Bad Request"
         return {"board": board, "form": form}
 
-    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
-    if rule_ban_query_svc.is_banned(
+    ban_query_svc = request.find_service(IBanQueryService)
+    if ban_query_svc.is_banned(
         request.client_addr, scopes=("board:%s" % (board.slug,),)
     ):
         response = render_to_response(
@@ -273,8 +273,8 @@ def topic_show_post(request):
         request.response.status = "400 Bad Request"
         return {"board": board, "topic": topic, "form": form}
 
-    rule_ban_query_svc = request.find_service(IRuleBanQueryService)
-    if rule_ban_query_svc.is_banned(
+    ban_query_svc = request.find_service(IBanQueryService)
+    if ban_query_svc.is_banned(
         request.client_addr, scopes=("board:%s" % (board.slug,),)
     ):
         response = render_to_response(
