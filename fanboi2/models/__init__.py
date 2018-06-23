@@ -6,12 +6,11 @@ import zope.sqlalchemy
 
 from ._base import Base
 from ._versioned import make_history_event, setup_versioned
+from .ban import Ban
 from .board import Board
 from .group import Group
 from .page import Page
 from .post import Post
-from .rule import Rule
-from .rule_ban import RuleBan
 from .setting import Setting
 from .topic import Topic
 from .topic_meta import TopicMeta
@@ -21,12 +20,11 @@ from .user_session import UserSession
 
 __all__ = [
     "Base",
+    "Ban",
     "Board",
     "Group",
     "Page",
     "Post",
-    "Rule",
-    "RuleBan",
     "Setting",
     "Topic",
     "TopicMeta",
@@ -36,12 +34,11 @@ __all__ = [
 
 
 _MODELS = {
+    "ban": Ban,
     "board": Board,
     "group": Group,
     "page": Page,
     "post": Post,
-    "rule": Rule,
-    "rule_ban": RuleBan,
     "setting": Setting,
     "topic": Topic,
     "topic_meta": TopicMeta,

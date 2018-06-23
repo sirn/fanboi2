@@ -6,13 +6,12 @@ from sqlalchemy.sql.sqltypes import Boolean, DateTime, Integer, String, Unicode
 from ._base import Base
 
 
-class Rule(Base):
-    """Model class that provides an IP rule."""
+class Ban(Base):
+    """Model class that provides an IP ban."""
 
-    __tablename__ = "rule"
+    __tablename__ = "ban"
 
     id = Column(Integer, primary_key=True)
-    type = Column(String, nullable=False)
     scope = Column(String)
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -20,8 +19,6 @@ class Rule(Base):
     active = Column(Boolean, nullable=False, default=True)
     active_until = Column(DateTime(timezone=True))
     description = Column(Unicode)
-
-    __mapper_args__ = {"polymorphic_on": type, "polymorphic_identity": "base"}
 
     @classmethod
     def listed(cls, ip_address, scopes=None):
