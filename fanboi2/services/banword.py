@@ -11,13 +11,20 @@ class BanwordCreateService(object):
     def __init__(self, dbsession):
         self.dbsession = dbsession
 
-    def create(self, expr, active=True):
+    def create(self, expr, description=None, active=True):
         """Create a new banword.
 
         :param expr: A regular expression for the keyword to ban.
+        :param description: A description for the banword.
         :param active: Boolean flag whether the banword should be active.
         """
-        banword = Banword(expr=expr, active=bool(active))
+        if not expr:
+            expr = None
+
+        if not description:
+            description = None
+
+        banword = Banword(expr=expr, description=description, active=bool(active))
         self.dbsession.add(banword)
         return banword
 
@@ -71,4 +78,17 @@ class BanwordUpdateService(object):
         self.dbsession = dbsession
 
     def update(self, banword_id, **kwargs):
-        pass
+        banword = self.dbsession.query(Banword).filter_by(id=banword_id).one()
+
+        if "active" in kwargs:
+            banword.active = bool(kwargs["active"])
+
+        for key in ("expr", "description"):
+            if key in kwargs:
+                value = kwargs[key]
+                if not value:
+                    value = None
+                setattr(banword, key, value)
+
+        self.dbsession.add(banword)
+        return banword

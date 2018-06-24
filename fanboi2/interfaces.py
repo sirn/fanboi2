@@ -32,7 +32,7 @@ class IBanUpdateService(Interface):
 
 class IBanwordCreateService(Interface):
 
-    def create(expr, active=True):
+    def create(expr, description=None, active=True):
         pass
 
 
