@@ -204,13 +204,24 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.topic.add_topic.delay")
     def test_board_topics_post(self, add_):
-        from ..interfaces import IBoardQueryService, ITopicCreateService
-        from ..interfaces import IRateLimiterService, IBanQueryService
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IBoardQueryService,
+            IRateLimiterService,
+            ITopicCreateService,
+        )
         from ..models import Board
-        from ..services import BoardQueryService, TopicCreateService
-        from ..services import IdentityService, SettingQueryService
-        from ..services import RateLimiterService, BanQueryService
-        from ..services import UserQueryService
+        from ..services import (
+            BanQueryService,
+            BanwordQueryService,
+            BoardQueryService,
+            IdentityService,
+            RateLimiterService,
+            SettingQueryService,
+            TopicCreateService,
+            UserQueryService,
+        )
         from ..views.api import board_topics_post
         from . import mock_service, make_cache_region, DummyRedis
 
@@ -225,6 +236,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
                 ITopicCreateService: TopicCreateService(
                     self.dbsession,
                     IdentityService(redis_conn, 10),
@@ -269,13 +281,24 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.topic.add_topic.delay")
     def test_board_topics_post_wwwform(self, add_):
-        from ..interfaces import IBoardQueryService, ITopicCreateService
-        from ..interfaces import IRateLimiterService, IBanQueryService
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IBoardQueryService,
+            IRateLimiterService,
+            ITopicCreateService,
+        )
         from ..models import Board
-        from ..services import BoardQueryService, TopicCreateService
-        from ..services import IdentityService, SettingQueryService
-        from ..services import RateLimiterService, BanQueryService
-        from ..services import UserQueryService
+        from ..services import (
+            BanQueryService,
+            BanwordQueryService,
+            BoardQueryService,
+            IdentityService,
+            RateLimiterService,
+            SettingQueryService,
+            TopicCreateService,
+            UserQueryService,
+        )
         from ..views.api import board_topics_post
         from . import mock_service, make_cache_region, DummyRedis
 
@@ -290,6 +313,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
                 ITopicCreateService: TopicCreateService(
                     self.dbsession,
                     IdentityService(redis_conn, 10),
@@ -451,13 +475,55 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             board_topics_post(request)
         self.assertEqual(self.dbsession.query(Topic).count(), 0)
 
+    def test_board_topics_post_banword_banned(self):
+        from ..errors import BanwordRejectedError
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IBoardQueryService,
+        )
+        from ..models import Banword, Board, Topic
+        from ..services import BoardQueryService, BanQueryService, BanwordQueryService
+        from ..views.api import board_topics_post
+        from . import mock_service
+
+        board = self._make(Board(title="Foobar", slug="foo"))
+        self._make(Banword(expr="https?:\/\/bit\.ly"))
+        self.dbsession.commit()
+        request = mock_service(
+            self.request,
+            {
+                IBanQueryService: BanQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
+                IBoardQueryService: BoardQueryService(self.dbsession),
+            },
+        )
+        request.method = "POST"
+        request.matchdict["board"] = board.slug
+        request.content_type = "application/json"
+        request.client_addr = "127.0.0.1"
+        request.json_body = {}
+        request.json_body["title"] = "title"
+        request.json_body["body"] = "foo\nhttps://bit.ly/spam\nbar"
+        with self.assertRaises(BanwordRejectedError):
+            board_topics_post(request)
+        self.assertEqual(self.dbsession.query(Topic).count(), 0)
+
     def test_board_topics_post_rate_limited(self):
         from ..errors import RateLimitedError
-        from ..interfaces import IBoardQueryService
-        from ..interfaces import IRateLimiterService, IBanQueryService
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IBoardQueryService,
+            IRateLimiterService,
+        )
         from ..models import Board, Topic
-        from ..services import BoardQueryService
-        from ..services import RateLimiterService, BanQueryService
+        from ..services import (
+            BanQueryService,
+            BanwordQueryService,
+            BoardQueryService,
+            RateLimiterService,
+        )
         from ..views.api import board_topics_post
         from . import mock_service, DummyRedis
 
@@ -471,6 +537,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -685,13 +752,24 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.post.add_post.delay")
     def test_topic_posts_post(self, add_):
-        from ..interfaces import IRateLimiterService, IBanQueryService
-        from ..interfaces import ITopicQueryService, IPostCreateService
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IPostCreateService,
+            IRateLimiterService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, TopicMeta
-        from ..services import IdentityService, SettingQueryService
-        from ..services import RateLimiterService, BanQueryService
-        from ..services import TopicQueryService, PostCreateService
-        from ..services import UserQueryService
+        from ..services import (
+            BanQueryService,
+            BanwordQueryService,
+            IdentityService,
+            PostCreateService,
+            RateLimiterService,
+            SettingQueryService,
+            TopicQueryService,
+            UserQueryService,
+        )
         from ..views.api import topic_posts_post
         from . import mock_service, make_cache_region, DummyRedis
 
@@ -708,6 +786,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 ITopicQueryService: TopicQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
                 IPostCreateService: PostCreateService(
                     self.dbsession,
                     IdentityService(redis_conn, 10),
@@ -752,13 +831,24 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.post.add_post.delay")
     def test_topic_posts_post_wwwform(self, add_):
-        from ..interfaces import IRateLimiterService, IBanQueryService
-        from ..interfaces import ITopicQueryService, IPostCreateService
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IPostCreateService,
+            IRateLimiterService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, TopicMeta
-        from ..services import IdentityService, SettingQueryService
-        from ..services import RateLimiterService, BanQueryService
-        from ..services import TopicQueryService, PostCreateService
-        from ..services import UserQueryService
+        from ..services import (
+            BanQueryService,
+            BanwordQueryService,
+            IdentityService,
+            PostCreateService,
+            RateLimiterService,
+            SettingQueryService,
+            TopicQueryService,
+            UserQueryService,
+        )
         from ..views.api import topic_posts_post
         from . import mock_service, make_cache_region, DummyRedis
 
@@ -775,6 +865,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 ITopicQueryService: TopicQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
                 IPostCreateService: PostCreateService(
                     self.dbsession,
                     IdentityService(redis_conn, 10),
@@ -919,13 +1010,58 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             topic_posts_post(request)
         self.assertEqual(self.dbsession.query(Post).count(), 0)
 
+    def test_topic_posts_banword_banned(self):
+        from ..errors import BanwordRejectedError
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            ITopicQueryService,
+        )
+        from ..models import Board, Topic, TopicMeta, Post, Banword
+        from ..services import TopicQueryService, BanQueryService, BanwordQueryService
+        from ..views.api import topic_posts_post
+        from . import mock_service
+
+        board = self._make(Board(title="Foobar", slug="foobar"))
+        topic = self._make(Topic(board=board, title="Foobar"))
+        self._make(Banword(expr="https?:\/\/bit\.ly"))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        request = mock_service(
+            self.request,
+            {
+                ITopicQueryService: TopicQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
+            },
+        )
+
+        request.method = "POST"
+        request.matchdict["topic"] = topic.id
+        request.content_type = "application/json"
+        request.client_addr = "127.0.0.1"
+        request.json_body = {}
+        request.json_body["body"] = "foo\nhttps://bit.ly/spam\nbar"
+        request.json_body["bumped"] = True
+        with self.assertRaises(BanwordRejectedError):
+            topic_posts_post(request)
+        self.assertEqual(self.dbsession.query(Post).count(), 0)
+
     def test_topic_posts_post_rate_limited(self):
         from ..errors import RateLimitedError
-        from ..interfaces import IRateLimiterService, IBanQueryService
-        from ..interfaces import ITopicQueryService
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IRateLimiterService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import RateLimiterService, BanQueryService
-        from ..services import TopicQueryService
+        from ..services import (
+            BanQueryService,
+            BanwordQueryService,
+            RateLimiterService,
+            TopicQueryService,
+        )
         from ..views.api import topic_posts_post
         from . import mock_service, DummyRedis
 
@@ -941,6 +1077,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 ITopicQueryService: TopicQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -1613,13 +1750,24 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.topic.add_topic.delay")
     def test_board_new_post(self, add_):
-        from ..interfaces import IBoardQueryService, ITopicCreateService
-        from ..interfaces import IRateLimiterService, IBanQueryService
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IBoardQueryService,
+            IRateLimiterService,
+            ITopicCreateService,
+        )
         from ..models import Board
-        from ..services import BoardQueryService, TopicCreateService
-        from ..services import IdentityService, SettingQueryService
-        from ..services import RateLimiterService, BanQueryService
-        from ..services import UserQueryService
+        from ..services import (
+            BanQueryService,
+            BanwordQueryService,
+            BoardQueryService,
+            IdentityService,
+            RateLimiterService,
+            SettingQueryService,
+            TopicCreateService,
+            UserQueryService,
+        )
         from ..views.boards import board_new_post
         from . import mock_service, make_cache_region, DummyRedis
 
@@ -1634,6 +1782,7 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
                 ITopicCreateService: TopicCreateService(
                     self.dbsession,
                     IdentityService(redis_conn, 10),
@@ -1779,8 +1928,7 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
         )
 
     def test_board_new_post_banned(self):
-        from ..interfaces import IBoardQueryService
-        from ..interfaces import IBanQueryService
+        from ..interfaces import IBoardQueryService, IBanQueryService
         from ..models import Board, Topic, Ban
         from ..services import BoardQueryService, BanQueryService
         from ..views.boards import board_new_post
@@ -1811,8 +1959,7 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(self.dbsession.query(Topic).count(), 0)
 
     def test_board_new_post_banned_unscoped(self):
-        from ..interfaces import IBoardQueryService
-        from ..interfaces import IBanQueryService
+        from ..interfaces import IBoardQueryService, IBanQueryService
         from ..models import Board, Topic, Ban
         from ..services import BoardQueryService, BanQueryService
         from ..views.boards import board_new_post
@@ -1842,12 +1989,56 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
         renderer.assert_(request=request, board=board, name="ban_rejected")
         self.assertEqual(self.dbsession.query(Topic).count(), 0)
 
+    def test_board_new_post_banword_banned(self):
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IBoardQueryService,
+        )
+        from ..models import Board, Topic, Banword
+        from ..services import BoardQueryService, BanQueryService, BanwordQueryService
+        from ..views.boards import board_new_post
+        from . import mock_service
+
+        board = self._make(Board(title="Foobar", slug="foo"))
+        self._make(Banword(expr="https?:\/\/bit\.ly"))
+        self.dbsession.commit()
+        request = mock_service(
+            self.request,
+            {
+                IBoardQueryService: BoardQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
+            },
+        )
+        request.method = "POST"
+        request.matchdict["board"] = board.slug
+        request.content_type = "application/x-www-form-urlencoded"
+        request.session = testing.DummySession()
+        request.client_addr = "127.0.0.1"
+        request.POST = MultiDict({})
+        request.POST["title"] = "title"
+        request.POST["body"] = "foo\nhttps://bit.ly/spam\nbar"
+        request.POST["csrf_token"] = request.session.get_csrf_token()
+        renderer = self.config.testing_add_renderer("boards/new_error.mako")
+        board_new_post(request)
+        renderer.assert_(request=request, board=board, name="banword_rejected")
+        self.assertEqual(self.dbsession.query(Topic).count(), 0)
+
     def test_board_new_post_rate_limited(self):
-        from ..interfaces import IBoardQueryService
-        from ..interfaces import IRateLimiterService, IBanQueryService
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IBoardQueryService,
+            IRateLimiterService,
+        )
         from ..models import Board, Topic
-        from ..services import BoardQueryService
-        from ..services import RateLimiterService, BanQueryService
+        from ..services import (
+            BanQueryService,
+            BanwordQueryService,
+            BoardQueryService,
+            RateLimiterService,
+        )
         from ..views.boards import board_new_post
         from . import mock_service, DummyRedis
 
@@ -1861,6 +2052,7 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
             },
         )
         request.method = "POST"
@@ -1880,11 +2072,13 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(self.dbsession.query(Topic).count(), 0)
 
     def test_topic_show_get(self):
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IPostQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            IPostQueryService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, Post
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import PostQueryService
+        from ..services import BoardQueryService, TopicQueryService, PostQueryService
         from ..views.boards import topic_show_get
         from . import mock_service
 
@@ -1937,11 +2131,13 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     def test_topic_show_get_query(self):
         from pyramid.httpexceptions import HTTPNotFound
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IPostQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            IPostQueryService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, Post
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import PostQueryService
+        from ..services import BoardQueryService, TopicQueryService, PostQueryService
         from ..views.boards import topic_show_get
         from . import mock_service
 
@@ -2026,11 +2222,13 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     def test_topic_show_get_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IPostQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            IPostQueryService,
+            ITopicQueryService,
+        )
         from ..models import Board
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import PostQueryService
+        from ..services import BoardQueryService, TopicQueryService, PostQueryService
         from ..views.boards import topic_show_get
         from . import mock_service
 
@@ -2052,10 +2250,12 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     def test_topic_show_get_not_found_board(self):
         from sqlalchemy.orm.exc import NoResultFound
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IPostQueryService
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import PostQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            IPostQueryService,
+            ITopicQueryService,
+        )
+        from ..services import BoardQueryService, TopicQueryService, PostQueryService
         from ..views.boards import topic_show_get
         from . import mock_service
 
@@ -2075,11 +2275,13 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
             topic_show_get(request)
 
     def test_topic_show_get_wrong_board(self):
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IPostQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            IPostQueryService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import PostQueryService
+        from ..services import BoardQueryService, TopicQueryService, PostQueryService
         from ..views.boards import topic_show_get
         from . import mock_service
 
@@ -2103,11 +2305,13 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(response.location, "/%s/%s" % (board1.slug, topic.id))
 
     def test_topic_show_get_wrong_board_query(self):
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IPostQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            IPostQueryService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import PostQueryService
+        from ..services import BoardQueryService, TopicQueryService, PostQueryService
         from ..views.boards import topic_show_get
         from . import mock_service
 
@@ -2133,11 +2337,13 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.celery.AsyncResult")
     def test_topic_show_get_task(self, result_):
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import ITaskQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITaskQueryService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import TaskQueryService
+        from ..services import BoardQueryService, TopicQueryService, TaskQueryService
         from ..views.boards import topic_show_get
         from . import mock_service, DummyAsyncResult
 
@@ -2176,11 +2382,13 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.celery.AsyncResult")
     def test_topic_show_get_task_wait(self, result_):
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import ITaskQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITaskQueryService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, TopicMeta
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import TaskQueryService
+        from ..services import BoardQueryService, TopicQueryService, TaskQueryService
         from ..views.boards import topic_show_get
         from . import mock_service, DummyAsyncResult
 
@@ -2209,11 +2417,13 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.celery.AsyncResult")
     def test_topic_show_get_task_akismet_rejected(self, result_):
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import ITaskQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITaskQueryService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, TopicMeta
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import TaskQueryService
+        from ..services import BoardQueryService, TopicQueryService, TaskQueryService
         from ..views.boards import topic_show_get
         from . import mock_service, DummyAsyncResult
 
@@ -2246,11 +2456,13 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.celery.AsyncResult")
     def test_topic_show_get_task_dnsbl_rejected(self, result_):
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import ITaskQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITaskQueryService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, TopicMeta
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import TaskQueryService
+        from ..services import BoardQueryService, TopicQueryService, TaskQueryService
         from ..views.boards import topic_show_get
         from . import mock_service, DummyAsyncResult
 
@@ -2283,11 +2495,13 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.celery.AsyncResult")
     def test_topic_show_get_task_ban_rejected(self, result_):
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import ITaskQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITaskQueryService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, TopicMeta
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import TaskQueryService
+        from ..services import BoardQueryService, TopicQueryService, TaskQueryService
         from ..views.boards import topic_show_get
         from . import mock_service, DummyAsyncResult
 
@@ -2318,11 +2532,13 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.celery.AsyncResult")
     def test_topic_show_get_task_status_rejected(self, result_):
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import ITaskQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITaskQueryService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, TopicMeta
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import TaskQueryService
+        from ..services import BoardQueryService, TopicQueryService, TaskQueryService
         from ..views.boards import topic_show_get
         from . import mock_service, DummyAsyncResult
 
@@ -2359,11 +2575,13 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.celery.AsyncResult")
     def test_topic_show_get_task_proxy_rejected(self, result_):
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import ITaskQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITaskQueryService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, TopicMeta
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import TaskQueryService
+        from ..services import BoardQueryService, TopicQueryService, TaskQueryService
         from ..views.boards import topic_show_get
         from . import mock_service, DummyAsyncResult
 
@@ -2396,14 +2614,26 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.tasks.post.add_post.delay")
     def test_topic_show_post(self, add_):
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IPostCreateService
-        from ..interfaces import IRateLimiterService, IBanQueryService
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IBoardQueryService,
+            IPostCreateService,
+            IRateLimiterService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, TopicMeta
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import IdentityService, SettingQueryService
-        from ..services import PostCreateService, UserQueryService
-        from ..services import RateLimiterService, BanQueryService
+        from ..services import (
+            BanQueryService,
+            BanwordQueryService,
+            BoardQueryService,
+            IdentityService,
+            PostCreateService,
+            RateLimiterService,
+            SettingQueryService,
+            TopicQueryService,
+            UserQueryService,
+        )
         from ..views.boards import topic_show_post
         from . import mock_service, make_cache_region, DummyRedis
 
@@ -2421,6 +2651,7 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
                 ITopicQueryService: TopicQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
                 IPostCreateService: PostCreateService(
                     self.dbsession,
                     IdentityService(redis_conn, 10),
@@ -2615,11 +2846,13 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
         )
 
     def test_topic_show_post_banned(self):
-        from ..interfaces import IBanQueryService
-        from ..interfaces import IBoardQueryService, ITopicQueryService
+        from ..interfaces import (
+            IBanQueryService,
+            IBoardQueryService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, TopicMeta, Post, Ban
-        from ..services import BanQueryService
-        from ..services import BoardQueryService, TopicQueryService
+        from ..services import BanQueryService, BoardQueryService, TopicQueryService
         from ..views.boards import topic_show_post
         from . import mock_service
 
@@ -2652,11 +2885,13 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(self.dbsession.query(Post).count(), 0)
 
     def test_topic_show_post_banned_unscoped(self):
-        from ..interfaces import IBanQueryService
-        from ..interfaces import IBoardQueryService, ITopicQueryService
+        from ..interfaces import (
+            IBanQueryService,
+            IBoardQueryService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, TopicMeta, Post, Ban
-        from ..services import BanQueryService
-        from ..services import BoardQueryService, TopicQueryService
+        from ..services import BanQueryService, BoardQueryService, TopicQueryService
         from ..views.boards import topic_show_post
         from . import mock_service
 
@@ -2688,12 +2923,70 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
         renderer.assert_(request=request, board=board, topic=topic, name="ban_rejected")
         self.assertEqual(self.dbsession.query(Post).count(), 0)
 
+    def test_topic_show_post_banword_banned(self):
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IBoardQueryService,
+            ITopicQueryService,
+        )
+        from ..models import Board, Topic, TopicMeta, Post, Banword
+        from ..services import (
+            BanQueryService,
+            BanwordQueryService,
+            BoardQueryService,
+            TopicQueryService,
+        )
+        from ..views.boards import topic_show_post
+        from . import mock_service
+
+        board = self._make(Board(title="Foobar", slug="foobar"))
+        topic = self._make(Topic(board=board, title="Foobar"))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self._make(Banword(expr="https?:\/\/bit\.ly"))
+        self.dbsession.commit()
+        request = mock_service(
+            self.request,
+            {
+                IBoardQueryService: BoardQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
+            },
+        )
+        request.method = "POST"
+        request.matchdict["board"] = board.slug
+        request.matchdict["topic"] = topic.id
+        request.content_type = "application/x-www-form-urlencoded"
+        request.client_addr = "127.0.0.1"
+        request.session = testing.DummySession()
+        request.POST = MultiDict({})
+        request.POST["body"] = "foo\nhttps://bit.ly/spam\nbar"
+        request.POST["bumped"] = True
+        request.POST["csrf_token"] = request.session.get_csrf_token()
+        renderer = self.config.testing_add_renderer("topics/show_error.mako")
+        topic_show_post(request)
+        renderer.assert_(
+            request=request, board=board, topic=topic, name="banword_rejected"
+        )
+        self.assertEqual(self.dbsession.query(Post).count(), 0)
+
     def test_topic_show_post_rate_limited(self):
-        from ..interfaces import IRateLimiterService, IBanQueryService
-        from ..interfaces import IBoardQueryService, ITopicQueryService
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IBoardQueryService,
+            IRateLimiterService,
+            ITopicQueryService,
+        )
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import RateLimiterService, BanQueryService
-        from ..services import BoardQueryService, TopicQueryService
+        from ..services import (
+            BanQueryService,
+            BanwordQueryService,
+            BoardQueryService,
+            RateLimiterService,
+            TopicQueryService,
+        )
         from ..views.boards import topic_show_post
         from . import mock_service, DummyRedis
 
@@ -2710,6 +3003,7 @@ class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
                 ITopicQueryService: TopicQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
             },
         )
         request.method = "POST"

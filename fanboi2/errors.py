@@ -130,6 +130,23 @@ class BanRejectedError(BaseError):
         return "422 Unprocessable Entity"
 
 
+class BanwordRejectedError(BaseError):
+    """An :class:`Exception` class that will be raised if user request was
+    blocked due user input text being listed in the banword.
+    """
+
+    def message(self, request):
+        return "The message contained a forbidden keyword and therefore rejected."
+
+    @property
+    def name(self):
+        return "banword_rejected"
+
+    @property
+    def http_status(self):
+        return "422 Unprocessable Entity"
+
+
 class StatusRejectedError(BaseError):
     """An :class:`Exception` class that will be raised if user request was
     blocked due the topic or the board being locked. The status that caused
@@ -179,6 +196,7 @@ _ERRORS = {
     "akismet_rejected": AkismetRejectedError,
     "dnsbl_rejected": DNSBLRejectedError,
     "ban_rejected": BanRejectedError,
+    "banword_rejected": BanwordRejectedError,
     "status_rejected": StatusRejectedError,
     "proxy_rejected": ProxyRejectedError,
 }
