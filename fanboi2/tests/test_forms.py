@@ -393,6 +393,28 @@ class TestAdminBanForm(_FormMixin, unittest.TestCase):
         self.assertListEqual(form.ip_address.errors, ["Must be a valid IP address."])
 
 
+class TestAdminBanwordForm(_FormMixin, unittest.TestCase):
+
+    def _get_target_class(self):
+        from ..forms import AdminBanwordForm
+
+        return AdminBanwordForm
+
+    def test_validated(self):
+        form = self._make_one({"expr": "https:\/\/bit\.ly"})
+        self.assertTrue(form.validate())
+
+    def test_expr_missing(self):
+        form = self._make_one({})
+        self.assertFalse(form.validate())
+        self.assertListEqual(form.expr.errors, ["This field is required."])
+
+    def test_expr_invalid(self):
+        form = self._make_one({"expr": "(?y)"})
+        self.assertFalse(form.validate())
+        self.assertListEqual(form.expr.errors, ["Must be a valid regular expression."])
+
+
 class TestAdminBoardForm(_FormMixin, unittest.TestCase):
 
     def _get_target_class(self):

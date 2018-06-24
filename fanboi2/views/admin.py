@@ -11,6 +11,7 @@ from ..version import __VERSION__
 from ..models.board import DEFAULT_BOARD_CONFIG
 from ..forms import (
     AdminBanForm,
+    AdminBanwordForm,
     AdminBoardForm,
     AdminBoardNewForm,
     AdminLoginForm,
@@ -27,6 +28,9 @@ from ..interfaces import (
     IBanCreateService,
     IBanQueryService,
     IBanUpdateService,
+    IBanwordCreateService,
+    IBanwordQueryService,
+    IBanwordUpdateService,
     IBoardCreateService,
     IBoardQueryService,
     IBoardUpdateService,
@@ -217,6 +221,78 @@ def ban_edit_post(request):
         active=form.active.data,
     )
     return HTTPFound(location=request.route_path(route_name="admin_ban", ban=ban.id))
+
+
+def banwords_get(request):
+    banword_query_svc = request.find_service(IBanwordQueryService)
+    return {"banwords": banword_query_svc.list_active()}
+
+
+def banwords_inactive_get(request):
+    banword_query_svc = request.find_service(IBanwordQueryService)
+    return {"banwords": banword_query_svc.list_inactive()}
+
+
+def banword_new_get(request):
+    return {"form": AdminBanwordForm(request=request)}
+
+
+def banword_new_post(request):
+    check_csrf_token(request)
+
+    form = AdminBanwordForm(request.POST, request=request)
+    if not form.validate():
+        request.response.status = "400 Bad Request"
+        return {"form": form}
+
+    banword_create_svc = request.find_service(IBanwordCreateService)
+    banword = banword_create_svc.create(
+        form.expr.data, description=form.description.data, active=form.active.data
+    )
+
+    # Explicitly flush so that ID is available.
+    dbsession = request.find_service(name="db")
+    dbsession.flush()
+
+    return HTTPFound(
+        location=request.route_path(route_name="admin_banword", banword=banword.id)
+    )
+
+
+def banword_get(request):
+    banword_query_svc = request.find_service(IBanwordQueryService)
+    banword_id = request.matchdict["banword"]
+    return {"banword": banword_query_svc.banword_from_id(banword_id)}
+
+
+def banword_edit_get(request):
+    banword_query_svc = request.find_service(IBanwordQueryService)
+    banword_id = request.matchdict["banword"]
+    banword = banword_query_svc.banword_from_id(banword_id)
+    return {"banword": banword, "form": AdminBanwordForm(obj=banword, request=request)}
+
+
+def banword_edit_post(request):
+    check_csrf_token(request)
+
+    banword_query_svc = request.find_service(IBanwordQueryService)
+    banword_id = request.matchdict["banword"]
+    banword = banword_query_svc.banword_from_id(banword_id)
+    form = AdminBanwordForm(request.POST, obj=banword, request=request)
+    if not form.validate():
+        request.response.status = "400 Bad Request"
+        return {"banword": banword, "form": form}
+
+    banword_update_svc = request.find_service(IBanwordUpdateService)
+    banword = banword_update_svc.update(
+        banword.id,
+        expr=form.expr.data,
+        description=form.description.data,
+        active=form.active.data,
+    )
+    return HTTPFound(
+        location=request.route_path(route_name="admin_banword", banword=banword.id)
+    )
 
 
 def boards_get(request):
@@ -900,6 +976,72 @@ def includeme(config):  # pragma: no cover
         request_method="POST",
         route_name="admin_ban_edit",
         renderer="admin/bans/edit.mako",
+        permission="manage",
+    )
+
+    #
+    # Banwords
+    #
+
+    config.add_route("admin_banwords", "/banwords/")
+    config.add_route("admin_banwords_inactive", "/banwords/inactive/")
+    config.add_route("admin_banword_new", "/banwords/new/")
+    config.add_route("admin_banword", "/banwords/{banword:\d+}/")
+    config.add_route("admin_banword_edit", "/banwords/{banword:\d+}/edit/")
+
+    config.add_view(
+        banwords_get,
+        request_method="GET",
+        route_name="admin_banwords",
+        renderer="admin/banwords/all.mako",
+        permission="manage",
+    )
+
+    config.add_view(
+        banwords_inactive_get,
+        request_method="GET",
+        route_name="admin_banwords_inactive",
+        renderer="admin/banwords/inactive.mako",
+        permission="manage",
+    )
+
+    config.add_view(
+        banword_new_get,
+        request_method="GET",
+        route_name="admin_banword_new",
+        renderer="admin/banwords/new.mako",
+        permission="manage",
+    )
+
+    config.add_view(
+        banword_new_post,
+        request_method="POST",
+        route_name="admin_banword_new",
+        renderer="admin/banwords/new.mako",
+        permission="manage",
+    )
+
+    config.add_view(
+        banword_get,
+        request_method="GET",
+        route_name="admin_banword",
+        renderer="admin/banwords/show.mako",
+        permission="manage",
+    )
+
+    config.add_view(
+        banword_edit_get,
+        request_method="GET",
+        route_name="admin_banword_edit",
+        renderer="admin/banwords/edit.mako",
+        permission="manage",
+    )
+
+    config.add_view(
+        banword_edit_post,
+        request_method="POST",
+        route_name="admin_banword_edit",
+        renderer="admin/banwords/edit.mako",
         permission="manage",
     )
 

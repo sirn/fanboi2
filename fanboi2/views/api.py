@@ -1,10 +1,17 @@
 from sqlalchemy.orm.exc import NoResultFound
 from webob.multidict import MultiDict
 
-from ..errors import ParamsInvalidError, RateLimitedError, BanRejectedError, BaseError
+from ..errors import (
+    ParamsInvalidError,
+    RateLimitedError,
+    BanRejectedError,
+    BanwordRejectedError,
+    BaseError,
+)
 from ..forms import TopicForm, PostForm
 from ..interfaces import (
     IBanQueryService,
+    IBanwordQueryService,
     IBoardQueryService,
     IPageQueryService,
     IPostCreateService,
@@ -88,6 +95,10 @@ def board_topics_post(request):
         request.client_addr, scopes=("board:%s" % (board.slug,),)
     ):
         raise BanRejectedError()
+
+    banword_query_svc = request.find_service(IBanwordQueryService)
+    if banword_query_svc.is_banned(form.body.data):
+        raise BanwordRejectedError()
 
     rate_limiter_svc = request.find_service(IRateLimiterService)
     if rate_limiter_svc:
@@ -177,6 +188,10 @@ def topic_posts_post(request):
         request.client_addr, scopes=("board:%s" % (board.slug,),)
     ):
         raise BanRejectedError()
+
+    banword_query_svc = request.find_service(IBanwordQueryService)
+    if banword_query_svc.is_banned(form.body.data):
+        raise BanwordRejectedError()
 
     rate_limiter_svc = request.find_service(IRateLimiterService)
     if rate_limiter_svc:

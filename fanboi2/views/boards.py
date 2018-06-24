@@ -7,6 +7,7 @@ from ..errors import BaseError
 from ..forms import PostForm, TopicForm
 from ..interfaces import (
     IBanQueryService,
+    IBanwordQueryService,
     IBoardQueryService,
     IPostCreateService,
     IPostQueryService,
@@ -125,6 +126,16 @@ def board_new_post(request):
         response = render_to_response(
             "boards/new_error.mako",
             {"board": board, "name": "ban_rejected"},
+            request=request,
+        )
+        response.status = "403 Forbidden"
+        return response
+
+    banword_query_svc = request.find_service(IBanwordQueryService)
+    if banword_query_svc.is_banned(form.body.data):
+        response = render_to_response(
+            "boards/new_error.mako",
+            {"board": board, "name": "banword_rejected"},
             request=request,
         )
         response.status = "403 Forbidden"
@@ -280,6 +291,16 @@ def topic_show_post(request):
         response = render_to_response(
             "topics/show_error.mako",
             {"board": board, "topic": topic, "name": "ban_rejected"},
+            request=request,
+        )
+        response.status = "403 Forbidden"
+        return response
+
+    banword_query_svc = request.find_service(IBanwordQueryService)
+    if banword_query_svc.is_banned(form.body.data):
+        response = render_to_response(
+            "topics/show_error.mako",
+            {"board": board, "topic": topic, "name": "banword_rejected"},
             request=request,
         )
         response.status = "403 Forbidden"

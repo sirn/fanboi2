@@ -30,6 +30,33 @@ class IBanUpdateService(Interface):
         pass
 
 
+class IBanwordCreateService(Interface):
+
+    def create(expr, description=None, active=True):
+        pass
+
+
+class IBanwordQueryService(Interface):
+
+    def list_active():
+        pass
+
+    def list_inactive():
+        pass
+
+    def is_banned(text):
+        pass
+
+    def banword_from_id(id):
+        pass
+
+
+class IBanwordUpdateService(Interface):
+
+    def update(banword_id, **kwargs):
+        pass
+
+
 class IBoardCreateService(Interface):
 
     def create(slug, title, description, status, agreements, settings):

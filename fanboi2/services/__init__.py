@@ -2,6 +2,9 @@ from ..interfaces import (
     IBanCreateService,
     IBanQueryService,
     IBanUpdateService,
+    IBanwordCreateService,
+    IBanwordQueryService,
+    IBanwordUpdateService,
     IBoardCreateService,
     IBoardQueryService,
     IBoardUpdateService,
@@ -29,6 +32,7 @@ from ..interfaces import (
 )
 
 from .ban import BanCreateService, BanQueryService, BanUpdateService
+from .banword import BanwordCreateService, BanwordQueryService, BanwordUpdateService
 from .board import BoardCreateService, BoardQueryService, BoardUpdateService
 from .filter_ import FilterService
 from .identity import IdentityService
@@ -81,6 +85,30 @@ def includeme(config):  # pragma: no cover  # noqa: C901
         return BanUpdateService(dbsession)
 
     config.register_service_factory(ban_update_factory, IBanUpdateService)
+
+    # Banword create
+
+    def banword_create_factory(context, request):
+        dbsession = request.find_service(name="db")
+        return BanwordCreateService(dbsession)
+
+    config.register_service_factory(banword_create_factory, IBanwordCreateService)
+
+    # Banword query
+
+    def banword_query_factory(context, request):
+        dbsession = request.find_service(name="db")
+        return BanwordQueryService(dbsession)
+
+    config.register_service_factory(banword_query_factory, IBanwordQueryService)
+
+    # Banword update
+
+    def banword_update_factory(context, request):
+        dbsession = request.find_service(name="db")
+        return BanwordUpdateService(dbsession)
+
+    config.register_service_factory(banword_update_factory, IBanwordUpdateService)
 
     # Board Create
 

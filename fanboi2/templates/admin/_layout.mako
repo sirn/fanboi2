@@ -21,6 +21,7 @@
                         <h3 class="menu-header">Moderation</h3>
                         <ul class="menu-actions">
                             <li class="menu-actions-item"><a href="${request.route_path('admin_bans')}">Bans</a></li>
+                            <li class="menu-actions-item"><a href="${request.route_path('admin_banwords')}">Banwords</a></li>
                             <li class="menu-actions-item"><a href="${request.route_path('admin_boards')}">Boards</a></li>
                         </ul>
                         <h3 class="menu-header">System</h3>
