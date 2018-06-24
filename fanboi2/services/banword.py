@@ -11,13 +11,13 @@ class IBanwordCreateService(object):
     def __init__(self, dbsession):
         self.dbsession = dbsession
 
-    def create(self, expression, active=True):
+    def create(self, expr, active=True):
         """Create a new banword.
 
-        :param expression: A regular expression for the keyword to ban.
+        :param expr: A regular expression for the keyword to ban.
         :param active: Boolean flag whether the banword should be active.
         """
-        banword = Banword(expression=expression, active=bool(active))
+        banword = Banword(expr=expr, active=bool(active))
         self.dbsession.add(banword)
         return banword
 
@@ -50,7 +50,7 @@ class IBanwordQueryService(object):
         :param text: A text to check.
         """
         for banword in self.list_active():
-            banword_re = re.compile(banword.expression)
+            banword_re = re.compile(banword.expr)
             if banword_re.search(text):
                 return True
         return False

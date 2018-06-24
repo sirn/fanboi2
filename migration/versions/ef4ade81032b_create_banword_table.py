@@ -18,7 +18,8 @@ def upgrade():
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("expression", sa.String(), nullable=False),
+        sa.Column("expr", sa.String(), nullable=False),
+        sa.Column("description", sa.Text, nullable=True),
         sa.Column("active", sa.Boolean(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )

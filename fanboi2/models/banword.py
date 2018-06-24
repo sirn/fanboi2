@@ -13,5 +13,6 @@ class Banword(Base):
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    expression = Column(String, nullable=False)
+    expr = Column(String, nullable=False)
+    description = Column(String, nullable=True)
     active = Column(Boolean, nullable=False, default=True)

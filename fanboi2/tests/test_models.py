@@ -1924,8 +1924,8 @@ class TestBanwordModel(ModelSessionMixin, unittest.TestCase):
     def test_import(self):
         from ..models import Banword
 
-        banword = Banword(expression="foobar")
-        self.assertEqual(banword.expression, "foobar")
+        banword = Banword(expr="foobar")
+        self.assertEqual(banword.expr, "foobar")
 
 
 class TestSettingModel(ModelSessionMixin, unittest.TestCase):
