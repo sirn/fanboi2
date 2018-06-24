@@ -5,7 +5,7 @@ from sqlalchemy.sql import desc, and_
 from ..models import Banword
 
 
-class IBanwordCreateService(object):
+class BanwordCreateService(object):
     """Banword create service provides a service for creating banword."""
 
     def __init__(self, dbsession):
@@ -22,7 +22,7 @@ class IBanwordCreateService(object):
         return banword
 
 
-class IBanwordQueryService(object):
+class BanwordQueryService(object):
     """Banword query service provides a service for querying banwords."""
 
     def __init__(self, dbsession):
@@ -64,7 +64,7 @@ class IBanwordQueryService(object):
         return self.dbsession.query(Banword).filter_by(id=id_).one()
 
 
-class IBanwordUpdateService(object):
+class BanwordUpdateService(object):
     """Banword update service provides a service for updating banwords."""
 
     def __init__(self, dbsession):
