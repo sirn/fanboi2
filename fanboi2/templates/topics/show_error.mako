@@ -10,10 +10,16 @@
             <p><em>Your post has been identified as spam and therefore rejected.</em></p>
         </div>
     % elif name == 'ban_rejected':
-        <h2 class="sheet-title">Toto, I've a feeling we're not in Kansas any more.</h2>
+        <h2 class="sheet-title">You cannot pass.</h2>
         <div class="sheet-body">
-            <p>We must be over the rainbow!</p>
+            <p>The dark fire will not avail you. Go back to the Shadow!</p>
             <p><em>Your IP address is being listed in the ban list.</em></p>
+        </div>
+    % elif name == 'banword_rejected':
+        <h2 class="sheet-title">It's a beautiful thing, the Destruction of words.</h2>
+        <div class="sheet-body">
+            <p>There are hundreds of nouns that can be got rid of as well</p>
+            <p><em>Your post contained a forbidden keyword and therefore rejected.</em></p>
         </div>
     % elif name == 'dnsbl_rejected':
         <h2 class="sheet-title">A strange game.</h2>

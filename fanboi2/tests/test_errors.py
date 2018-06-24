@@ -75,6 +75,16 @@ class TestDeserializeError(unittest.TestCase):
         self.assertEqual(error.name, "ban_rejected")
         self.assertEqual(error.http_status, "422 Unprocessable Entity")
 
+    def test_banword_rejected(self):
+        from ..errors import deserialize_error, BanwordRejectedError
+
+        error_cls = deserialize_error("banword_rejected")
+        error = error_cls()
+        self.assertIsInstance(error, BanwordRejectedError)
+        self.assertIsNotNone(error.message(self.request))
+        self.assertEqual(error.name, "banword_rejected")
+        self.assertEqual(error.http_status, "422 Unprocessable Entity")
+
     def test_status_rejected(self):
         from ..errors import deserialize_error, StatusRejectedError
 
