@@ -1,5 +1,6 @@
-import json
 import ipaddress
+import json
+import re
 
 from wtforms import (
     TextField,
@@ -103,6 +104,20 @@ class AdminBanForm(Form):
             ipaddress.ip_network(field.data)
         except ValueError:
             raise ValidationError("Must be a valid IP address.")
+
+
+class AdminBanwordForm(Form):
+    """A :class:`Form` for creating and updating banwords."""
+    expr = TextField("Expression", validators=[Required()])
+    description = TextField("Description")
+    active = BooleanField("Active", default=True)
+
+    def validate_expr(self, field):
+        """Custom field validator that ensure expr is a valid regular expression."""
+        try:
+            re.compile(field.data)
+        except re.error:
+            raise ValidationError("Must be a valid regular expression.")
 
 
 class AdminBoardForm(Form):

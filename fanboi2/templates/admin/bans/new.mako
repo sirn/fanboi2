@@ -8,7 +8,7 @@
     <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
     <div class="form-item${' error' if form.ip_address.errors else ''}">
         <label class="form-item-label" for="${form.ip_address.id}">IP address</label>
-        ${form.ip_address(class_="input block font-large", rows=6)}
+        ${form.ip_address(class_="input block font-large")}
         % if form.ip_address.errors:
             <span class="form-item-error">${form.ip_address.errors[0]}</span>
         % endif

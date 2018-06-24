@@ -3487,11 +3487,17 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             setup_get(request)
 
     def test_setup_post(self):
-        from ..interfaces import ISettingQueryService, ISettingUpdateService
-        from ..interfaces import IUserCreateService
+        from ..interfaces import (
+            ISettingQueryService,
+            ISettingUpdateService,
+            IUserCreateService,
+        )
         from ..models import User, UserSession, Group
-        from ..services import SettingQueryService, SettingUpdateService
-        from ..services import UserCreateService
+        from ..services import (
+            SettingQueryService,
+            SettingUpdateService,
+            UserCreateService,
+        )
         from ..version import __VERSION__
         from ..views.admin import setup_post
         from . import mock_service, make_cache_region
@@ -4396,6 +4402,288 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             response["form"].errors, {"ip_address": ["Must be a valid IP address."]}
         )
 
+    def test_banwords_get(self):
+        from ..interfaces import IBanwordQueryService
+        from ..models import Banword
+        from ..services import BanwordQueryService
+        from ..views.admin import banwords_get
+        from . import mock_service
+
+        banword1 = self._make(Banword(expr="https?:\/\/bit\.ly"))
+        banword2 = self._make(Banword(expr="https?:\/\/goo\.gl"))
+        self._make(Banword(expr="https?:\/\/youtu\.be", active=False))
+        self._make(Banword(expr="https?:\/\/example\.com", active=False))
+        request = mock_service(
+            self.request, {IBanwordQueryService: BanwordQueryService(self.dbsession)}
+        )
+        request.method = "GET"
+        response = banwords_get(request)
+        self.assertEqual(response["banwords"], [banword2, banword1])
+
+    def test_banwords_inactive_get(self):
+        from ..interfaces import IBanwordQueryService
+        from ..models import Banword
+        from ..services import BanwordQueryService
+        from ..views.admin import banwords_inactive_get
+        from . import mock_service
+
+        self._make(Banword(expr="https?:\/\/bit\.ly"))
+        self._make(Banword(expr="https?:\/\/goo\.gl"))
+        banword3 = self._make(Banword(expr="https?:\/\/youtu\.be", active=False))
+        banword4 = self._make(Banword(expr="https?:\/\/example\.com", active=False))
+        self.dbsession.commit()
+        request = mock_service(
+            self.request, {IBanwordQueryService: BanwordQueryService(self.dbsession)}
+        )
+        request.method = "GET"
+        response = banwords_inactive_get(request)
+        self.assertEqual(response["banwords"], [banword4, banword3])
+
+    def test_banword_new_get(self):
+        from ..forms import AdminBanwordForm
+        from ..views.admin import banword_new_get
+
+        self.request.method = "GET"
+        response = banword_new_get(self.request)
+        self.assertIsInstance(response["form"], AdminBanwordForm)
+
+    def test_banword_new_post(self):
+        from ..interfaces import IBanwordCreateService
+        from ..models import Banword
+        from ..services import BanwordCreateService
+        from ..views.admin import banword_new_post
+        from . import mock_service
+
+        request = mock_service(
+            self.request,
+            {
+                "db": self.dbsession,
+                IBanwordCreateService: BanwordCreateService(self.dbsession),
+            },
+        )
+        request.method = "POST"
+        request.content_type = "application/x-www-form-urlencoded"
+        request.POST = MultiDict({})
+        request.POST["expr"] = "https?:\/\/bit\.ly/"
+        request.POST["description"] = "Violation of galactic law"
+        request.POST["active"] = "1"
+        request.POST["csrf_token"] = request.session.get_csrf_token()
+        self.config.add_route("admin_banword", "/admin/banwords/{banword}")
+        response = banword_new_post(request)
+        banword = self.dbsession.query(Banword).first()
+        self.assertEqual(response.location, "/admin/banwords/%s" % banword.id)
+        self.assertEqual(self.dbsession.query(Banword).count(), 1)
+        self.assertEqual(banword.expr, "https?:\/\/bit\.ly/")
+        self.assertEqual(banword.description, "Violation of galactic law")
+        self.assertTrue(banword.active)
+
+    def test_banword_new_post_bad_csrf(self):
+        from pyramid.csrf import BadCSRFToken
+        from ..views.admin import banword_new_post
+
+        self.request.method = "POST"
+        self.request.content_type = "application/x-www-form-urlencoded"
+        self.request.POST = MultiDict({})
+        self.request.POST["ip_address"] = "10.0.1.0/24"
+        self.request.POST["description"] = "Violation of galactic law"
+        self.request.POST["duration"] = 30
+        self.request.POST["scope"] = "galaxy_far_away"
+        self.request.POST["active"] = "1"
+        with self.assertRaises(BadCSRFToken):
+            banword_new_post(self.request)
+
+    def test_banword_new_post_invalid_expr(self):
+        from ..interfaces import IBanwordCreateService
+        from ..models import Banword
+        from ..services import BanwordCreateService
+        from ..views.admin import banword_new_post
+        from . import mock_service
+
+        request = mock_service(
+            self.request, {IBanwordCreateService: BanwordCreateService(self.dbsession)}
+        )
+        request.method = "POST"
+        request.content_type = "application/x-www-form-urlencoded"
+        request.POST = MultiDict({})
+        request.POST["expr"] = "(?y)"
+        request.POST["description"] = "Violation of galactic law"
+        request.POST["active"] = "1"
+        request.POST["csrf_token"] = request.session.get_csrf_token()
+        response = banword_new_post(request)
+        self.assertEqual(self.dbsession.query(Banword).count(), 0)
+        self.assertEqual(response["form"].expr.data, "(?y)")
+        self.assertDictEqual(
+            response["form"].errors, {"expr": ["Must be a valid regular expression."]}
+        )
+
+    def test_banword_get(self):
+        from ..models import Banword
+        from ..interfaces import IBanwordQueryService
+        from ..services import BanwordQueryService
+        from ..views.admin import banword_get
+        from . import mock_service
+
+        banword = self._make(Banword(expr="https?:\/\/bit\.ly"))
+        self.dbsession.commit()
+        request = mock_service(
+            self.request, {IBanwordQueryService: BanwordQueryService(self.dbsession)}
+        )
+        request.method = "GET"
+        request.matchdict["banword"] = str(banword.id)
+        response = banword_get(request)
+        self.assertEqual(response["banword"], banword)
+
+    def test_banword_get_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IBanwordQueryService
+        from ..services import BanwordQueryService
+        from ..views.admin import banword_get
+        from . import mock_service
+
+        request = mock_service(
+            self.request, {IBanwordQueryService: BanwordQueryService(self.dbsession)}
+        )
+        request.method = "GET"
+        request.matchdict["banword"] = "-1"
+        with self.assertRaises(NoResultFound):
+            banword_get(request)
+
+    def test_banword_edit_get(self):
+        from ..models import Banword
+        from ..interfaces import IBanwordQueryService
+        from ..services import BanwordQueryService
+        from ..views.admin import banword_edit_get
+        from . import mock_service
+
+        banword = self._make(
+            Banword(expr="https?:\/\/bit\.ly", description="no shortlinks", active=True)
+        )
+        self.dbsession.commit()
+        request = mock_service(
+            self.request, {IBanwordQueryService: BanwordQueryService(self.dbsession)}
+        )
+        request.method = "GET"
+        request.matchdict["banword"] = str(banword.id)
+        response = banword_edit_get(request)
+        self.assertEqual(response["banword"], banword)
+        self.assertEqual(response["form"].expr.data, "https?:\/\/bit\.ly")
+        self.assertEqual(response["form"].description.data, "no shortlinks")
+        self.assertTrue(response["form"].active.data)
+
+    def test_banword_edit_get_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IBanwordQueryService
+        from ..services import BanwordQueryService
+        from ..views.admin import banword_edit_get
+        from . import mock_service
+
+        request = mock_service(
+            self.request, {IBanwordQueryService: BanwordQueryService(self.dbsession)}
+        )
+        request.method = "GET"
+        request.matchdict["banword"] = "-1"
+        with self.assertRaises(NoResultFound):
+            banword_edit_get(request)
+
+    def test_banword_edit_post(self):
+        from ..models import Banword
+        from ..interfaces import IBanwordQueryService, IBanwordUpdateService
+        from ..services import BanwordQueryService, BanwordUpdateService
+        from ..views.admin import banword_edit_post
+        from . import mock_service
+
+        banword = self._make(
+            Banword(expr="https?:\/\/bit\.ly", description="no shortlinks", active=True)
+        )
+        self.dbsession.commit()
+        request = mock_service(
+            self.request,
+            {
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
+                IBanwordUpdateService: BanwordUpdateService(self.dbsession),
+            },
+        )
+        request.method = "POST"
+        request.matchdict["banword"] = str(banword.id)
+        request.content_type = "application/x-www-form-urlencoded"
+        request.POST = MultiDict({})
+        request.POST["expr"] = "https?:\/\/(bit\.ly|goo\.gl)"
+        request.POST["description"] = "violation of galactic law"
+        request.POST["active"] = ""
+        request.POST["csrf_token"] = request.session.get_csrf_token()
+        self.config.add_route("admin_banword", "/admin/banwords/{banword}")
+        response = banword_edit_post(request)
+        self.assertEqual(response.location, "/admin/banwords/%s" % banword.id)
+        self.assertEqual(banword.expr, "https?:\/\/(bit\.ly|goo\.gl)")
+        self.assertEqual(banword.description, "violation of galactic law")
+        self.assertFalse(banword.active)
+
+    def test_banword_edit_post_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import IBanwordQueryService
+        from ..services import BanwordQueryService
+        from ..views.admin import banword_edit_post
+        from . import mock_service
+
+        request = mock_service(
+            self.request, {IBanwordQueryService: BanwordQueryService(self.dbsession)}
+        )
+        request.method = "POST"
+        request.matchdict["banword"] = "-1"
+        request.content_type = "application/x-www-form-urlencoded"
+        request.POST = MultiDict({})
+        request.POST["csrf_token"] = request.session.get_csrf_token()
+        with self.assertRaises(NoResultFound):
+            banword_edit_post(request)
+
+    def test_banword_edit_post_bad_csrf(self):
+        from pyramid.csrf import BadCSRFToken
+        from ..models import Banword
+        from ..views.admin import banword_edit_post
+
+        banword = self._make(Banword(expr="https?:\/\/bit\.ly"))
+        self.request.method = "POST"
+        self.request.matchdict["banword"] = str(banword.id)
+        self.request.content_type = "application/x-www-form-urlencoded"
+        self.request.POST = MultiDict({})
+        self.request.POST["expr"] = "https?:\/\/(bit\.ly|goo\.gl)"
+        self.request.POST["description"] = "violation of galactic law"
+        self.request.POST["active"] = ""
+        with self.assertRaises(BadCSRFToken):
+            banword_edit_post(self.request)
+
+    def test_banword_edit_post_invalid_banword(self):
+        from ..models import Banword
+        from ..interfaces import IBanwordQueryService, IBanwordUpdateService
+        from ..services import BanwordQueryService, BanwordUpdateService
+        from ..views.admin import banword_edit_post
+        from . import mock_service
+
+        banword = self._make(
+            Banword(expr="https?:\/\/bit\.ly", description="no shortlinks", active=True)
+        )
+        self.dbsession.commit()
+        request = mock_service(
+            self.request,
+            {
+                IBanwordQueryService: BanwordQueryService(self.dbsession),
+                IBanwordUpdateService: BanwordUpdateService(self.dbsession),
+            },
+        )
+        request.method = "POST"
+        request.matchdict["banword"] = str(banword.id)
+        request.content_type = "application/x-www-form-urlencoded"
+        request.POST = MultiDict({})
+        request.POST["expr"] = "(?y)"
+        request.POST["csrf_token"] = request.session.get_csrf_token()
+        response = banword_edit_post(request)
+        self.assertEqual(banword.expr, "https?:\/\/bit\.ly")
+        self.assertEqual(response["banword"], banword)
+        self.assertEqual(response["form"].expr.data, "(?y)")
+        self.assertDictEqual(
+            response["form"].errors, {"expr": ["Must be a valid regular expression."]}
+        )
+
     def test_boards_get(self):
         from ..interfaces import IBoardQueryService
         from ..models import Board
@@ -4932,11 +5220,19 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_board_topic_new_post(self):
         from ..models import Board, Topic, User, UserSession
-        from ..interfaces import IBoardQueryService, IUserLoginService
-        from ..interfaces import ITopicCreateService
-        from ..services import BoardQueryService, UserLoginService
-        from ..services import TopicCreateService, IdentityService
-        from ..services import SettingQueryService, UserQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            IUserLoginService,
+            ITopicCreateService,
+        )
+        from ..services import (
+            BoardQueryService,
+            UserLoginService,
+            TopicCreateService,
+            IdentityService,
+            SettingQueryService,
+            UserQueryService,
+        )
         from ..views.admin import board_topic_new_post
         from . import mock_service, make_cache_region, DummyRedis
 
@@ -5139,11 +5435,19 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_board_topic_get(self):
         from ..forms import PostForm
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IPostQueryService, IUserLoginService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITopicQueryService,
+            IPostQueryService,
+            IUserLoginService,
+        )
         from ..models import Board, Topic, Post, User, UserSession
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import PostQueryService, UserLoginService
+        from ..services import (
+            BoardQueryService,
+            TopicQueryService,
+            PostQueryService,
+            UserLoginService,
+        )
         from ..views.admin import board_topic_get
         from . import mock_service
 
@@ -5210,11 +5514,19 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_board_topic_get_query(self):
         from pyramid.httpexceptions import HTTPNotFound
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IPostQueryService, IUserLoginService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITopicQueryService,
+            IPostQueryService,
+            IUserLoginService,
+        )
         from ..models import Board, Topic, Post, User, UserSession
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import PostQueryService, UserLoginService
+        from ..services import (
+            BoardQueryService,
+            TopicQueryService,
+            PostQueryService,
+            UserLoginService,
+        )
         from ..views.admin import board_topic_get
         from . import mock_service
 
@@ -5401,13 +5713,22 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             board_topic_get(request)
 
     def test_board_topic_post(self):
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IUserLoginService, IPostCreateService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITopicQueryService,
+            IUserLoginService,
+            IPostCreateService,
+        )
         from ..models import Board, Topic, TopicMeta, Post, User, UserSession
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import UserLoginService, PostCreateService
-        from ..services import IdentityService, SettingQueryService
-        from ..services import UserQueryService
+        from ..services import (
+            BoardQueryService,
+            TopicQueryService,
+            UserLoginService,
+            PostCreateService,
+            IdentityService,
+            SettingQueryService,
+            UserQueryService,
+        )
         from ..views.admin import board_topic_post
         from . import mock_service, make_cache_region, DummyRedis
 
@@ -5566,11 +5887,13 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_board_topic_post_invalid_body(self):
         from ..forms import PostForm
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IUserLoginService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITopicQueryService,
+            IUserLoginService,
+        )
         from ..models import Board, Topic, Post, User, UserSession
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import UserLoginService
+        from ..services import BoardQueryService, TopicQueryService, UserLoginService
         from ..views.admin import board_topic_post
         from . import mock_service
 
@@ -5709,11 +6032,13 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
             board_topic_edit_get(request)
 
     def test_board_topic_edit_post(self):
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import ITopicUpdateService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITopicQueryService,
+            ITopicUpdateService,
+        )
         from ..models import Board, Topic
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import TopicUpdateService
+        from ..services import BoardQueryService, TopicQueryService, TopicUpdateService
         from ..views.admin import board_topic_edit_post
         from . import mock_service
 
@@ -5954,11 +6279,13 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_board_topic_delete_post(self):
         from sqlalchemy import inspect
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import ITopicDeleteService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITopicQueryService,
+            ITopicDeleteService,
+        )
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import TopicDeleteService
+        from ..services import BoardQueryService, TopicQueryService, TopicDeleteService
         from ..views.admin import board_topic_delete_post
         from . import mock_service
 
@@ -6145,11 +6472,13 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_board_topic_posts_delete_get(self):
         from pyramid.httpexceptions import HTTPNotFound
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IPostQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITopicQueryService,
+            IPostQueryService,
+        )
         from ..models import Board, Topic, Post
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import PostQueryService
+        from ..services import BoardQueryService, TopicQueryService, PostQueryService
         from ..views.admin import board_topic_posts_delete_get
         from . import mock_service
 
@@ -6227,11 +6556,13 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(response["posts"], posts[20:])
 
     def test_board_topic_posts_delete_get_with_first_post(self):
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IPostQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITopicQueryService,
+            IPostQueryService,
+        )
         from ..models import Board, Topic, Post
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import PostQueryService
+        from ..services import BoardQueryService, TopicQueryService, PostQueryService
         from ..views.admin import board_topic_posts_delete_get
         from . import mock_service
 
@@ -6404,11 +6735,19 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
     def test_board_topic_posts_delete_post(self):
         from sqlalchemy import inspect
         from pyramid.httpexceptions import HTTPNotFound
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IPostDeleteService, IPostQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITopicQueryService,
+            IPostDeleteService,
+            IPostQueryService,
+        )
         from ..models import Board, Topic, Post
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import PostDeleteService, PostQueryService
+        from ..services import (
+            BoardQueryService,
+            TopicQueryService,
+            PostDeleteService,
+            PostQueryService,
+        )
         from ..views.admin import board_topic_posts_delete_post
         from . import mock_service
 
@@ -6522,11 +6861,13 @@ class TestIntegrationAdmin(ModelSessionMixin, unittest.TestCase):
 
     def test_board_topic_posts_delete_post_first_post(self):
         from pyramid.httpexceptions import HTTPNotFound
-        from ..interfaces import IBoardQueryService, ITopicQueryService
-        from ..interfaces import IPostQueryService
+        from ..interfaces import (
+            IBoardQueryService,
+            ITopicQueryService,
+            IPostQueryService,
+        )
         from ..models import Board, Topic, Post
-        from ..services import BoardQueryService, TopicQueryService
-        from ..services import PostQueryService
+        from ..services import BoardQueryService, TopicQueryService, PostQueryService
         from ..views.admin import board_topic_posts_delete_post
         from . import mock_service
 

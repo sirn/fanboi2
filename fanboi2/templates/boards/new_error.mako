@@ -16,7 +16,7 @@
             <p><em>Your IP address is being listed in the ban list.</em></p>
         </div>
     % elif name == 'banword_rejected':
-        <h2 class="sheet-title">It's a beautiful thing, the Destruction of words.</h2>
+        <h2 class="sheet-title">It's a beautiful thing, the destruction of words.</h2>
         <div class="sheet-body">
             <p>There are hundreds of nouns that can be got rid of as well</p>
             <p><em>Your post contained a forbidden keyword and therefore rejected.</em></p>
@@ -59,6 +59,6 @@
                 <p><em>Board has been archived.</em></p>
             </div>
         % endif
-    % end
+    % endif
     </div>
 </div>
