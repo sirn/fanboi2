@@ -22,14 +22,15 @@ tmp/
 !/assets/legacy/
 
 # Development
-/out/
-*.iml
-*.ini
 !alembic.ini
 *.gz
-.dir-locals.el
+*.iml
+*.ini
 .coverage
-.noseids
+.dir-locals.el
 .idea
-.venv
+.noseids
 .vagrant
+.venv
+out/
+node_modules/

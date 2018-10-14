@@ -10,7 +10,6 @@ CFLAGS  := "-I/usr/local/include"
 prod: init assets
 
 init:
-	pip install pipenv --upgrade
 	env \
 		LDFLAGS=$(LDFLAGS) \
 		CFLAGS=$(CFLAGS) \
@@ -25,7 +24,6 @@ init:
 develop: devinit assets
 
 devinit:
-	pip install pipenv --upgrade
 	env \
 		LDFLAGS=$(LDFLAGS) \
 		CFLAGS=$(CFLAGS) \
