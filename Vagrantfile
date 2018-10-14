@@ -2,13 +2,15 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "pxfs/freebsd-11.1"
+  config.vm.box = "generic/freebsd11"
 
   config.vm.network "private_network", ip: "10.200.80.100"
   config.vm.network "forwarded_port", guest: 6543, host: 6543
   config.vm.synced_folder ".", "/vagrant", type: "nfs", mount_options: ["actimeo=2"]
   config.ssh.shell = "sh"
 
+  # Locking pipenv version to 2018.6.25 because of issue with shell detection:
+  # https://github.com/sarugaku/shellingham/issues/15
   config.vm.provision :shell, privileged: true, inline: <<-EOF
     sysrc hostname=vagrant
 
@@ -16,8 +18,13 @@ Vagrant.configure("2") do |config|
     pkg install -y ca_root_nss git-lite curl ntp bash
     pkg install -y postgresql10-server node redis memcached yarn
     pkg install -y bzip2 sqlite3 gmake
+    pkg install -y python36
 
     ntpd -qg
+
+    curl https://bootstrap.pypa.io/get-pip.py | /usr/local/bin/python3.6
+    /usr/local/bin/pip3.6 install pip --upgrade
+    /usr/local/bin/pip3.6 install pipenv==2018.6.25
 
     sysrc ntpd_enable=YES
     sysrc postgresql_enable=YES
@@ -50,12 +57,6 @@ Vagrant.configure("2") do |config|
     psql template1 -c "CREATE DATABASE fanboi2_test;"
 
     git clone https://github.com/pyenv/pyenv.git $HOME/.pyenv
-
-    $HOME/.pyenv/bin/pyenv install 3.6.4
-    $HOME/.pyenv/bin/pyenv global 3.6.4
-    $HOME/.pyenv/versions/3.6.4/bin/pip3.6 install pip --upgrade
-    $HOME/.pyenv/versions/3.6.4/bin/pip3.6 install pipenv
-    $HOME/.pyenv/bin/pyenv rehash
 
     . $HOME/.profile
 
