@@ -1,5 +1,12 @@
-LDFLAGS := "-L/usr/local/lib"
-CFLAGS  := "-I/usr/local/include"
+LDFLAGS     ?= -L/usr/local/lib
+CFLAGS      ?= -I/usr/local/include
+
+PIPENV      ?= pipenv
+SETENV      := env LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS)"
+
+all: prod
+
+$(VERBOSE).SILENT:
 
 # ----------------------------------------------------------------------
 # Prod
@@ -10,10 +17,7 @@ CFLAGS  := "-I/usr/local/include"
 prod: init assets
 
 init:
-	env \
-		LDFLAGS=$(LDFLAGS) \
-		CFLAGS=$(CFLAGS) \
-	pipenv install $(ARGS)
+	$(SETENV) $(PIPENV) install
 
 # ----------------------------------------------------------------------
 # Development
@@ -24,16 +28,13 @@ init:
 develop: devinit assets
 
 devinit:
-	env \
-		LDFLAGS=$(LDFLAGS) \
-		CFLAGS=$(CFLAGS) \
-	pipenv install --dev $(ARGS)
+	$(SETENV) $(PIPENV) install --dev $(ARGS)
 
 devhook:
-	pipenv run pre-commit install $(ARGS)
+	$(PIPENV) run pre-commit install $(ARGS)
 
 devserver:
-	pipenv run honcho start -f Procfile.dev $(ARGS)
+	$(PIPENV) run honcho start -f Procfile.dev $(ARGS)
 
 # ----------------------------------------------------------------------
 # Assets
@@ -51,7 +52,7 @@ assets:
 .PHONY: test
 
 test:
-	pipenv run nosetests $(ARGS)
+	$(PIPENV) run nosetests $(ARGS)
 
 # ----------------------------------------------------------------------
 # Misc
@@ -60,4 +61,4 @@ test:
 .PHONY: migrate
 
 migrate:
-	pipenv run alembic upgrade head $(ARGS)
+	$(PIPENV) run alembic upgrade head $(ARGS)

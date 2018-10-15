@@ -18,13 +18,9 @@ Vagrant.configure("2") do |config|
     pkg install -y ca_root_nss git-lite curl ntp bash
     pkg install -y postgresql10-server node redis memcached yarn
     pkg install -y bzip2 sqlite3 gmake
-    pkg install -y python36
+    pkg install -y python36 py36-pip py36-pipenv
 
     ntpd -qg
-
-    curl https://bootstrap.pypa.io/get-pip.py | /usr/local/bin/python3.6
-    /usr/local/bin/pip3.6 install pip --upgrade
-    /usr/local/bin/pip3.6 install pipenv==2018.6.25
 
     sysrc ntpd_enable=YES
     sysrc postgresql_enable=YES
@@ -50,13 +46,10 @@ Vagrant.configure("2") do |config|
     echo 'PAGER=more; export PAGER' >> $HOME/.profile
     echo 'ENV=$HOME/.shrc; export ENV' >> $HOME/.profile
     echo 'LANG=en_US.UTF-8; export LANG' >> $HOME/.profile
-    echo 'PYENV_ROOT="$HOME/.pyenv"; export PYENV_ROOT' >> $HOME/.profile
-    echo 'PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"; export PATH' >> $HOME/.profile
+    echo 'PIPENV=pipenv-3.6; export PIPENV' >> $HOME/.profile
 
     psql template1 -c "CREATE DATABASE fanboi2_dev;"
     psql template1 -c "CREATE DATABASE fanboi2_test;"
-
-    git clone https://github.com/pyenv/pyenv.git $HOME/.pyenv
 
     . $HOME/.profile
 
