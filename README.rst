@@ -22,7 +22,7 @@ Fanboi2 requires the following packages to be installed.
 - `Python 3.6 <https://www.python.org/downloads/>`_ with `Pipenv <https://pipenv.readthedocs.io>`_
 - `PostgreSQL 10 <http://www.postgresql.org/>`_
 - `Redis <http://redis.io/>`_
-- `NodeJS <http://nodejs.org/>`_ with `Yarn <https://yarnpkg.com/>`_
+- `Node 8 <http://nodejs.org/>`_ with `Yarn <https://yarnpkg.com/>`_ (Node 10 will NOT work)
 
 After all packages are installed and started, you may now clone the application::
 
