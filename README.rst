@@ -89,12 +89,14 @@ Docker
 1. Install ``Docker`` and ``Docker Compose``
 2. Copy Compose configuration files to the application's parent directory (``cp contrib/docker-compose.* ../``)
 3. Modify the content of ``docker-compose.yml``
+
    1. Generate both ``AUTH_SECRET`` and ``SESSION_SECRET`` tokens with ``openssl rand -hex 32``
    2. Set a sensible Postgres password
    3. This config assumes fanboi2 was cloned to ``fanboi2``; update the build and mount paths if untrue
+
 4. Start the contraption with ``docker-compose up`` from the same directory as the config files.
 
-By default, Fanboi2 will start in development mode which aids debugging. To disable development server capabilities, remove or rename the file ``docker-compose.override.yml`.
+By default, Fanboi2 will start in development mode which aids debugging. To disable development server capabilities, remove or rename the file ``docker-compose.override.yml``.
 
 Submitting Pull Requests
 ^^^^^^^^^^^^^^^^^^^^^^^^
