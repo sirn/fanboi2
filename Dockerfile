@@ -12,14 +12,11 @@ WORKDIR /src
 RUN touch README.rst CHANGES.rst
 COPY Makefile ./
 
-# This part is rebuilt if dependencies change
-COPY Pipfile Pipfile.lock setup.py ./
+COPY Pipfile Pipfile.lock setup.py setup.cfg ./
 RUN make init
 
-# This part is rebuilt if assets change
-COPY assets/ ./assets/
+COPY . .
 RUN make assets
 
-COPY . .
 ENTRYPOINT ["pipenv", "run"]
 CMD ["fbctl", "serve"]
