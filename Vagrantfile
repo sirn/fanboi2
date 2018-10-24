@@ -9,16 +9,15 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant", type: "nfs", mount_options: ["actimeo=2"]
   config.ssh.shell = "sh"
 
-  # Locking pipenv version to 2018.6.25 because of issue with shell detection:
-  # https://github.com/sarugaku/shellingham/issues/15
   config.vm.provision :shell, privileged: true, inline: <<-EOF
     sysrc hostname=vagrant
 
     pkg update
     pkg install -y ca_root_nss git-lite curl ntp bash
-    pkg install -y postgresql10-server node8 npm-node8 redis memcached
+    pkg install -y postgresql10-server redis memcached
     pkg install -y bzip2 sqlite3 gmake
-    pkg install -y python36 py36-pip py36-pipenv
+    pkg install -y python36 py36-pip py36-virtualenv
+    pkg install -y node8 npm-node8
     npm install -g yarn
 
     ntpd -qg
@@ -47,7 +46,6 @@ Vagrant.configure("2") do |config|
     echo 'PAGER=more; export PAGER' >> $HOME/.profile
     echo 'ENV=$HOME/.shrc; export ENV' >> $HOME/.profile
     echo 'LANG=en_US.UTF-8; export LANG' >> $HOME/.profile
-    echo 'PIPENV=pipenv-3.6; export PIPENV' >> $HOME/.profile
 
     psql template1 -c "CREATE DATABASE fanboi2_dev;"
     psql template1 -c "CREATE DATABASE fanboi2_test;"

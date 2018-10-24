@@ -1,0 +1,39 @@
+{
+    "author": "Kridsada Thanabulpong",
+    "name": "fanboi2",
+    "description": "Assets for Fanboi2 board app",
+    "version": "0.30.0",
+    "repository": "https://github.com/forloopend/fanboi2.git",
+    "license": "BSD-3-Clause",
+    "dependencies": {
+        "@types/dom4": "^2.0.1",
+        "@types/domready": "^1.0.0",
+        "@types/js-cookie": "^2.2.0",
+        "@types/virtual-dom": "^2.1.0",
+        "dom4": "^2.0.1",
+        "domready": "^1.0.8",
+        "js-cookie": "^2.2.0",
+        "virtual-dom": "^2.1.1"
+    },
+    "devDependencies": {
+        "autoprefixer": "^9.3.1",
+        "browserify": "^16.2.2",
+        "css-mqpacker": "^7.0.0",
+        "csswring": "^7.0.0",
+        "es6-promise": "^4.0.3",
+        "event-stream": "^4.0.1",
+        "gulp": "^3.9.0",
+        "gulp-concat": "^2.6.0",
+        "gulp-postcss": "^8.0.0",
+        "gulp-sass": "^4.0.1",
+        "gulp-sequence": "^1.0.0",
+        "gulp-sourcemaps": "^2.6.4",
+        "gulp-uglify": "^3.0.1",
+        "postcss-round-subpixels": "^1.0.0",
+        "postcss-urlrev": "^2.0.0",
+        "tsify": "^4.0.0",
+        "typescript": "~3.1.3",
+        "vinyl-buffer": "^1.0.0",
+        "vinyl-source-stream": "^2.0.0"
+    }
+}
