@@ -26,7 +26,8 @@ node_modules/
 .dir-locals.el
 .idea
 .noseids
+.tool-versions
 .vagrant
 .venv
-out/
 node_modules/
+out/
