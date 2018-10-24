@@ -6,13 +6,13 @@ Thumbs.db
 static/
 tmp/
 .eggs/
-*.egg-info/
-*.sqlite
-*.pyc
-*.log
-*.tmp
 *.dump
-.env
+*.egg-info/
+*.env
+*.log
+*.pyc
+*.sqlite
+*.tmp
 
 # Assets
 node_modules/
@@ -22,12 +22,12 @@ node_modules/
 *.gz
 *.iml
 *.ini
+*.venv
 .coverage
 .dir-locals.el
 .idea
 .noseids
 .tool-versions
 .vagrant
-.venv
 node_modules/
 out/
