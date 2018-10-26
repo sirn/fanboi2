@@ -9,6 +9,6 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant", type: "nfs", mount_options: ["actimeo=2"]
   config.ssh.shell = "sh"
 
-  config.vm.provision :shell, privileged: true, path: "vendor/vagrant_system.sh"
-  config.vm.provision :shell, privileged: false, path: "vendor/vagrant_user.sh"
+  config.vm.provision :shell, privileged: true, path: "vendor/vagrant/system.sh"
+  config.vm.provision :shell, privileged: false, path: "vendor/vagrant/user.sh"
 end

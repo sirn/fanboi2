@@ -1,7 +1,5 @@
 #!/bin/sh
 
-_hostname=$(hostname)
-
 ## User profiles
 ##
 
@@ -27,6 +25,7 @@ PAGER=more; export PAGER
 LANG=en_US.UTF-8; export LANG
 EOF
 
+
 ## Work directory
 ##
 
@@ -35,7 +34,7 @@ cd /vagrant || exit
 psql template1 -c "CREATE DATABASE fanboi2_dev;"
 psql template1 -c "CREATE DATABASE fanboi2_test;"
 
-cat <<ENV | tee "/vagrant/$_hostname.env"
+cat <<ENV | tee "/vagrant/.env"
 CELERY_BROKER_URL=redis://127.0.0.1:6379/1
 DATABASE_URL=postgresql://vagrant:@127.0.0.1:5432/fanboi2_dev
 MEMCACHED_URL=127.0.0.1:11211
@@ -47,7 +46,8 @@ SESSION_SECRET=$(openssl rand -hex 32)
 AUTH_SECRET=$(openssl rand -hex 32)
 ENV
 
+
 ## Application
 ##
 
-VIRTUALENV=virtualenv-3.6 make -j2 develop
+VIRTUALENV=virtualenv-3.6 make -j2 dev migrate

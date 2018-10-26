@@ -6,21 +6,25 @@ setup(
     version="2018.10",
     description="Board engine behind fanboi.ch",
     long_description="",
+    long_description_content_type="text/markdown",
+    url="https://github.com/forloopend/fanboi2",
+    author="Kridsada Thanabulpong",
+    author_email="sirn@ogsite.net",
+    license="BSD-3-Clause",
     classifiers=[
-        "programming language :: python",
-        "programming language :: python :: 3",
-        "framework :: pyramid",
-        "topic :: internet :: www/http",
-        "topic :: internet :: www/http :: wsgi :: application",
+        "Framework :: Pyramid",
+        "License :: OSI Approved :: BSD License",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python",
+        "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Message Boards",
+        "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+        "Topic :: Internet :: WWW/HTTP",
+        "Topic :: Internet",
     ],
-    author="",
-    author_email="",
-    url="",
     keywords="web wsgi bfg pylons pyramid",
     packages=find_packages(),
     include_package_data=True,
-    zip_safe=False,
-    test_suite="fanboi2.tests",
     install_requires=[
         "alembic >=0.9, <0.10",
         "argon2_cffi",
@@ -28,7 +32,6 @@ setup(
         "dogpile.cache",
         "geoip2",
         "hiredis",
-        "hupper",
         "isodate",
         "MarkupSafe",
         "misaka",
@@ -50,11 +53,17 @@ setup(
         "wtforms >=2.1, <3.0",
         "zope.sqlalchemy",
     ],
-    test_requires=["coverage", "nose", "rednose"],
+    zip_safe=False,
+    test_suite="fanboi2.tests",
+    extras_require={
+        "dev": ["honcho", "hupper", "pre-commit"],
+        "test": ["nose", "coverage", "rednose"],
+    },
     python_requires=">=3.6",
-    entry_points="""
-    [console_scripts]
-    fbctl = fanboi2.cmd.ctl:main
-    fbcelery = fanboi2.cmd.celery:main
-    """,
+    entry_points={
+        "console_scripts": [
+            "fbctl = fanboi2.cmd.ctl:main",
+            "fbcelery = fanboi2.cmd.celery:main",
+        ]
+    },
 )

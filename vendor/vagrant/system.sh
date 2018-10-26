@@ -15,6 +15,7 @@ pkg install -y \
     ntp \
     postgresql10-server \
     py36-pip \
+    py36-sqlite3 \
     py36-virtualenv \
     python36 \
     redis \

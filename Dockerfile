@@ -9,14 +9,13 @@ RUN apt-get update -yq \
 RUN npm install -g yarn
 
 WORKDIR /src
-RUN touch README.rst CHANGES.rst
 COPY Makefile ./
 
-COPY Pipfile Pipfile.lock setup.py setup.cfg ./
-RUN make init
+COPY setup.py setup.cfg ./
+RUN make build
 
 COPY . .
 RUN make assets
 
-ENTRYPOINT ["pipenv", "run"]
-CMD ["fbctl", "serve"]
+ENTRYPOINT ["make"]
+CMD ["serve"]

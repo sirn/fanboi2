@@ -15,34 +15,35 @@ Board engine behind `Fanboi Channel`_ written in Python.
         :target: https://travis-ci.org/forloopend/fanboi2
 
 Installation
-------------
+============
 
-Fanboi2 requires the following packages to be installed.
+Fanboi2 has the following runtime requirements:
 
-- `Python 3.6 <https://www.python.org/downloads/>`_ with `Pipenv <https://pipenv.readthedocs.io>`_
-- `PostgreSQL 10 <http://www.postgresql.org/>`_
-- `Redis <http://redis.io/>`_
+- `Python 3.6 <https://www.python.org/downloads/>`_ with `Virtualenv <https://virtualenv.pypa.io/en/stable/>`_
+- `PostgreSQL 10 <https://www.postgresql.org/>`_
+- `Redis <https://redis.io/>`_
 - `Memcached <https://memcached.org/>`_
-- `Node 8 <http://nodejs.org/>`_ with `Yarn <https://yarnpkg.com/>`_ (Node 10 will NOT work)
 
-After all packages are installed and started, you may now clone the application::
+Additionally, the following packages are build-time requirements for compiling assets:
+
+- `Node 8 <https://nodejs.org/>`_ (Node 10 will NOT work)
+- `Yarn <https://yarnpkg.com/>`_
+
+After all packages are installed, you may now setup the application::
 
   $ git clone https://github.com/forloopend/fanboi2.git fanboi2
-
-Then setup the application::
-
   $ cd fanboi2/
-  $ make prod
+  $ make -j2
 
-Configure ``.env`` (see the configuring section) and run::
+Then configure ``.env`` according to the configuring section below, then run::
 
   $ make migrate
-  $ pipenv run fbctl serve
+  $ make serve
 
 And you're done! Please visit `http://localhost:6543/admin/ <http://localhost:6543/admin/>`_ to perform initial configuration.
 
 Configuring
------------
+===========
 
 Fanboi2 uses environment variable to configure the application. In case `Pipenv <https://docs.pipenv.org/>`_ is used, you can create a file name ``.env`` in the root directory of the project and Pipenv will happily read the file on ``pipenv run``. Otherwise you may want to use something like `Direnv <https://github.com/direnv/direnv>`_.
 
@@ -61,7 +62,7 @@ Key                       Description
 ========================= =========================================================================
 
 Contributing
-------------
+============
 
 Fanboi2 is open to any contributors, whether you are learning Python or an expert. To contribute to Fanboi2, it is highly recommended to use `Vagrant`_ as it is currently replicating the production environment of `Fanboi Channel`_ and perform all the necessary setup steps for you. Alternatively, if containers are your thing, you can find experimental, unsupported Docker Compose scripts in ``contrib/``.
 
@@ -75,13 +76,13 @@ Vagrant
 
 In case you do not want to use Vagrant, you can install the dependencies from the installation section and run::
 
-  $ make develop
+  $ make dev
   $ make devhook
 
 You can then configure the application (see configuration section) and run the server::
 
   $ make migrate
-  $ pipenv run honcho start -f Procfile.dev
+  $ make devserve
 
 Docker
 ^^^^^^
@@ -107,10 +108,78 @@ Once you've made your changes, simply open a `pull request <https://github.com/f
 - Make sure new features has enough tests and no regressions.
 - Fix any offenses as reported by pre-commit hooks.
 
-License
--------
+Workflow
+========
 
-Copyright (c) 2013-2018, Kridsada Thanabulpong. All rights reserved.
+Fanboi2 uses a ``Makefile``-based workflow in its development and production cycle. You are encourage to use ``make`` rather than directly invoking underlying commands. The provided ``Makefile`` can be customized to certain extent using environment variable, such as:
+
+========================= =========================================================================
+Key                       Description
+========================= =========================================================================
+``VERBOSE=1``             Prints the underlying command when running ``make``.
+``VIRTUALENV=virtualenv`` Specifies the ``virtualenv`` binary (e.g. ``virtualenv-3.6`` for BSDs)
+``YARN=yarn``             Specifies the ``yarn`` binary.
+``VENVDIR=.venv``         Specifies the virtualenv directory.
+``ENVFILE=.env``          Specifies the file containing environment variable to load from.
+========================= =========================================================================
+
+The following make targets are available for use in production:
+
+- ``make prod`` builds the application and assets using production configurations.
+- ``make serve`` same as ``make prod`` but also run the server.
+- ``make build`` same as ``make prod`` but do not build assets.
+- ``make assets`` build only assets.
+- ``make migrate`` migrate database.
+
+The following make targets are available for use in development:
+
+- ``make devhook`` installs development pre-commit hook to the repository.
+- ``make devserv`` same as ``make dev`` but also runs the development server.
+- ``make devbuild`` same as ``make dev`` but do not build assets.
+- ``make dev`` builds the application and assets using development environment.
+- ``make clean`` remove everything.
+
+The following make targets are available for use in test environment:
+
+- ``make test`` run tests.
+
+Most of these commands make use of `VENVDIR` and `ENVFILE`.
+
+The Adventurous Way
+-------------------
+
+If using ``make`` is not your thing, you can set everything up manually, for example on macOS[1]_::
+
+  $ brew install python@3 node@8 yarn
+
+Create the deploy environment::
+
+  $ mkdir -p $HOME/dev/fanboi2/venv
+  $ virtualenv new -p python3 $HOME/dev/fanboi2/venv
+  $ git clone https://github.com/forloopend/fanboi2.git $HOME/dev/fanboi2/src
+
+Setup the application::
+
+  $ cd $HOME/dev/fanboi2/src
+  $ $HOME/dev/fanboi2/venv/bin/pip3 install -e .[dev,test]
+  $ yarn install
+  $ yarn run gulp
+  $ vi $HOME/dev/fanboi2/envfile
+
+Configure ``envfile`` then::
+
+  $ $HOME/dev/fanboi2/venv/bin/alembic upgrade head
+  $ $HOME/dev/fanboi2/venv/bin/fbctl serve --reload
+
+Also install ``pre-commit-hook`` if you want to contribute to the project::
+
+  $ $HOME/dev/fanboi2/venv/bin/pre-commit install
+
+License
+=======
+
+| Copyright (c) 2013-2018, Kridsada Thanabulpong.
+| All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -126,3 +195,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 .. _VirtualBox: https://www.virtualbox.org/
 .. _Yarn: https://yarnpkg.com/
 .. _Gulp: http://gulpjs.com/
+
+.. [1] Brew is horrible at version management. Use `asdf <https://github.com/asdf-vm/asdf>`_ or `pyenv <https://github.com/pyenv/pyenv>`_ instead.

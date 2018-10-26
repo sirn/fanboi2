@@ -1,0 +1,3 @@
+web:    $VENV.venv/bin/fbctl serve --reload
+worker: $VENV.venv/bin/fbcelery worker
+assets: yarn run gulp watch

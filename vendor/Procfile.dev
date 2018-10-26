@@ -1,3 +1,0 @@
-web: pipenv run fbctl serve --reload
-worker: pipenv run fbcelery worker
-assets: yarn run gulp watch
