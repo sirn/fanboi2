@@ -22,6 +22,7 @@ Fanboi2 requires the following packages to be installed.
 - `Python 3.6 <https://www.python.org/downloads/>`_ with `Pipenv <https://pipenv.readthedocs.io>`_
 - `PostgreSQL 10 <http://www.postgresql.org/>`_
 - `Redis <http://redis.io/>`_
+- `Memcached <https://memcached.org/>`_
 - `Node 8 <http://nodejs.org/>`_ with `Yarn <https://yarnpkg.com/>`_ (Node 10 will NOT work)
 
 After all packages are installed and started, you may now clone the application::
@@ -62,7 +63,10 @@ Key                       Description
 Contributing
 ------------
 
-Fanboi2 is open to any contributors, whether you are learning Python or an expert. To contribute to Fanboi2, it is highly recommended to use `Vagrant`_ as it is currently replicating the production environment of `Fanboi Channel`_ and perform all the necessary setup steps for you. You can follow these steps to get the app running:
+Fanboi2 is open to any contributors, whether you are learning Python or an expert. To contribute to Fanboi2, it is highly recommended to use `Vagrant`_ as it is currently replicating the production environment of `Fanboi Channel`_ and perform all the necessary setup steps for you. Alternatively, if containers are your thing, you can find experimental, unsupported Docker Compose scripts in ``contrib/``.
+
+Vagrant
+^^^^^^^
 
 1. Install `Vagrant`_ of your preferred platform.
 2. Install `VirtualBox`_ or other providers supported by Vagrant.
@@ -78,6 +82,24 @@ You can then configure the application (see configuration section) and run the s
 
   $ make migrate
   $ pipenv run honcho start -f Procfile.dev
+
+Docker
+^^^^^^
+
+1. Install ``Docker`` and ``Docker Compose``
+2. Copy Compose configuration files to the application's parent directory (``cp contrib/docker-compose.* ../``)
+3. Modify the content of ``docker-compose.yml``
+
+   1. Generate both ``AUTH_SECRET`` and ``SESSION_SECRET`` tokens with ``openssl rand -hex 32``
+   2. Set a sensible Postgres password
+   3. This config assumes fanboi2 was cloned to ``fanboi2``; update the build and mount paths if untrue
+
+4. Start the contraption with ``docker-compose up`` from the same directory as the config files.
+
+By default, Fanboi2 will start in development mode which aids debugging. To disable development server capabilities, remove or rename the file ``docker-compose.override.yml``.
+
+Submitting Pull Requests
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 Once you've made your changes, simply open a `pull request <https://github.com/forloopend/fanboi2/pulls>`_ against the **master** branch. Our reviewer will review and merge the pull request as soon as possible. It would be much appreciated if you could follow the following guidelines:
 
