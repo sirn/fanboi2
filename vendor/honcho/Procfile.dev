@@ -1,0 +1,3 @@
+web:    make devserve
+assets: make devassets
+worker: make worker

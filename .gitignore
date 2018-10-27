@@ -6,31 +6,31 @@ Thumbs.db
 static/
 tmp/
 .eggs/
-*.egg-info/
-*.sqlite
-*.pyc
-*.log
-*.tmp
 *.dump
-.env
+*.egg-info/
+*.env
+*.log
+*.pyc
+*.sqlite
+*.tmp
+
+# Building
+.build/
 
 # Assets
-/assets/*/
-!/assets/app/
-!/assets/admin/
-!/assets/vendor/
-!/assets/legacy/
+node_modules/
 
 # Development
 !alembic.ini
 *.gz
 *.iml
 *.ini
+*.venv
 .coverage
 .dir-locals.el
 .idea
 .noseids
+.tool-versions
 .vagrant
-.venv
-out/
 node_modules/
+out/

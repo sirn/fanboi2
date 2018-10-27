@@ -94,8 +94,11 @@ export class BoardSelector extends SingletonComponent {
             });
         });
 
-        $element.querySelector(".container").appendChild($button);
-        addClass($element, ["js-board-selector-wrapper"]);
+        let $container = $element.querySelector(".container");
+        if ($container) {
+            $container.appendChild($button);
+            addClass($element, ["js-board-selector-wrapper"]);
+        }
 
         // Attempt to restore height on resize. Since the resize may cause
         // clientHeight to change (and will cause the board selector to be

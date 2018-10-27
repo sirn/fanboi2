@@ -1,0 +1,8 @@
+#!/bin/execlineb -S0
+
+with-contenv
+s6-setuidgid fanboi2
+ifelse { test $1 == "serve" } { /src/.venv/bin/fbctl serve }
+ifelse { test $1 == "worker" } { /src/.venv/bin/fbcelery worker }
+ifelse { test $1 == "migrate" } { /src/.venv/bin/alembic upgrade head }
+exec $@

@@ -1,10 +1,12 @@
 language: python
 
+cache: pip
+
 python:
   - "3.6"
 
 install:
-  - make devinit
+  - make .build/.build-test
 
 before_script:
   - psql -c "create database fanboi2;" -U postgres
@@ -16,4 +18,8 @@ env:
   - POSTGRESQL_TEST_DATABASE=postgresql://postgres@localhost:5432/fanboi2
 
 notifications:
-  email: false
+  email:
+    recipients:
+      - build@fanboi.ch
+    on_success: always
+    on_failure: always

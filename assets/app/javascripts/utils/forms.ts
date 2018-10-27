@@ -62,10 +62,12 @@ export let attachErrors = (form: HTMLFormElement, error: ResourceError) => {
             let err = h("span", { className: "form-item-error" }, [message]);
 
             addClass(formItemElement, ["error"]);
-            fieldElement.parentElement.insertBefore(
-                create(err),
-                fieldElement.nextSibling,
-            );
+            if (fieldElement.parentElement) {
+                fieldElement.parentElement.insertBefore(
+                    create(err),
+                    fieldElement.nextSibling,
+                );
+            }
         }
     };
 
@@ -76,7 +78,10 @@ export let attachErrors = (form: HTMLFormElement, error: ResourceError) => {
             }
         }
     } else {
-        _attachError(form.querySelector("[data-form-anchor]"), data.message);
+        let $formAnchor = form.querySelector("[data-form-anchor]");
+        if ($formAnchor) {
+            _attachError($formAnchor, data.message);
+        }
     }
 };
 
@@ -85,10 +90,13 @@ export let detachErrors = (form: HTMLFormElement) => {
     let msgElements = form.querySelectorAll(".form-item-error");
 
     for (let i = 0, len = errorElements.length; i < len; i++) {
-        removeClass(errorElements[0], ["error"]);
+        removeClass(errorElements[i], ["error"]);
     }
 
     for (let i = 0, len = msgElements.length; i < len; i++) {
-        msgElements[0].parentElement.removeChild(msgElements[0]);
+        let $msgElement = msgElements[i];
+        if ($msgElement.parentElement) {
+            $msgElement.parentElement.removeChild(msgElements[0]);
+        }
     }
 };
