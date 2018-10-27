@@ -154,7 +154,7 @@ Most of these commands make use of `VENVDIR` and `ENVFILE`.
 The Adventurous Way
 ^^^^^^^^^^^^^^^^^^^
 
-If using ``make`` is not your thing, you can set everything up manually, for example on macOS[1]_::
+If using ``make`` is not your thing, you can set everything up manually, for example on macOS [1]_::
 
   $ brew install python@3 node@8 yarn
 
@@ -188,8 +188,7 @@ Also install ``pre-commit-hook`` if you want to contribute to the project::
 License
 -------
 
-| Copyright (c) 2013-2018, Kridsada Thanabulpong.
-| All rights reserved.
+Copyright (c) 2013-2018, Kridsada Thanabulpong. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
