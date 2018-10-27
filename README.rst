@@ -15,7 +15,7 @@ Board engine behind `Fanboi Channel`_ written in Python.
         :target: https://travis-ci.org/forloopend/fanboi2
 
 Installation
-============
+------------
 
 Fanboi2 has the following runtime requirements:
 
@@ -47,7 +47,7 @@ You also need to run the worker (in another terminal) with::
 And you're done! Please visit `http://localhost:6543/admin/ <http://localhost:6543/admin/>`_ to perform initial configuration.
 
 Configuring
-===========
+-----------
 
 Fanboi2 uses environment variable to configure the application. In case `Pipenv <https://docs.pipenv.org/>`_ is used, you can create a file name ``.env`` in the root directory of the project and Pipenv will happily read the file on ``pipenv run``. Otherwise you may want to use something like `Direnv <https://github.com/direnv/direnv>`_.
 
@@ -66,7 +66,7 @@ Key                       Description
 ========================= =========================================================================
 
 Contributing
-============
+------------
 
 Fanboi2 is open to any contributors, whether you are learning Python or an expert. To contribute to Fanboi2, it is highly recommended to use `Vagrant`_ as it is currently replicating the production environment of `Fanboi Channel`_ and perform all the necessary setup steps for you. Alternatively, if containers are your thing, you can find experimental, unsupported Docker Compose scripts in ``contrib/``.
 
@@ -113,7 +113,7 @@ Once you've made your changes, simply open a `pull request <https://github.com/f
 - Fix any offenses as reported by pre-commit hooks.
 
 Workflow
-========
+--------
 
 Fanboi2 uses a ``Makefile``-based workflow in its development and production cycle. You are encourage to use ``make`` rather than directly invoking underlying commands. The provided ``Makefile`` can be customized to certain extent using environment variable, such as:
 
@@ -152,7 +152,7 @@ The following make targets are available for use in test environment:
 Most of these commands make use of `VENVDIR` and `ENVFILE`.
 
 The Adventurous Way
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 If using ``make`` is not your thing, you can set everything up manually, for example on macOS::
 
@@ -186,7 +186,7 @@ Also install ``pre-commit-hook`` if you want to contribute to the project::
   $ $HOME/dev/fanboi2/venv/bin/pre-commit install
 
 License
-=======
+-------
 
 | Copyright (c) 2013-2018, Kridsada Thanabulpong.
 | All rights reserved.
