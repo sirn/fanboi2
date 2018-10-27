@@ -36,7 +36,7 @@ export class SingletonComponent implements IComponent {
         }, 1);
     }
 
-    protected bindOne(element: Element): void {
+    protected bindOne($element: Element): void {
         throw new NotImplementedError();
     }
 }

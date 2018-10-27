@@ -55,10 +55,12 @@ export class TopicLoadPosts implements ITopicEventHandler {
             this.collectionElement = create(newCollectionNode);
             let postElements = this.element.querySelectorAll(".post");
             let lastElement = postElements[postElements.length - 1];
-            lastElement.parentElement.insertBefore(
-                this.collectionElement,
-                lastElement.nextSibling,
-            );
+            if (lastElement && lastElement.parentElement) {
+                lastElement.parentElement.insertBefore(
+                    this.collectionElement,
+                    lastElement.nextSibling,
+                );
+            }
         } else {
             let patches = diff(this.collectionNode, newCollectionNode);
             this.collectionElement = patch(this.collectionElement, patches);

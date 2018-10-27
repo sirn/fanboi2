@@ -37,11 +37,18 @@ def shell(args):
 
 def serve(args):
     """Run the web server for the application."""
-    import hupper
     from waitress import serve as waitress_serve
     from ..wsgi import app
 
     if args.reload:
+        try:
+            import hupper
+        except ImportError:
+            sys.stderr.write(
+                "Please install development dependencies to use reloader.\n"
+                + "$ pip install -e .[dev]"
+            )
+            sys.exit(1)
         hupper.start_reloader("fanboi2.cmd.ctl.main")
 
     waitress_serve(app, host=args.host, port=args.port)

@@ -1,74 +1,69 @@
-import os
 from setuptools import setup, find_packages
-
-here = os.path.abspath(os.path.dirname(__file__))
-readme = open(os.path.join(here, "README.rst")).read()
-changes = open(os.path.join(here, "CHANGES.rst")).read()
-
-
-install_requires = [
-    # Pyramid
-    "pyramid >=1.9, <1.10",
-    "pyramid_nacl_session",
-    "pyramid_debugtoolbar",
-    "pyramid_mako",
-    "pyramid_services",
-    "pyramid_tm",
-    "waitress",
-    # Backend
-    "alembic >=0.9, <0.10",
-    "argon2_cffi",
-    "celery >=4.1, <4.2",
-    "dogpile.cache",
-    "geoip2",
-    "hiredis",
-    "hupper",
-    "passlib",
-    "psycopg2",
-    "python3-memcached",
-    "pytz",
-    "redis",
-    "requests",
-    "sqlalchemy >=1.2, <1.3",
-    "transaction",
-    "zope.sqlalchemy",
-    # Frontend
-    "MarkupSafe",
-    "isodate",
-    "misaka",
-    "wtforms >=2.1, <3.0",
-]
-
-
-test_requires = ["coverage", "nose", "rednose"]
 
 
 setup(
     name="fanboi2",
-    version="0.30.0",
-    description="board engine behind fanboi.ch",
-    long_description=readme + "\n\n" + changes,
+    version="2018.10",
+    description="Board engine behind fanboi.ch",
+    long_description="",
+    long_description_content_type="text/x-rst",
+    url="https://github.com/forloopend/fanboi2",
+    author="Kridsada Thanabulpong",
+    author_email="sirn@ogsite.net",
+    license="BSD-3-Clause",
     classifiers=[
-        "programming language :: python",
-        "programming language :: python :: 3",
-        "framework :: pyramid",
-        "topic :: internet :: www/http",
-        "topic :: internet :: www/http :: wsgi :: application",
+        "Framework :: Pyramid",
+        "License :: OSI Approved :: BSD License",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python",
+        "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Message Boards",
+        "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+        "Topic :: Internet :: WWW/HTTP",
+        "Topic :: Internet",
     ],
-    author="",
-    author_email="",
-    url="",
     keywords="web wsgi bfg pylons pyramid",
     packages=find_packages(),
     include_package_data=True,
+    install_requires=[
+        "alembic >=0.9, <0.10",
+        "argon2_cffi",
+        "celery >=4.1, <4.2",
+        "dogpile.cache",
+        "geoip2",
+        "hiredis",
+        "isodate",
+        "MarkupSafe",
+        "misaka",
+        "passlib",
+        "psycopg2",
+        "pyramid >=1.9, <1.10",
+        "pyramid_debugtoolbar",
+        "pyramid_mako",
+        "pyramid_nacl_session",
+        "pyramid_services",
+        "pyramid_tm",
+        "python3-memcached",
+        "pytz",
+        "redis",
+        "requests",
+        "sqlalchemy >=1.2, <1.3",
+        "transaction",
+        "waitress",
+        "wtforms >=2.1, <3.0",
+        "zope.sqlalchemy",
+    ],
     zip_safe=False,
     test_suite="fanboi2.tests",
-    install_requires=install_requires,
-    test_requires=test_requires,
+    extras_require={
+        "dev": ["honcho", "hupper", "pre-commit"],
+        "test": ["nose", "coverage", "rednose"],
+    },
     python_requires=">=3.6",
-    entry_points="""
-    [console_scripts]
-    fbctl = fanboi2.cmd.ctl:main
-    fbcelery = fanboi2.cmd.celery:main
-    """,
+    entry_points={
+        "console_scripts": [
+            "fbctl = fanboi2.cmd.ctl:main",
+            "fbcelery = fanboi2.cmd.celery:main",
+        ]
+    },
 )

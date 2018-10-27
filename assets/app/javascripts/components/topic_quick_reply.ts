@@ -18,8 +18,6 @@ export class TopicQuickReply extends DelegationComponent {
             if ($target instanceof Element && $target.matches(this.targetSelector)) {
                 let anchor = $target.getAttribute("data-topic-quick-reply");
                 let $topic = $target.closest("[data-topic]");
-                let $input: Element;
-
                 e.preventDefault();
 
                 if (!anchor) {
@@ -27,7 +25,7 @@ export class TopicQuickReply extends DelegationComponent {
                 }
 
                 if ($topic) {
-                    $input = $topic.querySelector("[data-topic-quick-reply-input]");
+                    let $input = $topic.querySelector("[data-topic-quick-reply-input]");
 
                     if ($input instanceof HTMLTextAreaElement) {
                         this.insertTextAtCursor($input, anchor);
@@ -58,7 +56,6 @@ export class TopicQuickReply extends DelegationComponent {
     private attachForm($target: Element, $topic: Element, anchor: string): void {
         let $parent = $target.closest(".js-popover");
         let $popover: Element;
-        let $textarea: Element;
         let popoverView: PopoverView;
         let popoverNode: VNode;
         let throttleTimer: number;
@@ -115,7 +112,7 @@ export class TopicQuickReply extends DelegationComponent {
         new TopicInlineReply($popover);
         new TopicStateTracker($popover);
 
-        $textarea = $popover.querySelector("textarea");
+        let $textarea = $popover.querySelector("textarea");
         if ($textarea instanceof HTMLTextAreaElement) {
             this.insertTextAtCursor($textarea, anchor);
         }

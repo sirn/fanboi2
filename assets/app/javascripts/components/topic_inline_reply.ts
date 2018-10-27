@@ -17,30 +17,32 @@ export class TopicInlineReply extends SingletonComponent {
             let loadingState = new LoadingState();
 
             $form.addEventListener("submit", (e: Event): void => {
-                e.preventDefault();
-                loadingState.bind(() => {
-                    return new Promise(resolve => {
-                        if ($form instanceof HTMLFormElement) {
-                            dispatchCustomEvent($form, "newPost", {
-                                params: serializeForm($form),
-                                callback: () => {
-                                    if ($form instanceof HTMLFormElement) {
-                                        detachErrors($form);
-                                        $form.reset();
-                                        resolve();
-                                    }
-                                },
-                                errorCallback: (error: ResourceError) => {
-                                    if ($form instanceof HTMLFormElement) {
-                                        detachErrors($form);
-                                        attachErrors($form, error);
-                                        resolve();
-                                    }
-                                },
-                            });
-                        }
-                    });
-                }, $button);
+                if ($button) {
+                    e.preventDefault();
+                    loadingState.bind(() => {
+                        return new Promise(resolve => {
+                            if ($form instanceof HTMLFormElement) {
+                                dispatchCustomEvent($form, "newPost", {
+                                    params: serializeForm($form),
+                                    callback: () => {
+                                        if ($form instanceof HTMLFormElement) {
+                                            detachErrors($form);
+                                            $form.reset();
+                                            resolve();
+                                        }
+                                    },
+                                    errorCallback: (error: ResourceError) => {
+                                        if ($form instanceof HTMLFormElement) {
+                                            detachErrors($form);
+                                            attachErrors($form, error);
+                                            resolve();
+                                        }
+                                    },
+                                });
+                            }
+                        });
+                    }, $button);
+                }
             });
         }
     }
