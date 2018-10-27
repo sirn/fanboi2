@@ -1,11 +1,9 @@
 LDFLAGS     += -L/usr/local/lib
 CFLAGS      += -I/usr/local/include
 
-CURDIR      != pwd
-
-BUILDDIR    ?= $(CURDIR)/.build
-VENVDIR     ?= $(CURDIR)/.venv
-ENVFILE     ?= $(CURDIR)/.env
+BUILDDIR    ?= .build
+VENVDIR     ?= .venv
+ENVFILE     ?= .env
 YARN        ?= yarn
 
 VIRTUALENV  ?= virtualenv
@@ -39,19 +37,19 @@ $(BUILDDIR):
 
 
 $(BUILDDIR)/.build: $(VENVDIR) $(BUILDDIR) setup.py
-	$(BUILDENV) $(PIP) install -e $(CURDIR)
+	$(BUILDENV) $(PIP) install -e .
 	touch $(BUILDDIR)/.build
 
 
 $(BUILDDIR)/.build-test: $(VENVDIR) $(BUILDDIR) setup.py
-	$(BUILDENV) $(PIP) install -e $(CURDIR)[test]
+	$(BUILDENV) $(PIP) install -e .[test]
 	touch \
 		$(BUILDDIR)/.build \
 		$(BUILDDIR)/.build-test
 
 
 $(BUILDDIR)/.build-dev: $(VENVDIR) $(BUILDDIR) setup.py
-	$(BUILDENV) $(PIP) install -e $(CURDIR)[test,dev]
+	$(BUILDENV) $(PIP) install -e .[test,dev]
 	touch \
 		$(BUILDDIR)/.build \
 		$(BUILDDIR)/.build-test \
@@ -95,7 +93,7 @@ dev: $(BUILDDIR)/.build-dev
 devrun: dev $(BUILDDIR)/.build-assets
 	$(HONCHO) start \
 		-e $(ENVFILE) \
-		-f $(CURDIR)/vendor/honcho/Procfile.dev
+		-f vendor/honcho/Procfile.dev
 
 
 devhook: dev
@@ -111,7 +109,7 @@ devassets: $(BUILDDIR)/.build-assets
 
 
 test: $(BUILDDIR)/.build-test
-	$(PYTHON) $(CURDIR)/setup.py nosetests
+	$(PYTHON) setup.py nosetests
 
 
 ## Maintenance target
@@ -125,10 +123,10 @@ migrate: $(BUILDDIR)/.build
 clean:
 	rm -rf \
 		$(BUILDDIR) \
-		$(CURDIR)/fanboi2.egg-info \
-		$(CURDIR)/fanboi2/__pycache__ \
-		$(CURDIR)/fanboi2/static \
-		$(CURDIR)/node_modules \
+		fanboi2.egg-info \
+		fanboi2/__pycache__ \
+		fanboi2/static \
+		node_modules \
 		$(VENVDIR)
 
 

@@ -4,7 +4,7 @@ python:
   - "3.6"
 
 install:
-  - make build/.build-test
+  - make .build/.build-test
 
 before_script:
   - psql -c "create database fanboi2;" -U postgres
