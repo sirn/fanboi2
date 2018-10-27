@@ -148,7 +148,7 @@ Most of these commands make use of `VENVDIR` and `ENVFILE`.
 The Adventurous Way
 -------------------
 
-If using ``make`` is not your thing, you can set everything up manually, for example on macOS[1]_::
+If using ``make`` is not your thing, you can set everything up manually, for example on macOS::
 
   $ brew install python@3 node@8 yarn
 
@@ -195,5 +195,3 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 .. _VirtualBox: https://www.virtualbox.org/
 .. _Yarn: https://yarnpkg.com/
 .. _Gulp: http://gulpjs.com/
-
-.. [1] Brew is horrible at version management. Use `asdf <https://github.com/asdf-vm/asdf>`_ or `pyenv <https://github.com/pyenv/pyenv>`_ instead.
