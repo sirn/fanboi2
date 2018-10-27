@@ -6,7 +6,7 @@ setup(
     version="2018.10",
     description="Board engine behind fanboi.ch",
     long_description="",
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/x-rst",
     url="https://github.com/forloopend/fanboi2",
     author="Kridsada Thanabulpong",
     author_email="sirn@ogsite.net",
