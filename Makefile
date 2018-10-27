@@ -11,6 +11,7 @@ YARN        ?= yarn
 VIRTUALENV  ?= virtualenv
 ALEMBIC      = $(VENVDIR)/bin/alembic
 FBCTL        = $(VENVDIR)/bin/fbctl
+FBCELERY     = $(VENVDIR)/bin/fbcelery
 HONCHO       = $(VENVDIR)/bin/honcho
 PIP          = $(VENVDIR)/bin/pip3
 PRECOMMIT    = $(VENVDIR)/bin/pre-commit
@@ -22,7 +23,11 @@ RUNENV       = env $$(test -f $(ENVFILE) && cat $(ENVFILE))
 ASSETS_SRCS != find assets/ -type f
 
 
-all: prod
+all: assets prod
+
+
+## Build target
+##
 
 
 $(VENVDIR):
@@ -46,7 +51,7 @@ $(BUILDDIR)/.build-test: $(VENVDIR) $(BUILDDIR) setup.py
 
 
 $(BUILDDIR)/.build-dev: $(VENVDIR) $(BUILDDIR) setup.py
-	$(BUILDENV) $(PIP) install -e $(CURDIR)[dev]
+	$(BUILDENV) $(PIP) install -e $(CURDIR)[test,dev]
 	touch \
 		$(BUILDDIR)/.build \
 		$(BUILDDIR)/.build-test \
@@ -62,20 +67,35 @@ $(BUILDDIR)/.build-assets: $(ASSETS_SRCS) $(BUILDDIR) node_modules
 	touch $(BUILDDIR)/.build-assets
 
 
-prod: build assets
+## Production target
+##
+
+
+prod: $(BUILDDIR)/.build
 
 
 serve: prod
 	$(RUNENV) $(FBCTL) serve
 
 
-build: $(BUILDDIR)/.build
+worker: prod
+	$(RUNENV) $(FBCELERY) worker
 
 
 assets: $(BUILDDIR)/.build-assets
 
 
-dev: devbuild assets
+## Development target
+##
+
+
+dev: $(BUILDDIR)/.build-dev
+
+
+devrun: dev $(BUILDDIR)/.build-assets
+	$(HONCHO) start \
+		-e $(ENVFILE) \
+		-f $(CURDIR)/vendor/honcho/Procfile.dev
 
 
 devhook: dev
@@ -83,16 +103,19 @@ devhook: dev
 
 
 devserve: dev
-	$(HONCHO) start \
-		-e $(ENVFILE) \
-		-f $(CURDIR)/vendor/honcho/Procfile.dev
+	$(RUNENV) $(FBCTL) serve --reload
 
 
-devbuild: $(BUILDDIR)/.build-dev
+devassets: $(BUILDDIR)/.build-assets
+	$(YARN) run gulp watch
 
 
 test: $(BUILDDIR)/.build-test
 	$(PYTHON) $(CURDIR)/setup.py nosetests
+
+
+## Maintenance target
+##
 
 
 migrate: $(BUILDDIR)/.build
@@ -112,4 +135,4 @@ clean:
 $(VERBOSE).SILENT:
 
 
-.PHONY: all prod serve build assets dev devserver devbuild test migrate clean
+.PHONY: all prod serve worker assets dev devrun devserver devassets test migrate clean

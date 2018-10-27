@@ -92,5 +92,6 @@ SESSION_SECRET=\$(openssl rand -hex 32)
 AUTH_SECRET=\$(openssl rand -hex 32)
 EOENV
 
-VIRTUALENV=virtualenv-3.6 make -j2 dev migrate
+VIRTUALENV=virtualenv-3.6 make -j2 assets dev
+make assets
 EOF

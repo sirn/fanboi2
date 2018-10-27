@@ -33,12 +33,16 @@ After all packages are installed, you may now setup the application::
 
   $ git clone https://github.com/forloopend/fanboi2.git fanboi2
   $ cd fanboi2/
-  $ make -j2
+  $ make all -j2
 
 Then configure ``.env`` according to the configuring section below, then run::
 
   $ make migrate
   $ make serve
+
+You also need to run the worker (in another terminal) with::
+
+  $ make worker
 
 And you're done! Please visit `http://localhost:6543/admin/ <http://localhost:6543/admin/>`_ to perform initial configuration.
 
@@ -82,7 +86,7 @@ In case you do not want to use Vagrant, you can install the dependencies from th
 You can then configure the application (see configuration section) and run the server::
 
   $ make migrate
-  $ make devserve
+  $ make devrun
 
 Docker
 ^^^^^^
@@ -92,7 +96,7 @@ Docker
 3. Modify the content of ``docker-compose.yml``
 
    1. Generate both ``AUTH_SECRET`` and ``SESSION_SECRET`` tokens with ``openssl rand -hex 32``
-   2. Set a sensible Postgres password
+   2. Set a sensible PostgreSQL password
    3. This config assumes fanboi2 was cloned to ``fanboi2``; update the build and mount paths if untrue
 
 4. Start the contraption with ``docker-compose up`` from the same directory as the config files.
@@ -125,19 +129,21 @@ Key                       Description
 
 The following make targets are available for use in production:
 
-- ``make prod`` builds the application and assets using production configurations.
-- ``make serve`` same as ``make prod`` but also run the server.
-- ``make build`` same as ``make prod`` but do not build assets.
-- ``make assets`` build only assets.
-- ``make migrate`` migrate database.
+- ``make all`` build the application and assets using production configurations.
+- ``make prod`` build the application using production configuration.
+- ``make serve`` run the application server.
+- ``make worker`` run the application worker.
+- ``make assets`` build assets.
+- ``make migrate`` migrate daabase.
+- ``make clean`` remove everything.
 
 The following make targets are available for use in development:
 
-- ``make devhook`` installs development pre-commit hook to the repository.
-- ``make devserv`` same as ``make dev`` but also runs the development server.
-- ``make devbuild`` same as ``make dev`` but do not build assets.
-- ``make dev`` builds the application and assets using development environment.
-- ``make clean`` remove everything.
+- ``make dev`` builds the application using development configuration.
+- ``make devrun`` run the development application server, application worker and assets watcher.
+- ``make devhook`` install development pre-commit hook to the repository.
+- ``make devserve`` run the development application server.
+- ``make devassets`` run the development assets watcher.
 
 The following make targets are available for use in test environment:
 
@@ -170,6 +176,10 @@ Configure ``envfile`` then::
 
   $ $HOME/dev/fanboi2/venv/bin/alembic upgrade head
   $ $HOME/dev/fanboi2/venv/bin/fbctl serve --reload
+
+In another terminal, run the worker::
+
+  $ $HOME/dev/fanboi2/venv/bin/fbcelery worker
 
 Also install ``pre-commit-hook`` if you want to contribute to the project::
 

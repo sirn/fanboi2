@@ -1,7 +1,0 @@
-#!/bin/execlineb -P
-
-with-contenv
-cd /src
-s6-setuidgid fanboi2
-
-/src/.venv/bin/fbcelery worker

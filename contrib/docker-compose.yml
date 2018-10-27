@@ -25,16 +25,17 @@ services:
 
   worker:
     <<: *app-defaults
-    command: fbcelery worker
+    command: worker
 
   assets:
     <<: *app-defaults
-    working_dir: /src/assets
+    target: assets
+    working_dir: /src
     command: yarn run gulp watch
 
   migrations:
     <<: *app-defaults
-    command: make migrate
+    command: migrate
 
   postgres:
     image: postgres:10.5-alpine

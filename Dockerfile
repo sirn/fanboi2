@@ -27,13 +27,9 @@ RUN set -xe \
  && rm s6-overlay.tar.gz \
  && apk del .s6-fetch
 
-ENTRYPOINT ["/init"]
-
 WORKDIR /src
 
-COPY Makefile setup.py setup.cfg alembic.ini ./
-COPY fanboi2/ ./fanboi2
-COPY migration/ ./migration
+COPY Makefile setup.py setup.cfg ./
 
 RUN set -xe \
  && apk add --update --no-cache --virtual .app-build \
@@ -41,8 +37,13 @@ RUN set -xe \
         libffi-dev \
         postgresql-dev \
         py3-virtualenv \
- && make build \
+ && make prod \
+ && rm -rf /root/.cache \
  && apk del .app-build
+
+COPY alembic.ini ./
+COPY fanboi2/ ./fanboi2
+COPY migration/ ./migration
 
 COPY --from=assets /src/fanboi2/static ./fanboi2/static
 
@@ -51,9 +52,14 @@ ARG group=fanboi2
 ARG uid=10000
 ARG gid=10000
 
+COPY vendor/rootfs/ /
+
 RUN set -xe \
  && addgroup -g ${gid} ${group} \
  && adduser -D -h /app -u ${uid} -G ${group} ${user} \
- && chown "${uid}:${gid}" "/src"
+ && chown -R "${uid}:${gid}" /src \
+ && chmod +x /entrypoint
 
-COPY vendor/docker/ /
+ENTRYPOINT ["/init", "/entrypoint"]
+
+CMD ["serve"]
