@@ -49,7 +49,7 @@ And you're done! Please visit `http://localhost:6543/admin/ <http://localhost:65
 Configuring
 -----------
 
-Fanboi2 uses environment variable to configure the application. In case `Pipenv <https://docs.pipenv.org/>`_ is used, you can create a file name ``.env`` in the root directory of the project and Pipenv will happily read the file on ``pipenv run``. Otherwise you may want to use something like `Direnv <https://github.com/direnv/direnv>`_.
+Fanboi2 uses environment variable to configure the application. In case ``make`` is used, you can create a file named ``.env`` in the root directory of the project and our make configuration will happily use it up on ``make serve`` or ``make devserve``. Otherwise you may want to use something like `Direnv <https://github.com/direnv/direnv>`_.
 
 ========================= =========================================================================
 Key                       Description
@@ -204,5 +204,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 .. _VirtualBox: https://www.virtualbox.org/
 .. _Yarn: https://yarnpkg.com/
 .. _Gulp: http://gulpjs.com/
+
+Footnote
+--------
 
 .. [1] Brew is horrible at version management. Use `asdf <https://github.com/asdf-vm/asdf>`_ or `pyenv <https://github.com/pyenv/pyenv>`_ instead.
