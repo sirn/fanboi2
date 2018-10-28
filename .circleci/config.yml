@@ -33,7 +33,7 @@ presets:
 
 jobs:
   checkout_code:
-    <<: *default
+    <<: *defaults
     steps:
       - *restore_repo
       - checkout
@@ -43,7 +43,7 @@ jobs:
             - .
 
   test_py36:
-    <<: *default
+    <<: *defaults
     docker:
       - image: circleci/python:3.6
       - image: postgres:10-alpine
@@ -67,7 +67,7 @@ jobs:
             POSTGRESQL_TEST_DATABASE: postgres://fanboi2:@localhost:5432/fanboi2_test
 
   test_assets:
-    <<: *default
+    <<: *defaults
     docker:
       - image: circleci/node:8
     steps:
@@ -85,7 +85,7 @@ jobs:
           command: make assets
 
   build_docker:
-    <<: *default
+    <<: *defaults
     docker:
       - image: docker:latest
     steps:
