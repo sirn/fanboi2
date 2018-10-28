@@ -2,7 +2,7 @@
 Fanboi2
 =======
 
-|py| |ci|
+|py| |ci| |wf|
 
 Board engine behind `Fanboi Channel`_ written in Python.
 
@@ -11,8 +11,11 @@ Board engine behind `Fanboi Channel`_ written in Python.
         :target: https://docs.python.org/3/whatsnew/3.6.html
 
 .. |ci| image::
-        https://img.shields.io/travis/forloopend/fanboi2.svg
-        :target: https://travis-ci.org/forloopend/fanboi2
+        https://img.shields.io/circleci/project/github/forloopend/fanboi2/master.svg
+        :target: https://circleci.com/gh/forloopend/fanboi2
+
+.. |wf| image:: https://img.shields.io/waffle/label/forloopend/fanboi2/status%3A%20in%20progress.svg
+        :target: https://waffle.io/forloopend/fanboi2
 
 Installation
 ------------
