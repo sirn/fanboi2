@@ -69,5 +69,6 @@ jobs:
 workflows:
   version: 2
   test_all:
-    - test
-    - test-docker
+    jobs:
+      - test
+      - test-docker
