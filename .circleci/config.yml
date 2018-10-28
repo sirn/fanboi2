@@ -4,7 +4,7 @@ presets:
   defaults: &defaults
     working_directory: /src
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/buildpack-deps:trusty
 
   restore_repo: &restore_repo
     restore_cache:
@@ -87,7 +87,7 @@ jobs:
   build_docker:
     <<: *defaults
     docker:
-      - image: docker:latest
+      - image: circleci/buildpack-deps:trusty
     steps:
       - run:
           name: Install Docker dependencies
