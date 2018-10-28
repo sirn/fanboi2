@@ -1,0 +1,67 @@
+version: 2
+
+jobs:
+  test-default:
+    working_directory: ~/fanboi2
+    docker:
+      - image: circleci/python:3.6
+      - image: circleci/postgres:10-alpine
+        environment:
+          POSTGRES_USER: fanboi2
+          POSTGRES_DB: fanboi2_test
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-default-{{ checksum "setup.py" }}
+            - v1-default-
+          paths:
+            - .venv
+      - run:
+          name: install dependencies
+          command: make .build/.build-test
+      - save_cache:
+          paths:
+            - .venv
+          key: v1-dependencies-{{ checksum "setup.py" }}
+      - run:
+          name: run tests
+          command: |
+            awk 'm = /\[nosetests\]/ { print "[nosetests]\ncover-html = true" } !m { print }' < setup.cfg > setup.cfg.tmp
+            mv setup.cfg.tmp setup.cfg
+            make test
+          environment:
+            POSTGRESQL_TEST_DATABASE: postgres://fanboi2:@localhost:5432/fanboi2_test
+      - store_artifacts:
+          path: cover
+
+  test-docker-image:
+    docker:
+      - image: docker:18
+      - image: circleci/postgres:10-alpine
+        environment:
+          POSTGRES_USER: fanboi2
+          POSTGRES_DB: fanboi2_test
+    steps:
+      - checkout
+      - setup_remote_docker
+      - restore_cache:
+          keys:
+            - v1-docker-image-{{ checksum "Dockerfile" }}
+            - v1-docker-image-
+          paths:
+            - /caches/docker-layers.tar
+      - run:
+          name: restore docker image layer cache
+          command: docker load -i /caches/docker-layers.tar || true
+      - run:
+          name: build docker image
+          command: docker build --cache-from=forloopend/fanboi2 -t forloopend/fanboi2 .
+      - run:
+          name: save docker image layer cache
+          command: |
+            mkdir -p /caches
+            docker save -o /caches/docker-layers.tar forloopend/fanboi2
+      - run:
+          name: run tests
+          command: docker run forloopend/fanboi2 make test
