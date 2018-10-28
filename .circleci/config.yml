@@ -13,7 +13,7 @@ presets:
         - v1-repo-{{ .Branch }}-
         - v1-repo-
 
-  restore_venv_py36: &restore_py36_venv
+  restore_venv_py36: &restore_venv_py36
     restore_cache:
       keys:
         - v1-venv-py36-{{ checksum "setup.py" }}
