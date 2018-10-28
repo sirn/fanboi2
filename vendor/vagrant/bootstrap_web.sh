@@ -46,7 +46,7 @@ if ! service redis onestatus >/dev/null; then
     service redis start
 fi
 
-if ! service memcached start >/dev/null; then
+if ! service memcached onestatus >/dev/null; then
     sysrc memcached_enable=YES
     service memcached start
 fi
