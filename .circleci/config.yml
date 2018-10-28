@@ -1,7 +1,7 @@
 version: 2
 
 jobs:
-  test-default:
+  build:
     working_directory: ~/fanboi2
     docker:
       - image: circleci/python:3.6
@@ -35,7 +35,7 @@ jobs:
       - store_artifacts:
           path: cover
 
-  test-docker-image:
+  test-docker:
     docker:
       - image: docker:18
       - image: circleci/postgres:10-alpine
