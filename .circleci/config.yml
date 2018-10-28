@@ -89,6 +89,7 @@ jobs:
     docker:
       - image: circleci/buildpack-deps:trusty
     steps:
+      - setup_remote_docker
       - *restore_repo
       - *restore_docker_image
       - run:
