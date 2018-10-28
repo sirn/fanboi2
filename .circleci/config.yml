@@ -1,8 +1,49 @@
 version: 2
 
-jobs:
-  test:
+presets:
+  defaults: &defaults
     working_directory: ~/fanboi2
+    docker:
+      - image: circleci/python:3.6
+
+  restore_repo: &restore_repo
+    restore_cache:
+      keys:
+        - v1-repo-{{ .Branch }}-{{ .Revision }}
+        - v1-repo-{{ .Branch }}-
+        - v1-repo-
+
+  restore_venv_py36: &restore_py36_venv
+    restore_cache:
+      keys:
+        - v1-venv-py36-{{ checksum "setup.py" }}
+        - v1-venv-py36-
+
+  restore_node_modules: &restore_node_modules
+    restore_cache:
+      keys:
+        - v1-node-modules-{{ checksum "yarn.lock" }}
+        - v1-node-modules-
+
+  restore_docker_image: &restore_docker_image
+    restore_cache:
+      keys:
+        - v1-docker-image-{{ checksum "Dockerfile" }}
+        - v1-docker-image-
+
+jobs:
+  checkout_code:
+    <<: *default
+    steps:
+      - *restore_repo
+      - checkout
+      - save_cache:
+          key: v1-repo-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .
+
+  test_py36:
+    <<: *default
     docker:
       - image: circleci/python:3.6
       - image: postgres:10-alpine
@@ -10,62 +51,70 @@ jobs:
           POSTGRES_USER: fanboi2
           POSTGRES_DB: fanboi2_test
     steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-default-{{ checksum "setup.py" }}
-            - v1-default-
-          paths:
-            - .venv
+      - *restore_repo
+      - *restore_venv_py36
       - run:
-          name: Installing dependencies
+          name: Install dependencies
           command: make .build/.build-test
       - save_cache:
+          key: v1-venv-py36-{{ checksum "setup.py" }}
           paths:
             - .venv
-          key: v1-dependencies-{{ checksum "setup.py" }}
       - run:
           name: Run tests
-          command: |
-            awk 'm = /\[nosetests\]/ { print "[nosetests]\ncover-html = true" } !m { print }' < setup.cfg > setup.cfg.tmp
-            mv setup.cfg.tmp setup.cfg
-            make test
+          command: make test
           environment:
             POSTGRESQL_TEST_DATABASE: postgres://fanboi2:@localhost:5432/fanboi2_test
-      - store_artifacts:
-          path: cover
 
-  test-docker:
-    working_directory: ~/fanboi2
+  test_assets:
+    <<: *default
     docker:
-      - image: docker:18
+      - image: circleci/node:8
     steps:
-      - checkout
-      - setup_remote_docker
-      - restore_cache:
-          keys:
-            - v1-docker-image-{{ checksum "Dockerfile" }}
-            - v1-docker-image-
-          paths:
-            - /caches/docker-layers.tar
+      - *restore_repo
+      - *restore_node_modules
       - run:
-          name: Restore Docker image layer cache
-          command: docker load -i /caches/docker-layers.tar || true
+          name: Install dependencies
+          command: make node_modules
+      - save_cache:
+          key: v1-node-modules-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules
+      - run:
+          name: Build assets
+          command: make assets
+
+  build_docker:
+    <<: *default
+    docker:
+      - image: docker:latest
+    steps:
+      - run:
+          name: Install Docker dependencies
+          command: |
+            set -xe
+            apk add --update --no-cache tar
+      - *restore_repo
+      - *restore_docker_image
       - run:
           name: Build Docker image
           command: docker build --cache-from=forloopend/fanboi2 -t forloopend/fanboi2 .
       - run:
-          name: Save Docker image layer cache
+          name: Create Docker image layer cache
           command: |
             mkdir -p /caches
             docker save -o /caches/docker-layers.tar forloopend/fanboi2
+      - save_cache:
+          paths:
+            - /caches/docker-layers.tar
+          key: v1-docker-image-{{ checksum "Dockerfile" }}
       - run:
           name: Run PostgreSQL for tests
           command: |
             docker run -d -p 5432:5432 \
             -e POSTGRES_USER=fanboi2 \
             -e POSTGRES_DB=fanboi2_test \
-            -e POSTGRESQL_TEST_DATABASE=postgres://fanboi2:@localhost:5432/fanboi2_test \
+            -e POSTGRESQL_TEST_DATABASE=postgres://fanboi2:@127.0.0.1:5432/fanboi2_test \
             postgres:10-alpine
       - run:
           name: Run tests
@@ -75,7 +124,16 @@ jobs:
 
 workflows:
   version: 2
-  build:
+  test_all:
     jobs:
-      - test
-      - test-docker
+      - checkout_code
+      - test_py36:
+          requires:
+            - checkout_code
+      - test_assets:
+          requires:
+            - checkout_code
+      - build_docker:
+          requires:
+            - test_py36
+            - test_assets
