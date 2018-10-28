@@ -31,6 +31,9 @@ WORKDIR /src
 
 COPY Makefile setup.py setup.cfg ./
 
+ENV VENVDIR /venv
+ENV BUILDDIR /build
+
 RUN set -xe \
  && apk add --update --no-cache --virtual .app-build \
         build-base \
