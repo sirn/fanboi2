@@ -98,12 +98,22 @@ jobs:
             docker load -i ~/caches/docker-layers.tar || true
       - run:
           name: Build Docker image
-          command: docker build --cache-from=forloopend/fanboi2 -t forloopend/fanboi2 .
+          command: |
+            docker build \
+              --target assets \
+              --cache-from=forloopend/fanboi2-assets \
+              -t forloopend/fanboi2-assets .
+            docker build \
+              --cache-from=forloopend/fanboi2 \
+              -t forloopend/fanboi2 .
       - run:
           name: Create Docker image layer cache
           command: |
             mkdir -p ~/caches
-            docker save -o ~/caches/docker-layers.tar forloopend/fanboi2
+            docker save -o \
+              ~/caches/docker-layers.tar \
+              forloopend/fanboi2 \
+              forloopend/fanboi2-assets
       - save_cache:
           paths:
             - ~/caches/docker-layers.tar
@@ -113,16 +123,16 @@ jobs:
           command: |
             docker network create net0
             docker run --name db --net net0 -d -p 5432:5432 \
-            -e POSTGRES_USER=fanboi2 \
-            -e POSTGRES_DB=fanboi2_test \
-            postgres:10-alpine
+              -e POSTGRES_USER=fanboi2 \
+              -e POSTGRES_DB=fanboi2_test \
+              postgres:10-alpine
       - run:
           name: Run tests
           command: |
             docker run --net net0 \
-            -e POSTGRESQL_TEST_DATABASE=postgres://fanboi2:@db:5432/fanboi2_test \
-            forloopend/fanboi2 \
-            make test
+              -e POSTGRESQL_TEST_DATABASE=postgres://fanboi2:@db:5432/fanboi2_test \
+              forloopend/fanboi2 \
+              make test
 
 workflows:
   version: 2
