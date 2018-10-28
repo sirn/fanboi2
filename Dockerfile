@@ -37,6 +37,10 @@ RUN set -xe \
         libffi-dev \
         postgresql-dev \
         py3-virtualenv \
+ && apk add --update --no-cache --virtual .app-run \
+        make \
+ && sed -i -e 's/^all:*/all: prod/' Makefile \
+ && sed -i -e 's/^ASSETS_SRCS.*/ASSETS_SRCS ?=/' Makefile \
  && make prod \
  && rm -rf /root/.cache \
  && apk del .app-build
