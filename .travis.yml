@@ -22,12 +22,10 @@ matrix:
         - docker build -t forloopend/fanboi2 .
       before_script:
         - psql -c "create database fanboi2_docker;" -U postgres
+      env:
+        - POSTGRESQL_TEST_DATABASE=postgresql://postgres@localhost:5432/fanboi2_docker
       script:
-        - |
-          docker run \
-          -e POSTGRESQL_TEST_DATABASE=postgresql://postgres@localhost:5432/fanboi2_docker
-          forloopend/fanboi2
-          make test
+        - docker run -e POSTGRESQL_TEST_DATABASE=$POSTGRESQL_TEST_DATABASE forloopend/fanboi2 make test
 
 notifications:
   email:
