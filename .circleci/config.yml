@@ -5,7 +5,7 @@ jobs:
     working_directory: ~/fanboi2
     docker:
       - image: circleci/python:3.6
-      - image: circleci/postgres:10-alpine
+      - image: postgres:10-alpine
         environment:
           POSTGRES_USER: fanboi2
           POSTGRES_DB: fanboi2_test
@@ -36,12 +36,9 @@ jobs:
           path: cover
 
   test-docker:
+    working_directory: ~/fanboi2
     docker:
       - image: docker:18
-      - image: circleci/postgres:10-alpine
-        environment:
-          POSTGRES_USER: fanboi2
-          POSTGRES_DB: fanboi2_test
     steps:
       - checkout
       - setup_remote_docker
@@ -63,12 +60,22 @@ jobs:
             mkdir -p /caches
             docker save -o /caches/docker-layers.tar forloopend/fanboi2
       - run:
+          name: Run PostgreSQL for tests
+          command: |
+            docker run -d -p 5432:5432 \
+            -e POSTGRES_USER=fanboi2 \
+            -e POSTGRES_DB=fanboi2_test \
+            -e POSTGRESQL_TEST_DATABASE=postgres://fanboi2:@localhost:5432/fanboi2_test \
+            postgres:10-alpine
+      - run:
           name: Run tests
-          command: docker run forloopend/fanboi2 make test
+          command: |
+            docker run forloopend/fanboi2 \
+            make test
 
 workflows:
   version: 2
-  test_all:
+  build:
     jobs:
       - test
       - test-docker
