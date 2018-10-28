@@ -7,7 +7,7 @@ matrix:
     - python: "3.6"
       cache: pip
       before_script:
-        - psql -c "create database fanboi2_docker;" -U postgres
+        - psql -c "create database fanboi2;" -U postgres
       env:
         - POSTGRESQL_TEST_DATABASE=postgresql://postgres@localhost:5432/fanboi2
       install:
@@ -21,14 +21,14 @@ matrix:
       before_install:
         - docker build -t forloopend/fanboi2 .
       before_script:
-        - psql -c "create database fanboi2_docker;" -U postgres
+        - psql -c "create database fanboi2;" -U postgres
       script:
         - |
           docker run forloopend/fanboi2 \
             sh -c " \
               env \
                 HOST_IP=\$(/sbin/ip route|awk '/default/ { print \$3 }') \
-                POSTGRESQL_TEST_DATABASE=postgresql://postgres@\$HOST_IP:5432/fanboi2_docker \
+                POSTGRESQL_TEST_DATABASE=postgresql://postgres@\$HOST_IP:5432/fanboi2 \
               make test \
             "
 
