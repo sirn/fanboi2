@@ -89,11 +89,6 @@ jobs:
     docker:
       - image: circleci/buildpack-deps:trusty
     steps:
-      - run:
-          name: Install Docker dependencies
-          command: |
-            set -xe
-            apk add --update --no-cache tar
       - *restore_repo
       - *restore_docker_image
       - run:
