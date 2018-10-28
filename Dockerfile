@@ -66,7 +66,7 @@ ARG gid=10000
 
 RUN set -xe \
  && addgroup -g ${gid} ${group} \
- && adduser -D -h /tmp -u ${uid} -G ${group} ${user}
+ && adduser -D -h /tmp -u ${uid} -G ${group} ${user} \
  && chown -R "${uid}:${gid}" /build \
  && chown -R "${uid}:${gid}" /src \
  && chown -R "${uid}:${gid}" /venv \
