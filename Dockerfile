@@ -27,15 +27,6 @@ RUN set -xe \
  && rm s6-overlay.tar.gz \
  && apk del .s6-fetch
 
-ARG user=fanboi2
-ARG group=fanboi2
-ARG uid=10000
-ARG gid=10000
-
-RUN set -xe \
- && addgroup -g ${gid} ${group} \
- && adduser -D -h /app -u ${uid} -G ${group} ${user}
-
 ENV HOME /tmp
 ENV VENVDIR /venv
 ENV BUILDDIR /build
@@ -68,7 +59,14 @@ COPY --from=assets /src/fanboi2/static ./fanboi2/static
 
 COPY vendor/rootfs/ /
 
+ARG user=fanboi2
+ARG group=fanboi2
+ARG uid=10000
+ARG gid=10000
+
 RUN set -xe \
+ && addgroup -g ${gid} ${group} \
+ && adduser -D -h /tmp -u ${uid} -G ${group} ${user}
  && chown -R "${uid}:${gid}" /build \
  && chown -R "${uid}:${gid}" /src \
  && chown -R "${uid}:${gid}" /venv \
