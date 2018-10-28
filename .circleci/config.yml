@@ -2,7 +2,7 @@ version: 2
 
 presets:
   defaults: &defaults
-    working_directory: /src
+    working_directory: ~/src
     docker:
       - image: circleci/buildpack-deps:trusty
 
