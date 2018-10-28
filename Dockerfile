@@ -27,6 +27,10 @@ RUN set -xe \
  && rm s6-overlay.tar.gz \
  && apk del .s6-fetch
 
+ENV HOME /tmp
+ENV VENVDIR /venv
+ENV BUILDDIR /build
+
 WORKDIR /src
 
 COPY Makefile setup.py setup.cfg ./
@@ -37,8 +41,14 @@ RUN set -xe \
         libffi-dev \
         postgresql-dev \
         py3-virtualenv \
+ && apk add --update --no-cache --virtual .app-run \
+        libffi \
+        make \
+        postgresql-libs \
+ && sed -i -e 's/^all:*/all: prod/' Makefile \
+ && sed -i -e 's/^ASSETS_SRCS.*/ASSETS_SRCS ?=/' Makefile \
  && make prod \
- && rm -rf /root/.cache \
+ && rm -rf /tmp/.cache \
  && apk del .app-build
 
 COPY alembic.ini ./
@@ -47,17 +57,19 @@ COPY migration/ ./migration
 
 COPY --from=assets /src/fanboi2/static ./fanboi2/static
 
+COPY vendor/rootfs/ /
+
 ARG user=fanboi2
 ARG group=fanboi2
 ARG uid=10000
 ARG gid=10000
 
-COPY vendor/rootfs/ /
-
 RUN set -xe \
  && addgroup -g ${gid} ${group} \
- && adduser -D -h /app -u ${uid} -G ${group} ${user} \
+ && adduser -D -h /tmp -u ${uid} -G ${group} ${user} \
+ && chown -R "${uid}:${gid}" /build \
  && chown -R "${uid}:${gid}" /src \
+ && chown -R "${uid}:${gid}" /venv \
  && chmod +x /entrypoint
 
 ENTRYPOINT ["/init", "/entrypoint"]
