@@ -1,5 +1,5 @@
+language: python
 dist: trusty
-
 sudo: false
 
 matrix:
@@ -16,8 +16,7 @@ matrix:
       script:
         - docker run forloopend/fanboi2 make test
 
-    - language: python
-      python: "3.6"
+    - python: "3.6"
       cache: pip
       before_script:
         - psql -c "create database fanboi2_docker;" -U postgres
