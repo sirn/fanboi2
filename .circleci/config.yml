@@ -107,15 +107,17 @@ jobs:
       - run:
           name: Run PostgreSQL for tests
           command: |
-            docker run -d -p 5432:5432 \
+            docker network create net0
+            docker run --name db --net net0 -d -p 5432:5432 \
             -e POSTGRES_USER=fanboi2 \
             -e POSTGRES_DB=fanboi2_test \
-            -e POSTGRESQL_TEST_DATABASE=postgres://fanboi2:@127.0.0.1:5432/fanboi2_test \
             postgres:10-alpine
       - run:
           name: Run tests
           command: |
-            docker run forloopend/fanboi2 \
+            docker run --net net0 \
+            -e POSTGRESQL_TEST_DATABASE=postgres://fanboi2:@db:5432/fanboi2_test \
+            forloopend/fanboi2 \
             make test
 
 workflows:
