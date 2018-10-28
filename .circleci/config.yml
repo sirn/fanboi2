@@ -1,7 +1,7 @@
 version: 2
 
 jobs:
-  build:
+  test:
     working_directory: ~/fanboi2
     docker:
       - image: circleci/python:3.6
@@ -18,14 +18,14 @@ jobs:
           paths:
             - .venv
       - run:
-          name: install dependencies
+          name: Installing dependencies
           command: make .build/.build-test
       - save_cache:
           paths:
             - .venv
           key: v1-dependencies-{{ checksum "setup.py" }}
       - run:
-          name: run tests
+          name: Run tests
           command: |
             awk 'm = /\[nosetests\]/ { print "[nosetests]\ncover-html = true" } !m { print }' < setup.cfg > setup.cfg.tmp
             mv setup.cfg.tmp setup.cfg
@@ -52,16 +52,22 @@ jobs:
           paths:
             - /caches/docker-layers.tar
       - run:
-          name: restore docker image layer cache
+          name: Restore Docker image layer cache
           command: docker load -i /caches/docker-layers.tar || true
       - run:
-          name: build docker image
+          name: Build Docker image
           command: docker build --cache-from=forloopend/fanboi2 -t forloopend/fanboi2 .
       - run:
-          name: save docker image layer cache
+          name: Save Docker image layer cache
           command: |
             mkdir -p /caches
             docker save -o /caches/docker-layers.tar forloopend/fanboi2
       - run:
-          name: run tests
+          name: Run tests
           command: docker run forloopend/fanboi2 make test
+
+workflows:
+  version: 2
+  test_all:
+    - test
+    - test-docker
