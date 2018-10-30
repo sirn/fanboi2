@@ -71,7 +71,7 @@ Key                       Description
 Contributing
 ------------
 
-Fanboi2 is open to any contributors, whether you are learning Python or an expert. To contribute to Fanboi2, it is highly recommended to use `Vagrant`_ as it is currently replicating the production environment of `Fanboi Channel`_ and perform all the necessary setup steps for you. Alternatively, if containers are your thing, you can find experimental, unsupported Docker Compose scripts in ``contrib/``.
+Fanboi2 is open to any contributors, whether you are learning Python or an expert. To contribute to Fanboi2, it is highly recommended to use `Vagrant`_ as it is currently replicating the production environment of `Fanboi Channel`_ and perform all the necessary setup steps for you. Alternatively, if containers are your thing, you can find experimental, unsupported Docker Compose scripts in ``vendor/docker/``.
 
 Vagrant
 ^^^^^^^
@@ -95,7 +95,7 @@ Docker
 ^^^^^^
 
 1. Install ``Docker`` and ``Docker Compose``
-2. Copy Compose configuration files to the application's parent directory (``cp contrib/docker-compose.* ../``)
+2. Copy Compose configuration files to the application's parent directory (``cp vendor/docker/docker-compose.* ../``)
 3. Modify the content of ``docker-compose.yml``
 
    1. Generate both ``AUTH_SECRET`` and ``SESSION_SECRET`` tokens with ``openssl rand -hex 32``
