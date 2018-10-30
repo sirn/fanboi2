@@ -29,7 +29,6 @@ ENV_SETTINGS_MAP = (
     ("CELERY_BROKER_URL", "celery.broker", NO_VALUE, None),
     ("DATABASE_URL", "sqlalchemy.url", NO_VALUE, None),
     ("GEOIP_PATH", "geoip.path", None, None),
-    ("MEMCACHED_URL", "dogpile.arguments.url", NO_VALUE, None),
     ("REDIS_URL", "redis.url", NO_VALUE, None),
     ("SERVER_DEV", "server.development", False, asbool),
     ("SERVER_SECURE", "server.secure", False, asbool),
@@ -113,7 +112,9 @@ def make_config(settings):  # pragma: no cover
     config.add_settings(
         {
             "mako.directories": "fanboi2:templates",
-            "dogpile.backend": "dogpile.cache.memcached",
+            "dogpile.backend": "dogpile.cache.redis",
+            "dogpile.arguments.url": config.registry.settings["redis.url"],
+            "dogpile.redis_expiration_time": 60 * 60 * 1,  # 1 hour
             "dogpile.arguments.distributed_lock": True,
             "tm.activate_hook": tm_maybe_activate,
         }
