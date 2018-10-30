@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="fanboi2",
-    version="2018.10",
+    version="2018.11",
     description="Board engine behind fanboi.ch",
     long_description="",
     long_description_content_type="text/x-rst",
