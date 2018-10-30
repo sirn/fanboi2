@@ -1,7 +1,7 @@
-2018.10
+2018.11
 =======
 
-- [Change] Merge based rule and banning rules as override rules no longer exists.
+- [Change] Merge base rule and banning rules as override rules no longer exists.
 
 0.30.0
 ------
