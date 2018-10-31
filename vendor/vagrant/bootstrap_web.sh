@@ -12,7 +12,7 @@ fi
 pkg update -qf
 
 PACKAGES="bzip2 ca_root_nss curl git-lite gmake ntp sqlite3 sudo"
-PACKAGES="$PACKAGES memcached postgresql10-server redis"
+PACKAGES="$PACKAGES postgresql10-server redis"
 PACKAGES="$PACKAGES python36 py36-pip py36-sqlite3 py36-virtualenv"
 PACKAGES="$PACKAGES node8 npm-node8"
 
@@ -44,11 +44,6 @@ fi
 if ! service redis onestatus >/dev/null; then
     sysrc redis_enable=YES
     service redis start
-fi
-
-if ! service memcached onestatus >/dev/null; then
-    sysrc memcached_enable=YES
-    service memcached start
 fi
 
 chsh -s /bin/sh vagrant
@@ -83,7 +78,6 @@ psql template1 -c "CREATE DATABASE fanboi2_test;"
 cat <<EOENV > "/vagrant/.env"
 CELERY_BROKER_URL=redis://127.0.0.1:6379/1
 DATABASE_URL=postgresql://vagrant:@127.0.0.1:5432/fanboi2_dev
-MEMCACHED_URL=127.0.0.1:11211
 REDIS_URL=redis://127.0.0.1:6379/0
 SERVER_DEV=true
 SERVER_HOST=0.0.0.0
