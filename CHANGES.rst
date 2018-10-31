@@ -1,7 +1,8 @@
 2018.11
 =======
 
-- [Change] Merge base rule and banning rules as override rules no longer exists.
+- [Change] Memcached cache backend has been replaced with Redis cache backend.
+- [Change] Banning rules is now part of base rules system.
 
 0.30.0
 ------
