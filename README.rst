@@ -25,7 +25,6 @@ Fanboi2 has the following runtime requirements:
 - `Python 3.6 <https://www.python.org/downloads/>`_ with `Virtualenv <https://virtualenv.pypa.io/en/stable/>`_
 - `PostgreSQL 10 <https://www.postgresql.org/>`_
 - `Redis <https://redis.io/>`_
-- `Memcached <https://memcached.org/>`_
 
 Additionally, the following packages are build-time requirements for compiling assets:
 
@@ -60,7 +59,6 @@ Key                       Description
 ``AUTH_SECRET``           **Required**. Secret for authentication/authorization cookie.
 ``CELERY_BROKER_URL``     **Required**. Redis URL for Celery broker, e.g. `redis://127.0.0.1/1`
 ``DATABASE_URL``          **Required**. Database URL, e.g. `postgres://127.0.0.1/fanboi2`
-``MEMCACHED_URL``         **Required**. Memcached URL, e.g. `127.0.0.1:11211`
 ``REDIS_URL``             **Required**. Redis URL, e.g. `redis://127.0.0.1/0`
 ``SESSION_SECRET``        **Required**. Secret for session cookie. Must not reuse ``AUTH_SECRET``.
 ``GEOIP_PATH``            Path to GeoIP database, e.g. `/usr/share/geoip/GeoLite2-Country.mmdb`

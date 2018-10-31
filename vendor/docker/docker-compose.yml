@@ -8,12 +8,10 @@ x-app:
   links:
     - postgres
     - redis
-    - memcached
   environment:
     AUTH_SECRET: <REPLACE WITH SECRET>
     SESSION_SECRET: <REPLACE WITH SECRET>
     DATABASE_URL: postgres://postgres:<REPLACE WITH PASSWORD>@postgres/fanboi2
-    MEMCACHED_URL: memcached:11211
     REDIS_URL: redis://redis/0
     CELERY_BROKER_URL: redis://redis/1
 
@@ -45,6 +43,3 @@ services:
 
   redis:
     image: redis:5.0-alpine
-
-  memcached:
-    image: memcached:1.5-alpine
