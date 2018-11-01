@@ -1,8 +1,9 @@
 LDFLAGS     += -L/usr/local/lib
 CFLAGS      += -I/usr/local/include
+HOSTNAME    != hostname -s
 
-BUILDDIR    ?= .build
-VENVDIR     ?= .venv
+BUILDDIR    ?= .$(HOSTNAME).build
+VENVDIR     ?= .$(HOSTNAME).venv
 ENVFILE     ?= .env
 YARN        ?= yarn
 
@@ -54,6 +55,10 @@ $(BUILDDIR)/.build-dev: $(VENVDIR) $(BUILDDIR) setup.py
 		$(BUILDDIR)/.build \
 		$(BUILDDIR)/.build-test \
 		$(BUILDDIR)/.build-dev
+
+$(BUILDDIR)/.build-deploy: $(VENVDIR) $(BUILDDIR) setup.py
+	$(BUILDENV) $(PIP) install -e .[deploy]
+	touch $(BUILDDIR)/.build-deploy
 
 
 node_modules: package.json yarn.lock
