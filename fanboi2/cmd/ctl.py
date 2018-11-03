@@ -44,10 +44,7 @@ def serve(args):
         try:
             import hupper
         except ImportError:
-            sys.stderr.write(
-                "Please install development dependencies to use reloader.\n"
-                + "$ pip install -e .[dev]"
-            )
+            sys.stderr.write("Please install dev dependencies to use reloader.\n")
             sys.exit(1)
         hupper.start_reloader("fanboi2.cmd.ctl.main")
 

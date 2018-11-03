@@ -5,6 +5,9 @@ presets:
     working_directory: ~/src
     docker:
       - image: circleci/buildpack-deps:trusty
+    environment:
+      BUILDDIR: build
+      VENVDIR: venv
 
   restore_repo: &restore_repo
     restore_cache:
@@ -55,11 +58,11 @@ jobs:
       - *restore_venv_py36
       - run:
           name: Install dependencies
-          command: make .build/.build-test
+          command: make build/.build-test
       - save_cache:
           key: v1-venv-py36-{{ checksum "setup.py" }}
           paths:
-            - .venv
+            - venv
       - run:
           name: Run tests
           command: make test

@@ -15,7 +15,8 @@ tmp/
 *.tmp
 
 # Building
-.build/
+*.build
+*.venv
 
 # Assets
 node_modules/
@@ -25,7 +26,6 @@ node_modules/
 *.gz
 *.iml
 *.ini
-*.venv
 .coverage
 .dir-locals.el
 .idea
