@@ -1,5 +1,6 @@
 version: 2
 
+
 presets:
   defaults: &defaults
     working_directory: ~/src
@@ -34,6 +35,7 @@ presets:
         - v1-docker-image-{{ checksum "Dockerfile" }}
         - v1-docker-image-
 
+
 jobs:
   checkout_code:
     <<: *defaults
@@ -58,7 +60,7 @@ jobs:
       - *restore_venv_py36
       - run:
           name: Install dependencies
-          command: make build/.build-test
+          command: make prod
       - save_cache:
           key: v1-venv-py36-{{ checksum "setup.py" }}
           paths:
@@ -137,6 +139,27 @@ jobs:
               forloopend/fanboi2 \
               make test
 
+  deploy:
+    <<: *defaults
+    docker:
+      - image: circleci/python:3.6-node
+    steps:
+      - *restore_repo
+      - *restore_venv_py36
+      - *restore_node_modules
+      - run:
+          name: Install deploy dependencies
+          command: make deploy
+      - run:
+          name: Deploy to Fanboi Channel
+          command: |
+            venv/bin/fbdeploy \
+              --path=/srv/fanboi2 \
+              --user=fanboi2 \
+              --postcmd="/srv/fanboi2/postcmd" \
+              $DEPLOY_HOSTS
+
+
 workflows:
   version: 2
   test_all:
@@ -152,3 +175,13 @@ workflows:
           requires:
             - test_py36
             - test_assets
+      - deploy:
+          requires:
+            - test_py36
+            - test_assets
+          filters:
+            branches:
+              only:
+                - master
+            tags:
+              only: /^v.*/
