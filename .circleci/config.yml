@@ -175,6 +175,12 @@ workflows:
           requires:
             - test_py36
             - test_assets
+          filters:
+            branches:
+              only:
+                - master
+            tags:
+              only: /^v.*/
       - deploy:
           requires:
             - test_py36
