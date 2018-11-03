@@ -1,8 +1,9 @@
 LDFLAGS     += -L/usr/local/lib
 CFLAGS      += -I/usr/local/include
+HOSTNAME    != hostname -s
 
-BUILDDIR    ?= .build
-VENVDIR     ?= .venv
+BUILDDIR    ?= .$(HOSTNAME).build
+VENVDIR     ?= .$(HOSTNAME).venv
 ENVFILE     ?= .env
 YARN        ?= yarn
 
@@ -54,6 +55,10 @@ $(BUILDDIR)/.build-dev: $(VENVDIR) $(BUILDDIR) setup.py
 		$(BUILDDIR)/.build \
 		$(BUILDDIR)/.build-test \
 		$(BUILDDIR)/.build-dev
+
+$(BUILDDIR)/.build-deploy: $(VENVDIR) $(BUILDDIR) setup.py
+	$(BUILDENV) $(PIP) install -e .[deploy]
+	touch $(BUILDDIR)/.build-deploy
 
 
 node_modules: package.json yarn.lock
@@ -112,6 +117,24 @@ test: $(BUILDDIR)/.build-test
 	$(PYTHON) setup.py nosetests
 
 
+## Deploy target
+##
+
+
+deploy: $(BUILDDIR)/.build-deploy
+
+
+dist: distclean assets distpack
+
+
+distclean:
+	$(PYTHON) setup.py clean
+
+
+distpack:
+	$(PYTHON) setup.py sdist
+
+
 ## Maintenance target
 ##
 
@@ -133,4 +156,7 @@ clean:
 $(VERBOSE).SILENT:
 
 
-.PHONY: all prod serve worker assets dev devrun devserver devassets test migrate clean
+.PHONY: all prod serve worker assets
+.PHONY: deploy dist distclean distpack
+.PHONY: dev devrun devserver devassets
+.PHONY: test migrate clean

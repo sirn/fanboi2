@@ -57,12 +57,14 @@ setup(
     extras_require={
         "dev": ["honcho", "hupper", "pre-commit"],
         "test": ["nose", "coverage", "rednose"],
+        "deploy": ["fabric", "patchwork", "invocations", "colorama"],
     },
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [
             "fbctl = fanboi2.cmd.ctl:main",
             "fbcelery = fanboi2.cmd.celery:main",
+            "fbdeploy = fanboi2.cmd.deploy:main",
         ]
     },
 )
