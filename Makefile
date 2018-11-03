@@ -117,6 +117,24 @@ test: $(BUILDDIR)/.build-test
 	$(PYTHON) setup.py nosetests
 
 
+## Deploy target
+##
+
+
+deploy: $(BUILDDIR)/.build-deploy
+
+
+dist: distclean assets distpack
+
+
+distclean:
+	$(PYTHON) setup.py clean
+
+
+distpack:
+	$(PYTHON) setup.py sdist
+
+
 ## Maintenance target
 ##
 
@@ -138,4 +156,7 @@ clean:
 $(VERBOSE).SILENT:
 
 
-.PHONY: all prod serve worker assets dev devrun devserver devassets test migrate clean
+.PHONY: all prod serve worker assets
+.PHONY: deploy dist distclean distpack
+.PHONY: dev devrun devserver devassets
+.PHONY: test migrate clean
