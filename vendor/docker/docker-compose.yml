@@ -1,4 +1,4 @@
-version: '2.2'
+version: '2.3'
 
 x-app:
   &app-defaults
@@ -24,12 +24,6 @@ services:
   worker:
     <<: *app-defaults
     command: worker
-
-  assets:
-    <<: *app-defaults
-    target: assets
-    working_dir: /src
-    command: yarn run gulp watch
 
   migrations:
     <<: *app-defaults
