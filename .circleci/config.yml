@@ -138,6 +138,29 @@ jobs:
               -e POSTGRESQL_TEST_DATABASE=postgres://fanboi2:@db:5432/fanboi2_test \
               forloopend/fanboi2 \
               make test
+      - run:
+          name: Publishing Docker image
+          command: |
+            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            IMAGE_TAG=""
+            if [ -n "$CIRCLE_TAG" ]; then
+                _ver="${CIRCLE_TAG#*v}"
+                if [ -n "$CIRCLE_REPOSITORY_URL" ] && [ -n "$CIRCLE_SHA1" ]; then
+                    _ref="refs/heads/master"
+                    _head="$(git ls-remote "$CIRCLE_REPOSITORY_URL" "$_ref" | awk '{ print $1 }')"
+                    if [ "$CIRCLE_SHA1" = "$_head" ]; then
+                        IMAGE_TAG="stable $IMAGE_TAG"
+                    fi
+                fi
+            elif [ "$CIRCLE_BRANCH" = "master" ]; then
+                IMAGE_TAG="latest"
+                IMAGE_TAG="$(git rev-parse --short HEAD) $IMAGE_TAG"
+            fi
+            for tag in $IMAGE_TAG; do
+                docker tag "forloopend/fanboi2" "forloopend/fanboi2:$tag"
+                docker push "forloopend/fanboi2:$tag"
+            done
+
 
   deploy:
     <<: *defaults
