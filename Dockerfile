@@ -6,10 +6,9 @@ COPY Makefile gulpfile.js package.json tsconfig.json yarn.lock ./
 COPY assets ./assets
 
 RUN set -xe \
- && apk add --update --no-cache --virtual .assets-build \
+ && apk add --update --no-cache --virtual .run-deps \
         make \
- && make assets \
- && apk del .assets-build
+ && make assets
 
 FROM python:3.6-alpine
 

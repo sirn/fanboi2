@@ -1,7 +1,15 @@
-version: '2.2'
+version: '2.3'
 services:
 
   web:
     environment:
       SERVER_DEV: "true"
-    command: fbctl serve --reload
+    command: devserve
+
+  assets:
+    build:
+      context: ./fanboi2
+      target: assets
+    volumes:
+      - ./fanboi2:/src
+    command: make devassets
