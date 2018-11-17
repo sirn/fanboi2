@@ -1,12 +1,20 @@
+import os
 from setuptools import setup, find_packages
+
+
+if os.path.exists("README.md"):
+    with open("README.md", "rb") as readme:
+        LONG_DESCRIPTION = readme.read().decode("utf-8")
+else:
+    LONG_DESCRIPTION = ""
 
 
 setup(
     name="fanboi2",
     version="2018.11",
     description="Board engine behind fanboi.ch",
-    long_description="",
-    long_description_content_type="text/x-rst",
+    long_description=LONG_DESCRIPTION,
+    long_description_content_type="text/markdown",
     url="https://git.sr.ht/~sirn/fanboi2",
     author="Kridsada Thanabulpong",
     author_email="sirn@ogsite.net",
