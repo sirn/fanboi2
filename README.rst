@@ -2,20 +2,13 @@
 Fanboi2
 =======
 
-|py| |ci| |wf|
+|py|
 
 Board engine behind `Fanboi Channel`_ written in Python.
 
 .. |py| image::
         https://img.shields.io/badge/python-3.6-blue.svg
         :target: https://docs.python.org/3/whatsnew/3.6.html
-
-.. |ci| image::
-        https://img.shields.io/circleci/project/github/forloopend/fanboi2/master.svg
-        :target: https://circleci.com/gh/forloopend/fanboi2
-
-.. |wf| image:: https://img.shields.io/waffle/label/forloopend/fanboi2/status%3A%20in%20progress.svg
-        :target: https://waffle.io/forloopend/fanboi2
 
 Installation
 ------------
@@ -33,7 +26,7 @@ Additionally, the following packages are build-time requirements for compiling a
 
 After all packages are installed, you may now setup the application::
 
-  $ git clone https://github.com/forloopend/fanboi2.git fanboi2
+  $ git clone https://git.sr.ht/~sirn/fanboi2 fanboi2
   $ cd fanboi2/
   $ make all -j2
 
@@ -104,12 +97,26 @@ Docker
 
 By default, Fanboi2 will start in development mode which aids debugging. To disable development server capabilities, remove or rename the file ``docker-compose.override.yml``.
 
-Submitting Pull Requests
-^^^^^^^^^^^^^^^^^^^^^^^^
+Submitting changes
+^^^^^^^^^^^^^^^^^^
 
-Once you've made your changes, simply open a `pull request <https://github.com/forloopend/fanboi2/pulls>`_ against the **master** branch. Our reviewer will review and merge the pull request as soon as possible. It would be much appreciated if you could follow the following guidelines:
+To submit patches to mailing list:
 
-- When making a non-trivial changes, please create `an issue <https://github.com/forloopend/fanboi2/issues>`_ prior to starting.
+1. Clone the repository: ``git clone https://git.sr.ht/~sirn/fanboi2``
+2. Make the necessary changes.
+3. Configure Git sendmail address: ``git config sendemail.to ~sirn/fanboi2-dev@lists.sr.ht``
+4. Create a patch: ``git format-patch -1 HEAD`` (refer to ``git-format-patch(1)`` for more info)
+5. Send a patch: ``git send-email -1`` (refer to ``git-send-email(1)`` for more info)
+
+To submit patches via `GitHub Pull Request <https://github.com/sirn/fanboi2>`_:
+
+1. Fork the repository using "Fork" button on the top right of the `GitHub project page <https://github.com/sirn/fanboi2>`_.
+2. Make the necessary changes.
+3. Submit pull request against the **master** branch.
+
+Submitting patches via mailing list is recommended in case you wish to remain anonymous (e.g. using thrown-away email address). GitHub, on the other hand, require you to create account with them and `GitHub terms of service explicitly forbids having more than one account <https://help.github.com/articles/github-terms-of-service/#b-account-terms>`_. Whether method you choose, our reviewer will review and merge the patch as soon as possible. It would be much appreciated if you could follow the following guidelines:
+
+- When making a non-trivial changes, please first discuss in the `mailing list <https://lists.sr.ht/~sirn/fanboi2-dev>`_ or in the `development thread <https://fanboi.ch/meta/>`_.
 - Make sure new features has enough tests and no regressions.
 - Fix any offenses as reported by pre-commit hooks.
 
@@ -163,7 +170,7 @@ Create the deploy environment::
 
   $ mkdir -p $HOME/dev/fanboi2/venv
   $ virtualenv new -p python3 $HOME/dev/fanboi2/venv
-  $ git clone https://github.com/forloopend/fanboi2.git $HOME/dev/fanboi2/src
+  $ git clone https://git.sr.ht/~sirn/fanboi2 $HOME/dev/fanboi2/src
 
 Setup the application::
 

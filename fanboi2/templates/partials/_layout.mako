@@ -62,7 +62,7 @@ ${next.body()}
         </div>
         <ul class="footer-links">
             <li class="footer-links-item"><a href="${request.route_path('api_root')}">API documentation</a></li>
-            <li class="footer-links-item"><a href="https://github.com/forloopend/fanboi2">Source code</a></li>
+            <li class="footer-links-item"><a href="https://git.sr.ht/~sirn/fanboi2">Source code</a></li>
         </ul>
     </div>
 </footer>

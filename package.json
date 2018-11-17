@@ -3,7 +3,7 @@
     "name": "fanboi2",
     "description": "Assets for Fanboi2 board app",
     "version": "0.30.0",
-    "repository": "https://github.com/forloopend/fanboi2.git",
+    "repository": "https://git.sr.ht/~sirn/fanboi2",
     "license": "BSD-3-Clause",
     "dependencies": {
         "@types/dom4": "^2.0.1",

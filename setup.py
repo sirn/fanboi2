@@ -7,7 +7,7 @@ setup(
     description="Board engine behind fanboi.ch",
     long_description="",
     long_description_content_type="text/x-rst",
-    url="https://github.com/forloopend/fanboi2",
+    url="https://git.sr.ht/~sirn/fanboi2",
     author="Kridsada Thanabulpong",
     author_email="sirn@ogsite.net",
     license="BSD-3-Clause",
