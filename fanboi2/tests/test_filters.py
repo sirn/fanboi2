@@ -234,18 +234,32 @@ class TestGetIPIntelProxyDetector(unittest.TestCase):
         self.assertIsNone(getipintel.check("8.8.8.8"))
 
     def test_evaluate(self):
+        getipintel = self._make_one({"email": "foo@example.com", "threshold": "0.8"})
+        self.assertEqual(getipintel.evaluate(b"0.8001"), True)
+
+    def test_evaluate_default(self):
         getipintel = self._make_one({"email": "foo@example.com"})
         self.assertEqual(getipintel.evaluate(b"0.9901"), True)
 
     def test_evaluate_negative(self):
-        getipintel = self._make_one({"email": "foo@example.com"})
-        self.assertEqual(getipintel.evaluate(b"0.99"), False)
-        self.assertEqual(getipintel.evaluate(b"0.98"), False)
+        getipintel = self._make_one({"email": "foo@example.com", "threshold": "0.8"})
+        self.assertEqual(getipintel.evaluate(b"0.79"), False)
+        self.assertEqual(getipintel.evaluate(b"0.799"), False)
         self.assertEqual(getipintel.evaluate(b"0"), False)
 
     def test_evaluate_unknown(self):
-        getipintel = self._make_one({"email": "foo@example.com"})
+        getipintel = self._make_one({"email": "foo@example.com", "threshold": "0.8"})
         self.assertEqual(getipintel.evaluate(b"-1"), False)
+
+    def test_evaluate_threshold_invalid(self):
+        getipintel = self._make_one({"email": "foo@example.com", "threshold": "foo"})
+        self.assertEqual(getipintel.evaluate(b"0.9901"), True)
+        self.assertEqual(getipintel.evaluate(b"0.99"), False)
+
+    def test_evaluate_threshold_nan(self):
+        getipintel = self._make_one({"email": "foo@example.com", "threshold": "nan"})
+        self.assertEqual(getipintel.evaluate(b"0.9901"), True)
+        self.assertEqual(getipintel.evaluate(b"0.99"), False)
 
 
 class TestBlackBoxProxyDetector(unittest.TestCase):

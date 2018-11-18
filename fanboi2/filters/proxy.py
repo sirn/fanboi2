@@ -1,3 +1,4 @@
+import math
 import requests
 
 from ..version import __VERSION__
@@ -49,6 +50,7 @@ class GetIPIntelProxyDetector(object):
         self.url = kwargs.get("url")
         self.flags = kwargs.get("flags")
         self.email = kwargs.get("email")
+        self.threshold = kwargs.get("threshold")
         if not self.url:
             self.url = "http://check.getipintel.net/check.php"
         if not self.email:
@@ -79,11 +81,17 @@ class GetIPIntelProxyDetector(object):
     def evaluate(self, result):
         """Evaluate result returned from the evaluation request. Return
         :type:`True` if evaluation result is likely to be a proxy, with
-        probability higher than ``0.99`` (for example, ``0.994120``).
+        probability higher than a given threshold (default ``0.99``).
 
         :param result: A result from evaluation request.
         """
-        if float(result) > 0.99:
+        try:
+            threshold = float(self.threshold)
+        except (ValueError, TypeError):
+            threshold = None
+        if not threshold or math.isnan(threshold):
+            threshold = 0.99
+        if float(result) > float(threshold):
             return True
         return False
 
@@ -121,9 +129,10 @@ class ProxyDetector(object):
         for provider, settings in self.settings.items():
             if settings["enabled"]:
                 detector = DETECTOR_PROVIDERS[provider](**settings)
+                ip_address = payload["ip_address"]
                 result = self.cache_region.get_or_create(
-                    self._get_cache_key(provider, payload["ip_address"]),
-                    lambda: detector.check(payload["ip_address"]),
+                    self._get_cache_key(provider, ip_address),
+                    lambda: detector.check(ip_address),
                     should_cache_fn=lambda v: v is not None,
                     expiration_time=21600,
                 )
