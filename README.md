@@ -1,7 +1,6 @@
 # Fanboi2
 
-[![python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://docs.python.org/3/whatsnew/3.6.html)
-[![builds.sr.ht status](https://builds.sr.ht/~sirn/fanboi2/freebsd.yml.svg)](https://builds.sr.ht/~sirn/fanboi2/freebsd.yml?)
+[![python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://docs.python.org/3/whatsnew/3.6.html) [![builds.sr.ht status](https://builds.sr.ht/~sirn/fanboi2/freebsd.yml.svg)](https://builds.sr.ht/~sirn/fanboi2/freebsd.yml?)
 
 Board engine behind [Fanboi Channel](https://fanboi.ch/) written in Python.
 
@@ -39,16 +38,14 @@ And you're done! Please visit <http://localhost:6543/admin/> to perform initial 
 
 Fanboi2 uses environment variable to configure the application. In case `make` is used, you can create a file named `.env` in the root directory of the project and our make configuration will happily use it up on `make serve` or `make devserve`. Otherwise you may want to use something like [Direnv](https://github.com/direnv/direnv).
 
-| Key                 | Description                                                            |
-| ------------------- | ---------------------------------------------------------------------- |
-| `AUTH_SECRET`       | **Required**. Secret for authentication/authorization cookie.          |
-| `CELERY_BROKER_URL` | **Required**. Redis URL for Celery broker, e.g. redis://127.0.0.1/1    |
-| `DATABASE_URL`      | **Required**. Database URL, e.g. postgres://127.0.0.1/fanboi2          |
-| `REDIS_URL`         | **Required**. Redis URL, e.g. redis://127.0.0.1/0                      |
-| `SESSION_SECRET`    | **Required**. Secret for session cookie. Must not reuse `AUTH_SECRET`. |
-| `GEOIP_PATH`        | Path to GeoIP database, e.g. /usr/share/geoip/GeoLite2-Country.mmdb    |
-| `SERVER_DEV`        | Boolean flag whether to enable dev console, default False              |
-| `SERVER_SECURE`     | Boolean flag whether to only authenticate via HTTPS, default False.    |
+-   `AUTH_SECRET` -- **Required**. Secret for authentication/authorization cookie.
+-   `CELERY_BROKER_URL` -- **Required**. Redis URL for Celery broker, e.g. redis://127.0.0.1/1
+-   `DATABASE_URL` -- **Required**. Database URL, e.g. postgres://127.0.0.1/fanboi2
+-   `REDIS_URL` -- **Required**. Redis URL, e.g. redis://127.0.0.1/0
+-   `SESSION_SECRET` -- **Required**. Secret for session cookie. Must not reuse `AUTH_SECRET`.
+-   `GEOIP_PATH` -- Path to GeoIP database, e.g. /usr/share/geoip/GeoLite2-Country.mmdb
+-   `SERVER_DEV` -- Boolean flag whether to enable dev console, default False
+-   `SERVER_SECURE` -- Boolean flag whether to only authenticate via HTTPS, default False.
 
 ## Contributing
 
@@ -109,13 +106,11 @@ Submitting patches via mailing list is recommended in case you wish to remain an
 
 Fanboi2 uses a `Makefile`-based workflow in its development and production cycle. You are encourage to use `make` rather than directly invoking underlying commands. The provided `Makefile` can be customized to certain extent using environment variable, such as:
 
-| Key                     | Description                                                        |
-| ----------------------- | ------------------------------------------------------------------ |
-| `VERBOSE=1`             | Prints the underlying command when running `make`.                 |
-| `VIRTUALENV=virtualenv` | Specifies the `virtualenv` binary (e.g. `virtualenv-3.6` for BSDs) |
-| `YARN=yarn`             | Specifies the `yarn` binary.                                       |
-| `VENVDIR=.venv`         | Specifies the virtualenv directory.                                |
-| `ENVFILE=.env`          | Specifies the file containing environment variable to load from.   |
+-   `VERBOSE=1` -- Prints the underlying command when running `make`.
+-   `VIRTUALENV=virtualenv` -- Specifies the `virtualenv` binary (e.g. `virtualenv-3.6` for BSDs)
+-   `YARN=yarn` -- Specifies the `yarn` binary.
+-   `VENVDIR=.venv` -- Specifies the virtualenv directory.
+-   `ENVFILE=.env` -- Specifies the file containing environment variable to load from.
 
 The following make targets are available for use in production:
 
