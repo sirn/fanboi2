@@ -78,7 +78,7 @@ You can then configure the application (see configuration section) and run the s
     3.  This config assumes fanboi2 was cloned to `fanboi2`; update the build and mount paths if untrue
 4.  Start the contraption with `docker-compose up` from the same directory as the config files.
 
-Images are published to [sirn/fanboi2](https://hub.docker.com/r/sirn/fanboi2/) on GitHub for every commit in master. By default, using Fanboi2 with the default `docker-compose.yml` will start server in development mode which aids debugging. To disable development server capabilities, remove or rename the file `docker-compose.override.yml`.
+Images are published to [sirn/fanboi2](https://hub.docker.com/r/sirn/fanboi2/) on Docker Hub for every commit in master. By default, using Fanboi2 with the default `docker-compose.yml` will start server in development mode which aids debugging. To disable development server capabilities, remove or rename the file `docker-compose.override.yml`.
 
 ### Submitting changes
 
