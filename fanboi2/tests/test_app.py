@@ -5,7 +5,6 @@ from pyramid import testing
 
 
 class TestRouteName(unittest.TestCase):
-
     def setUp(self):
         self.config = testing.setUp()
         self.request = testing.DummyRequest()
@@ -30,7 +29,6 @@ class TestRouteName(unittest.TestCase):
 
 
 class DummyStaticURLInfo:
-
     def __init__(self, result):
         self.result = result
 
@@ -40,7 +38,6 @@ class DummyStaticURLInfo:
 
 
 class TestTaggedStaticUrl(unittest.TestCase):
-
     def setUp(self):
         from pyramid.url import URLMethodsMixin
 
@@ -128,7 +125,6 @@ class TestTaggedStaticUrl(unittest.TestCase):
 
 
 class TestSettingsFromEnv(unittest.TestCase):
-
     def _getFunction(self):
         from .. import settings_from_env
 
@@ -160,7 +156,6 @@ class TestSettingsFromEnv(unittest.TestCase):
 
 
 class TestTmMaybeActivate(unittest.TestCase):
-
     def setUp(self):
         self.config = testing.setUp()
         self.request = testing.DummyRequest()

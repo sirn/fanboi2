@@ -4,7 +4,6 @@ from pyramid import testing
 
 
 class _DummyPageService(object):
-
     def __init__(self):
         self._counter = 0
 
@@ -14,19 +13,16 @@ class _DummyPageService(object):
 
 
 class _DummyPageInvalidService(object):
-
     def internal_body_from_slug(self, slug):
         raise ValueError
 
 
 class _DummySettingQueryService(object):
-
     def value_from_key(self, key, **kwargs):
         return {"app.time_zone": "Asia/Bangkok"}.get(key, None)
 
 
 class TestPartials(unittest.TestCase):
-
     def setUp(self):
         self.config = testing.setUp()
         self.request = testing.DummyRequest()
@@ -87,7 +83,6 @@ class TestPartials(unittest.TestCase):
 
 
 class TestFormatters(unittest.TestCase):
-
     def setUp(self):
         self.config = testing.setUp()
         self.request = testing.DummyRequest()

@@ -6,7 +6,6 @@ from . import ModelSessionMixin
 
 
 class _DummyFilterService(object):
-
     def __init__(self, rejected_by=None):
         self._rejected_by = rejected_by
 
@@ -17,19 +16,16 @@ class _DummyFilterService(object):
 
 
 class _DummyIdentityService(object):
-
     def identity_for(self, **kwargs):
         return ",".join("%s" % (v,) for k, v in sorted(kwargs.items()))
 
 
 class _DummySettingQueryService(object):
-
     def value_from_key(self, key, **kwargs):
         return {"app.time_zone": "Asia/Bangkok"}.get(key, None)
 
 
 class TestResultProxyWithModel(ModelSessionMixin, unittest.TestCase):
-
     def setUp(self):
         super(TestResultProxyWithModel, self).setUp()
         self.request = testing.setUp()
@@ -144,7 +140,6 @@ class TestResultProxyWithModel(ModelSessionMixin, unittest.TestCase):
 
 
 class TestResultProxy(unittest.TestCase):
-
     def setUp(self):
         super(TestResultProxy, self).setUp()
         self.request = testing.setUp()
@@ -248,7 +243,6 @@ class TestResultProxy(unittest.TestCase):
         from . import DummyAsyncResult
 
         class DummyDummyAsyncResult(DummyAsyncResult):
-
             def dummy(self):
                 return "dummy"
 
@@ -257,7 +251,6 @@ class TestResultProxy(unittest.TestCase):
 
 
 class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
-
     def setUp(self):
         from ..tasks import celery
 
@@ -795,7 +788,6 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
 
 
 class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
-
     def setUp(self):
         from ..tasks import celery
 

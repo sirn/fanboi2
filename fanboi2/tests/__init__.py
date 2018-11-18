@@ -26,7 +26,6 @@ def make_cache_region(store=None):
 
 
 def mock_service(request, mappings):
-
     def _find_service(iface=None, name=None):
         for l in (iface, name):
             if l in mappings:
@@ -37,7 +36,6 @@ def mock_service(request, mappings):
 
 
 class DummyRedis(object):
-
     def __init__(self):
         self._store = {}
         self._expire = {}
@@ -71,7 +69,6 @@ class DummyRedis(object):
 
 
 class DummyAsyncResult(object):
-
     def __init__(self, id_, status, result=None):
         self._id = id_
         self._status = status
@@ -96,7 +93,6 @@ class DummyAsyncResult(object):
 
 
 class ModelTransactionEngineMixin(object):
-
     def setUp(self):
         super(ModelTransactionEngineMixin, self).setUp()
         self.connection = engine.connect()
@@ -109,7 +105,6 @@ class ModelTransactionEngineMixin(object):
 
 
 class ModelSessionMixin(ModelTransactionEngineMixin, object):
-
     def setUp(self):
         super(ModelSessionMixin, self).setUp()
         from sqlalchemy import event

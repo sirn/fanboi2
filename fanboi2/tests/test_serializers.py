@@ -7,7 +7,6 @@ from . import ModelSessionMixin
 
 
 class _DummyQuery(object):
-
     def __init__(self, obj):
         self._obj = obj
 
@@ -21,13 +20,11 @@ class _DummyQuery(object):
 
 
 class _DummySettingQueryService(object):
-
     def value_from_key(self, key, **kwargs):
         return {"app.time_zone": "Asia/Bangkok"}.get(key, None)
 
 
 class _RendererMixin(object):
-
     def setUp(self):
         super(_RendererMixin, self).setUp()
         self.config = testing.setUp()
@@ -49,7 +46,6 @@ class _RendererMixin(object):
 
 
 class TestJSONRenderer(_RendererMixin, unittest.TestCase):
-
     def test_datetime(self):
         from datetime import datetime, timezone
         from . import mock_service
@@ -121,7 +117,6 @@ class TestJSONRenderer(_RendererMixin, unittest.TestCase):
 
 
 class TestJSONRendererWithModel(_RendererMixin, ModelSessionMixin, unittest.TestCase):
-
     def setUp(self):
         super(TestJSONRendererWithModel, self).setUp()
         from . import mock_service

@@ -4,7 +4,6 @@ from pyramid import testing
 
 
 class _DummyUserLoginService(object):
-
     def __init__(self, groups):
         self.groups = groups
         self._groups_token = None
@@ -24,7 +23,6 @@ class _DummyUserLoginService(object):
 
 
 class TestGroupFinder(unittest.TestCase):
-
     def setUp(self):
         self.config = testing.setUp()
         self.request = testing.DummyRequest()

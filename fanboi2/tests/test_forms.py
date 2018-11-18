@@ -3,7 +3,6 @@ from pyramid import testing
 
 
 class _FormMixin(object):
-
     def setUp(self):
         super(_FormMixin, self).setUp()
         self.config = testing.setUp()
@@ -29,7 +28,6 @@ class _FormMixin(object):
 
 
 class _DummyTranslations(object):
-
     def gettext(self, string):
         return string
 
@@ -59,7 +57,6 @@ class _DummyField(object):
 
 
 class TestFormValidators(unittest.TestCase):
-
     def _grab_error(self, callable, form, field):
         from ..forms import ValidationError
 
@@ -104,7 +101,6 @@ class TestFormValidators(unittest.TestCase):
 
 
 class TestTopicForm(_FormMixin, unittest.TestCase):
-
     def _get_target_class(self):
         from ..forms import TopicForm
 
@@ -154,7 +150,6 @@ class TestTopicForm(_FormMixin, unittest.TestCase):
 
 
 class TestPostForm(_FormMixin, unittest.TestCase):
-
     def _get_target_class(self):
         from ..forms import PostForm
 
@@ -185,7 +180,6 @@ class TestPostForm(_FormMixin, unittest.TestCase):
 
 
 class TestAdminLoginForm(_FormMixin, unittest.TestCase):
-
     def _get_target_class(self):
         from ..forms import AdminLoginForm
 
@@ -207,7 +201,6 @@ class TestAdminLoginForm(_FormMixin, unittest.TestCase):
 
 
 class TestAdminSetupForm(_FormMixin, unittest.TestCase):
-
     def _get_target_class(self):
         from ..forms import AdminSetupForm
 
@@ -350,7 +343,6 @@ class TestAdminSetupForm(_FormMixin, unittest.TestCase):
 
 
 class TestAdminSettingForm(_FormMixin, unittest.TestCase):
-
     def _get_target_class(self):
         from ..forms import AdminSettingForm
 
@@ -372,7 +364,6 @@ class TestAdminSettingForm(_FormMixin, unittest.TestCase):
 
 
 class TestAdminBanForm(_FormMixin, unittest.TestCase):
-
     def _get_target_class(self):
         from ..forms import AdminBanForm
 
@@ -394,14 +385,13 @@ class TestAdminBanForm(_FormMixin, unittest.TestCase):
 
 
 class TestAdminBanwordForm(_FormMixin, unittest.TestCase):
-
     def _get_target_class(self):
         from ..forms import AdminBanwordForm
 
         return AdminBanwordForm
 
     def test_validated(self):
-        form = self._make_one({"expr": "https:\/\/bit\.ly"})
+        form = self._make_one({"expr": "https:\\/\\/bit\\.ly"})
         self.assertTrue(form.validate())
 
     def test_expr_missing(self):
@@ -416,7 +406,6 @@ class TestAdminBanwordForm(_FormMixin, unittest.TestCase):
 
 
 class TestAdminBoardForm(_FormMixin, unittest.TestCase):
-
     def _get_target_class(self):
         from ..forms import AdminBoardForm
 
@@ -522,7 +511,6 @@ class TestAdminBoardForm(_FormMixin, unittest.TestCase):
 
 
 class TestAdminBoardNewForm(_FormMixin, unittest.TestCase):
-
     def _get_target_class(self):
         from ..forms import AdminBoardNewForm
 
@@ -648,7 +636,6 @@ class TestAdminBoardNewForm(_FormMixin, unittest.TestCase):
 
 
 class TestAdminPageForm(_FormMixin, unittest.TestCase):
-
     def _get_target_class(self):
         from ..forms import AdminPageForm
 
@@ -665,7 +652,6 @@ class TestAdminPageForm(_FormMixin, unittest.TestCase):
 
 
 class TestAdminPublicPageForm(_FormMixin, unittest.TestCase):
-
     def _get_target_class(self):
         from ..forms import AdminPublicPageForm
 
@@ -687,7 +673,6 @@ class TestAdminPublicPageForm(_FormMixin, unittest.TestCase):
 
 
 class TestAdminPublicPageNewForm(_FormMixin, unittest.TestCase):
-
     def _get_target_class(self):
         from ..forms import AdminPublicPageNewForm
 
@@ -714,7 +699,6 @@ class TestAdminPublicPageNewForm(_FormMixin, unittest.TestCase):
 
 
 class TestAdminTopicForm(_FormMixin, unittest.TestCase):
-
     def _get_target_class(self):
         from ..forms import AdminTopicForm
 

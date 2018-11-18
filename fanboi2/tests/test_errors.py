@@ -4,7 +4,6 @@ from pyramid import testing
 
 
 class TestDeserializeError(unittest.TestCase):
-
     def setUp(self):
         self.config = testing.setUp()
         self.request = testing.DummyRequest()

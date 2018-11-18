@@ -2,7 +2,6 @@ import unittest
 
 
 class TestCache(unittest.TestCase):
-
     def test_key_mangler(self):
         from ..cache import key_mangler
 

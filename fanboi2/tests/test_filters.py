@@ -4,7 +4,6 @@ import unittest.mock
 
 
 class TestAkismet(unittest.TestCase):
-
     def _make_one(self, key="hogehoge"):
         from ..filters.akismet import Akismet
 
@@ -112,7 +111,6 @@ class TestAkismet(unittest.TestCase):
 
 
 class TestDNSBL(unittest.TestCase):
-
     def _make_one(self, providers=("xbl.spamhaus.org",)):
         from ..filters.dnsbl import DNSBL
 
@@ -160,7 +158,6 @@ class TestDNSBL(unittest.TestCase):
 
 
 class TestGetIPIntelProxyDetector(unittest.TestCase):
-
     def _make_one(self, settings):
         from ..filters.proxy import GetIPIntelProxyDetector
 
@@ -252,7 +249,6 @@ class TestGetIPIntelProxyDetector(unittest.TestCase):
 
 
 class TestBlackBoxProxyDetector(unittest.TestCase):
-
     def _make_one(self, settings):
         from ..filters.proxy import BlackBoxProxyDetector
 
@@ -318,7 +314,6 @@ class TestBlackBoxProxyDetector(unittest.TestCase):
 
 
 class TestProxyDetector(unittest.TestCase):
-
     def _get_target_class(self):
         from ..filters.proxy import ProxyDetector
 
