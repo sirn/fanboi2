@@ -4,25 +4,10 @@ import unittest.mock
 from pyramid import testing
 from webob.multidict import MultiDict
 
-from . import ModelSessionMixin
+from . import IntegrationMixin
 
 
-class TestIntegrationBoard(ModelSessionMixin, unittest.TestCase):
-    def setUp(self):
-        super(TestIntegrationBoard, self).setUp()
-        self.config = testing.setUp()
-        self.request = testing.DummyRequest()
-        self.request.registry = self.config.registry
-        self.request.user_agent = "Mock/1.0"
-        self.request.client_addr = "127.0.0.1"
-        self.request.referrer = "https://www.example.com/referer"
-        self.request.url = "https://www.example.com/url"
-        self.request.application_url = "https://www.example.com"
-
-    def tearDown(self):
-        super(TestIntegrationBoard, self).tearDown()
-        testing.tearDown()
-
+class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
     def test_root(self):
         from ..interfaces import IBoardQueryService
         from ..models import Board

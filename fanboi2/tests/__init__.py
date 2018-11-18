@@ -2,6 +2,7 @@ import os
 
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
+from pyramid import testing
 
 from ..models import make_history_event
 
@@ -128,3 +129,20 @@ class ModelSessionMixin(ModelTransactionEngineMixin, object):
     def _make(self, model_obj):
         self.dbsession.add(model_obj)
         return model_obj
+
+
+class IntegrationMixin(ModelSessionMixin, object):
+    def setUp(self):
+        super(IntegrationMixin, self).setUp()
+        self.config = testing.setUp()
+        self.request = testing.DummyRequest()
+        self.request.registry = self.config.registry
+        self.request.user_agent = "Mock/1.0"
+        self.request.client_addr = "127.0.0.1"
+        self.request.referrer = "https://www.example.com/referer"
+        self.request.url = "https://www.example.com/url"
+        self.request.application_url = "https://www.example.com"
+
+    def tearDown(self):
+        super(IntegrationMixin, self).tearDown()
+        testing.tearDown()
