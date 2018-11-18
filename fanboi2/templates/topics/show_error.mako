@@ -61,6 +61,6 @@
                 % endif
             </div>
         % endif
-    % end
+    % endif
     </div>
 </div>
