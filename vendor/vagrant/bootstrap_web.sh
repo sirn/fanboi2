@@ -1,4 +1,5 @@
 #!/bin/sh
+set -xe
 
 sysrc hostname=vagrant
 hostname vagrant
@@ -86,6 +87,5 @@ SESSION_SECRET=\$(openssl rand -hex 32)
 AUTH_SECRET=\$(openssl rand -hex 32)
 EOENV
 
-VIRTUALENV=virtualenv-3.6 make -j2 assets dev
-make assets
+VIRTUALENV=virtualenv-3.6 make -j$(sysctl -n hw.ncpu) assets dev
 EOF

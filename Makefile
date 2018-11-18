@@ -16,8 +16,8 @@ PIP          = $(VENVDIR)/bin/pip3
 PRECOMMIT    = $(VENVDIR)/bin/pre-commit
 PYTHON       = $(VENVDIR)/bin/python3
 
-BUILDENV     = env LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS)"
-RUNENV       = env $$(test -f $(ENVFILE) && cat $(ENVFILE))
+BUILDENV     = env LANG=en_US.UTF-8 LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS)"
+RUNENV       = env LANG=en_US.UTF-8 $$(test -f $(ENVFILE) && cat $(ENVFILE))
 
 ASSETS_SRCS != find assets/ -type f
 
