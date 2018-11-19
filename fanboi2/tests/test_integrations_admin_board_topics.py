@@ -97,6 +97,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             board_topics_get(request)
 
     def test_board_topic_new_get(self):
+        from datetime import datetime
         from ..forms import TopicForm
         from ..models import Board, User, UserSession
         from ..interfaces import IBoardQueryService, IUserLoginService
@@ -114,7 +115,14 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 name="Foo",
             )
         )
-        self._make(UserSession(user=user, token="foo_token", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         request = mock_service(
             self.request,
@@ -133,6 +141,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
         self.assertIsInstance(response["form"], TopicForm)
 
     def test_board_topic_new_get_not_found(self):
+        from datetime import datetime
         from sqlalchemy.orm.exc import NoResultFound
         from ..interfaces import IBoardQueryService, IUserLoginService
         from ..models import User, UserSession
@@ -149,7 +158,14 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 name="Foo",
             )
         )
-        self._make(UserSession(user=user, token="foo_token", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         request = mock_service(
             self.request,
@@ -166,6 +182,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             board_topic_new_get(request)
 
     def test_board_topic_new_post(self):
+        from datetime import datetime
         from ..models import Board, Topic, User, UserSession
         from ..interfaces import (
             IBoardQueryService,
@@ -193,7 +210,14 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 name="Foo",
             )
         )
-        self._make(UserSession(user=user, token="foo_token", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         redis_conn = DummyRedis()
         cache_region = make_cache_region()
@@ -234,6 +258,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
         self.assertTrue(topic.posts[0].bumped)
 
     def test_board_topic_new_post_not_found(self):
+        from datetime import datetime
         from sqlalchemy.orm.exc import NoResultFound
         from ..models import Topic, User, UserSession
         from ..interfaces import IBoardQueryService, IUserLoginService
@@ -250,7 +275,14 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 name="Foo",
             )
         )
-        self._make(UserSession(user=user, token="foo_token", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         request = mock_service(
             self.request,
@@ -287,6 +319,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             board_topic_new_post(self.request)
 
     def test_board_topic_new_post_invalid_title(self):
+        from datetime import datetime
         from ..forms import TopicForm
         from ..interfaces import IBoardQueryService, IUserLoginService
         from ..models import Board, Topic, User, UserSession
@@ -304,7 +337,14 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 name="Foo",
             )
         )
-        self._make(UserSession(user=user, token="foo_token", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         request = mock_service(
             self.request,
@@ -334,6 +374,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
         self.assertEqual(self.dbsession.query(Topic).count(), 0)
 
     def test_board_topic_new_post_invalid_body(self):
+        from datetime import datetime
         from ..forms import TopicForm
         from ..interfaces import IBoardQueryService, IUserLoginService
         from ..models import Board, Topic, User, UserSession
@@ -351,7 +392,14 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 name="Foo",
             )
         )
-        self._make(UserSession(user=user, token="foo_token", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         request = mock_service(
             self.request,
@@ -381,6 +429,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
         self.assertEqual(self.dbsession.query(Topic).count(), 0)
 
     def test_board_topic_get(self):
+        from datetime import datetime
         from ..forms import PostForm
         from ..interfaces import (
             IBoardQueryService,
@@ -410,7 +459,14 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 name="Foo",
             )
         )
-        self._make(UserSession(user=user, token="foo_token", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         post1 = self._make(
             Post(
                 topic=topic1,
@@ -460,6 +516,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
         self.assertIsInstance(response["form"], PostForm)
 
     def test_board_topic_get_query(self):
+        from datetime import datetime
         from pyramid.httpexceptions import HTTPNotFound
         from ..interfaces import (
             IBoardQueryService,
@@ -486,7 +543,14 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 name="Foo",
             )
         )
-        self._make(UserSession(user=user, token="foo_token", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         board = self._make(Board(title="Foobar", slug="foobar"))
         topic1 = self._make(Topic(board=board, title="Demo"))
         topic2 = self._make(Topic(board=board, title="Demo 2"))
@@ -660,6 +724,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             board_topic_get(request)
 
     def test_board_topic_post(self):
+        from datetime import datetime
         from ..interfaces import (
             IBoardQueryService,
             ITopicQueryService,
@@ -691,7 +756,14 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 name="Foo",
             )
         )
-        self._make(UserSession(user=user, token="foo_token", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         redis_conn = DummyRedis()
         cache_region = make_cache_region()
@@ -833,6 +905,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             board_topic_post(request)
 
     def test_board_topic_post_invalid_body(self):
+        from datetime import datetime
         from ..forms import PostForm
         from ..interfaces import (
             IBoardQueryService,
@@ -855,7 +928,14 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 name="Foo",
             )
         )
-        self._make(UserSession(user=user, token="foo_token", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         request = mock_service(
             self.request,

@@ -124,6 +124,7 @@ class UserLoginService(object):
                     and_(
                         UserSession.token == token,
                         UserSession.ip_address == ip_address,
+                        UserSession.last_seen_at != None,  # noqa: E711
                         or_(
                             UserSession.revoked_at == None,  # noqa: E711
                             UserSession.revoked_at >= func.now(),
@@ -219,7 +220,10 @@ class UserLoginService(object):
         )
 
         user_session = UserSession(
-            user=user, ip_address=ip_address, token=self._generate_token()
+            user=user,
+            ip_address=ip_address,
+            token=self._generate_token(),
+            last_seen_at=datetime.datetime.now(),
         )
 
         self.dbsession.add(user_session)
@@ -256,7 +260,12 @@ class UserSessionQueryService(object):
         """
         return list(
             self.dbsession.query(UserSession)
-            .filter_by(user_id=user_id)
+            .filter(
+                and_(
+                    UserSession.user_id == user_id,
+                    UserSession.last_seen_at != None,  # noqa: E711
+                )
+            )
             .order_by(desc(UserSession.last_seen_at))
             .limit(5)
             .all()

@@ -6,6 +6,7 @@ from . import IntegrationMixin
 
 class TestIntegrationAdminLogout(IntegrationMixin, unittest.TestCase):
     def test_logout_get(self):
+        from datetime import datetime
         from ..interfaces import IUserLoginService
         from ..models import User, UserSession
         from ..services import UserLoginService
@@ -22,7 +23,12 @@ class TestIntegrationAdminLogout(IntegrationMixin, unittest.TestCase):
             )
         )
         user_session = self._make(
-            UserSession(user=user, token="foo_token1", ip_address="127.0.0.1")
+            UserSession(
+                user=user,
+                token="foo_token1",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
         )
         self.dbsession.commit()
         request = mock_service(

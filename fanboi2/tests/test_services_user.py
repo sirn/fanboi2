@@ -145,6 +145,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(password_new, user.encrypted_password)
 
     def test_user_from_token(self):
+        from datetime import datetime
         from ..models import User, UserSession
 
         user1 = self._make(
@@ -163,9 +164,30 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 name="Nameless Bar",
             )
         )
-        self._make(UserSession(user=user1, token="foo_token1", ip_address="127.0.0.1"))
-        self._make(UserSession(user=user1, token="foo_token2", ip_address="127.0.0.1"))
-        self._make(UserSession(user=user2, token="bar_token1", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user1,
+                token="foo_token1",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
+        self._make(
+            UserSession(
+                user=user1,
+                token="foo_token2",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
+        self._make(
+            UserSession(
+                user=user2,
+                token="bar_token1",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertEqual(
@@ -182,7 +204,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertIsNone(user_login_svc.user_from_token("notexists", "127.0.0.1"))
 
-    def test_user_from_token_deactivated(self):
+    def test_user_from_token_never_seen(self):
         from ..models import User, UserSession
 
         user = self._make(
@@ -194,12 +216,42 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 deactivated=True,
             )
         )
-        self._make(UserSession(user=user, token="foo_token1", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user, token="foo_token1", ip_address="127.0.0.1", last_seen_at=None
+            )
+        )
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(user_login_svc.user_from_token("foo_token", "127.0.0.1"))
+
+    def test_user_from_token_deactivated(self):
+        from datetime import datetime
+        from ..models import User, UserSession
+
+        user = self._make(
+            User(
+                username="foo",
+                encrypted_password="none",
+                ident="foo",
+                name="Nameless User",
+                deactivated=True,
+            )
+        )
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token1",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertIsNone(user_login_svc.user_from_token("foo_token", "127.0.0.1"))
 
     def test_user_from_token_wrong_ip(self):
+        from datetime import datetime
         from ..models import User, UserSession
 
         user = self._make(
@@ -210,7 +262,14 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 name="Nameless User",
             )
         )
-        self._make(UserSession(user=user, token="foo_token1", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token1",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertIsNone(user_login_svc.user_from_token("foo_token", "127.0.0.2"))
@@ -232,6 +291,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 user=user,
                 token="foo_token1",
                 ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
                 revoked_at=datetime.now() + timedelta(hours=1),
             )
         )
@@ -240,6 +300,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 user=user,
                 token="foo_token2",
                 ip_address="127.0.0.1",
+                last_seen_at=datetime.now() - timedelta(hours=1, minutes=15),
                 revoked_at=datetime.now() - timedelta(hours=1),
             )
         )
@@ -251,6 +312,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         self.assertIsNone(user_login_svc.user_from_token("foo_token2", "127.0.0.1"))
 
     def test_groups_from_token(self):
+        from datetime import datetime
         from ..models import User, UserSession, Group
 
         group1 = self._make(Group(name="foo"))
@@ -282,9 +344,30 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 groups=[],
             )
         )
-        self._make(UserSession(user=user1, token="foo_token", ip_address="127.0.0.1"))
-        self._make(UserSession(user=user2, token="bar_token", ip_address="127.0.0.1"))
-        self._make(UserSession(user=user3, token="baz_token", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user1,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
+        self._make(
+            UserSession(
+                user=user2,
+                token="bar_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
+        self._make(
+            UserSession(
+                user=user3,
+                token="baz_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertEqual(
@@ -319,12 +402,33 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 user=user,
                 token="foo_token",
                 ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
                 revoked_at=datetime.now() + timedelta(hours=1),
             )
         )
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertIsNone(user_login_svc.groups_from_token("foo_token", "127.0.0.2"))
+
+    def test_groups_from_token_never_seen(self):
+        from ..models import User, UserSession, Group
+
+        group1 = self._make(Group(name="foo"))
+        group2 = self._make(Group(name="bar"))
+        user = self._make(
+            User(
+                username="foo",
+                encrypted_password="none",
+                ident="foo",
+                name="Nameless User",
+                groups=[group1, group2],
+                deactivated=True,
+            )
+        )
+        self._make(UserSession(user=user, token="foo_token", ip_address="127.0.0.1"))
+        self.dbsession.commit()
+        user_login_svc = self._get_target_class()(self.dbsession)
+        self.assertIsNone(user_login_svc.groups_from_token("foo_token", "127.0.0.1"))
 
     def test_groups_from_token_deactivated(self):
         from datetime import datetime, timedelta
@@ -347,6 +451,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 user=user,
                 token="foo_token",
                 ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
                 revoked_at=datetime.now() + timedelta(hours=1),
             )
         )
@@ -383,6 +488,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 user=user1,
                 token="foo_token",
                 ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
                 revoked_at=datetime.now() + timedelta(hours=1),
             )
         )
@@ -391,6 +497,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 user=user2,
                 token="bar_token",
                 ip_address="127.0.0.1",
+                last_seen_at=datetime.now() - timedelta(hours=1, minutes=15),
                 revoked_at=datetime.now() - timedelta(hours=1),
             )
         )
@@ -402,6 +509,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         self.assertIsNone(user_login_svc.groups_from_token("bar_token", "127.0.0.1"))
 
     def test_revoke_token(self):
+        from datetime import datetime
         from ..models import User, UserSession
 
         user = self._make(
@@ -413,7 +521,12 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
             )
         )
         user_session = self._make(
-            UserSession(user=user, token="foo_token", ip_address="127.0.0.1")
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
         )
         self.dbsession.commit()
         self.assertIsNone(user_session.revoked_at)
@@ -426,6 +539,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         self.assertIsNone(user_login_svc.revoke_token("notexists", "127.0.0.1"))
 
     def test_revoke_token_wrong_ip(self):
+        from datetime import datetime
         from ..models import User, UserSession
 
         user = self._make(
@@ -436,7 +550,14 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 name="Nameless User",
             )
         )
-        self._make(UserSession(user=user, token="foo_token", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertIsNone(user_login_svc.revoke_token("notexists", "127.0.0.2"))
@@ -458,6 +579,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 user=user,
                 token="foo_token",
                 ip_address="127.0.0.1",
+                last_seen_at=datetime.now() - timedelta(hours=1, minutes=15),
                 revoked_at=datetime.now() - timedelta(hours=1),
             )
         )
@@ -466,8 +588,10 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         self.assertIsNone(user_login_svc.revoke_token("foo_token", "127.0.0.1"))
 
     def test_mark_seen(self):
+        from datetime import datetime, timedelta
         from ..models import User, UserSession
 
+        anchor = datetime.now() - timedelta(minutes=15)
         user = self._make(
             User(
                 username="foo",
@@ -477,14 +601,19 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
             )
         )
         user_session = self._make(
-            UserSession(user=user, token="foo_token", ip_address="127.0.0.1")
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=anchor,
+            )
         )
         self.dbsession.commit()
-        self.assertIsNone(user_session.last_seen_at)
+        self.assertIsNotNone(user_session.last_seen_at)
         self.assertIsNone(user_session.revoked_at)
         user_login_svc = self._get_target_class()(self.dbsession)
         user_login_svc.mark_seen("foo_token", "127.0.0.1", 3600)
-        self.assertIsNotNone(user_session.last_seen_at)
+        self.assertGreater(user_session.last_seen_at, anchor)
         self.assertIsNotNone(user_session.revoked_at)
 
     def test_mark_seen_not_found(self):
@@ -492,6 +621,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
         self.assertIsNone(user_login_svc.mark_seen("notexists", "127.0.0.1", 3600))
 
     def test_mark_seen_wrong_ip(self):
+        from datetime import datetime
         from ..models import User, UserSession
 
         user = self._make(
@@ -502,12 +632,20 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 name="Nameless User",
             )
         )
-        self._make(UserSession(user=user, token="foo_token", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertIsNone(user_login_svc.mark_seen("foo_token", "127.0.0.2", 3600))
 
     def test_mark_seen_deactivated(self):
+        from datetime import datetime
         from ..models import User, UserSession
 
         user = self._make(
@@ -519,7 +657,14 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 deactivated=True,
             )
         )
-        self._make(UserSession(user=user, token="foo_token", ip_address="127.0.0.1"))
+        self._make(
+            UserSession(
+                user=user,
+                token="foo_token",
+                ip_address="127.0.0.1",
+                last_seen_at=datetime.now(),
+            )
+        )
         self.dbsession.commit()
         user_login_svc = self._get_target_class()(self.dbsession)
         self.assertIsNone(user_login_svc.mark_seen("foo_token", "127.0.0.1", 3600))
@@ -541,6 +686,7 @@ class TestUserLoginService(ModelSessionMixin, unittest.TestCase):
                 user=user,
                 token="foo_token",
                 ip_address="127.0.0.1",
+                last_seen_at=datetime.now() - timedelta(hours=1, minutes=15),
                 revoked_at=datetime.now() - timedelta(hours=1),
             )
         )
