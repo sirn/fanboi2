@@ -1,5 +1,7 @@
 # 2018.11
 
+-   **Add**: GetIPIntel threshold is now configurable.
+-   **Fix**: Dashboard no longer error if session was never seen.
 -   **Change**: Memcached cache backend has been replaced with Redis cache backend.
 -   **Change**: Banning rules is now part of base rules system.
 
