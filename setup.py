@@ -11,7 +11,7 @@ else:
 
 setup(
     name="fanboi2",
-    version="2018.11",
+    version="2018.12",
     description="Board engine behind fanboi.ch",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
