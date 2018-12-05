@@ -12,7 +12,12 @@ class TestIdentityService(unittest.TestCase):
         from . import DummyRedis
 
         redis_conn = DummyRedis()
-        identity_svc = self._get_target_class()(redis_conn, 10)
+
+        class _DummySettingQueryService(object):
+            def value_from_key(self, key, **kwargs):
+                return {"app.ident_size": 10}.get(key, None)
+
+        identity_svc = self._get_target_class()(redis_conn, _DummySettingQueryService())
         self.assertEqual(identity_svc.redis_conn, redis_conn)
         self.assertEqual(identity_svc.ident_size, 10)
 
@@ -20,7 +25,12 @@ class TestIdentityService(unittest.TestCase):
         from . import DummyRedis
 
         redis_conn = DummyRedis()
-        identity_svc = self._get_target_class()(redis_conn, 10)
+
+        class _DummySettingQueryService(object):
+            def value_from_key(self, key, **kwargs):
+                return {"app.ident_size": 10}.get(key, None)
+
+        identity_svc = self._get_target_class()(redis_conn, _DummySettingQueryService())
         ident1 = identity_svc.identity_for(a="1", b="2")
         ident2 = identity_svc.identity_for(b="2", a="1")
         ident3 = identity_svc.identity_for(a="1", b="2", c="3")
@@ -37,6 +47,10 @@ class TestIdentityService(unittest.TestCase):
     def test_identity_for_length(self):
         from . import DummyRedis
 
+        class _DummySettingQueryService(object):
+            def value_from_key(self, key, **kwargs):
+                return {"app.ident_size": 5}.get(key, None)
+
         redis_conn = DummyRedis()
-        identity_svc = self._get_target_class()(redis_conn, 5)
+        identity_svc = self._get_target_class()(redis_conn, _DummySettingQueryService())
         self.assertEqual(len(identity_svc.identity_for(a="1", b="2")), 5)

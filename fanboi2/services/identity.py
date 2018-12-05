@@ -11,9 +11,9 @@ class IdentityService(object):
     one if not already exists.
     """
 
-    def __init__(self, redis_conn, ident_size):
+    def __init__(self, redis_conn, setting_query_svc):
         self.redis_conn = redis_conn
-        self.ident_size = ident_size
+        self.ident_size = setting_query_svc.value_from_key("app.ident_size")
 
     def _get_key(self, **kwargs):
         return "services.identity:%s" % (

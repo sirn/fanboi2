@@ -573,7 +573,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
                 ITopicCreateService: TopicCreateService(
                     self.dbsession,
-                    IdentityService(redis_conn, 10),
+                    IdentityService(
+                        redis_conn, SettingQueryService(self.dbsession, cache_region)
+                    ),
                     SettingQueryService(self.dbsession, cache_region),
                     UserQueryService(self.dbsession),
                 ),
@@ -1442,7 +1444,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
                 IPostCreateService: PostCreateService(
                     self.dbsession,
-                    IdentityService(redis_conn, 10),
+                    IdentityService(
+                        redis_conn, SettingQueryService(self.dbsession, cache_region)
+                    ),
                     SettingQueryService(self.dbsession, cache_region),
                     UserQueryService(self.dbsession),
                 ),
