@@ -110,7 +110,7 @@ devhook: dev
 
 
 devserve: dev
-	$(RUNENV) $(FBCTL) serve --reload
+	$(RUNENV) $(FBCTL) serve --reload --workers=1 --threads=4
 
 
 devassets: $(BUILDDIR)/.build-assets
@@ -162,5 +162,5 @@ $(VERBOSE).SILENT:
 
 .PHONY: all prod serve worker shell assets
 .PHONY: deploy dist distclean distpack
-.PHONY: dev devrun devserver devassets
+.PHONY: dev devrun devserve devassets
 .PHONY: test migrate clean
