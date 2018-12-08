@@ -85,6 +85,10 @@ worker: prod
 	$(RUNENV) $(FBCELERY) worker
 
 
+shell: prod
+	$(RUNENV) $(FBCTL) shell
+
+
 assets: $(BUILDDIR)/.build-assets
 
 
@@ -114,7 +118,7 @@ devassets: $(BUILDDIR)/.build-assets
 
 
 test: $(BUILDDIR)/.build-test
-	$(PYTHON) setup.py nosetests
+	$(PYTHON) setup.py nosetests $(ARGS)
 
 
 ## Deploy target
@@ -156,7 +160,7 @@ clean:
 $(VERBOSE).SILENT:
 
 
-.PHONY: all prod serve worker assets
+.PHONY: all prod serve worker shell assets
 .PHONY: deploy dist distclean distpack
 .PHONY: dev devrun devserver devassets
 .PHONY: test migrate clean
