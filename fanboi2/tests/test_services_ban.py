@@ -11,6 +11,7 @@ class TestBanCreateService(ModelSessionMixin, unittest.TestCase):
         return BanCreateService
 
     def test_create(self):
+        import pytz
         from datetime import datetime, timedelta
 
         ban_create_svc = self._get_target_class()(self.dbsession)
@@ -21,11 +22,12 @@ class TestBanCreateService(ModelSessionMixin, unittest.TestCase):
             scope="galaxy_far_away",
             active=True,
         )
+        self.dbsession.flush()
         self.assertEqual(ban.ip_address, "10.0.1.0/24")
         self.assertEqual(ban.description, "Violation of galactic law.")
         self.assertEqual(ban.scope, "galaxy_far_away")
         self.assertGreaterEqual(
-            ban.active_until, datetime.now() + timedelta(days=29, hours=23)
+            ban.active_until, datetime.now(pytz.utc) + timedelta(days=29, hours=23)
         )
         self.assertTrue(ban.active)
 
@@ -61,67 +63,48 @@ class TestBanQueryService(ModelSessionMixin, unittest.TestCase):
         return BanQueryService
 
     def test_list_active(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Ban
 
         ban1 = self._make(
-            Ban(
-                ip_address="10.0.1.0/24",
-                active_until=datetime.now() + timedelta(hours=1),
-            )
+            Ban(ip_address="10.0.1.0/24", active_until=func.now() + timedelta(hours=1))
         )
         self._make(
-            Ban(
-                ip_address="10.0.2.0/24",
-                active_until=datetime.now() - timedelta(hours=1),
-            )
+            Ban(ip_address="10.0.2.0/24", active_until=func.now() - timedelta(hours=1))
         )
         ban3 = self._make(Ban(ip_address="10.0.3.0/24"))
         self._make(Ban(ip_address="10.0.3.0/24", active=False))
         ban5 = self._make(
-            Ban(
-                ip_address="10.0.3.0/24",
-                active_until=datetime.now() + timedelta(hours=2),
-            )
+            Ban(ip_address="10.0.3.0/24", active_until=func.now() + timedelta(hours=2))
         )
         ban6 = self._make(
-            Ban(
-                ip_address="10.0.3.0/24",
-                created_at=datetime.now() + timedelta(minutes=5),
-            )
+            Ban(ip_address="10.0.3.0/24", created_at=func.now() + timedelta(minutes=5))
         )
         self.dbsession.commit()
         ban_query_svc = self._get_target_class()(self.dbsession)
         self.assertEqual(ban_query_svc.list_active(), [ban6, ban3, ban5, ban1])
 
     def test_list_inactive(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Ban
 
         self._make(
-            Ban(
-                ip_address="10.0.1.0/24",
-                active_until=datetime.now() + timedelta(hours=1),
-            )
+            Ban(ip_address="10.0.1.0/24", active_until=func.now() + timedelta(hours=1))
         )
         ban2 = self._make(
-            Ban(
-                ip_address="10.0.2.0/24",
-                active_until=datetime.now() - timedelta(hours=1),
-            )
+            Ban(ip_address="10.0.2.0/24", active_until=func.now() - timedelta(hours=1))
         )
         self._make(Ban(ip_address="10.0.3.0/24"))
         ban4 = self._make(Ban(ip_address="10.0.3.0/24", active=False))
         ban5 = self._make(
-            Ban(
-                ip_address="10.0.3.0/24",
-                active_until=datetime.now() - timedelta(hours=2),
-            )
+            Ban(ip_address="10.0.3.0/24", active_until=func.now() - timedelta(hours=2))
         )
         ban6 = self._make(
             Ban(
                 ip_address="10.0.3.0/24",
-                created_at=datetime.now() + timedelta(minutes=5),
+                created_at=func.now() + timedelta(minutes=5),
                 active=False,
             )
         )
@@ -164,14 +147,12 @@ class TestBanQueryService(ModelSessionMixin, unittest.TestCase):
         self.assertFalse(ban_query_svc.is_banned("10.0.7.1"))
 
     def test_is_banned_expired(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Ban
 
         self._make(
-            Ban(
-                ip_address="10.0.7.0/24",
-                active_until=datetime.now() - timedelta(days=1),
-            )
+            Ban(ip_address="10.0.7.0/24", active_until=func.now() - timedelta(days=1))
         )
         self.dbsession.commit()
         ban_query_svc = self._get_target_class()(self.dbsession)
@@ -243,9 +224,10 @@ class TestBanUpdateService(ModelSessionMixin, unittest.TestCase):
     def test_update_duration(self):
         import pytz
         from datetime import datetime, timedelta
+        from sqlalchemy.sql import func
         from ..models import Ban
 
-        past_now = datetime.now() - timedelta(days=30)
+        past_now = func.now() - timedelta(days=30)
         ban = self._make(
             Ban(
                 ip_address="10.0.1.0/24",
@@ -262,10 +244,11 @@ class TestBanUpdateService(ModelSessionMixin, unittest.TestCase):
         self.assertLess(ban.active_until, datetime.now(pytz.utc))
 
     def test_update_duration_no_change(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Ban
 
-        past_now = datetime.now() - timedelta(days=30)
+        past_now = func.now() - timedelta(days=30)
         ban = self._make(
             Ban(
                 ip_address="10.0.1.0/24",
@@ -291,14 +274,15 @@ class TestBanUpdateService(ModelSessionMixin, unittest.TestCase):
         self.assertIsNone(ban.description)
 
     def test_update_empty(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Ban
 
         ban = self._make(
             Ban(
                 ip_address="10.0.1.0/24",
                 description="Violation of galactic law",
-                active_until=datetime.now() + timedelta(days=7),
+                active_until=func.now() + timedelta(days=7),
                 scope="galaxy_far_away",
             )
         )
@@ -307,6 +291,7 @@ class TestBanUpdateService(ModelSessionMixin, unittest.TestCase):
         ban = ban_update_svc.update(
             ban.id, description="", duration="", scope="", active=""
         )
+        self.dbsession.flush()
         self.assertIsNone(ban.description)
         self.assertIsNone(ban.active_until)
         self.assertIsNone(ban.scope)

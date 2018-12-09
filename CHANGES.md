@@ -2,6 +2,7 @@
 
 -   **Add**: GetIPIntel threshold is now configurable.
 -   **Fix**: Dashboard no longer error if session was never seen.
+-   **Change**: Datetime operations now use PostgreSQL and Redis as time sources.
 -   **Change**: Memcached cache backend has been replaced with Redis cache backend.
 -   **Change**: Banning rules is now part of base rules system.
 -   **Change**: Use [Gunicorn](https://gunicorn.org/) as a backend to `fbserve` instead of [Waitress](https://docs.pylonsproject.org/projects/waitress/en/latest/).

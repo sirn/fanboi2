@@ -1,11 +1,13 @@
 import datetime
 
 from sqlalchemy.sql import func
-import pytz
 
 from ..errors import StatusRejectedError
 from ..models import Post, Topic
 from ..tasks import add_post
+
+
+POSTER_SEEN_DELTA = datetime.timedelta(days=3)
 
 
 class PostCreateService(object):
@@ -87,12 +89,11 @@ class PostCreateService(object):
         ident = None
         ident_type = "none"
         if board.settings["use_ident"]:
-            time_zone = self.setting_query_svc.value_from_key("app.time_zone")
-            tz = pytz.timezone(time_zone)
-            timestamp = datetime.datetime.now(tz).strftime("%Y%m%d")
             ident_type = "ident"
-            ident = self.identity_svc.identity_for(
-                board=board.slug, ip_address=ip_address, timestamp=timestamp
+            ident = self.identity_svc.identity_with_tz_for(
+                self.setting_query_svc.value_from_key("app.time_zone"),
+                board=topic.board.slug,
+                ip_address=ip_address,
             )
 
         post = Post(
@@ -193,10 +194,12 @@ class PostQueryService(object):
 
         :param ip_address: An :type:`str` IP address to lookup.
         """
-        anchor = datetime.datetime.now() - datetime.timedelta(days=3)
         q = (
             self.dbsession.query(Post)
-            .filter(Post.created_at >= anchor, Post.ip_address == ip_address)
+            .filter(
+                Post.created_at >= func.now() - POSTER_SEEN_DELTA,
+                Post.ip_address == ip_address,
+            )
             .exists()
         )
         return self.dbsession.query(q).scalar()

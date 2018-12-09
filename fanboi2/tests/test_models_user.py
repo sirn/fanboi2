@@ -5,7 +5,8 @@ from . import ModelSessionMixin
 
 class TestUserModel(ModelSessionMixin, unittest.TestCase):
     def test_relations(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import User, UserSession, Group
 
         group1 = self._make(Group(name="foo"))
@@ -53,7 +54,7 @@ class TestUserModel(ModelSessionMixin, unittest.TestCase):
                 user=user1,
                 token="test1",
                 ip_address="127.0.0.1",
-                created_at=datetime.now() - timedelta(days=1),
+                created_at=func.now() - timedelta(days=1),
             )
         )
         session2 = self._make(

@@ -1,3 +1,4 @@
+import datetime
 import os
 
 from sqlalchemy.engine import create_engine
@@ -37,9 +38,9 @@ def mock_service(request, mappings):
 
 
 class DummyRedis(object):
-    def __init__(self):
-        self._store = {}
-        self._expire = {}
+    def __init__(self, time=None):
+        self._reset()
+        self._set_time(time)
 
     def get(self, key):
         return self._store.get(key)
@@ -64,9 +65,18 @@ class DummyRedis(object):
     def ttl(self, key):
         return self._expire.get(key, 0)
 
+    def time(self):
+        ts = self._time.timestamp()
+        return (int(ts), int((ts - int(ts)) * 1000000))
+
     def _reset(self):
         self._store = {}
         self._expire = {}
+
+    def _set_time(self, time=None):
+        if not time:
+            time = datetime.datetime.now()
+        self._time = time
 
 
 class DummyAsyncResult(object):

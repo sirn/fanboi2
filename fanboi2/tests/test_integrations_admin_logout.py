@@ -6,7 +6,7 @@ from . import IntegrationMixin
 
 class TestIntegrationAdminLogout(IntegrationMixin, unittest.TestCase):
     def test_logout_get(self):
-        from datetime import datetime
+        from sqlalchemy.sql import func
         from ..interfaces import IUserLoginService
         from ..models import User, UserSession
         from ..services import UserLoginService
@@ -27,7 +27,7 @@ class TestIntegrationAdminLogout(IntegrationMixin, unittest.TestCase):
                 user=user,
                 token="foo_token1",
                 ip_address="127.0.0.1",
-                last_seen_at=datetime.now(),
+                last_seen_at=func.now(),
             )
         )
         self.dbsession.commit()

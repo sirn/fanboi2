@@ -8,7 +8,8 @@ from . import IntegrationMixin
 
 class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
     def test_bans_get(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..interfaces import IBanQueryService
         from ..models import Ban
         from ..services import BanQueryService
@@ -16,30 +17,18 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         from . import mock_service
 
         ban1 = self._make(
-            Ban(
-                ip_address="10.0.1.0/24",
-                active_until=datetime.now() + timedelta(hours=1),
-            )
+            Ban(ip_address="10.0.1.0/24", active_until=func.now() + timedelta(hours=1))
         )
         self._make(
-            Ban(
-                ip_address="10.0.2.0/24",
-                active_until=datetime.now() - timedelta(hours=1),
-            )
+            Ban(ip_address="10.0.2.0/24", active_until=func.now() - timedelta(hours=1))
         )
         ban3 = self._make(Ban(ip_address="10.0.3.0/24"))
         self._make(Ban(ip_address="10.0.3.0/24", active=False))
         ban5 = self._make(
-            Ban(
-                ip_address="10.0.3.0/24",
-                active_until=datetime.now() + timedelta(hours=2),
-            )
+            Ban(ip_address="10.0.3.0/24", active_until=func.now() + timedelta(hours=2))
         )
         ban6 = self._make(
-            Ban(
-                ip_address="10.0.3.0/24",
-                created_at=datetime.now() + timedelta(minutes=5),
-            )
+            Ban(ip_address="10.0.3.0/24", created_at=func.now() + timedelta(minutes=5))
         )
         self.dbsession.commit()
         request = mock_service(
@@ -50,7 +39,8 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         self.assertEqual(response["bans"], [ban6, ban3, ban5, ban1])
 
     def test_bans_inactive_get(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..interfaces import IBanQueryService
         from ..models import Ban
         from ..services import BanQueryService
@@ -58,29 +48,20 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         from . import mock_service
 
         self._make(
-            Ban(
-                ip_address="10.0.1.0/24",
-                active_until=datetime.now() + timedelta(hours=1),
-            )
+            Ban(ip_address="10.0.1.0/24", active_until=func.now() + timedelta(hours=1))
         )
         ban2 = self._make(
-            Ban(
-                ip_address="10.0.2.0/24",
-                active_until=datetime.now() - timedelta(hours=1),
-            )
+            Ban(ip_address="10.0.2.0/24", active_until=func.now() - timedelta(hours=1))
         )
         self._make(Ban(ip_address="10.0.3.0/24"))
         ban4 = self._make(Ban(ip_address="10.0.3.0/24", active=False))
         ban5 = self._make(
-            Ban(
-                ip_address="10.0.3.0/24",
-                active_until=datetime.now() - timedelta(hours=2),
-            )
+            Ban(ip_address="10.0.3.0/24", active_until=func.now() - timedelta(hours=2))
         )
         ban6 = self._make(
             Ban(
                 ip_address="10.0.3.0/24",
-                created_at=datetime.now() + timedelta(minutes=5),
+                created_at=func.now() + timedelta(minutes=5),
                 active=False,
             )
         )
@@ -209,14 +190,15 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
             ban_get(request)
 
     def test_ban_edit_get(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Ban
         from ..interfaces import IBanQueryService
         from ..services import BanQueryService
         from ..views.admin import ban_edit_get
         from . import mock_service
 
-        now = datetime.now()
+        now = func.now()
         ban = self._make(
             Ban(
                 ip_address="10.0.0.0/24",
@@ -351,13 +333,14 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
     def test_ban_edit_post_duration(self):
         import pytz
         from datetime import datetime, timedelta
+        from sqlalchemy.sql import func
         from ..models import Ban
         from ..interfaces import IBanQueryService, IBanUpdateService
         from ..services import BanQueryService, BanUpdateService
         from ..views.admin import ban_edit_post
         from . import mock_service
 
-        past_now = datetime.now() - timedelta(days=30)
+        past_now = func.now() - timedelta(days=30)
         ban = self._make(
             Ban(
                 ip_address="10.0.0.0/24",
@@ -392,14 +375,15 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         self.assertLess(ban.active_until, datetime.now(pytz.utc))
 
     def test_ban_edit_post_duration_no_change(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Ban
         from ..interfaces import IBanQueryService, IBanUpdateService
         from ..services import BanQueryService, BanUpdateService
         from ..views.admin import ban_edit_post
         from . import mock_service
 
-        past_now = datetime.now() - timedelta(days=30)
+        past_now = func.now() - timedelta(days=30)
         ban = self._make(
             Ban(
                 ip_address="10.0.0.0/24",

@@ -16,7 +16,7 @@ class TestPostCreateService(ModelSessionMixin, unittest.TestCase):
         from ..services import UserQueryService
 
         class _DummyIdentityService(object):
-            def identity_for(self, **kwargs):
+            def identity_with_tz_for(self, tz, **kwargs):
                 return ",".join("%s" % (v,) for k, v in sorted(kwargs.items()))
 
         class _DummySettingQueryService(object):
@@ -31,8 +31,6 @@ class TestPostCreateService(ModelSessionMixin, unittest.TestCase):
         )
 
     def test_create(self):
-        from datetime import datetime
-        from pytz import timezone
         from ..models import Board, Topic, TopicMeta
 
         board = self._make(
@@ -48,11 +46,7 @@ class TestPostCreateService(ModelSessionMixin, unittest.TestCase):
         self.assertTrue(post.bumped)
         self.assertEqual(post.name, "Nameless Foobar")
         self.assertEqual(post.ip_address, "127.0.0.1")
-        self.assertEqual(
-            post.ident,
-            "foo,127.0.0.1,%s"
-            % (datetime.now(timezone("Asia/Bangkok")).strftime("%Y%m%d"),),
-        )
+        self.assertEqual(post.ident, "foo,127.0.0.1")
         self.assertEqual(post.ident_type, "ident")
         topic_meta = self.dbsession.query(TopicMeta).get(topic.id)
         self.assertEqual(topic_meta.post_count, 1)
@@ -576,7 +570,8 @@ class TestPostQueryService(ModelSessionMixin, unittest.TestCase):
             post_query_svc.list_from_topic_id(-1)
 
     def test_was_recently_seen(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Board, Topic, TopicMeta, Post
 
         board = self._make(Board(slug="foo", title="Foo"))
@@ -589,7 +584,7 @@ class TestPostQueryService(ModelSessionMixin, unittest.TestCase):
                 name="Nameless Fanboi",
                 body="Hi",
                 ip_address="127.0.0.1",
-                created_at=datetime.now() - timedelta(days=2),
+                created_at=func.now() - timedelta(days=2),
             )
         )
         self.dbsession.commit()
@@ -597,7 +592,8 @@ class TestPostQueryService(ModelSessionMixin, unittest.TestCase):
         self.assertTrue(post_query_svc.was_recently_seen("127.0.0.1"))
 
     def test_was_recently_seen_not_recent(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Board, Topic, TopicMeta, Post
 
         board = self._make(Board(slug="foo", title="Foo"))
@@ -610,7 +606,7 @@ class TestPostQueryService(ModelSessionMixin, unittest.TestCase):
                 name="Nameless Fanboi",
                 body="Hi",
                 ip_address="127.0.0.1",
-                created_at=datetime.now() - timedelta(days=4),
+                created_at=func.now() - timedelta(days=4),
             )
         )
         self.dbsession.commit()

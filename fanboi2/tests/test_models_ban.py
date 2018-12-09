@@ -5,7 +5,8 @@ from . import ModelSessionMixin
 
 class TestBanModel(ModelSessionMixin, unittest.TestCase):
     def test_listed(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Ban
 
         ban1 = self._make(Ban(ip_address="10.0.1.0/24"))
@@ -14,10 +15,7 @@ class TestBanModel(ModelSessionMixin, unittest.TestCase):
         ban4 = self._make(Ban(ip_address="10.0.4.0/24", scope="foo:bar"))
         self._make(Ban(ip_address="10.0.5.0/24", active=False))
         self._make(
-            Ban(
-                ip_address="10.0.6.0/24",
-                active_until=datetime.now() - timedelta(days=1),
-            )
+            Ban(ip_address="10.0.6.0/24", active_until=func.now() - timedelta(days=1))
         )
         self.dbsession.commit()
 
@@ -38,14 +36,12 @@ class TestBanModel(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(None, _makeQuery("10.0.6.1"))
 
     def test_duration(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Ban
 
         ban = self._make(
-            Ban(
-                ip_address="10.0.1.0/24",
-                active_until=datetime.now() + timedelta(days=30),
-            )
+            Ban(ip_address="10.0.1.0/24", active_until=func.now() + timedelta(days=30))
         )
         self.dbsession.commit()
         self.assertEqual(ban.duration, 30)

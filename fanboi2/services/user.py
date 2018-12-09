@@ -182,7 +182,7 @@ class UserLoginService(object):
         user_session = self._user_session_c(token, ip_address)
         if user_session is None:
             return None
-        user_session.revoked_at = datetime.datetime.now()
+        user_session.revoked_at = func.now()
         self.dbsession.add(user_session)
         return user_session
 
@@ -199,9 +199,8 @@ class UserLoginService(object):
             return None
         if user_session.user.deactivated:
             return None
-        revoke_delta = datetime.timedelta(seconds=revocation)
-        user_session.last_seen_at = datetime.datetime.now()
-        user_session.revoked_at = datetime.datetime.now() + revoke_delta
+        user_session.last_seen_at = func.now()
+        user_session.revoked_at = func.now() + datetime.timedelta(seconds=revocation)
         self.dbsession.add(user_session)
         return user_session
 
@@ -223,7 +222,7 @@ class UserLoginService(object):
             user=user,
             ip_address=ip_address,
             token=self._generate_token(),
-            last_seen_at=datetime.datetime.now(),
+            last_seen_at=func.now(),
         )
 
         self.dbsession.add(user_session)

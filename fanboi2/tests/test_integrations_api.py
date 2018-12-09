@@ -95,7 +95,8 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             board_get(request)
 
     def test_board_topics_get(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..interfaces import IBoardQueryService, ITopicQueryService
         from ..models import Board, Topic, TopicMeta
         from ..services.board import BoardQueryService
@@ -103,35 +104,35 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..views.api import board_topics_get
         from . import mock_service
 
-        def _make_topic(days=0, **kwargs):
+        def _make_topic(days=0, hours=0, **kwargs):
             topic = self._make(Topic(**kwargs))
             self._make(
                 TopicMeta(
                     topic=topic,
                     post_count=0,
-                    posted_at=datetime.now(),
-                    bumped_at=datetime.now() - timedelta(days=days),
+                    posted_at=func.now(),
+                    bumped_at=func.now() - timedelta(days=days, hours=hours),
                 )
             )
             return topic
 
         board1 = self._make(Board(title="Foo", slug="foo"))
         board2 = self._make(Board(title="Bar", slug="bar"))
-        topic1 = _make_topic(0, board=board1, title="Foo")
-        topic2 = _make_topic(1, board=board1, title="Foo")
-        topic3 = _make_topic(2, board=board1, title="Foo")
-        topic4 = _make_topic(3, board=board1, title="Foo")
-        topic5 = _make_topic(4, board=board1, title="Foo")
-        topic6 = _make_topic(5, board=board1, title="Foo")
-        topic7 = _make_topic(6, board=board1, title="Foo")
-        topic8 = _make_topic(6.1, board=board1, title="Foo", status="locked")
-        topic9 = _make_topic(6.5, board=board1, title="Foo", status="archived")
-        topic10 = _make_topic(7, board=board1, title="Foo")
-        topic11 = _make_topic(8, board=board1, title="Foo")
-        topic12 = _make_topic(9, board=board1, title="Foo")
-        _make_topic(0, board=board2, title="Foo")
-        _make_topic(7, board=board1, title="Foo", status="archived")
-        _make_topic(7, board=board1, title="Foo", status="locked")
+        topic1 = _make_topic(board=board1, title="Foo")
+        topic2 = _make_topic(days=1, board=board1, title="Foo")
+        topic3 = _make_topic(days=2, board=board1, title="Foo")
+        topic4 = _make_topic(days=3, board=board1, title="Foo")
+        topic5 = _make_topic(days=4, board=board1, title="Foo")
+        topic6 = _make_topic(days=5, board=board1, title="Foo")
+        topic7 = _make_topic(days=6, board=board1, title="Foo")
+        topic8 = _make_topic(hours=1, board=board1, title="Foo", status="locked")
+        topic9 = _make_topic(hours=5, board=board1, title="Foo", status="archived")
+        topic10 = _make_topic(days=7, board=board1, title="Foo")
+        topic11 = _make_topic(days=8, board=board1, title="Foo")
+        topic12 = _make_topic(days=9, board=board1, title="Foo")
+        _make_topic(board=board2, title="Foo")
+        _make_topic(days=7, hours=1, board=board1, title="Foo", status="archived")
+        _make_topic(days=7, hours=1, board=board1, title="Foo", status="locked")
         self.dbsession.commit()
         request = mock_service(
             self.request,
@@ -146,14 +147,14 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             board_topics_get(request),
             [
                 topic1,
+                topic8,
+                topic9,
                 topic2,
                 topic3,
                 topic4,
                 topic5,
                 topic6,
                 topic7,
-                topic8,
-                topic9,
                 topic10,
                 topic11,
                 topic12,

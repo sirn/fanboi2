@@ -2,11 +2,13 @@ import datetime
 
 from sqlalchemy.orm import contains_eager, joinedload
 from sqlalchemy.sql import or_, and_, func, desc
-import pytz
 
 from ..errors import StatusRejectedError
 from ..models import Board, Topic, TopicMeta, Post
 from ..tasks import add_topic
+
+
+TOPIC_RECENT_DELTA = datetime.timedelta(days=7)
 
 
 class TopicCreateService(object):
@@ -80,12 +82,11 @@ class TopicCreateService(object):
         ident = None
         ident_type = "none"
         if board.settings["use_ident"]:
-            time_zone = self.setting_query_svc.value_from_key("app.time_zone")
-            tz = pytz.timezone(time_zone)
-            timestamp = datetime.datetime.now(tz).strftime("%Y%m%d")
             ident_type = "ident"
-            ident = self.identity_svc.identity_for(
-                board=topic.board.slug, ip_address=ip_address, timestamp=timestamp
+            ident = self.identity_svc.identity_with_tz_for(
+                self.setting_query_svc.value_from_key("app.time_zone"),
+                board=topic.board.slug,
+                ip_address=ip_address,
             )
 
         post = Post(
@@ -193,7 +194,6 @@ class TopicQueryService(object):
 
         :param board_slug: The slug :type:`str` identifying a board.
         """
-        anchor = datetime.datetime.now() - datetime.timedelta(days=7)
         return (
             self.dbsession.query(Topic)
             .join(Topic.board, Topic.meta)
@@ -203,7 +203,10 @@ class TopicQueryService(object):
                     Board.slug == board_slug,
                     or_(
                         Topic.status == "open",
-                        and_(Topic.status != "open", TopicMeta.bumped_at >= anchor),
+                        and_(
+                            Topic.status != "open",
+                            TopicMeta.bumped_at >= func.now() - TOPIC_RECENT_DELTA,
+                        ),
                     ),
                 )
             )
@@ -226,7 +229,6 @@ class TopicQueryService(object):
 
     def list_recent(self, _limit=100):
         """Query recent topics regardless of the board."""
-        anchor = datetime.datetime.now() - datetime.timedelta(days=7)
         return list(
             self.dbsession.query(Topic)
             .join(Topic.meta)
@@ -235,7 +237,10 @@ class TopicQueryService(object):
                 and_(
                     or_(
                         Topic.status == "open",
-                        and_(Topic.status != "open", TopicMeta.bumped_at >= anchor),
+                        and_(
+                            Topic.status != "open",
+                            TopicMeta.bumped_at >= func.now() - TOPIC_RECENT_DELTA,
+                        ),
                     )
                 )
             )

@@ -186,7 +186,8 @@ class TestBoardModel(ModelSessionMixin, unittest.TestCase):
         self.assertEqual([], list(board2.topics))
 
     def test_topics_sort(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Board, Topic, TopicMeta
 
         board = self._make(Board(title="Foobar", slug="foobar"))
@@ -199,32 +200,32 @@ class TestBoardModel(ModelSessionMixin, unittest.TestCase):
             TopicMeta(
                 topic=topic1,
                 post_count=1,
-                bumped_at=datetime.now() + timedelta(minutes=2),
-                posted_at=datetime.now() + timedelta(minutes=6),
+                bumped_at=func.now() + timedelta(minutes=2),
+                posted_at=func.now() + timedelta(minutes=6),
             )
         )
         self._make(
             TopicMeta(
                 topic=topic2,
                 post_count=1,
-                bumped_at=datetime.now() + timedelta(minutes=4),
-                posted_at=datetime.now() + timedelta(minutes=6),
+                bumped_at=func.now() + timedelta(minutes=4),
+                posted_at=func.now() + timedelta(minutes=6),
             )
         )
         self._make(
             TopicMeta(
                 topic=topic3,
                 post_count=1,
-                bumped_at=datetime.now() + timedelta(minutes=3),
-                posted_at=datetime.now() + timedelta(minutes=3),
+                bumped_at=func.now() + timedelta(minutes=3),
+                posted_at=func.now() + timedelta(minutes=3),
             )
         )
         self._make(
             TopicMeta(
                 topic=topic5,
                 post_count=1,
-                bumped_at=datetime.now() + timedelta(minutes=5),
-                posted_at=datetime.now() + timedelta(minutes=5),
+                bumped_at=func.now() + timedelta(minutes=5),
+                posted_at=func.now() + timedelta(minutes=5),
             )
         )
         self.dbsession.commit()

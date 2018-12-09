@@ -16,7 +16,7 @@ class _DummyFilterService(object):
 
 
 class _DummyIdentityService(object):
-    def identity_for(self, **kwargs):
+    def identity_with_tz_for(self, tz, **kwargs):
         return ",".join("%s" % (v,) for k, v in sorted(kwargs.items()))
 
 
@@ -273,8 +273,6 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         return add_post
 
     def test_add_post(self):
-        from datetime import datetime
-        from pytz import timezone
         from ..interfaces import IFilterService, IPostCreateService
         from ..models import Board, Topic, TopicMeta, Post
         from ..services import PostCreateService, UserQueryService
@@ -320,11 +318,7 @@ class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(post.name, "Nameless Foobar")
         self.assertEqual(post.ip_address, "127.0.0.1")
         self.assertEqual(post.body, "Hello, world!")
-        self.assertEqual(
-            post.ident,
-            "foo,127.0.0.1,%s"
-            % (datetime.now(timezone("Asia/Bangkok")).strftime("%Y%m%d")),
-        )
+        self.assertEqual(post.ident, "foo,127.0.0.1")
         self.assertTrue(post.bumped)
         self.assertEqual(topic.status, "open")
         self.assertEqual(topic_meta.post_count, 1)
@@ -810,8 +804,6 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
         return add_topic
 
     def test_add_topic(self):
-        from datetime import datetime
-        from pytz import timezone
         from ..interfaces import IFilterService, ITopicCreateService
         from ..models import Board, Topic, TopicMeta
         from ..services import TopicCreateService, UserQueryService
@@ -860,11 +852,7 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(topic.posts[0].name, "Nameless Foobar")
         self.assertEqual(topic.posts[0].ip_address, "127.0.0.1")
         self.assertEqual(topic.posts[0].body, "Hello, world!")
-        self.assertEqual(
-            topic.posts[0].ident,
-            "foo,127.0.0.1,%s"
-            % (datetime.now(timezone("Asia/Bangkok")).strftime("%Y%m%d")),
-        )
+        self.assertEqual(topic.posts[0].ident, "foo,127.0.0.1")
 
     def test_add_topic_without_ident(self):
         from ..interfaces import IFilterService, ITopicCreateService

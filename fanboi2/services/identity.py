@@ -1,5 +1,8 @@
-import string
+import datetime
 import random
+import string
+
+import pytz
 
 
 STRINGS = string.ascii_letters + string.digits + "+/."
@@ -24,7 +27,7 @@ class IdentityService(object):
         """Query the identity for user matching :param:`kwargs` payload
         or generate a new one if not exists.
 
-        :param payload: Payload to identify this rate limit.
+        :param payload: Payload to identify this identity.
         """
         key = self._get_key(**kwargs)
         ident = self.redis_conn.get(key)
@@ -36,3 +39,17 @@ class IdentityService(object):
         self.redis_conn.setnx(key, ident)
         self.redis_conn.expire(key, 86400)
         return ident
+
+    def identity_with_tz_for(self, tz, **kwargs):
+        """Similar to :meth:`identity_for` but automatically applies current
+        datetime the payload to allow ident to change every day.
+
+        :param tz: Timezone to generate identity for.
+        :param payload: Payload to identify this identity.
+        """
+        if isinstance(tz, str):
+            tz = pytz.timezone(tz)
+        redis_time = self.redis_conn.time()  # Avoid relying on local clock.
+        current_time = datetime.datetime.fromtimestamp(redis_time[0], tz)
+        kwargs["timestamp"] = current_time.strftime("%Y%m%d")
+        return self.identity_for(**kwargs)

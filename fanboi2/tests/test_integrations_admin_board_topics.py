@@ -8,44 +8,45 @@ from . import IntegrationMixin
 
 class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
     def test_board_topics_get(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..interfaces import ITopicQueryService, IBoardQueryService
         from ..models import Board, Topic, TopicMeta
         from ..services import TopicQueryService, BoardQueryService
         from ..views.admin import board_topics_get
         from . import mock_service
 
-        def _make_topic(days=0, **kwargs):
+        def _make_topic(days=0, hours=0, **kwargs):
             topic = self._make(Topic(**kwargs))
             self._make(
                 TopicMeta(
                     topic=topic,
                     post_count=0,
-                    posted_at=datetime.now(),
-                    bumped_at=datetime.now() - timedelta(days=days),
+                    posted_at=func.now(),
+                    bumped_at=func.now() - timedelta(days=days, hours=hours),
                 )
             )
             return topic
 
         board1 = self._make(Board(title="Foo", slug="foo"))
         board2 = self._make(Board(title="Bar", slug="bar"))
-        topic1 = _make_topic(0.1, board=board1, title="Foo")
-        topic2 = _make_topic(1, board=board1, title="Foo")
-        topic3 = _make_topic(2, board=board1, title="Foo")
-        topic4 = _make_topic(3, board=board1, title="Foo")
-        topic5 = _make_topic(4, board=board1, title="Foo")
-        topic6 = _make_topic(5, board=board1, title="Foo")
-        topic7 = _make_topic(6, board=board1, title="Foo")
-        _make_topic(6.1, board=board2, title="Foo")
-        topic9 = _make_topic(6.2, board=board1, title="Foo", status="locked")
-        topic10 = _make_topic(6.3, board=board1, title="Foo", status="archived")
-        topic11 = _make_topic(7, board=board1, title="Foo")
-        topic12 = _make_topic(8, board=board1, title="Foo")
-        topic13 = _make_topic(9, board=board1, title="Foo")
-        _make_topic(0.2, board=board2, title="Foo")
-        topic15 = _make_topic(0.2, board=board1, title="Foo")
-        _make_topic(7, board=board1, title="Foo", status="archived")
-        _make_topic(7, board=board1, title="Foo", status="locked")
+        topic1 = _make_topic(board=board1, title="Foo")
+        topic2 = _make_topic(days=1, board=board1, title="Foo")
+        topic3 = _make_topic(days=2, board=board1, title="Foo")
+        topic4 = _make_topic(days=3, board=board1, title="Foo")
+        topic5 = _make_topic(days=4, board=board1, title="Foo")
+        topic6 = _make_topic(days=5, board=board1, title="Foo")
+        topic7 = _make_topic(days=6, board=board1, title="Foo")
+        topic9 = _make_topic(hours=2, board=board1, title="Foo", status="locked")
+        topic10 = _make_topic(hours=3, board=board1, title="Foo", status="archived")
+        topic11 = _make_topic(days=7, board=board1, title="Foo")
+        topic12 = _make_topic(days=8, board=board1, title="Foo")
+        topic13 = _make_topic(days=9, board=board1, title="Foo")
+        topic15 = _make_topic(hours=1, board=board1, title="Foo")
+        _make_topic(days=6, hours=1, board=board2, title="Foo")
+        _make_topic(days=7, hours=1, board=board1, title="Foo", status="archived")
+        _make_topic(days=7, hours=1, board=board1, title="Foo", status="locked")
+        _make_topic(hours=2, board=board2, title="Foo")
         self.dbsession.commit()
         request = mock_service(
             self.request,
@@ -63,14 +64,14 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             [
                 topic1,
                 topic15,
+                topic9,
+                topic10,
                 topic2,
                 topic3,
                 topic4,
                 topic5,
                 topic6,
                 topic7,
-                topic9,
-                topic10,
                 topic11,
                 topic12,
                 topic13,
@@ -97,7 +98,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             board_topics_get(request)
 
     def test_board_topic_new_get(self):
-        from datetime import datetime
+        from sqlalchemy.sql import func
         from ..forms import TopicForm
         from ..models import Board, User, UserSession
         from ..interfaces import IBoardQueryService, IUserLoginService
@@ -120,7 +121,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 user=user,
                 token="foo_token",
                 ip_address="127.0.0.1",
-                last_seen_at=datetime.now(),
+                last_seen_at=func.now(),
             )
         )
         self.dbsession.commit()
@@ -141,7 +142,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
         self.assertIsInstance(response["form"], TopicForm)
 
     def test_board_topic_new_get_not_found(self):
-        from datetime import datetime
+        from sqlalchemy.sql import func
         from sqlalchemy.orm.exc import NoResultFound
         from ..interfaces import IBoardQueryService, IUserLoginService
         from ..models import User, UserSession
@@ -163,7 +164,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 user=user,
                 token="foo_token",
                 ip_address="127.0.0.1",
-                last_seen_at=datetime.now(),
+                last_seen_at=func.now(),
             )
         )
         self.dbsession.commit()
@@ -182,7 +183,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             board_topic_new_get(request)
 
     def test_board_topic_new_post(self):
-        from datetime import datetime
+        from sqlalchemy.sql import func
         from ..models import Board, Topic, User, UserSession
         from ..interfaces import (
             IBoardQueryService,
@@ -215,7 +216,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 user=user,
                 token="foo_token",
                 ip_address="127.0.0.1",
-                last_seen_at=datetime.now(),
+                last_seen_at=func.now(),
             )
         )
         self.dbsession.commit()
@@ -260,7 +261,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
         self.assertTrue(topic.posts[0].bumped)
 
     def test_board_topic_new_post_not_found(self):
-        from datetime import datetime
+        from sqlalchemy.sql import func
         from sqlalchemy.orm.exc import NoResultFound
         from ..models import Topic, User, UserSession
         from ..interfaces import IBoardQueryService, IUserLoginService
@@ -282,7 +283,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 user=user,
                 token="foo_token",
                 ip_address="127.0.0.1",
-                last_seen_at=datetime.now(),
+                last_seen_at=func.now(),
             )
         )
         self.dbsession.commit()
@@ -321,7 +322,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             board_topic_new_post(self.request)
 
     def test_board_topic_new_post_invalid_title(self):
-        from datetime import datetime
+        from sqlalchemy.sql import func
         from ..forms import TopicForm
         from ..interfaces import IBoardQueryService, IUserLoginService
         from ..models import Board, Topic, User, UserSession
@@ -344,7 +345,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 user=user,
                 token="foo_token",
                 ip_address="127.0.0.1",
-                last_seen_at=datetime.now(),
+                last_seen_at=func.now(),
             )
         )
         self.dbsession.commit()
@@ -376,7 +377,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
         self.assertEqual(self.dbsession.query(Topic).count(), 0)
 
     def test_board_topic_new_post_invalid_body(self):
-        from datetime import datetime
+        from sqlalchemy.sql import func
         from ..forms import TopicForm
         from ..interfaces import IBoardQueryService, IUserLoginService
         from ..models import Board, Topic, User, UserSession
@@ -399,7 +400,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 user=user,
                 token="foo_token",
                 ip_address="127.0.0.1",
-                last_seen_at=datetime.now(),
+                last_seen_at=func.now(),
             )
         )
         self.dbsession.commit()
@@ -431,7 +432,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
         self.assertEqual(self.dbsession.query(Topic).count(), 0)
 
     def test_board_topic_get(self):
-        from datetime import datetime
+        from sqlalchemy.sql import func
         from ..forms import PostForm
         from ..interfaces import (
             IBoardQueryService,
@@ -466,7 +467,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 user=user,
                 token="foo_token",
                 ip_address="127.0.0.1",
-                last_seen_at=datetime.now(),
+                last_seen_at=func.now(),
             )
         )
         post1 = self._make(
@@ -518,7 +519,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
         self.assertIsInstance(response["form"], PostForm)
 
     def test_board_topic_get_query(self):
-        from datetime import datetime
+        from sqlalchemy.sql import func
         from pyramid.httpexceptions import HTTPNotFound
         from ..interfaces import (
             IBoardQueryService,
@@ -550,7 +551,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 user=user,
                 token="foo_token",
                 ip_address="127.0.0.1",
-                last_seen_at=datetime.now(),
+                last_seen_at=func.now(),
             )
         )
         board = self._make(Board(title="Foobar", slug="foobar"))
@@ -726,7 +727,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             board_topic_get(request)
 
     def test_board_topic_post(self):
-        from datetime import datetime
+        from sqlalchemy.sql import func
         from ..interfaces import (
             IBoardQueryService,
             ITopicQueryService,
@@ -763,7 +764,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 user=user,
                 token="foo_token",
                 ip_address="127.0.0.1",
-                last_seen_at=datetime.now(),
+                last_seen_at=func.now(),
             )
         )
         self.dbsession.commit()
@@ -909,7 +910,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             board_topic_post(request)
 
     def test_board_topic_post_invalid_body(self):
-        from datetime import datetime
+        from sqlalchemy.sql import func
         from ..forms import PostForm
         from ..interfaces import (
             IBoardQueryService,
@@ -937,7 +938,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
                 user=user,
                 token="foo_token",
                 ip_address="127.0.0.1",
-                last_seen_at=datetime.now(),
+                last_seen_at=func.now(),
             )
         )
         self.dbsession.commit()

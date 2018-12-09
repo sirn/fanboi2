@@ -44,10 +44,10 @@ class Topic(Versioned, Base):
     )
 
     QUERY = (
-        ("single_post", re.compile("^(\d+)$")),
-        ("ranged_posts", re.compile("^(\d+)?\-(\d+)?$")),
-        ("recent_posts", re.compile("^l(\d+)$")),
-        ("recent_posts", re.compile("^recent$")),
+        ("single_post", re.compile(r"^(\d+)$")),
+        ("ranged_posts", re.compile(r"^(\d+)?\-(\d+)?$")),
+        ("recent_posts", re.compile(r"^l(\d+)$")),
+        ("recent_posts", re.compile(r"^recent$")),
     )
 
     def scoped_posts(self, query=None):

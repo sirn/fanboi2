@@ -28,7 +28,7 @@ class BanCreateService(object):
         active_until = None
         if duration:
             duration_delta = datetime.timedelta(days=duration)
-            active_until = datetime.datetime.now() + duration_delta
+            active_until = func.now() + duration_delta
 
         if not scope:
             scope = None

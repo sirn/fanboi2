@@ -6,7 +6,8 @@ from . import IntegrationMixin
 
 class TestIntegrationAdminDashboard(IntegrationMixin, unittest.TestCase):
     def test_dashboard_get(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..interfaces import IUserSessionQueryService, IUserLoginService
         from ..models import User, UserSession
         from ..services import UserSessionQueryService, UserLoginService
@@ -27,7 +28,7 @@ class TestIntegrationAdminDashboard(IntegrationMixin, unittest.TestCase):
                 user=user,
                 token="user1_token1",
                 ip_address="127.0.0.1",
-                last_seen_at=datetime.now() - timedelta(days=2),
+                last_seen_at=func.now() - timedelta(days=2),
             )
         )
         user_session2 = self._make(
@@ -35,7 +36,7 @@ class TestIntegrationAdminDashboard(IntegrationMixin, unittest.TestCase):
                 user=user,
                 token="user1_token2",
                 ip_address="127.0.0.1",
-                last_seen_at=datetime.now() - timedelta(days=3),
+                last_seen_at=func.now() - timedelta(days=3),
             )
         )
         user_session3 = self._make(
@@ -43,7 +44,7 @@ class TestIntegrationAdminDashboard(IntegrationMixin, unittest.TestCase):
                 user=user,
                 token="user1_token3",
                 ip_address="127.0.0.1",
-                last_seen_at=datetime.now() - timedelta(days=1),
+                last_seen_at=func.now() - timedelta(days=1),
             )
         )
         self.dbsession.commit()

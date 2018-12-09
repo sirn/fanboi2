@@ -16,7 +16,7 @@ class TestTopicCreateService(ModelSessionMixin, unittest.TestCase):
         from ..services import UserQueryService
 
         class _DummyIdentityService(object):
-            def identity_for(self, **kwargs):
+            def identity_with_tz_for(self, tz, **kwargs):
                 return ",".join("%s" % (v,) for k, v in sorted(kwargs.items()))
 
         class _DummySettingQueryService(object):
@@ -31,8 +31,6 @@ class TestTopicCreateService(ModelSessionMixin, unittest.TestCase):
         )
 
     def test_create(self):
-        from datetime import datetime
-        from pytz import timezone
         from ..models import Board
 
         board = self._make(
@@ -51,11 +49,7 @@ class TestTopicCreateService(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(topic.posts[0].bumped, True)
         self.assertEqual(topic.posts[0].name, "Nameless Foobar")
         self.assertEqual(topic.posts[0].ip_address, "127.0.0.1")
-        self.assertEqual(
-            topic.posts[0].ident,
-            "foo,127.0.0.1,%s"
-            % (datetime.now(timezone("Asia/Bangkok")).strftime("%Y%m%d"),),
-        )
+        self.assertEqual(topic.posts[0].ident, "foo,127.0.0.1")
         self.assertEqual(topic.posts[0].ident_type, "ident")
 
     def test_create_without_ident(self):
@@ -348,52 +342,53 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
         return TopicQueryService
 
     def test_list_from_board_slug(self):
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Board, Topic, TopicMeta
-        from datetime import datetime, timedelta
 
-        def _make_topic(days=0, **kwargs):
+        def _make_topic(days=0, hours=0, **kwargs):
             topic = self._make(Topic(**kwargs))
             self._make(
                 TopicMeta(
                     topic=topic,
                     post_count=0,
-                    posted_at=datetime.now(),
-                    bumped_at=datetime.now() - timedelta(days=days),
+                    posted_at=func.now(),
+                    bumped_at=func.now() - timedelta(days=days, hours=hours),
                 )
             )
             return topic
 
         board1 = self._make(Board(title="Foo", slug="foo"))
         board2 = self._make(Board(title="Bar", slug="bar"))
-        topic1 = _make_topic(0, board=board1, title="Foo")
-        topic2 = _make_topic(1, board=board1, title="Foo")
-        topic3 = _make_topic(2, board=board1, title="Foo")
-        topic4 = _make_topic(3, board=board1, title="Foo")
-        topic5 = _make_topic(4, board=board1, title="Foo")
-        topic6 = _make_topic(5, board=board1, title="Foo")
-        topic7 = _make_topic(6, board=board1, title="Foo")
-        topic8 = _make_topic(6.1, board=board1, title="Foo", status="locked")
-        topic9 = _make_topic(6.5, board=board1, title="Foo", status="archived")
-        topic10 = _make_topic(7, board=board1, title="Foo")
-        topic11 = _make_topic(8, board=board1, title="Foo")
-        topic12 = _make_topic(9, board=board1, title="Foo")
-        _make_topic(0, board=board2, title="Foo")
-        _make_topic(7, board=board1, title="Foo", status="archived")
-        _make_topic(7, board=board1, title="Foo", status="locked")
+        topic1 = _make_topic(board=board1, title="Foo")
+        topic2 = _make_topic(days=1, board=board1, title="Foo")
+        topic3 = _make_topic(days=2, board=board1, title="Foo")
+        topic4 = _make_topic(days=3, board=board1, title="Foo")
+        topic5 = _make_topic(days=4, board=board1, title="Foo")
+        topic6 = _make_topic(days=5, board=board1, title="Foo")
+        topic7 = _make_topic(days=6, board=board1, title="Foo")
+        topic8 = _make_topic(hours=1, board=board1, title="Foo", status="locked")
+        topic9 = _make_topic(hours=5, board=board1, title="Foo", status="archived")
+        topic10 = _make_topic(days=7, board=board1, title="Foo")
+        topic11 = _make_topic(days=8, board=board1, title="Foo")
+        topic12 = _make_topic(days=9, board=board1, title="Foo")
+        _make_topic(board=board2, title="Foo")
+        _make_topic(days=7, hours=1, board=board1, title="Foo", status="archived")
+        _make_topic(days=7, hours=1, board=board1, title="Foo", status="locked")
         self.dbsession.commit()
         topic_query_svc = self._get_target_class()(self.dbsession)
         self.assertEqual(
             topic_query_svc.list_from_board_slug("foo"),
             [
                 topic1,
+                topic8,
+                topic9,
                 topic2,
                 topic3,
                 topic4,
                 topic5,
                 topic6,
                 topic7,
-                topic8,
-                topic9,
                 topic10,
                 topic11,
                 topic12,
@@ -405,52 +400,53 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(topic_query_svc.list_from_board_slug("notfound"), [])
 
     def test_list_recent_from_board_slug(self):
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Board, Topic, TopicMeta
-        from datetime import datetime, timedelta
 
-        def _make_topic(days=0, **kwargs):
+        def _make_topic(days=0, hours=0, **kwargs):
             topic = self._make(Topic(**kwargs))
             self._make(
                 TopicMeta(
                     topic=topic,
                     post_count=0,
-                    posted_at=datetime.now(),
-                    bumped_at=datetime.now() - timedelta(days=days),
+                    posted_at=func.now(),
+                    bumped_at=func.now() - timedelta(days=days, hours=hours),
                 )
             )
             return topic
 
         board1 = self._make(Board(title="Foo", slug="foo"))
         board2 = self._make(Board(title="Bar", slug="bar"))
-        topic1 = _make_topic(0, board=board1, title="Foo")
-        topic2 = _make_topic(1, board=board1, title="Foo")
-        topic3 = _make_topic(2, board=board1, title="Foo")
-        topic4 = _make_topic(3, board=board1, title="Foo")
-        topic5 = _make_topic(4, board=board1, title="Foo")
-        topic6 = _make_topic(5, board=board1, title="Foo")
-        topic7 = _make_topic(6, board=board1, title="Foo")
-        topic8 = _make_topic(6.1, board=board1, title="Foo", status="locked")
-        topic9 = _make_topic(6.2, board=board1, title="Foo", status="archived")
-        topic10 = _make_topic(7, board=board1, title="Foo")
-        _make_topic(8, board=board1, title="Foo")
-        _make_topic(9, board=board1, title="Foo")
-        _make_topic(0, board=board2, title="Foo")
-        _make_topic(7, board=board1, title="Foo", status="archived")
-        _make_topic(7, board=board1, title="Foo", status="locked")
+        topic1 = _make_topic(board=board1, title="Foo")
+        topic2 = _make_topic(days=1, board=board1, title="Foo")
+        topic3 = _make_topic(days=2, board=board1, title="Foo")
+        topic4 = _make_topic(days=3, board=board1, title="Foo")
+        topic5 = _make_topic(days=4, board=board1, title="Foo")
+        topic6 = _make_topic(days=5, board=board1, title="Foo")
+        topic7 = _make_topic(days=6, board=board1, title="Foo")
+        topic8 = _make_topic(hours=1, board=board1, title="Foo", status="locked")
+        topic9 = _make_topic(hours=2, board=board1, title="Foo", status="archived")
+        topic10 = _make_topic(days=7, board=board1, title="Foo")
+        _make_topic(board=board2, title="Foo")
+        _make_topic(days=7, hours=1, board=board1, title="Foo", status="archived")
+        _make_topic(days=7, hours=1, board=board1, title="Foo", status="locked")
+        _make_topic(days=8, board=board1, title="Foo")
+        _make_topic(days=9, board=board1, title="Foo")
         self.dbsession.commit()
         topic_query_svc = self._get_target_class()(self.dbsession)
         self.assertEqual(
             topic_query_svc.list_recent_from_board_slug("foo"),
             [
                 topic1,
+                topic8,
+                topic9,
                 topic2,
                 topic3,
                 topic4,
                 topic5,
                 topic6,
                 topic7,
-                topic8,
-                topic9,
                 topic10,
             ],
         )
@@ -460,44 +456,47 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(topic_query_svc.list_recent_from_board_slug("notfound"), [])
 
     def test_list_recent(self):
-        from datetime import datetime, timedelta
+        from datetime import timedelta
+        from sqlalchemy.sql import func
         from ..models import Board, Topic, TopicMeta
 
-        def _make_topic(days=0, **kwargs):
+        def _make_topic(days=0, hours=0, **kwargs):
             topic = self._make(Topic(**kwargs))
             self._make(
                 TopicMeta(
                     topic=topic,
                     post_count=0,
-                    posted_at=datetime.now(),
-                    bumped_at=datetime.now() - timedelta(days=days),
+                    posted_at=func.now(),
+                    bumped_at=func.now() - timedelta(days=days, hours=hours),
                 )
             )
             return topic
 
         board1 = self._make(Board(title="Foo", slug="foo"))
         board2 = self._make(Board(title="Bar", slug="bar"))
-        topic1 = _make_topic(0.1, board=board1, title="Foo")
-        topic2 = _make_topic(1, board=board1, title="Foo")
-        topic3 = _make_topic(2, board=board1, title="Foo")
-        topic4 = _make_topic(3, board=board1, title="Foo")
-        topic5 = _make_topic(4, board=board1, title="Foo")
-        topic6 = _make_topic(5, board=board1, title="Foo")
-        topic7 = _make_topic(6, board=board1, title="Foo")
-        topic8 = _make_topic(6.1, board=board1, title="Foo", status="locked")
-        topic9 = _make_topic(6.2, board=board1, title="Foo", status="archived")
-        topic10 = _make_topic(7, board=board1, title="Foo")
-        topic11 = _make_topic(8, board=board1, title="Foo")
-        topic12 = _make_topic(9, board=board1, title="Foo")
-        topic13 = _make_topic(0.2, board=board2, title="Foo")
-        _make_topic(7, board=board1, title="Foo", status="archived")
-        _make_topic(7, board=board1, title="Foo", status="locked")
+        topic1 = _make_topic(hours=1, board=board1, title="Foo")
+        topic2 = _make_topic(days=1, board=board1, title="Foo")
+        topic3 = _make_topic(days=2, board=board1, title="Foo")
+        topic4 = _make_topic(days=3, board=board1, title="Foo")
+        topic5 = _make_topic(days=4, board=board1, title="Foo")
+        topic6 = _make_topic(days=5, board=board1, title="Foo")
+        topic7 = _make_topic(days=6, board=board1, title="Foo")
+        topic8 = _make_topic(hours=2, board=board1, title="Foo", status="locked")
+        topic9 = _make_topic(hours=3, board=board1, title="Foo", status="archived")
+        topic10 = _make_topic(days=7, board=board1, title="Foo")
+        topic11 = _make_topic(days=8, board=board1, title="Foo")
+        topic12 = _make_topic(days=9, board=board1, title="Foo")
+        topic13 = _make_topic(hours=4, board=board2, title="Foo")
+        _make_topic(days=7, hours=1, board=board1, title="Foo", status="archived")
+        _make_topic(days=7, hours=1, board=board1, title="Foo", status="locked")
         self.dbsession.commit()
         topic_query_svc = self._get_target_class()(self.dbsession)
         self.assertEqual(
             topic_query_svc.list_recent(_limit=20),
             [
                 topic1,
+                topic8,
+                topic9,
                 topic13,
                 topic2,
                 topic3,
@@ -505,8 +504,6 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
                 topic5,
                 topic6,
                 topic7,
-                topic8,
-                topic9,
                 topic10,
                 topic11,
                 topic12,
