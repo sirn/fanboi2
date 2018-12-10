@@ -13,6 +13,7 @@ tmp/
 *.pyc
 *.sqlite
 *.tmp
+celerybeat*
 
 # Building
 *.build

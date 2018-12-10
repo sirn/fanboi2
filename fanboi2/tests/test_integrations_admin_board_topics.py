@@ -52,7 +52,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -89,7 +91,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -502,7 +506,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IPostQueryService: PostQueryService(self.dbsession),
                 IUserLoginService: UserLoginService(self.dbsession),
             },
@@ -584,7 +590,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IPostQueryService: PostQueryService(self.dbsession),
                 IUserLoginService: UserLoginService(self.dbsession),
             },
@@ -649,7 +657,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -691,7 +701,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -716,7 +728,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -774,7 +788,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IUserLoginService: UserLoginService(self.dbsession),
                 IPostCreateService: PostCreateService(
                     self.dbsession,
@@ -823,7 +839,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "POST"
@@ -894,7 +912,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "POST"
@@ -946,7 +966,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IUserLoginService: UserLoginService(self.dbsession),
             },
         )
@@ -987,7 +1009,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -1013,7 +1037,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -1054,7 +1080,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -1081,7 +1109,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 ITopicUpdateService: TopicUpdateService(self.dbsession),
             },
         )
@@ -1114,7 +1144,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "POST"
@@ -1174,7 +1206,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "POST"
@@ -1202,7 +1236,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "POST"
@@ -1235,7 +1271,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -1259,7 +1297,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -1300,7 +1340,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -1358,7 +1400,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 ITopicDeleteService: TopicDeleteService(self.dbsession),
             },
         )
@@ -1394,7 +1438,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -1482,7 +1528,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -1544,7 +1592,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IPostQueryService: PostQueryService(self.dbsession),
             },
         )
@@ -1628,7 +1678,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IPostQueryService: PostQueryService(self.dbsession),
             },
         )
@@ -1687,7 +1739,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -1729,7 +1783,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -1754,7 +1810,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -1827,7 +1885,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IPostQueryService: PostQueryService(self.dbsession),
                 IPostDeleteService: PostDeleteService(self.dbsession),
             },
@@ -1933,7 +1993,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IPostQueryService: PostQueryService(self.dbsession),
             },
         )
@@ -1978,7 +2040,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -2036,7 +2100,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -2064,7 +2130,9 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"

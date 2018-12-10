@@ -1,4 +1,5 @@
 import unittest
+import unittest.mock
 
 from pyramid import testing
 
@@ -248,6 +249,73 @@ class TestResultProxy(unittest.TestCase):
 
         proxy = ResultProxy(DummyDummyAsyncResult("demo", "success"))
         self.assertEqual(proxy.dummy(), "dummy")
+
+
+class TestDispatchBoardTasks(ModelSessionMixin, unittest.TestCase):
+    def setUp(self):
+        from ..tasks import celery
+
+        super(TestDispatchBoardTasks, self).setUp()
+        self.config = testing.setUp()
+        self.request = testing.DummyRequest()
+        self.request.registry = self.config.registry
+        celery.config_from_object({"task_always_eager": True})
+
+    def tearDown(self):
+        from ..tasks import celery
+
+        super(TestDispatchBoardTasks, self).tearDown()
+        testing.tearDown()
+        celery.config_from_object({"task_always_eager": False})
+
+    def _get_target_func(self):
+        from ..tasks.board import dispatch_board_tasks
+
+        return dispatch_board_tasks
+
+    @unittest.mock.patch("fanboi2.tasks.topic.expire_topics.delay")
+    def test_dispatch_board_tasks(self, expire_):
+        from ..interfaces import IBoardQueryService
+        from ..models import Board
+        from ..services import BoardQueryService
+        from . import mock_service
+
+        self._make(Board(title="Foo", slug="foo", settings={"expire_duration": 0}))
+        self._make(Board(title="Baz", slug="baz", settings={"expire_duration": 5}))
+        self._make(Board(title="Bar", slug="bar", settings={"expire_duration": 10}))
+        self._make(Board(title="Bar", slug="blah"))
+        self._make(
+            Board(
+                title="Baz",
+                slug="hoge",
+                settings={"expire_duration": 5},
+                status="archived",
+            )
+        )
+        self._make(
+            Board(
+                title="Baz",
+                slug="bleh",
+                settings={"expire_duration": 5},
+                status="locked",
+            )
+        )
+        self.dbsession.commit()
+
+        request = mock_service(
+            self.request, {IBoardQueryService: BoardQueryService(self.dbsession)}
+        )
+
+        self._get_target_func()(_request=request, _registry=self.config.registry)
+        self.assertEqual(expire_.call_count, 3)
+        expire_.assert_has_calls(
+            [
+                unittest.mock.call("baz"),
+                unittest.mock.call("bar"),
+                unittest.mock.call("bleh"),
+            ],
+            any_order=True,
+        )
 
 
 class TestAddPostTask(ModelSessionMixin, unittest.TestCase):
@@ -1121,3 +1189,165 @@ class TestAddTopicTask(ModelSessionMixin, unittest.TestCase):
         )
         self.assertEqual(self.dbsession.query(Topic).count(), 0)
         self.assertEqual(resp, ("failure", "proxy_rejected"))
+
+
+class TestExpireTopicsTask(ModelSessionMixin, unittest.TestCase):
+    def setUp(self):
+        from ..tasks import celery
+
+        super(TestExpireTopicsTask, self).setUp()
+        self.config = testing.setUp()
+        self.request = testing.DummyRequest()
+        self.request.registry = self.config.registry
+        celery.config_from_object({"task_always_eager": True})
+
+    def tearDown(self):
+        from ..tasks import celery
+
+        super(TestExpireTopicsTask, self).tearDown()
+        testing.tearDown()
+        celery.config_from_object({"task_always_eager": False})
+
+    def _get_target_func(self):
+        from ..tasks.topic import expire_topics
+
+        return expire_topics
+
+    def test_expire_topics(self):
+        from datetime import timedelta
+        from sqlalchemy.sql import func
+        from ..interfaces import ITopicQueryService
+        from ..services import BoardQueryService, TopicQueryService
+        from ..models import Board, Topic, TopicMeta
+        from . import mock_service
+
+        def _make_topic(days=0, hours=0, **kwargs):
+            topic = self._make(Topic(**kwargs))
+            self._make(
+                TopicMeta(
+                    topic=topic,
+                    post_count=0,
+                    posted_at=func.now(),
+                    bumped_at=func.now() - timedelta(days=days, hours=hours),
+                )
+            )
+            return topic
+
+        board1 = self._make(
+            Board(title="Foo", slug="foo", settings={"expire_duration": 5})
+        )
+        board2 = self._make(
+            Board(title="Bar", slug="bar", settings={"expire_duration": 5})
+        )
+        topic1 = _make_topic(board=board1, title="Foo")
+        topic2 = _make_topic(days=1, board=board1, title="Foo")
+        topic3 = _make_topic(days=2, board=board1, title="Foo")
+        topic4 = _make_topic(days=3, board=board1, title="Foo")
+        topic5 = _make_topic(days=4, board=board1, title="Foo")
+        topic6 = _make_topic(days=5, board=board1, title="Foo")
+        topic7 = _make_topic(days=6, board=board1, title="Foo")
+        topic8 = _make_topic(days=7, board=board1, title="Foo", status="locked")
+        topic9 = _make_topic(days=6, board=board1, title="Foo", status="expired")
+        topic10 = _make_topic(days=6, board=board1, title="Foo", status="archived")
+        topic11 = _make_topic(days=7, board=board1, title="Foo")
+        topic12 = _make_topic(days=7, board=board2, title="Foo")
+        self.dbsession.commit()
+        request = mock_service(
+            self.request,
+            {
+                "db": self.dbsession,
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
+            },
+        )
+        self._get_target_func()("foo", _request=request, _registry=self.config.registry)
+        self.assertEqual(topic1.status, "open")
+        self.assertEqual(topic2.status, "open")
+        self.assertEqual(topic3.status, "open")
+        self.assertEqual(topic4.status, "open")
+        self.assertEqual(topic5.status, "open")
+        self.assertEqual(topic6.status, "expired")
+        self.assertEqual(topic7.status, "expired")
+        self.assertEqual(topic8.status, "locked")
+        self.assertEqual(topic9.status, "expired")
+        self.assertEqual(topic10.status, "archived")
+        self.assertEqual(topic11.status, "expired")
+        self.assertEqual(topic12.status, "open")
+
+    def test_expire_topics_without_expiration(self):
+        from datetime import timedelta
+        from sqlalchemy.sql import func
+        from ..interfaces import ITopicQueryService
+        from ..services import BoardQueryService, TopicQueryService
+        from ..models import Board, Topic, TopicMeta
+        from . import mock_service
+
+        def _make_topic(days=0, hours=0, **kwargs):
+            topic = self._make(Topic(**kwargs))
+            self._make(
+                TopicMeta(
+                    topic=topic,
+                    post_count=0,
+                    posted_at=func.now(),
+                    bumped_at=func.now() - timedelta(days=days, hours=hours),
+                )
+            )
+            return topic
+
+        board1 = self._make(
+            Board(title="Foo", slug="foo", settings={"expire_duration": 0})
+        )
+        topic1 = _make_topic(board=board1, title="Foo")
+        topic2 = _make_topic(days=1, board=board1, title="Foo")
+        topic3 = _make_topic(days=2, board=board1, title="Foo")
+        topic4 = _make_topic(days=3, board=board1, title="Foo")
+        topic5 = _make_topic(days=4, board=board1, title="Foo")
+        topic6 = _make_topic(days=5, board=board1, title="Foo")
+        topic7 = _make_topic(days=6, board=board1, title="Foo")
+        topic8 = _make_topic(days=7, board=board1, title="Foo", status="locked")
+        topic9 = _make_topic(days=6, board=board1, title="Foo", status="expired")
+        topic10 = _make_topic(days=6, board=board1, title="Foo", status="archived")
+        topic11 = _make_topic(days=7, board=board1, title="Foo")
+        self.dbsession.commit()
+        request = mock_service(
+            self.request,
+            {
+                "db": self.dbsession,
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
+            },
+        )
+        self._get_target_func()("foo", _request=request, _registry=self.config.registry)
+        self.assertEqual(topic1.status, "open")
+        self.assertEqual(topic2.status, "open")
+        self.assertEqual(topic3.status, "open")
+        self.assertEqual(topic4.status, "open")
+        self.assertEqual(topic5.status, "open")
+        self.assertEqual(topic6.status, "open")
+        self.assertEqual(topic7.status, "open")
+        self.assertEqual(topic8.status, "locked")
+        self.assertEqual(topic9.status, "expired")
+        self.assertEqual(topic10.status, "archived")
+        self.assertEqual(topic11.status, "open")
+
+    def test_expire_topics_not_found(self):
+        from sqlalchemy.orm.exc import NoResultFound
+        from ..interfaces import ITopicQueryService
+        from ..services import BoardQueryService, TopicQueryService
+        from . import mock_service
+
+        request = mock_service(
+            self.request,
+            {
+                "db": self.dbsession,
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
+            },
+        )
+        with self.assertRaises(NoResultFound):
+            self._get_target_func()(
+                "notfound", _request=request, _registry=self.config.registry
+            )

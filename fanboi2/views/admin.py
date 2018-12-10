@@ -315,13 +315,15 @@ def board_new_post(request):
         return {"form": form}
 
     board_create_svc = request.find_service(IBoardCreateService)
+    db_settings = json.loads(form.settings.data)
+    settings = DEFAULT_BOARD_CONFIG.update(db_settings)
     board = board_create_svc.create(
         form.slug.data,
         title=form.title.data,
         description=form.description.data,
         status=form.status.data,
         agreements=form.agreements.data,
-        settings=json.loads(form.settings.data),
+        settings=settings,
     )
 
     return HTTPFound(

@@ -112,7 +112,7 @@ SERVICES = (
         IUserQueryService,
     ),
     (ITopicDeleteService, TopicDeleteService, "db"),
-    (ITopicQueryService, TopicQueryService, "db"),
+    (ITopicQueryService, TopicQueryService, "db", IBoardQueryService),
     (ITopicUpdateService, TopicUpdateService, "db"),
     (IUserCreateService, UserCreateService, "db", IIdentityService),
     (IUserLoginService, UserLoginService, "db"),

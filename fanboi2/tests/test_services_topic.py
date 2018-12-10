@@ -341,6 +341,17 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
 
         return TopicQueryService
 
+    def _make_one(self):
+        from fanboi2.models import Board
+
+        _dbsession = self.dbsession
+
+        class _DummyBoardQueryService(object):
+            def board_from_slug(self, board_slug):
+                return _dbsession.query(Board).filter_by(slug=board_slug).one()
+
+        return self._get_target_class()(_dbsession, _DummyBoardQueryService())
+
     def test_list_from_board_slug(self):
         from datetime import timedelta
         from sqlalchemy.sql import func
@@ -376,7 +387,7 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
         _make_topic(days=7, hours=1, board=board1, title="Foo", status="archived")
         _make_topic(days=7, hours=1, board=board1, title="Foo", status="locked")
         self.dbsession.commit()
-        topic_query_svc = self._get_target_class()(self.dbsession)
+        topic_query_svc = self._make_one()
         self.assertEqual(
             topic_query_svc.list_from_board_slug("foo"),
             [
@@ -396,7 +407,7 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
         )
 
     def test_list_from_board_slug_not_found(self):
-        topic_query_svc = self._get_target_class()(self.dbsession)
+        topic_query_svc = self._make_one()
         self.assertEqual(topic_query_svc.list_from_board_slug("notfound"), [])
 
     def test_list_recent_from_board_slug(self):
@@ -434,7 +445,7 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
         _make_topic(days=8, board=board1, title="Foo")
         _make_topic(days=9, board=board1, title="Foo")
         self.dbsession.commit()
-        topic_query_svc = self._get_target_class()(self.dbsession)
+        topic_query_svc = self._make_one()
         self.assertEqual(
             topic_query_svc.list_recent_from_board_slug("foo"),
             [
@@ -452,8 +463,133 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
         )
 
     def test_list_recent_from_board_slug_not_found(self):
-        topic_query_svc = self._get_target_class()(self.dbsession)
+        topic_query_svc = self._make_one()
         self.assertEqual(topic_query_svc.list_recent_from_board_slug("notfound"), [])
+
+    def test_list_expired_from_board_slug(self):
+        from datetime import timedelta
+        from sqlalchemy.sql import func
+        from ..models import Board, Topic, TopicMeta
+
+        def _make_topic(days=0, hours=0, **kwargs):
+            topic = self._make(Topic(**kwargs))
+            self._make(
+                TopicMeta(
+                    topic=topic,
+                    post_count=0,
+                    posted_at=func.now(),
+                    bumped_at=func.now() - timedelta(days=days, hours=hours),
+                )
+            )
+            return topic
+
+        board1 = self._make(
+            Board(title="Foo", slug="foo", settings={"expire_duration": 5})
+        )
+        board2 = self._make(
+            Board(title="Bar", slug="bar", settings={"expire_duration": 5})
+        )
+        _make_topic(board=board1, title="Foo")
+        _make_topic(days=1, board=board1, title="Foo")
+        _make_topic(days=2, board=board1, title="Foo")
+        _make_topic(days=3, board=board1, title="Foo")
+        _make_topic(days=4, board=board1, title="Foo")
+        topic6 = _make_topic(days=5, board=board1, title="Foo")
+        topic7 = _make_topic(days=6, board=board1, title="Foo")
+        _make_topic(days=7, board=board1, title="Foo", status="locked")
+        _make_topic(days=6, board=board1, title="Foo", status="expired")
+        _make_topic(days=6, board=board1, title="Foo", status="archived")
+        topic11 = _make_topic(days=7, board=board1, title="Foo")
+        _make_topic(days=7, board=board2, title="Foo")
+        self.dbsession.commit()
+        topic_query_svc = self._make_one()
+        self.assertEqual(
+            topic_query_svc.list_expired_from_board_slug("foo"),
+            [topic6, topic7, topic11],
+        )
+
+    def test_list_expired_from_board_slug_posted_at(self):
+        from datetime import timedelta
+        from sqlalchemy.sql import func
+        from ..models import Board, Topic, TopicMeta
+
+        def _make_topic(days=0, hours=0, **kwargs):
+            topic = self._make(Topic(**kwargs))
+            self._make(
+                TopicMeta(
+                    topic=topic,
+                    post_count=0,
+                    posted_at=func.now() - timedelta(days=days, hours=hours),
+                    bumped_at=func.now(),
+                )
+            )
+            return topic
+
+        board1 = self._make(
+            Board(title="Foo", slug="foo", settings={"expire_duration": 5})
+        )
+        board2 = self._make(
+            Board(title="Bar", slug="bar", settings={"expire_duration": 5})
+        )
+        _make_topic(board=board1, title="Foo")
+        _make_topic(days=1, board=board1, title="Foo")
+        _make_topic(days=2, board=board1, title="Foo")
+        _make_topic(days=3, board=board1, title="Foo")
+        _make_topic(days=4, board=board1, title="Foo")
+        _make_topic(days=5, board=board1, title="Foo")
+        _make_topic(days=6, board=board1, title="Foo")
+        _make_topic(days=7, board=board1, title="Foo", status="locked")
+        _make_topic(days=6, board=board1, title="Foo", status="expired")
+        _make_topic(days=6, board=board1, title="Foo", status="archived")
+        _make_topic(days=7, board=board1, title="Foo")
+        _make_topic(days=7, board=board2, title="Foo")
+        self.dbsession.commit()
+        topic_query_svc = self._make_one()
+        self.assertEqual(topic_query_svc.list_expired_from_board_slug("foo"), [])
+
+    def test_list_expired_from_board_slug_without_expiration(self):
+        from datetime import timedelta
+        from sqlalchemy.sql import func
+        from ..models import Board, Topic, TopicMeta
+
+        def _make_topic(days=0, hours=0, **kwargs):
+            topic = self._make(Topic(**kwargs))
+            self._make(
+                TopicMeta(
+                    topic=topic,
+                    post_count=0,
+                    posted_at=func.now(),
+                    bumped_at=func.now() - timedelta(days=days, hours=hours),
+                )
+            )
+            return topic
+
+        board1 = self._make(
+            Board(title="Foo", slug="foo", settings={"expire_duration": 0})
+        )
+        board2 = self._make(
+            Board(title="Bar", slug="bar", settings={"expire_duration": 5})
+        )
+        _make_topic(board=board1, title="Foo")
+        _make_topic(days=1, board=board1, title="Foo")
+        _make_topic(days=2, board=board1, title="Foo")
+        _make_topic(days=3, board=board1, title="Foo")
+        _make_topic(days=4, board=board1, title="Foo")
+        _make_topic(days=5, board=board1, title="Foo")
+        _make_topic(days=6, board=board1, title="Foo")
+        _make_topic(days=7, board=board1, title="Foo", status="locked")
+        _make_topic(days=6, board=board1, title="Foo", status="expired")
+        _make_topic(days=6, board=board1, title="Foo", status="archived")
+        _make_topic(days=7, board=board1, title="Foo")
+        _make_topic(days=7, board=board2, title="Foo")
+        self.dbsession.commit()
+        topic_query_svc = self._make_one()
+        self.assertEqual(topic_query_svc.list_expired_from_board_slug("foo"), [])
+
+    def test_list_expired_fom_board_slug_not_found(self):
+        topic_query_svc = self._make_one()
+        with self.assertRaises(NoResultFound):
+            topic_query_svc.list_expired_from_board_slug("notfound")
 
     def test_list_recent(self):
         from datetime import timedelta
@@ -490,7 +626,7 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
         _make_topic(days=7, hours=1, board=board1, title="Foo", status="archived")
         _make_topic(days=7, hours=1, board=board1, title="Foo", status="locked")
         self.dbsession.commit()
-        topic_query_svc = self._get_target_class()(self.dbsession)
+        topic_query_svc = self._make_one()
         self.assertEqual(
             topic_query_svc.list_recent(_limit=20),
             [
@@ -516,11 +652,11 @@ class TestTopicQueryService(ModelSessionMixin, unittest.TestCase):
         board = self._make(Board(slug="foo", title="Foo"))
         topic = self._make(Topic(board=board, title="Foobar"))
         self.dbsession.commit()
-        topic_query_svc = self._get_target_class()(self.dbsession)
+        topic_query_svc = self._make_one()
         self.assertEqual(topic_query_svc.topic_from_id(topic.id), topic)
 
     def test_topic_from_id_not_found(self):
-        topic_query_svc = self._get_target_class()(self.dbsession)
+        topic_query_svc = self._make_one()
         with self.assertRaises(NoResultFound):
             topic_query_svc.topic_from_id(-1)
 

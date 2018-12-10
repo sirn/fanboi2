@@ -7,4 +7,4 @@ BoardStatusEnum = Enum("open", "restricted", "locked", "archived", name="board_s
 IdentTypeEnum = Enum("none", "ident", "ident_admin", name="ident_type")
 
 
-TopicStatusEnum = Enum("open", "locked", "archived", name="topic_status")
+TopicStatusEnum = Enum("open", "locked", "archived", "expired", name="topic_status")

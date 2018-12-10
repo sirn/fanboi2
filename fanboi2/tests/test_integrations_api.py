@@ -138,7 +138,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -175,7 +177,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -194,7 +198,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -600,7 +606,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
     def test_topic_get(self):
         from ..interfaces import ITopicQueryService
         from ..models import Board, Topic
-        from ..services import TopicQueryService
+        from ..services import BoardQueryService, TopicQueryService
         from ..views.api import topic_get
         from . import mock_service
 
@@ -608,7 +614,12 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         topic = self._make(Topic(board=board, title="Demo"))
         self.dbsession.commit()
         request = mock_service(
-            self.request, {ITopicQueryService: TopicQueryService(self.dbsession)}
+            self.request,
+            {
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                )
+            },
         )
         request.method = "GET"
         request.matchdict["topic"] = topic.id
@@ -617,12 +628,17 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
     def test_topic_get_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
         from ..interfaces import ITopicQueryService
-        from ..services import TopicQueryService
+        from ..services import BoardQueryService, TopicQueryService
         from ..views.api import topic_get
         from . import mock_service
 
         request = mock_service(
-            self.request, {ITopicQueryService: TopicQueryService(self.dbsession)}
+            self.request,
+            {
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                )
+            },
         )
         request.method = "GET"
         request.matchdict["topic"] = "-1"
@@ -767,6 +783,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..services import (
             BanQueryService,
             BanwordQueryService,
+            BoardQueryService,
             IdentityService,
             PostCreateService,
             RateLimiterService,
@@ -787,7 +804,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
@@ -848,6 +867,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..services import (
             BanQueryService,
             BanwordQueryService,
+            BoardQueryService,
             IdentityService,
             PostCreateService,
             RateLimiterService,
@@ -868,7 +888,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
@@ -919,12 +941,17 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
     def test_topic_posts_post_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
         from ..interfaces import ITopicQueryService
-        from ..services import TopicQueryService
+        from ..services import BoardQueryService, TopicQueryService
         from ..views.api import topic_posts_post
         from . import mock_service
 
         request = mock_service(
-            self.request, {ITopicQueryService: TopicQueryService(self.dbsession)}
+            self.request,
+            {
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                )
+            },
         )
         request.method = "POST"
         request.matchdict["topic"] = "-1"
@@ -935,7 +962,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..errors import ParamsInvalidError
         from ..interfaces import ITopicQueryService
         from ..models import Board, Topic, TopicMeta, Post
-        from ..services import TopicQueryService
+        from ..services import BoardQueryService, TopicQueryService
         from ..views.api import topic_posts_post
         from . import mock_service
 
@@ -944,7 +971,12 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         self._make(TopicMeta(topic=topic, post_count=0))
         self.dbsession.commit()
         request = mock_service(
-            self.request, {ITopicQueryService: TopicQueryService(self.dbsession)}
+            self.request,
+            {
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                )
+            },
         )
         request.method = "POST"
         request.matchdict["topic"] = topic.id
@@ -960,7 +992,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..errors import BanRejectedError
         from ..interfaces import ITopicQueryService, IBanQueryService
         from ..models import Board, Topic, TopicMeta, Post, Ban
-        from ..services import TopicQueryService, BanQueryService
+        from ..services import BoardQueryService, TopicQueryService, BanQueryService
         from ..views.api import topic_posts_post
         from . import mock_service
 
@@ -972,7 +1004,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IBanQueryService: BanQueryService(self.dbsession),
             },
         )
@@ -991,7 +1025,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..errors import BanRejectedError
         from ..interfaces import ITopicQueryService, IBanQueryService
         from ..models import Board, Topic, TopicMeta, Post, Ban
-        from ..services import TopicQueryService, BanQueryService
+        from ..services import BoardQueryService, TopicQueryService, BanQueryService
         from ..views.api import topic_posts_post
         from . import mock_service
 
@@ -1003,7 +1037,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IBanQueryService: BanQueryService(self.dbsession),
             },
         )
@@ -1026,7 +1062,12 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             ITopicQueryService,
         )
         from ..models import Board, Topic, TopicMeta, Post, Banword
-        from ..services import TopicQueryService, BanQueryService, BanwordQueryService
+        from ..services import (
+            BoardQueryService,
+            TopicQueryService,
+            BanQueryService,
+            BanwordQueryService,
+        )
         from ..views.api import topic_posts_post
         from . import mock_service
 
@@ -1038,7 +1079,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IBanQueryService: BanQueryService(self.dbsession),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
             },
@@ -1067,6 +1110,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..services import (
             BanQueryService,
             BanwordQueryService,
+            BoardQueryService,
             RateLimiterService,
             TopicQueryService,
         )
@@ -1082,7 +1126,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),

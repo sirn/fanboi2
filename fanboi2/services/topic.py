@@ -186,8 +186,9 @@ class TopicQueryService(object):
     a collection of topics from the database.
     """
 
-    def __init__(self, dbsession):
+    def __init__(self, dbsession, board_query_svc):
         self.dbsession = dbsession
+        self.board_query_svc = board_query_svc
 
     def _list_q(self, board_slug):
         """Internal method for querying topic list.
@@ -226,6 +227,29 @@ class TopicQueryService(object):
         :param board_slug: The slug :type:`str` identifying a board.
         """
         return list(self._list_q(board_slug).limit(_limit))
+
+    def list_expired_from_board_slug(self, board_slug):
+        """Return a list of all topics that has past its board's expiration date.
+
+        :param board_slug: The slug :type:`str` identifying a board.
+        """
+        board = self.board_query_svc.board_from_slug(board_slug)
+        expire_duration = board.settings.get("expire_duration", None)
+        if not expire_duration:
+            return []
+        expire_duration_delta = datetime.timedelta(expire_duration)
+        return list(
+            self.dbsession.query(Topic)
+            .join(Topic.meta)
+            .filter(
+                and_(
+                    Topic.board == board,
+                    Topic.status == "open",
+                    TopicMeta.bumped_at <= func.now() - expire_duration_delta,
+                )
+            )
+            .order_by(Topic.id)
+        )
 
     def list_recent(self, _limit=100):
         """Query recent topics regardless of the board."""

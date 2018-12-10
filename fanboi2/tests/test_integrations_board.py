@@ -71,7 +71,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -108,7 +110,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -131,7 +135,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -152,7 +158,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -204,7 +212,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -241,7 +251,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "GET"
@@ -909,7 +921,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IPostQueryService: PostQueryService(self.dbsession),
             },
         )
@@ -963,7 +977,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IPostQueryService: PostQueryService(self.dbsession),
             },
         )
@@ -1030,7 +1046,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IPostQueryService: PostQueryService(self.dbsession),
             },
         )
@@ -1056,7 +1074,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IPostQueryService: PostQueryService(self.dbsession),
             },
         )
@@ -1085,7 +1105,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IPostQueryService: PostQueryService(self.dbsession),
             },
         )
@@ -1115,7 +1137,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IPostQueryService: PostQueryService(self.dbsession),
             },
         )
@@ -1158,7 +1182,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             {
                 "db": self.dbsession,
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 ITaskQueryService: TaskQueryService(),
             },
         )
@@ -1193,7 +1219,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 ITaskQueryService: TaskQueryService(),
             },
         )
@@ -1230,7 +1258,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 ITaskQueryService: TaskQueryService(),
             },
         )
@@ -1269,7 +1299,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 ITaskQueryService: TaskQueryService(),
             },
         )
@@ -1308,7 +1340,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 ITaskQueryService: TaskQueryService(),
             },
         )
@@ -1345,7 +1379,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 ITaskQueryService: TaskQueryService(),
             },
         )
@@ -1388,7 +1424,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 ITaskQueryService: TaskQueryService(),
             },
         )
@@ -1440,7 +1478,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
@@ -1510,7 +1550,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "POST"
@@ -1537,7 +1579,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "POST"
@@ -1561,7 +1605,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "POST"
@@ -1590,7 +1636,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "POST"
@@ -1618,7 +1666,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
             },
         )
         request.method = "POST"
@@ -1659,7 +1709,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IBanQueryService: BanQueryService(self.dbsession),
             },
         )
@@ -1698,7 +1750,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IBanQueryService: BanQueryService(self.dbsession),
             },
         )
@@ -1743,7 +1797,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IBanQueryService: BanQueryService(self.dbsession),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
             },
@@ -1794,7 +1850,9 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                ITopicQueryService: TopicQueryService(self.dbsession),
+                ITopicQueryService: TopicQueryService(
+                    self.dbsession, BoardQueryService(self.dbsession)
+                ),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),

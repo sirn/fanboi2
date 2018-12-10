@@ -67,6 +67,7 @@ class TestIntegrationAdminBoards(IntegrationMixin, unittest.TestCase):
         self.assertEqual(
             board.settings,
             {
+                "expire_duration": 0,
                 "max_posts": 1000,
                 "name": "Nameless Foobar",
                 "post_delay": 10,
@@ -207,6 +208,7 @@ class TestIntegrationAdminBoards(IntegrationMixin, unittest.TestCase):
         self.assertEqual(
             response["form"].settings.data,
             "{\n"
+            + '    "expire_duration": 0,\n'
             + '    "max_posts": 1000,\n'
             + '    "name": "Nameless Foobar",\n'
             + '    "post_delay": 10,\n'
@@ -265,6 +267,7 @@ class TestIntegrationAdminBoards(IntegrationMixin, unittest.TestCase):
         self.assertEqual(
             board.settings,
             {
+                "expire_duration": 0,
                 "max_posts": 1000,
                 "name": "Nameless Foobar",
                 "post_delay": 10,

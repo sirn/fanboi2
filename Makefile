@@ -89,6 +89,10 @@ shell: prod
 	$(RUNENV) $(FBCTL) shell
 
 
+beat: prod
+	$(RUNENV) $(FBCELERY) beat
+
+
 assets: $(BUILDDIR)/.build-assets
 
 
@@ -160,7 +164,7 @@ clean:
 $(VERBOSE).SILENT:
 
 
-.PHONY: all prod serve worker shell assets
+.PHONY: all prod serve worker shell beat assets
 .PHONY: deploy dist distclean distpack
 .PHONY: dev devrun devserve devassets
 .PHONY: test migrate clean

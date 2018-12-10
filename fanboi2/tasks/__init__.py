@@ -1,10 +1,18 @@
 from ._base import celery
 from ._result_proxy import ResultProxy
 from .post import add_post
-from .topic import add_topic
+from .topic import add_topic, expire_topics
+from .board import dispatch_board_tasks
 
 
-__all__ = ["ResultProxy", "add_post", "add_topic", "celery"]
+__all__ = [
+    "ResultProxy",
+    "add_post",
+    "add_topic",
+    "expire_topics",
+    "dispatch_board_tasks",
+    "celery",
+]
 
 
 def configure_celery(settings):  # pragma: no cover

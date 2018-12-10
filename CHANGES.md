@@ -1,6 +1,7 @@
 # 2018.12
 
 -   **Add**: GetIPIntel threshold is now configurable.
+-   **Add**: Topics can now be configured to expire after a specific duration of inactivity.
 -   **Fix**: Dashboard no longer error if session was never seen.
 -   **Change**: Datetime operations now use PostgreSQL and Redis as time sources.
 -   **Change**: Memcached cache backend has been replaced with Redis cache backend.

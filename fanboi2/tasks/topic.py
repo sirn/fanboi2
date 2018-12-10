@@ -1,7 +1,7 @@
 import pyramid.scripting
 
 from ..errors import StatusRejectedError
-from ..interfaces import IFilterService, ITopicCreateService
+from ..interfaces import IFilterService, ITopicCreateService, ITopicQueryService
 from ._base import celery, ModelTask
 
 
@@ -36,3 +36,21 @@ def add_topic(
 
         dbsession.flush()
         return "topic", topic.id
+
+
+@celery.task(base=ModelTask, bind=True)
+def expire_topics(self, board_slug, _request=None, _registry=None):
+    """Expires all outdated topics by the given slug.
+
+    :param board_slug: The slug :type:`str` identifying a board.
+    """
+    with pyramid.scripting.prepare(request=_request, registry=_registry) as env:
+        request = env["request"]
+        dbsession = request.find_service(name="db")
+        topic_query_svc = request.find_service(ITopicQueryService)
+
+        for topic in topic_query_svc.list_expired_from_board_slug(board_slug):
+            topic.status = "expired"
+            dbsession.add(topic)
+
+        dbsession.flush()

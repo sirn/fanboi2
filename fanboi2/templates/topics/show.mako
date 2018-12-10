@@ -63,6 +63,16 @@
             </div>
         </div>
     </div>
+% elif topic.status == 'expired':
+    <div class="sheet">
+        <div class="container">
+            <h2 class="sheet-title">Topic expired</h2>
+            <div class="sheet-body">
+                <p>Topic has reached inactivity threshold.</p>
+                <p>Please start a new topic.</p>
+            </div>
+        </div>
+    </div>
 % elif board.status == 'locked':
     <div class="sheet">
         <div class="container">
