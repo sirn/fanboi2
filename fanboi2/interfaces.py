@@ -155,6 +155,11 @@ class IRateLimiterService(Interface):
         pass
 
 
+class IScopeService(Interface):
+    def evaluate(scope, obj):
+        pass
+
+
 class ISettingQueryService(Interface):
     def list_all():
         pass

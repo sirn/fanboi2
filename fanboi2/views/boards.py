@@ -120,9 +120,7 @@ def board_new_post(request):
         return {"board": board, "form": form}
 
     ban_query_svc = request.find_service(IBanQueryService)
-    if ban_query_svc.is_banned(
-        request.client_addr, scopes=("board:%s" % (board.slug,),)
-    ):
+    if ban_query_svc.is_banned(request.client_addr, scopes={"board": board.slug}):
         response = render_to_response(
             "boards/new_error.mako",
             {"board": board, "name": "ban_rejected"},
@@ -286,7 +284,7 @@ def topic_show_post(request):
 
     ban_query_svc = request.find_service(IBanQueryService)
     if ban_query_svc.is_banned(
-        request.client_addr, scopes=("board:%s" % (board.slug,),)
+        request.client_addr, scopes={"board": board.slug, "topic": topic.title}
     ):
         response = render_to_response(
             "topics/show_error.mako",

@@ -224,6 +224,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             BoardQueryService,
             IdentityService,
             RateLimiterService,
+            ScopeService,
             SettingQueryService,
             TopicCreateService,
             UserQueryService,
@@ -241,7 +242,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
                 ITopicCreateService: TopicCreateService(
                     self.dbsession,
@@ -303,6 +304,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             BoardQueryService,
             IdentityService,
             RateLimiterService,
+            ScopeService,
             SettingQueryService,
             TopicCreateService,
             UserQueryService,
@@ -320,7 +322,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
                 ITopicCreateService: TopicCreateService(
                     self.dbsession,
@@ -431,7 +433,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..errors import BanRejectedError
         from ..interfaces import IBoardQueryService, IBanQueryService
         from ..models import Board, Topic, Ban
-        from ..services import BoardQueryService, BanQueryService
+        from ..services import BoardQueryService, BanQueryService, ScopeService
         from ..views.api import board_topics_post
         from . import mock_service
 
@@ -442,7 +444,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
             },
         )
         request.method = "POST"
@@ -460,7 +462,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..errors import BanRejectedError
         from ..interfaces import IBoardQueryService, IBanQueryService
         from ..models import Board, Topic, Ban
-        from ..services import BoardQueryService, BanQueryService
+        from ..services import BoardQueryService, BanQueryService, ScopeService
         from ..views.api import board_topics_post
         from . import mock_service
 
@@ -471,7 +473,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             self.request,
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
             },
         )
         request.method = "POST"
@@ -493,7 +495,12 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             IBoardQueryService,
         )
         from ..models import Banword, Board, Topic
-        from ..services import BoardQueryService, BanQueryService, BanwordQueryService
+        from ..services import (
+            BoardQueryService,
+            BanQueryService,
+            BanwordQueryService,
+            ScopeService,
+        )
         from ..views.api import board_topics_post
         from . import mock_service
 
@@ -503,7 +510,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
                 IBoardQueryService: BoardQueryService(self.dbsession),
             },
@@ -533,6 +540,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             BanwordQueryService,
             BoardQueryService,
             RateLimiterService,
+            ScopeService,
         )
         from ..views.api import board_topics_post
         from . import mock_service, DummyRedis
@@ -546,7 +554,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             {
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
             },
         )
@@ -787,6 +795,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             IdentityService,
             PostCreateService,
             RateLimiterService,
+            ScopeService,
             SettingQueryService,
             TopicQueryService,
             UserQueryService,
@@ -808,7 +817,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                     self.dbsession, BoardQueryService(self.dbsession)
                 ),
                 IRateLimiterService: rate_limiter_svc,
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
                 IPostCreateService: PostCreateService(
                     self.dbsession,
@@ -871,6 +880,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             IdentityService,
             PostCreateService,
             RateLimiterService,
+            ScopeService,
             SettingQueryService,
             TopicQueryService,
             UserQueryService,
@@ -892,7 +902,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                     self.dbsession, BoardQueryService(self.dbsession)
                 ),
                 IRateLimiterService: rate_limiter_svc,
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
                 IPostCreateService: PostCreateService(
                     self.dbsession,
@@ -992,7 +1002,12 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..errors import BanRejectedError
         from ..interfaces import ITopicQueryService, IBanQueryService
         from ..models import Board, Topic, TopicMeta, Post, Ban
-        from ..services import BoardQueryService, TopicQueryService, BanQueryService
+        from ..services import (
+            BoardQueryService,
+            TopicQueryService,
+            BanQueryService,
+            ScopeService,
+        )
         from ..views.api import topic_posts_post
         from . import mock_service
 
@@ -1007,7 +1022,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 ITopicQueryService: TopicQueryService(
                     self.dbsession, BoardQueryService(self.dbsession)
                 ),
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
             },
         )
         request.method = "POST"
@@ -1025,7 +1040,12 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from ..errors import BanRejectedError
         from ..interfaces import ITopicQueryService, IBanQueryService
         from ..models import Board, Topic, TopicMeta, Post, Ban
-        from ..services import BoardQueryService, TopicQueryService, BanQueryService
+        from ..services import (
+            BoardQueryService,
+            TopicQueryService,
+            BanQueryService,
+            ScopeService,
+        )
         from ..views.api import topic_posts_post
         from . import mock_service
 
@@ -1040,7 +1060,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 ITopicQueryService: TopicQueryService(
                     self.dbsession, BoardQueryService(self.dbsession)
                 ),
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
             },
         )
         request.method = "POST"
@@ -1063,10 +1083,11 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         )
         from ..models import Board, Topic, TopicMeta, Post, Banword
         from ..services import (
-            BoardQueryService,
-            TopicQueryService,
             BanQueryService,
             BanwordQueryService,
+            BoardQueryService,
+            ScopeService,
+            TopicQueryService,
         )
         from ..views.api import topic_posts_post
         from . import mock_service
@@ -1082,7 +1103,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 ITopicQueryService: TopicQueryService(
                     self.dbsession, BoardQueryService(self.dbsession)
                 ),
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
             },
         )
@@ -1113,6 +1134,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             BoardQueryService,
             RateLimiterService,
             TopicQueryService,
+            ScopeService,
         )
         from ..views.api import topic_posts_post
         from . import mock_service, DummyRedis
@@ -1130,7 +1152,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                     self.dbsession, BoardQueryService(self.dbsession)
                 ),
                 IRateLimiterService: rate_limiter_svc,
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
                 IBanwordQueryService: BanwordQueryService(self.dbsession),
             },
         )

@@ -43,6 +43,7 @@ setup(
         "gunicorn",
         "hiredis >=0.2, <0.3",
         "isodate",
+        "lark-parser >=0.6, <0.7",
         "misaka",
         "passlib",
         "psycopg2",

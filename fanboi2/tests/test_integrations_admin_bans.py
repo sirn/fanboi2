@@ -12,7 +12,7 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         from sqlalchemy.sql import func
         from ..interfaces import IBanQueryService
         from ..models import Ban
-        from ..services import BanQueryService
+        from ..services import BanQueryService, ScopeService
         from ..views.admin import bans_get
         from . import mock_service
 
@@ -32,7 +32,8 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         )
         self.dbsession.commit()
         request = mock_service(
-            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
+            self.request,
+            {IBanQueryService: BanQueryService(self.dbsession, ScopeService())},
         )
         request.method = "GET"
         response = bans_get(request)
@@ -43,7 +44,7 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         from sqlalchemy.sql import func
         from ..interfaces import IBanQueryService
         from ..models import Ban
-        from ..services import BanQueryService
+        from ..services import BanQueryService, ScopeService
         from ..views.admin import bans_inactive_get
         from . import mock_service
 
@@ -67,7 +68,8 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         )
         self.dbsession.commit()
         request = mock_service(
-            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
+            self.request,
+            {IBanQueryService: BanQueryService(self.dbsession, ScopeService())},
         )
         request.method = "GET"
         response = bans_inactive_get(request)
@@ -160,14 +162,15 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
     def test_ban_get(self):
         from ..models import Ban
         from ..interfaces import IBanQueryService
-        from ..services import BanQueryService
+        from ..services import BanQueryService, ScopeService
         from ..views.admin import ban_get
         from . import mock_service
 
         ban = self._make(Ban(ip_address="10.0.0.0/24"))
         self.dbsession.commit()
         request = mock_service(
-            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
+            self.request,
+            {IBanQueryService: BanQueryService(self.dbsession, ScopeService())},
         )
         request.method = "GET"
         request.matchdict["ban"] = str(ban.id)
@@ -177,12 +180,13 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
     def test_ban_get_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
         from ..interfaces import IBanQueryService
-        from ..services import BanQueryService
+        from ..services import BanQueryService, ScopeService
         from ..views.admin import ban_get
         from . import mock_service
 
         request = mock_service(
-            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
+            self.request,
+            {IBanQueryService: BanQueryService(self.dbsession, ScopeService())},
         )
         request.method = "GET"
         request.matchdict["ban"] = "-1"
@@ -194,7 +198,7 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         from sqlalchemy.sql import func
         from ..models import Ban
         from ..interfaces import IBanQueryService
-        from ..services import BanQueryService
+        from ..services import BanQueryService, ScopeService
         from ..views.admin import ban_edit_get
         from . import mock_service
 
@@ -211,7 +215,8 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         )
         self.dbsession.commit()
         request = mock_service(
-            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
+            self.request,
+            {IBanQueryService: BanQueryService(self.dbsession, ScopeService())},
         )
         request.method = "GET"
         request.matchdict["ban"] = str(ban.id)
@@ -226,14 +231,15 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
     def test_ban_edit_get_no_duration(self):
         from ..models import Ban
         from ..interfaces import IBanQueryService
-        from ..services import BanQueryService
+        from ..services import BanQueryService, ScopeService
         from ..views.admin import ban_edit_get
         from . import mock_service
 
         ban = self._make(Ban(ip_address="10.0.0.0/24"))
         self.dbsession.commit()
         request = mock_service(
-            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
+            self.request,
+            {IBanQueryService: BanQueryService(self.dbsession, ScopeService())},
         )
         request.method = "GET"
         request.matchdict["ban"] = str(ban.id)
@@ -243,12 +249,13 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
     def test_ban_edit_get_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
         from ..interfaces import IBanQueryService
-        from ..services import BanQueryService
+        from ..services import BanQueryService, ScopeService
         from ..views.admin import ban_edit_get
         from . import mock_service
 
         request = mock_service(
-            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
+            self.request,
+            {IBanQueryService: BanQueryService(self.dbsession, ScopeService())},
         )
         request.method = "GET"
         request.matchdict["ban"] = "-1"
@@ -260,7 +267,7 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         from datetime import datetime, timedelta
         from ..models import Ban
         from ..interfaces import IBanQueryService, IBanUpdateService
-        from ..services import BanQueryService, BanUpdateService
+        from ..services import BanQueryService, BanUpdateService, ScopeService
         from ..views.admin import ban_edit_post
         from . import mock_service
 
@@ -269,7 +276,7 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
                 IBanUpdateService: BanUpdateService(self.dbsession),
             },
         )
@@ -297,12 +304,13 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
     def test_ban_edit_post_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
         from ..interfaces import IBanQueryService
-        from ..services import BanQueryService
+        from ..services import BanQueryService, ScopeService
         from ..views.admin import ban_edit_post
         from . import mock_service
 
         request = mock_service(
-            self.request, {IBanQueryService: BanQueryService(self.dbsession)}
+            self.request,
+            {IBanQueryService: BanQueryService(self.dbsession, ScopeService())},
         )
         request.method = "POST"
         request.matchdict["ban"] = "-1"
@@ -336,7 +344,7 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         from sqlalchemy.sql import func
         from ..models import Ban
         from ..interfaces import IBanQueryService, IBanUpdateService
-        from ..services import BanQueryService, BanUpdateService
+        from ..services import BanQueryService, BanUpdateService, ScopeService
         from ..views.admin import ban_edit_post
         from . import mock_service
 
@@ -352,7 +360,7 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
                 IBanUpdateService: BanUpdateService(self.dbsession),
             },
         )
@@ -379,7 +387,7 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         from sqlalchemy.sql import func
         from ..models import Ban
         from ..interfaces import IBanQueryService, IBanUpdateService
-        from ..services import BanQueryService, BanUpdateService
+        from ..services import BanQueryService, BanUpdateService, ScopeService
         from ..views.admin import ban_edit_post
         from . import mock_service
 
@@ -395,7 +403,7 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
                 IBanUpdateService: BanUpdateService(self.dbsession),
             },
         )
@@ -418,7 +426,7 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
     def test_ban_edit_post_invalid_ip_address(self):
         from ..models import Ban
         from ..interfaces import IBanQueryService, IBanUpdateService
-        from ..services import BanQueryService, BanUpdateService
+        from ..services import BanQueryService, BanUpdateService, ScopeService
         from ..views.admin import ban_edit_post
         from . import mock_service
 
@@ -427,7 +435,7 @@ class TestIntegrationAdminBans(IntegrationMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                IBanQueryService: BanQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
                 IBanUpdateService: BanUpdateService(self.dbsession),
             },
         )

@@ -1,4 +1,5 @@
 import datetime
+import ipaddress
 
 from sqlalchemy.sql import desc, func, or_, and_
 
@@ -48,8 +49,9 @@ class BanCreateService(object):
 class BanQueryService(object):
     """Ban query service provides a service for query the ban list."""
 
-    def __init__(self, dbsession):
+    def __init__(self, dbsession, scope_svc):
         self.dbsession = dbsession
+        self.scope_svc = scope_svc
 
     def list_active(self):
         """Returns a list of bans that are currently active."""
@@ -83,10 +85,15 @@ class BanQueryService(object):
         """Verify whether the IP address is in the ban list.
 
         :param ip_address: An IP address :type:`str` to lookup for.
-        :param scopes: A scope :type:`str` to lookup for.
+        :param scopes: A scope :type:`dict` for evaluating ban scope.
         """
-        q = self.dbsession.query(Ban).filter(Ban.listed(ip_address, scopes)).exists()
-        return self.dbsession.query(q).scalar()
+        if not scopes:
+            scopes = {}
+        local_addr = ipaddress.ip_address(ip_address)
+        for ban in self.list_active():
+            if not ban.scope or self.scope_svc.evaluate(ban.scope, scopes):
+                if local_addr in ipaddress.ip_network(ban.ip_address):
+                    return ban
 
     def ban_from_id(self, id_):
         """Retrieve a :class:`Ban` matching the given :param:`id`

@@ -62,6 +62,13 @@ class TestBanQueryService(ModelSessionMixin, unittest.TestCase):
 
         return BanQueryService
 
+    def _make_one(self, retval=True):
+        class _DummyScopeService(object):
+            def evaluate(self, _scope, _obj):
+                return retval
+
+        return self._get_target_class()(self.dbsession, _DummyScopeService())
+
     def test_list_active(self):
         from datetime import timedelta
         from sqlalchemy.sql import func
@@ -82,7 +89,7 @@ class TestBanQueryService(ModelSessionMixin, unittest.TestCase):
             Ban(ip_address="10.0.3.0/24", created_at=func.now() + timedelta(minutes=5))
         )
         self.dbsession.commit()
-        ban_query_svc = self._get_target_class()(self.dbsession)
+        ban_query_svc = self._make_one()
         self.assertEqual(ban_query_svc.list_active(), [ban6, ban3, ban5, ban1])
 
     def test_list_inactive(self):
@@ -109,7 +116,7 @@ class TestBanQueryService(ModelSessionMixin, unittest.TestCase):
             )
         )
         self.dbsession.commit()
-        ban_query_svc = self._get_target_class()(self.dbsession)
+        ban_query_svc = self._make_one()
         self.assertEqual(ban_query_svc.list_inactive(), [ban6, ban4, ban2, ban5])
 
     def test_is_banned(self):
@@ -117,21 +124,21 @@ class TestBanQueryService(ModelSessionMixin, unittest.TestCase):
 
         self._make(Ban(ip_address="10.0.1.0/24"))
         self.dbsession.commit()
-        ban_query_svc = self._get_target_class()(self.dbsession)
+        ban_query_svc = self._make_one(True)
         self.assertTrue(ban_query_svc.is_banned("10.0.1.1"))
         self.assertTrue(ban_query_svc.is_banned("10.0.1.255"))
-        self.assertTrue(ban_query_svc.is_banned("10.0.1.1", scopes=["foo:bar"]))
-        self.assertTrue(ban_query_svc.is_banned("10.0.1.255", scopes=["foo:bar"]))
-        self.assertFalse(ban_query_svc.is_banned("10.0.2.1"))
+        self.assertTrue(ban_query_svc.is_banned("10.0.1.1", {"foo": "bar"}))
+        self.assertTrue(ban_query_svc.is_banned("10.0.1.255", {"foo": "bar"}))
+        self.assertFalse(ban_query_svc.is_banned("192.168.1.124"))
 
-    def test_is_banned_scoped(self):
+    def test_is_banned_non_scoped(self):
         from ..models import Ban
 
         self._make(Ban(ip_address="10.0.4.0/24", scope="foo:bar"))
         self.dbsession.commit()
-        ban_query_svc = self._get_target_class()(self.dbsession)
-        self.assertTrue(ban_query_svc.is_banned("10.0.4.1", scopes=["foo:bar"]))
-        self.assertTrue(ban_query_svc.is_banned("10.0.4.255", scopes=["foo:bar"]))
+        ban_query_svc = self._make_one(False)
+        self.assertFalse(ban_query_svc.is_banned("10.0.4.1", {"foo": "bar"}))
+        self.assertFalse(ban_query_svc.is_banned("10.0.4.255", {"foo": "bar"}))
         self.assertFalse(ban_query_svc.is_banned("10.0.4.1"))
         self.assertFalse(ban_query_svc.is_banned("10.0.4.255"))
         self.assertFalse(ban_query_svc.is_banned("10.0.5.1"))
@@ -141,7 +148,7 @@ class TestBanQueryService(ModelSessionMixin, unittest.TestCase):
 
         self._make(Ban(ip_address="10.0.6.0/24", active=False))
         self.dbsession.commit()
-        ban_query_svc = self._get_target_class()(self.dbsession)
+        ban_query_svc = self._make_one(True)
         self.assertFalse(ban_query_svc.is_banned("10.0.6.1"))
         self.assertFalse(ban_query_svc.is_banned("10.0.6.255"))
         self.assertFalse(ban_query_svc.is_banned("10.0.7.1"))
@@ -155,7 +162,7 @@ class TestBanQueryService(ModelSessionMixin, unittest.TestCase):
             Ban(ip_address="10.0.7.0/24", active_until=func.now() - timedelta(days=1))
         )
         self.dbsession.commit()
-        ban_query_svc = self._get_target_class()(self.dbsession)
+        ban_query_svc = self._make_one(True)
         self.assertFalse(ban_query_svc.is_banned("10.0.7.1"))
         self.assertFalse(ban_query_svc.is_banned("10.0.7.255"))
         self.assertFalse(ban_query_svc.is_banned("10.0.8.1"))
@@ -165,13 +172,13 @@ class TestBanQueryService(ModelSessionMixin, unittest.TestCase):
 
         ban = self._make(Ban(ip_address="10.0.1.0/24"))
         self.dbsession.commit()
-        ban_query_svc = self._get_target_class()(self.dbsession)
+        ban_query_svc = self._make_one()
         self.assertEqual(ban_query_svc.ban_from_id(ban.id), ban)
 
     def test_ban_from_id_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
 
-        ban_query_svc = self._get_target_class()(self.dbsession)
+        ban_query_svc = self._make_one()
         with self.assertRaises(NoResultFound):
             ban_query_svc.ban_from_id(-1)
 
@@ -180,7 +187,7 @@ class TestBanQueryService(ModelSessionMixin, unittest.TestCase):
 
         ban = self._make(Ban(ip_address="10.0.1.0/24"))
         self.dbsession.commit()
-        ban_query_svc = self._get_target_class()(self.dbsession)
+        ban_query_svc = self._make_one()
         self.assertEqual(ban_query_svc.ban_from_id(str(ban.id)), ban)
 
 

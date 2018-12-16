@@ -91,9 +91,7 @@ def board_topics_post(request):
         raise ParamsInvalidError(form.errors)
 
     ban_query_svc = request.find_service(IBanQueryService)
-    if ban_query_svc.is_banned(
-        request.client_addr, scopes=("board:%s" % (board.slug,),)
-    ):
+    if ban_query_svc.is_banned(request.client_addr, scopes={"board": board.slug}):
         raise BanRejectedError()
 
     banword_query_svc = request.find_service(IBanwordQueryService)
@@ -185,7 +183,7 @@ def topic_posts_post(request):
 
     ban_query_svc = request.find_service(IBanQueryService)
     if ban_query_svc.is_banned(
-        request.client_addr, scopes=("board:%s" % (board.slug,),)
+        request.client_addr, scopes={"board": board.slug, "topic": topic.title}
     ):
         raise BanRejectedError()
 

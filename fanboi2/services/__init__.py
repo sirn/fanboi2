@@ -18,6 +18,7 @@ from ..interfaces import (
     IPostDeleteService,
     IPostQueryService,
     IRateLimiterService,
+    IScopeService,
     ISettingQueryService,
     ISettingUpdateService,
     ITaskQueryService,
@@ -44,6 +45,7 @@ from .page import (
 )
 from .post import PostCreateService, PostDeleteService, PostQueryService
 from .rate_limiter import RateLimiterService
+from .scope import ScopeService
 from .setting import SettingQueryService, SettingUpdateService
 from .task import TaskQueryService
 from .topic import (
@@ -76,7 +78,7 @@ def _make_factory(cls, *services):  # pragma: no cover
 
 SERVICES = (
     (IBanCreateService, BanCreateService, "db"),
-    (IBanQueryService, BanQueryService, "db"),
+    (IBanQueryService, BanQueryService, "db", IScopeService),
     (IBanUpdateService, BanUpdateService, "db"),
     (IBanwordCreateService, BanwordCreateService, "db"),
     (IBanwordQueryService, BanwordQueryService, "db"),
@@ -100,6 +102,7 @@ SERVICES = (
     (IPostDeleteService, PostDeleteService, "db"),
     (IPostQueryService, PostQueryService, "db"),
     (IRateLimiterService, RateLimiterService, "redis"),
+    (IScopeService, ScopeService),
     (ISettingQueryService, SettingQueryService, "db", "cache"),
     (ISettingUpdateService, SettingUpdateService, "db", "cache"),
     (ITaskQueryService, TaskQueryService),
