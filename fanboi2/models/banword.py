@@ -11,6 +11,7 @@ class Banword(Base):
     __tablename__ = "banword"
 
     id = Column(Integer, primary_key=True)
+    scope = Column(String)
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     expr = Column(String, nullable=False)
