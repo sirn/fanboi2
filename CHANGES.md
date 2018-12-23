@@ -3,6 +3,7 @@
 -   **Add**: GetIPIntel threshold is now configurable.
 -   **Add**: Topics can now be configured to expire after a specific duration of inactivity.
 -   **Add**: Allow bans to be scoped using regular expression.
+-   **Add**: Allow banwords to be scoped using board and regular expression.
 -   **Fix**: Dashboard no longer error if session was never seen.
 -   **Change**: Datetime operations now use PostgreSQL and Redis as time sources.
 -   **Change**: Memcached cache backend has been replaced with Redis cache backend.
