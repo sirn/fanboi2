@@ -813,6 +813,49 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         from . import mock_service
 
         board = self._make(Board(title="Foobar", slug="foo"))
+        self._make(Banword(expr="https?:\\/\\/bit\\.ly", scope="board:foo"))
+        self.dbsession.commit()
+        request = mock_service(
+            self.request,
+            {
+                IBoardQueryService: BoardQueryService(self.dbsession),
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
+                IBanwordQueryService: BanwordQueryService(
+                    self.dbsession, ScopeService()
+                ),
+            },
+        )
+        request.method = "POST"
+        request.matchdict["board"] = board.slug
+        request.content_type = "application/x-www-form-urlencoded"
+        request.session = testing.DummySession()
+        request.client_addr = "127.0.0.1"
+        request.POST = MultiDict({})
+        request.POST["title"] = "title"
+        request.POST["body"] = "foo\nhttps://bit.ly/spam\nbar"
+        request.POST["csrf_token"] = request.session.get_csrf_token()
+        renderer = self.config.testing_add_renderer("boards/new_error.mako")
+        board_new_post(request)
+        renderer.assert_(request=request, board=board, name="banword_rejected")
+        self.assertEqual(self.dbsession.query(Topic).count(), 0)
+
+    def test_board_new_post_banword_banned_unscoped(self):
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IBoardQueryService,
+        )
+        from ..models import Board, Topic, Banword
+        from ..services import (
+            BoardQueryService,
+            BanQueryService,
+            BanwordQueryService,
+            ScopeService,
+        )
+        from ..views.boards import board_new_post
+        from . import mock_service
+
+        board = self._make(Board(title="Foobar", slug="foo"))
         self._make(Banword(expr="https?:\\/\\/bit\\.ly"))
         self.dbsession.commit()
         request = mock_service(

@@ -58,15 +58,18 @@ class BanwordQueryService(object):
             .order_by(desc(Banword.id))
         )
 
-    def is_banned(self, text):
+    def is_banned(self, text, scopes=None):
         """Verify whether the given text includes any of the banwords.
 
         :param text: A text to check.
         """
+        if not scopes:
+            scopes = {}
         for banword in self.list_active():
-            banword_re = re.compile(banword.expr)
-            if banword_re.search(text):
-                return True
+            if not banword.scope or self.scope_svc.evaluate(banword.scope, scopes):
+                banword_re = re.compile(banword.expr)
+                if banword_re.search(text):
+                    return True
         return False
 
     def banword_from_id(self, id_):

@@ -91,11 +91,12 @@ def board_topics_post(request):
         raise ParamsInvalidError(form.errors)
 
     ban_query_svc = request.find_service(IBanQueryService)
-    if ban_query_svc.is_banned(request.client_addr, scopes={"board": board.slug}):
+    ban_scope = {"board": board.slug}
+    if ban_query_svc.is_banned(request.client_addr, scopes=ban_scope):
         raise BanRejectedError()
 
     banword_query_svc = request.find_service(IBanwordQueryService)
-    if banword_query_svc.is_banned(form.body.data):
+    if banword_query_svc.is_banned(form.body.data, scopes=ban_scope):
         raise BanwordRejectedError()
 
     rate_limiter_svc = request.find_service(IRateLimiterService)
@@ -182,13 +183,12 @@ def topic_posts_post(request):
         raise ParamsInvalidError(form.errors)
 
     ban_query_svc = request.find_service(IBanQueryService)
-    if ban_query_svc.is_banned(
-        request.client_addr, scopes={"board": board.slug, "topic": topic.title}
-    ):
+    ban_scope = {"board": board.slug, "topic": topic.title}
+    if ban_query_svc.is_banned(request.client_addr, scopes=ban_scope):
         raise BanRejectedError()
 
     banword_query_svc = request.find_service(IBanwordQueryService)
-    if banword_query_svc.is_banned(form.body.data):
+    if banword_query_svc.is_banned(form.body.data, scopes=ban_scope):
         raise BanwordRejectedError()
 
     rate_limiter_svc = request.find_service(IRateLimiterService)

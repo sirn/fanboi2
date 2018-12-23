@@ -82,18 +82,51 @@ class TestBanwordQueryService(ModelSessionMixin, unittest.TestCase):
     def test_is_banned(self):
         from ..models import Banword
 
-        self._make(Banword(expr=r"https?:\/\/bit\.ly"))
+        self._make(Banword(expr=r"https?:\/\/bit\.ly", scope="foo:bar"))
         self._make(Banword(expr=r"https?:\/\/goo\.gl"))
-        self._make(Banword(expr=r"https?:\/\/youtu\.be", active=False))
-        self._make(Banword(expr=r"https?:\/\/example\.com", active=False))
         self.dbsession.commit()
-        banword_query_svc = self._make_one()
-        self.assertTrue(banword_query_svc.is_banned("a\nb\nhttps://bit.ly/Spam\nd"))
-        self.assertTrue(banword_query_svc.is_banned("a\nb\nhttps://goo.gl/Spam\nd"))
-        self.assertFalse(banword_query_svc.is_banned("a\nb\nhttps://youtu.be/Spam\nd"))
-        self.assertFalse(
-            banword_query_svc.is_banned("a\nb\nhttps://example.com/Spam\nd")
+        banword_query_svc = self._make_one(True)
+        self.assertTrue(
+            banword_query_svc.is_banned("a\nb\nhttps://bit.ly/Spam\nd", {"foo": "bar"})
         )
+        self.assertTrue(banword_query_svc.is_banned("a\nb\nhttps://goo.gl/Spam\nd"))
+        self.assertTrue(banword_query_svc.is_banned("a\nb\nhttps://bit.ly/Spam\nd"))
+
+    def test_is_banned_non_scope(self):
+        from ..models import Banword
+
+        self._make(Banword(expr=r"https?:\/\/bit\.ly", scope="foo:bar"))
+        self.dbsession.commit()
+        banword_query_svc = self._make_one(False)
+        self.assertFalse(
+            banword_query_svc.is_banned("a\nb\nhttps://bit.ly/Spam\nd", {"foo": "bar"})
+        )
+        self.assertFalse(banword_query_svc.is_banned("a\nb\nhttps://bit.ly/Spam\nd"))
+        self.assertFalse(banword_query_svc.is_banned("a\nb\nhttps://goo.gl/Spam\nd"))
+
+    def test_is_banned_unset(self):
+        from ..models import Banword
+
+        self._make(Banword(expr=r"https?:\/\/goo\.gl"))
+        self._make(Banword(expr=r"https?:\/\/bit\.ly"))
+        self.dbsession.commit()
+        banword_query_svc = self._make_one(True)
+        self.assertTrue(
+            banword_query_svc.is_banned("a\nb\nhttps://goo.gl/Spam\nd", {"foo": "bar"})
+        )
+        self.assertTrue(
+            banword_query_svc.is_banned("a\nb\nhttps://bit.ly/Spam\nd", {"foo": "bar"})
+        )
+
+    def test_is_banned_inactive(self):
+        from ..models import Banword
+
+        self._make(Banword(expr=r"https?:\/\/bit\.ly", active=False))
+        self._make(Banword(expr=r"https?:\/\/goo\.gl", active=False))
+        self.dbsession.commit()
+        banword_query_svc = self._make_one(True)
+        self.assertFalse(banword_query_svc.is_banned("a\nb\nhttps://bit.ly/Spam\nd"))
+        self.assertFalse(banword_query_svc.is_banned("a\nb\nhttps://goo.gl/Spam\nd"))
 
     def test_banword_from_id(self):
         from ..models import Banword

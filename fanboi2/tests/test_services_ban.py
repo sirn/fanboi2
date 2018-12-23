@@ -143,6 +143,15 @@ class TestBanQueryService(ModelSessionMixin, unittest.TestCase):
         self.assertFalse(ban_query_svc.is_banned("10.0.4.255"))
         self.assertFalse(ban_query_svc.is_banned("10.0.5.1"))
 
+    def test_is_banned_unset(self):
+        from ..models import Ban
+
+        self._make(Ban(ip_address="10.0.4.0/24"))
+        self.dbsession.commit()
+        ban_query_svc = self._make_one(True)
+        self.assertTrue(ban_query_svc.is_banned("10.0.4.1", {"foo": "bar"}))
+        self.assertTrue(ban_query_svc.is_banned("10.0.4.255", {"foo": "bar"}))
+
     def test_is_banned_inactive(self):
         from ..models import Ban
 

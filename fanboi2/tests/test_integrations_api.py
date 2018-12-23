@@ -509,6 +509,47 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         from . import mock_service
 
         board = self._make(Board(title="Foobar", slug="foo"))
+        self._make(Banword(expr="https?:\\/\\/bit\\.ly", scope="board:foo"))
+        self.dbsession.commit()
+        request = mock_service(
+            self.request,
+            {
+                IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
+                IBanwordQueryService: BanwordQueryService(
+                    self.dbsession, ScopeService()
+                ),
+                IBoardQueryService: BoardQueryService(self.dbsession),
+            },
+        )
+        request.method = "POST"
+        request.matchdict["board"] = board.slug
+        request.content_type = "application/json"
+        request.client_addr = "127.0.0.1"
+        request.json_body = {}
+        request.json_body["title"] = "title"
+        request.json_body["body"] = "foo\nhttps://bit.ly/spam\nbar"
+        with self.assertRaises(BanwordRejectedError):
+            board_topics_post(request)
+        self.assertEqual(self.dbsession.query(Topic).count(), 0)
+
+    def test_board_topics_post_banword_banned_unscoped(self):
+        from ..errors import BanwordRejectedError
+        from ..interfaces import (
+            IBanQueryService,
+            IBanwordQueryService,
+            IBoardQueryService,
+        )
+        from ..models import Banword, Board, Topic
+        from ..services import (
+            BoardQueryService,
+            BanQueryService,
+            BanwordQueryService,
+            ScopeService,
+        )
+        from ..views.api import board_topics_post
+        from . import mock_service
+
+        board = self._make(Board(title="Foobar", slug="foo"))
         self._make(Banword(expr="https?:\\/\\/bit\\.ly"))
         self.dbsession.commit()
         request = mock_service(
