@@ -27,6 +27,16 @@
                 % endif
                 </td>
             </tr>
+            <tr class="admin-table-row">
+                <th class="admin-table-item title lead">Scope</th>
+                <td class="admin-table-item">
+                % if banword.scope:
+                    ${banword.scope}
+                % else:
+                    <em>Global</em>
+                % endif
+                </td>
+            </tr>
         </tbody>
     </table>
     <a class="button brand" href="${request.route_path('admin_banword_edit', banword=banword.id)}">Edit Banword</a>

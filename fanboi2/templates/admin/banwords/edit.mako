@@ -15,9 +15,16 @@
     </div>
     <div class="form-item${' error' if form.description.errors else ''}">
         <label class="form-item-label" for="${form.description.id}">Description</label>
-        ${form.description(class_="input block font-large", rows=6)}
+        ${form.description(class_="input block font-large")}
         % if form.description.errors:
             <span class="form-item-error">${form.description.errors[0]}</span>
+        % endif
+    </div>
+    <div class="form-item${' error' if form.scope.errors else ''}">
+        <label class="form-item-label" for="${form.scope.id}">Scope</label>
+        ${form.scope(class_="input block font-large")}
+        % if form.scope.errors:
+            <span class="form-item-error">${form.scope.errors[0]}</span>
         % endif
     </div>
     <div class="form-item">

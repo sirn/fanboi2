@@ -18,14 +18,21 @@
                 <tr class="admin-table-row">
                     <th class="admin-table-item title">
                         <code><a href="${request.route_path('admin_banword', banword=banword.id)}">${banword.expr}</a></code>
-                        <td class="admin-table-item">
-                            % if banword.description:
-                                ${banword.description}
-                            % else:
-                                <em>No description</em>
-                            % endif
-                        </td>
                     </th>
+                    <td class="admin-table-item">
+                        % if banword.description:
+                            ${banword.description}
+                        % else:
+                            <em>No description</em>
+                        % endif
+                    </td>
+                    <td class="admin-table-item">
+                        % if banword.description:
+                            ${banword.description}
+                        % else:
+                            <em>No description</em>
+                        % endif
+                    </td>
                 </tr>
             % endfor
         </tbody>

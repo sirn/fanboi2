@@ -247,7 +247,10 @@ def banword_new_post(request):
 
     banword_create_svc = request.find_service(IBanwordCreateService)
     banword = banword_create_svc.create(
-        form.expr.data, description=form.description.data, active=form.active.data
+        form.expr.data,
+        description=form.description.data,
+        scope=form.scope.data,
+        active=form.active.data,
     )
 
     # Explicitly flush so that ID is available.
@@ -288,6 +291,7 @@ def banword_edit_post(request):
         banword.id,
         expr=form.expr.data,
         description=form.description.data,
+        scope=form.scope.data,
         active=form.active.data,
     )
     return HTTPFound(

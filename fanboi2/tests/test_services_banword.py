@@ -13,23 +13,29 @@ class TestBanwordCreateService(ModelSessionMixin, unittest.TestCase):
     def test_create(self):
         banword_create_svc = self._get_target_class()(self.dbsession)
         banword = banword_create_svc.create(
-            r"https?:\/\/bit\.ly", description="no shortlinks", active=True
+            r"https?:\/\/bit\.ly",
+            description="no shortlinks",
+            scope="board:foo",
+            active=True,
         )
         self.assertEqual(banword.expr, r"https?:\/\/bit\.ly")
         self.assertEqual(banword.description, "no shortlinks")
+        self.assertEqual(banword.scope, "board:foo")
         self.assertTrue(banword.active)
 
     def test_create_without_optional_fields(self):
         banword_create_svc = self._get_target_class()(self.dbsession)
         banword = banword_create_svc.create(r"https?:\/\/bit\.ly")
         self.assertIsNone(banword.description)
+        self.assertIsNone(banword.scope)
         self.assertTrue(banword.active)
 
     def test_create_with_empty_fields(self):
         banword_create_svc = self._get_target_class()(self.dbsession)
-        banword = banword_create_svc.create("", description="", active="")
+        banword = banword_create_svc.create("", description="", scope="", active="")
         self.assertIsNone(banword.expr)
         self.assertIsNone(banword.description)
+        self.assertIsNone(banword.scope)
         self.assertFalse(banword.active)
 
     def test_create_deactivated(self):
@@ -109,7 +115,10 @@ class TestBanwordUpdateService(ModelSessionMixin, unittest.TestCase):
 
         banword = self._make(
             Banword(
-                expr=r"https?:\/\/bit\.ly", description="no shortlinks", active=True
+                expr=r"https?:\/\/bit\.ly",
+                description="no shortlinks",
+                scope="board:foo",
+                active=True,
             )
         )
         self.dbsession.commit()
@@ -118,10 +127,12 @@ class TestBanwordUpdateService(ModelSessionMixin, unittest.TestCase):
             banword.id,
             expr=r"https?:\/\/(bit\.ly|goo\.gl)",
             description="no any shortlinks",
+            scope="board:bar",
             active=False,
         )
         self.assertEqual(banword.expr, r"https?:\/\/(bit\.ly|goo\.gl)")
         self.assertEqual(banword.description, "no any shortlinks")
+        self.assertEqual(banword.scope, "board:bar")
         self.assertFalse(banword.active)
 
     def test_update_not_found(self):
@@ -136,16 +147,20 @@ class TestBanwordUpdateService(ModelSessionMixin, unittest.TestCase):
 
         banword = self._make(
             Banword(
-                expr=r"https?:\/\/bit\.ly", description="no shortlinks", active=True
+                expr=r"https?:\/\/bit\.ly",
+                description="no shortlinks",
+                scope="board:foo",
+                active=True,
             )
         )
         self.dbsession.commit()
         banword_update_svc = self._get_target_class()(self.dbsession)
         banword = banword_update_svc.update(
-            banword.id, expr=None, description=None, active=None
+            banword.id, expr=None, description=None, scope=None, active=None
         )
         self.assertIsNone(banword.expr)
         self.assertIsNone(banword.description)
+        self.assertIsNone(banword.scope)
         self.assertFalse(banword.active)
 
     def test_update_empty(self):
@@ -153,14 +168,18 @@ class TestBanwordUpdateService(ModelSessionMixin, unittest.TestCase):
 
         banword = self._make(
             Banword(
-                expr=r"https?:\/\/bit\.ly", description="no shortlinks", active=True
+                expr=r"https?:\/\/bit\.ly",
+                description="no shortlinks",
+                scope="board:foo",
+                active=True,
             )
         )
         self.dbsession.commit()
         banword_update_svc = self._get_target_class()(self.dbsession)
         banword = banword_update_svc.update(
-            banword.id, expr="", description="", active=""
+            banword.id, expr="", description="", scope="", active=""
         )
         self.assertIsNone(banword.expr)
         self.assertIsNone(banword.description)
+        self.assertIsNone(banword.scope)
         self.assertFalse(banword.active)

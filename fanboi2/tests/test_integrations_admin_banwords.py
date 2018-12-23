@@ -73,6 +73,7 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
         request.POST = MultiDict({})
         request.POST["expr"] = "https?:\\/\\/bit\\.ly/"
         request.POST["description"] = "Violation of galactic law"
+        request.POST["scope"] = "board:foo"
         request.POST["active"] = "1"
         request.POST["csrf_token"] = request.session.get_csrf_token()
         self.config.add_route("admin_banword", "/admin/banwords/{banword}")
@@ -82,6 +83,7 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
         self.assertEqual(self.dbsession.query(Banword).count(), 1)
         self.assertEqual(banword.expr, "https?:\\/\\/bit\\.ly/")
         self.assertEqual(banword.description, "Violation of galactic law")
+        self.assertEqual(banword.scope, "board:foo")
         self.assertTrue(banword.active)
 
     def test_banword_new_post_bad_csrf(self):
@@ -94,7 +96,7 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
         self.request.POST["ip_address"] = "10.0.1.0/24"
         self.request.POST["description"] = "Violation of galactic law"
         self.request.POST["duration"] = 30
-        self.request.POST["scope"] = "galaxy_far_away"
+        self.request.POST["scope"] = "board:galaxy_far_away"
         self.request.POST["active"] = "1"
         with self.assertRaises(BadCSRFToken):
             banword_new_post(self.request)
@@ -114,6 +116,7 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
         request.POST = MultiDict({})
         request.POST["expr"] = "(?y)"
         request.POST["description"] = "Violation of galactic law"
+        request.POST["scope"] = "board:foo"
         request.POST["active"] = "1"
         request.POST["csrf_token"] = request.session.get_csrf_token()
         response = banword_new_post(request)
@@ -207,7 +210,10 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
 
         banword = self._make(
             Banword(
-                expr="https?:\\/\\/bit\\.ly", description="no shortlinks", active=True
+                expr="https?:\\/\\/bit\\.ly",
+                description="no shortlinks",
+                scope="board:foo",
+                active=True,
             )
         )
         self.dbsession.commit()
@@ -226,6 +232,7 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
         request.POST = MultiDict({})
         request.POST["expr"] = "https?:\\/\\/(bit\\.ly|goo\\.gl)"
         request.POST["description"] = "violation of galactic law"
+        request.POST["scope"] = "board:bar"
         request.POST["active"] = ""
         request.POST["csrf_token"] = request.session.get_csrf_token()
         self.config.add_route("admin_banword", "/admin/banwords/{banword}")
@@ -233,6 +240,7 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
         self.assertEqual(response.location, "/admin/banwords/%s" % banword.id)
         self.assertEqual(banword.expr, "https?:\\/\\/(bit\\.ly|goo\\.gl)")
         self.assertEqual(banword.description, "violation of galactic law")
+        self.assertEqual(banword.scope, "board:bar")
         self.assertFalse(banword.active)
 
     def test_banword_edit_post_not_found(self):
@@ -266,11 +274,12 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
         self.request.POST = MultiDict({})
         self.request.POST["expr"] = "https?:\\/\\/(bit\\.ly|goo\\.gl)"
         self.request.POST["description"] = "violation of galactic law"
+        self.request.POST["scope"] = "board:foo"
         self.request.POST["active"] = ""
         with self.assertRaises(BadCSRFToken):
             banword_edit_post(self.request)
 
-    def test_banword_edit_post_invalid_banword(self):
+    def test_banword_edit_post_invalid_expr(self):
         from ..models import Banword
         from ..interfaces import IBanwordQueryService, IBanwordUpdateService
         from ..services import BanwordQueryService, BanwordUpdateService, ScopeService
@@ -279,7 +288,10 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
 
         banword = self._make(
             Banword(
-                expr="https?:\\/\\/bit\\.ly", description="no shortlinks", active=True
+                expr="https?:\\/\\/bit\\.ly",
+                description="no shortlinks",
+                scope="board:foo",
+                active=True,
             )
         )
         self.dbsession.commit()
