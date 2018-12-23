@@ -81,7 +81,7 @@ SERVICES = (
     (IBanQueryService, BanQueryService, "db", IScopeService),
     (IBanUpdateService, BanUpdateService, "db"),
     (IBanwordCreateService, BanwordCreateService, "db"),
-    (IBanwordQueryService, BanwordQueryService, "db"),
+    (IBanwordQueryService, BanwordQueryService, "db", IScopeService),
     (IBanwordUpdateService, BanwordUpdateService, "db"),
     (IBoardCreateService, BoardCreateService, "db"),
     (IBoardQueryService, BoardQueryService, "db"),

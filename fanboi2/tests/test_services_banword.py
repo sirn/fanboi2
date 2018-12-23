@@ -13,15 +13,15 @@ class TestBanwordCreateService(ModelSessionMixin, unittest.TestCase):
     def test_create(self):
         banword_create_svc = self._get_target_class()(self.dbsession)
         banword = banword_create_svc.create(
-            "https?:\/\/bit\.ly", description="no shortlinks", active=True
+            r"https?:\/\/bit\.ly", description="no shortlinks", active=True
         )
-        self.assertEqual(banword.expr, "https?:\/\/bit\.ly")
+        self.assertEqual(banword.expr, r"https?:\/\/bit\.ly")
         self.assertEqual(banword.description, "no shortlinks")
         self.assertTrue(banword.active)
 
     def test_create_without_optional_fields(self):
         banword_create_svc = self._get_target_class()(self.dbsession)
-        banword = banword_create_svc.create("https?:\/\/bit\.ly")
+        banword = banword_create_svc.create(r"https?:\/\/bit\.ly")
         self.assertIsNone(banword.description)
         self.assertTrue(banword.active)
 
@@ -34,7 +34,7 @@ class TestBanwordCreateService(ModelSessionMixin, unittest.TestCase):
 
     def test_create_deactivated(self):
         banword_create_svc = self._get_target_class()(self.dbsession)
-        banword = banword_create_svc.create("https?:\/\/bit\.ly", active=False)
+        banword = banword_create_svc.create(r"https?:\/\/bit\.ly", active=False)
         self.assertFalse(banword.active)
 
 
@@ -44,37 +44,44 @@ class TestBanwordQueryService(ModelSessionMixin, unittest.TestCase):
 
         return BanwordQueryService
 
+    def _make_one(self, retval=True):
+        class _DummyScopeService(object):
+            def evaluate(self, _scope, _obj):
+                return retval
+
+        return self._get_target_class()(self.dbsession, _DummyScopeService())
+
     def test_list_active(self):
         from ..models import Banword
 
-        banword1 = self._make(Banword(expr="https?:\/\/bit\.ly"))
-        banword2 = self._make(Banword(expr="https?:\/\/goo\.gl"))
-        self._make(Banword(expr="https?:\/\/youtu\.be", active=False))
-        self._make(Banword(expr="https?:\/\/example\.com", active=False))
+        banword1 = self._make(Banword(expr=r"https?:\/\/bit\.ly"))
+        banword2 = self._make(Banword(expr=r"https?:\/\/goo\.gl"))
+        self._make(Banword(expr=r"https?:\/\/youtu\.be", active=False))
+        self._make(Banword(expr=r"https?:\/\/example\.com", active=False))
         self.dbsession.commit()
-        banword_query_svc = self._get_target_class()(self.dbsession)
+        banword_query_svc = self._make_one()
         self.assertEqual(banword_query_svc.list_active(), [banword2, banword1])
 
     def test_list_inactive(self):
         from ..models import Banword
 
-        self._make(Banword(expr="https?:\/\/bit\.ly"))
-        self._make(Banword(expr="https?:\/\/goo\.gl"))
-        banword3 = self._make(Banword(expr="https?:\/\/youtu\.be", active=False))
-        banword4 = self._make(Banword(expr="https?:\/\/example\.com", active=False))
+        self._make(Banword(expr=r"https?:\/\/bit\.ly"))
+        self._make(Banword(expr=r"https?:\/\/goo\.gl"))
+        banword3 = self._make(Banword(expr=r"https?:\/\/youtu\.be", active=False))
+        banword4 = self._make(Banword(expr=r"https?:\/\/example\.com", active=False))
         self.dbsession.commit()
-        banword_query_svc = self._get_target_class()(self.dbsession)
+        banword_query_svc = self._make_one()
         self.assertEqual(banword_query_svc.list_inactive(), [banword4, banword3])
 
     def test_is_banned(self):
         from ..models import Banword
 
-        self._make(Banword(expr="https?:\/\/bit\.ly"))
-        self._make(Banword(expr="https?:\/\/goo\.gl"))
-        self._make(Banword(expr="https?:\/\/youtu\.be", active=False))
-        self._make(Banword(expr="https?:\/\/example\.com", active=False))
+        self._make(Banword(expr=r"https?:\/\/bit\.ly"))
+        self._make(Banword(expr=r"https?:\/\/goo\.gl"))
+        self._make(Banword(expr=r"https?:\/\/youtu\.be", active=False))
+        self._make(Banword(expr=r"https?:\/\/example\.com", active=False))
         self.dbsession.commit()
-        banword_query_svc = self._get_target_class()(self.dbsession)
+        banword_query_svc = self._make_one()
         self.assertTrue(banword_query_svc.is_banned("a\nb\nhttps://bit.ly/Spam\nd"))
         self.assertTrue(banword_query_svc.is_banned("a\nb\nhttps://goo.gl/Spam\nd"))
         self.assertFalse(banword_query_svc.is_banned("a\nb\nhttps://youtu.be/Spam\nd"))
@@ -85,9 +92,9 @@ class TestBanwordQueryService(ModelSessionMixin, unittest.TestCase):
     def test_banword_from_id(self):
         from ..models import Banword
 
-        banword = self._make(Banword(expr="https?:\/\/bit\.ly"))
+        banword = self._make(Banword(expr=r"https?:\/\/bit\.ly"))
         self.dbsession.commit()
-        banword_query_svc = self._get_target_class()(self.dbsession)
+        banword_query_svc = self._make_one()
         self.assertEqual(banword_query_svc.banword_from_id(banword.id), banword)
 
 
@@ -101,17 +108,19 @@ class TestBanwordUpdateService(ModelSessionMixin, unittest.TestCase):
         from ..models import Banword
 
         banword = self._make(
-            Banword(expr="https?:\/\/bit\.ly", description="no shortlinks", active=True)
+            Banword(
+                expr=r"https?:\/\/bit\.ly", description="no shortlinks", active=True
+            )
         )
         self.dbsession.commit()
         banword_update_svc = self._get_target_class()(self.dbsession)
         banword = banword_update_svc.update(
             banword.id,
-            expr="https?:\/\/(bit\.ly|goo\.gl)",
+            expr=r"https?:\/\/(bit\.ly|goo\.gl)",
             description="no any shortlinks",
             active=False,
         )
-        self.assertEqual(banword.expr, "https?:\/\/(bit\.ly|goo\.gl)")
+        self.assertEqual(banword.expr, r"https?:\/\/(bit\.ly|goo\.gl)")
         self.assertEqual(banword.description, "no any shortlinks")
         self.assertFalse(banword.active)
 
@@ -126,7 +135,9 @@ class TestBanwordUpdateService(ModelSessionMixin, unittest.TestCase):
         from ..models import Banword
 
         banword = self._make(
-            Banword(expr="https?:\/\/bit\.ly", description="no shortlinks", active=True)
+            Banword(
+                expr=r"https?:\/\/bit\.ly", description="no shortlinks", active=True
+            )
         )
         self.dbsession.commit()
         banword_update_svc = self._get_target_class()(self.dbsession)
@@ -141,7 +152,9 @@ class TestBanwordUpdateService(ModelSessionMixin, unittest.TestCase):
         from ..models import Banword
 
         banword = self._make(
-            Banword(expr="https?:\/\/bit\.ly", description="no shortlinks", active=True)
+            Banword(
+                expr=r"https?:\/\/bit\.ly", description="no shortlinks", active=True
+            )
         )
         self.dbsession.commit()
         banword_update_svc = self._get_target_class()(self.dbsession)

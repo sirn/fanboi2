@@ -32,8 +32,9 @@ class BanwordCreateService(object):
 class BanwordQueryService(object):
     """Banword query service provides a service for querying banwords."""
 
-    def __init__(self, dbsession):
+    def __init__(self, dbsession, scope_svc):
         self.dbsession = dbsession
+        self.scope_svc = scope_svc
 
     def list_active(self):
         """Returns a list of banwords that are currently active."""

@@ -10,7 +10,7 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
     def test_banwords_get(self):
         from ..interfaces import IBanwordQueryService
         from ..models import Banword
-        from ..services import BanwordQueryService
+        from ..services import BanwordQueryService, ScopeService
         from ..views.admin import banwords_get
         from . import mock_service
 
@@ -19,7 +19,8 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
         self._make(Banword(expr="https?:\\/\\/youtu\\.be", active=False))
         self._make(Banword(expr="https?:\\/\\/example\\.com", active=False))
         request = mock_service(
-            self.request, {IBanwordQueryService: BanwordQueryService(self.dbsession)}
+            self.request,
+            {IBanwordQueryService: BanwordQueryService(self.dbsession, ScopeService())},
         )
         request.method = "GET"
         response = banwords_get(request)
@@ -28,7 +29,7 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
     def test_banwords_inactive_get(self):
         from ..interfaces import IBanwordQueryService
         from ..models import Banword
-        from ..services import BanwordQueryService
+        from ..services import BanwordQueryService, ScopeService
         from ..views.admin import banwords_inactive_get
         from . import mock_service
 
@@ -38,7 +39,8 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
         banword4 = self._make(Banword(expr="https?:\\/\\/example\\.com", active=False))
         self.dbsession.commit()
         request = mock_service(
-            self.request, {IBanwordQueryService: BanwordQueryService(self.dbsession)}
+            self.request,
+            {IBanwordQueryService: BanwordQueryService(self.dbsession, ScopeService())},
         )
         request.method = "GET"
         response = banwords_inactive_get(request)
@@ -124,14 +126,15 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
     def test_banword_get(self):
         from ..models import Banword
         from ..interfaces import IBanwordQueryService
-        from ..services import BanwordQueryService
+        from ..services import BanwordQueryService, ScopeService
         from ..views.admin import banword_get
         from . import mock_service
 
         banword = self._make(Banword(expr="https?:\\/\\/bit\\.ly"))
         self.dbsession.commit()
         request = mock_service(
-            self.request, {IBanwordQueryService: BanwordQueryService(self.dbsession)}
+            self.request,
+            {IBanwordQueryService: BanwordQueryService(self.dbsession, ScopeService())},
         )
         request.method = "GET"
         request.matchdict["banword"] = str(banword.id)
@@ -141,12 +144,13 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
     def test_banword_get_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
         from ..interfaces import IBanwordQueryService
-        from ..services import BanwordQueryService
+        from ..services import BanwordQueryService, ScopeService
         from ..views.admin import banword_get
         from . import mock_service
 
         request = mock_service(
-            self.request, {IBanwordQueryService: BanwordQueryService(self.dbsession)}
+            self.request,
+            {IBanwordQueryService: BanwordQueryService(self.dbsession, ScopeService())},
         )
         request.method = "GET"
         request.matchdict["banword"] = "-1"
@@ -156,7 +160,7 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
     def test_banword_edit_get(self):
         from ..models import Banword
         from ..interfaces import IBanwordQueryService
-        from ..services import BanwordQueryService
+        from ..services import BanwordQueryService, ScopeService
         from ..views.admin import banword_edit_get
         from . import mock_service
 
@@ -167,7 +171,8 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
         )
         self.dbsession.commit()
         request = mock_service(
-            self.request, {IBanwordQueryService: BanwordQueryService(self.dbsession)}
+            self.request,
+            {IBanwordQueryService: BanwordQueryService(self.dbsession, ScopeService())},
         )
         request.method = "GET"
         request.matchdict["banword"] = str(banword.id)
@@ -180,12 +185,13 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
     def test_banword_edit_get_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
         from ..interfaces import IBanwordQueryService
-        from ..services import BanwordQueryService
+        from ..services import BanwordQueryService, ScopeService
         from ..views.admin import banword_edit_get
         from . import mock_service
 
         request = mock_service(
-            self.request, {IBanwordQueryService: BanwordQueryService(self.dbsession)}
+            self.request,
+            {IBanwordQueryService: BanwordQueryService(self.dbsession, ScopeService())},
         )
         request.method = "GET"
         request.matchdict["banword"] = "-1"
@@ -195,7 +201,7 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
     def test_banword_edit_post(self):
         from ..models import Banword
         from ..interfaces import IBanwordQueryService, IBanwordUpdateService
-        from ..services import BanwordQueryService, BanwordUpdateService
+        from ..services import BanwordQueryService, BanwordUpdateService, ScopeService
         from ..views.admin import banword_edit_post
         from . import mock_service
 
@@ -208,7 +214,9 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                IBanwordQueryService: BanwordQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(
+                    self.dbsession, ScopeService()
+                ),
                 IBanwordUpdateService: BanwordUpdateService(self.dbsession),
             },
         )
@@ -230,12 +238,13 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
     def test_banword_edit_post_not_found(self):
         from sqlalchemy.orm.exc import NoResultFound
         from ..interfaces import IBanwordQueryService
-        from ..services import BanwordQueryService
+        from ..services import BanwordQueryService, ScopeService
         from ..views.admin import banword_edit_post
         from . import mock_service
 
         request = mock_service(
-            self.request, {IBanwordQueryService: BanwordQueryService(self.dbsession)}
+            self.request,
+            {IBanwordQueryService: BanwordQueryService(self.dbsession, ScopeService())},
         )
         request.method = "POST"
         request.matchdict["banword"] = "-1"
@@ -264,7 +273,7 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
     def test_banword_edit_post_invalid_banword(self):
         from ..models import Banword
         from ..interfaces import IBanwordQueryService, IBanwordUpdateService
-        from ..services import BanwordQueryService, BanwordUpdateService
+        from ..services import BanwordQueryService, BanwordUpdateService, ScopeService
         from ..views.admin import banword_edit_post
         from . import mock_service
 
@@ -277,7 +286,9 @@ class TestIntegrationAdminBanwords(IntegrationMixin, unittest.TestCase):
         request = mock_service(
             self.request,
             {
-                IBanwordQueryService: BanwordQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(
+                    self.dbsession, ScopeService()
+                ),
                 IBanwordUpdateService: BanwordUpdateService(self.dbsession),
             },
         )

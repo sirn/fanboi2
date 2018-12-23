@@ -243,7 +243,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
-                IBanwordQueryService: BanwordQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(
+                    self.dbsession, ScopeService()
+                ),
                 ITopicCreateService: TopicCreateService(
                     self.dbsession,
                     IdentityService(
@@ -323,7 +325,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
-                IBanwordQueryService: BanwordQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(
+                    self.dbsession, ScopeService()
+                ),
                 ITopicCreateService: TopicCreateService(
                     self.dbsession,
                     IdentityService(
@@ -511,7 +515,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
             self.request,
             {
                 IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
-                IBanwordQueryService: BanwordQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(
+                    self.dbsession, ScopeService()
+                ),
                 IBoardQueryService: BoardQueryService(self.dbsession),
             },
         )
@@ -555,7 +561,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 IBoardQueryService: BoardQueryService(self.dbsession),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
-                IBanwordQueryService: BanwordQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(
+                    self.dbsession, ScopeService()
+                ),
             },
         )
         request.method = "POST"
@@ -818,7 +826,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 ),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
-                IBanwordQueryService: BanwordQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(
+                    self.dbsession, ScopeService()
+                ),
                 IPostCreateService: PostCreateService(
                     self.dbsession,
                     IdentityService(
@@ -903,7 +913,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 ),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
-                IBanwordQueryService: BanwordQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(
+                    self.dbsession, ScopeService()
+                ),
                 IPostCreateService: PostCreateService(
                     self.dbsession,
                     IdentityService(
@@ -1104,7 +1116,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                     self.dbsession, BoardQueryService(self.dbsession)
                 ),
                 IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
-                IBanwordQueryService: BanwordQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(
+                    self.dbsession, ScopeService()
+                ),
             },
         )
 
@@ -1153,7 +1167,9 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
                 ),
                 IRateLimiterService: rate_limiter_svc,
                 IBanQueryService: BanQueryService(self.dbsession, ScopeService()),
-                IBanwordQueryService: BanwordQueryService(self.dbsession),
+                IBanwordQueryService: BanwordQueryService(
+                    self.dbsession, ScopeService()
+                ),
             },
         )
         request.method = "POST"
