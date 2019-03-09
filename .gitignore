@@ -32,6 +32,7 @@ node_modules/
 .idea
 .noseids
 .tool-versions
+.docker-compose.override.yml
 .vagrant
 node_modules/
 out/
