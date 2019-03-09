@@ -11,7 +11,7 @@ else:
 
 setup(
     name="fanboi2",
-    version="2018.12",
+    version="2019.02",
     description="Board engine behind fanboi.ch",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
@@ -43,6 +43,7 @@ setup(
         "gunicorn",
         "hiredis >=0.2, <0.3",
         "isodate",
+        "kombu >= 4.3, <4.4",
         "lark-parser >=0.6, <0.7",
         "misaka",
         "passlib",
@@ -64,7 +65,7 @@ setup(
     zip_safe=False,
     test_suite="fanboi2.tests",
     extras_require={
-        "dev": ["honcho", "pre-commit"],
+        "dev": ["honcho", "hupper", "pre-commit"],
         "test": ["nose", "coverage", "rednose"],
         "deploy": ["fabric", "patchwork", "invocations", "colorama"],
     },

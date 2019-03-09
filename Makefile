@@ -2,8 +2,8 @@ LDFLAGS     += -L/usr/local/lib
 CFLAGS      += -I/usr/local/include
 HOSTNAME    != hostname -s
 
-BUILDDIR    ?= .$(HOSTNAME).build
-VENVDIR     ?= .$(HOSTNAME).venv
+BUILDDIR    ?= builds/$(HOSTNAME)
+VENVDIR     ?= $(BUILDDIR)/venv
 ENVFILE     ?= .env
 YARN        ?= yarn
 
@@ -19,7 +19,7 @@ PYTHON       = $(VENVDIR)/bin/python3
 BUILDENV     = env LANG=en_US.UTF-8 LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS)"
 RUNENV       = env LANG=en_US.UTF-8 $$(test -f $(ENVFILE) && cat $(ENVFILE))
 
-ASSETS_SRCS != find assets/ -type f
+ASSETS_SRCS != [ -d assets ] && find assets/ -type f
 
 
 all: assets prod
@@ -103,10 +103,8 @@ assets: $(BUILDDIR)/.build-assets
 dev: $(BUILDDIR)/.build-dev
 
 
-devrun: dev $(BUILDDIR)/.build-assets
-	$(HONCHO) start \
-		-e $(ENVFILE) \
-		-f vendor/honcho/Procfile.dev
+devrun: dev assets
+	$(HONCHO) start -e $(ENVFILE) -f Procfile.dev
 
 
 devhook: dev
@@ -117,7 +115,7 @@ devserve: dev
 	$(RUNENV) $(FBCTL) serve --reload --workers=1 --threads=4
 
 
-devassets: $(BUILDDIR)/.build-assets
+devassets: assets
 	$(YARN) run gulp watch
 
 

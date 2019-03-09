@@ -26,7 +26,7 @@ tasks:
       sudo npm install -g yarn
       gcloud auth activate-service-account --key-file=$HOME/.creds/fanboi-gcp-builds.json
   - build: |
-      . fanboi2/vendor/builds/utils.sh
+      . fanboi2/scripts/utils.sh
       cd fanboi2/ || exit 1
 
       restore_cache $gs_bucket $HOME pip-cache setup.py || true
@@ -34,19 +34,23 @@ tasks:
       make prod
       make assets
   - test: |
-      . fanboi2/vendor/builds/utils.sh
+      . fanboi2/scripts/utils.sh
       cd fanboi2/ || exit 1
 
+      sudo service postgresql oneinitdb
       sudo sysrc postgresql_enable=YES
-      sudo service postgresql initdb
+      sudo sysrc postgresql_flags="-l /var/log/postgresql.log"
       (
         printf "local all all trust\\n"
         printf "host all all 127.0.0.1/32 trust\\n"
         printf "host all all ::1/128 trust\\n"
       ) | sudo tee /var/db/postgres/data10/pg_hba.conf
 
+      sudo touch /var/log/postgresql.log
+      sudo chown postgres /var/log/postgresql.log
+
       sudo service postgresql start
-      trap "sudo service postgresql stop" 0 1 2 3 6 9 14 15
+      trap "sudo service postgresql stop" 0 1 2 3 6 14 15
       sudo -u postgres createuser -ds fanboi2
       sudo -u postgres createdb -U fanboi2 fanboi2_test
 

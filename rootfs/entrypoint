@@ -5,4 +5,5 @@ s6-setuidgid fanboi2
 ifelse { test $1 == "serve" } { make serve }
 ifelse { test $1 == "worker" } { make worker }
 ifelse { test $1 == "migrate" } { make migrate }
+ifelse { test $1 == "beat" } { make beat }
 exec $@

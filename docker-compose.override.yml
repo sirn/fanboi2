@@ -1,0 +1,59 @@
+---
+version: "3.4"
+
+x-presets:
+  fanboi2: &fanboi2
+    environment:
+      AUTH_SECRET: 1c2e2a936a56382159bdceecc4526b1bbc01ceffb05b6ba7318d346e208d1243
+      SESSION_SECRET: 28f2c6cb686e4eae10db6fb05626591ba5972a16f1aa0daf83bd9f563aaafd06
+      DATABASE_URL: postgresql://fanboi2:H-DK6fcehRQpTMTh2_U9yiJuco8YtQl1@postgres:5432/fanboi2
+      POSTGRESQL_TEST_DATABASE: postgresql://fanboi2:H-DK6fcehRQpTMTh2_U9yiJuco8YtQl1@postgres:5432/fanboi2_test
+      SERVER_DEV: "true"
+    image: sirn/fanboi2:dev
+    volumes:
+      - ./Makefile:/src/Makefile
+      - ./alembic.ini:/src/alembic.ini
+      - ./fanboi2:/src/fanboi2
+      - ./migration:/src/migration
+      - ./setup.cfg:/src/setup.cfg
+      - ./setup.py:/src/setup.py
+
+services:
+  postgres:
+    environment:
+      DB_PASSWORD: H-DK6fcehRQpTMTh2_U9yiJuco8YtQl1
+
+  web:
+    <<: *fanboi2
+    build: .
+    command: [make, devserve]
+
+  assets:
+    image: sirn/fanboi2-assets:dev
+    build:
+      context: .
+      target: assets
+    volumes:
+      - ./Makefile:/src/Makefile
+      - ./assets:/src/assets
+      - ./fanboi2/static:/src/fanboi2/static
+      - ./gulpfile.js:/src/gulpfile.js
+      - ./package.json:/src/package.json
+      - ./tsconfig.json:/src/tsconfig.json
+      - ./yarn.lock:/src/yarn.lock
+    command: [make, devassets]
+
+  worker:
+    <<: *fanboi2
+    depends_on:
+      - web
+
+  beat:
+    <<: *fanboi2
+    depends_on:
+      - web
+
+  migrate:
+    <<: *fanboi2
+    depends_on:
+      - web

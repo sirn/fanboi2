@@ -6,7 +6,7 @@ Board engine behind [Fanboi Channel](https://fanboi.ch/) written in Python.
 
 ## Installation
 
-Fanboi2 has the following runtime requirements:
+For production environment, Fanboi2 has the following runtime requirements:
 
 -   [Python 3.6](https://www.python.org/downloads/) with [Virtualenv](https://virtualenv.pypa.io/en/stable/)
 -   [PostgreSQL 10](https://www.postgresql.org/)
@@ -17,13 +17,13 @@ Additionally, the following packages are build-time requirements for compiling a
 -   [Node 8](https://nodejs.org/) (Node 10 will NOT work)
 -   [Yarn](https://yarnpkg.com/)
 
-After all packages are installed, you may now setup the application:
+After all packages are installed, setup the application with:
 
     $ git clone https://git.sr.ht/~sirn/fanboi2 fanboi2
     $ cd fanboi2/
     $ make all -j2
 
-Then configure `.env` according to the configuring section below, then run:
+Then configure `.env` according to the configuring section below, and run:
 
     $ make migrate
     $ make serve
@@ -47,38 +47,39 @@ Fanboi2 uses environment variable to configure the application. In case `make` i
 -   `SERVER_DEV` -- Boolean flag whether to enable dev console, default False
 -   `SERVER_SECURE` -- Boolean flag whether to only authenticate via HTTPS, default False.
 
-## Contributing
+## Development
 
-Fanboi2 is open to any contributors, whether you are learning Python or an expert. To contribute to Fanboi2, it is highly recommended to use [Vagrant](https://www.vagrantup.com/) as it is currently replicating the production environment of [Fanboi Channel](https://fanboi.ch/) and perform all the necessary setup steps for you. Alternatively, if containers are your thing, you can find experimental, unsupported Docker Compose scripts in `vendor/docker/`.
-
-### Vagrant
-
-1.  Install [Vagrant](https://www.vagrantup.com/) of your preferred platform.
-2.  Install [VirtualBox](https://www.virtualbox.org/) or other providers supported by Vagrant.
-3.  Run vagrant up and read Getting Started while waiting.
-4.  Run vagrant ssh to SSH into the development machine (remember to `cd /vagrant`).
-
-In case you do not want to use Vagrant, you can install the dependencies from the installation section and run:
+To setup Fanboi2 in development mode, run the following commands after performing production setup steps:
 
     $ make dev
     $ make devhook
 
-You can then configure the application (see configuration section) and run the server:
+And run the server with (which will run everything required for development):
 
-    $ make migrate
     $ make devrun
 
-### Docker
+### FreeBSD
 
-1.  Install `Docker` and `Docker Compose`
-2.  Copy Compose configuration files to the application's parent directory (`cp vendor/docker/docker-compose.* ../`)
-3.  Modify the content of `docker-compose.yml`
-    1.  Generate both `AUTH_SECRET` and `SESSION_SECRET` tokens with `openssl rand -hex 32`
-    2.  Set a sensible PostgreSQL password
-    3.  This config assumes fanboi2 was cloned to `fanboi2`; update the build and mount paths if untrue
-4.  Start the contraption with `docker-compose up` from the same directory as the config files.
+[Fanboi Channel](https://fanboi.ch/) uses FreeBSD as its deploy target. We no longer provides Vagrantfile due to complexity to maintain the environment, however in case a FreeBSD VM is used (e.g. via Bhyve, Xhyve, Virtualbox or other virtual machine applications) we provide a `scripts/bootstrap.sh` script which should setup the environment to be as close to the production setup as much as possible. To use the script:
 
-Images are published to [sirn/fanboi2](https://hub.docker.com/r/sirn/fanboi2/) on Docker Hub for every commit in master. By default, using Fanboi2 with the default `docker-compose.yml` will start server in development mode which aids debugging. To disable development server capabilities, remove or rename the file `docker-compose.override.yml`.
+1. Create a virtual machine running [FreeBSD 12.0-RELEASE](https://www.freebsd.org/releases/12.0R/relnotes.html)
+2. Setup your user with `sudo` and SSH.
+3. Run `cat builds/bootstrap.sh | ssh user@host sudo sh`
+4. Configure NFS mount or clone the project according to the instruction above.
+
+### Docker Compose
+
+To ease the development, we also provide a [Docker Compose](https://docs.docker.com/compose/) file suitable for both development and evaluation purpose. Please note that the resulting Dockerfile is not being used in [Fanboi Channel](https://fanboi.ch/) and may regress from time to time. To use this `docker-compose.yml` for evaluation purpose, simply use the auto-configuration tool:
+
+    $ ./docker-gen.sh -o docker-compose.override.yml
+    $ docker-compose up -d
+
+In case you wish to develop using Docker Compose, instead run:
+
+    $ ./docker-gen.sh -d -o docker-compose.override.yml
+    $ docker-compose up --build -d
+
+Please inspect and adjust `docker-compose.override.yml` as needed.
 
 ### Submitting changes
 
@@ -171,7 +172,7 @@ Also install `pre-commit-hook` if you want to contribute to the project:
 
 ## License
 
-Copyright © 2013-2018, Kridsada Thanabulpong. All rights reserved.
+Copyright © 2013-2019, Kridsada Thanabulpong. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 

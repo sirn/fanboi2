@@ -24,7 +24,7 @@ Loaded locals:
 """
 
 
-def shell(args):
+def run_shell(args):
     """Run the interactive shell for the application."""
     from ..wsgi import app, config
     import pyramid.scripting
@@ -36,7 +36,7 @@ def shell(args):
         )
 
 
-def serve(args):
+def run_serve(args):
     """Run the web server for the application."""
     from gunicorn.app.base import BaseApplication
     from ..wsgi import app as wsgi_app
@@ -68,7 +68,7 @@ def serve(args):
     FbserveApplication(wsgi_app, options).run()
 
 
-def gensecret(args):
+def run_gensecret(args):
     """Generates a NaCl secret."""
     from pyramid_nacl_session import generate_secret
 
@@ -81,21 +81,21 @@ def main():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="subparser", title="subcommands")
 
-    pshell = subparsers.add_parser("shell")
-    pshell.set_defaults(func=shell)
+    shell = subparsers.add_parser("shell")
+    shell.set_defaults(func=run_shell)
 
     cpu_count = multiprocessing.cpu_count()
-    pserve = subparsers.add_parser("serve")
-    pserve.add_argument("--port", type=int, default=6543)
-    pserve.add_argument("--host", default="0.0.0.0")
-    pserve.add_argument("--workers", type=int, default=(cpu_count * 2) + 1)
-    pserve.add_argument("--threads", type=int, default=1)
-    pserve.add_argument("--max-requests", type=int, default=1000)
-    pserve.add_argument("--reload", action="store_true")
-    pserve.set_defaults(func=serve)
+    serve = subparsers.add_parser("serve")
+    serve.add_argument("--port", type=int, default=6543)
+    serve.add_argument("--host", default="0.0.0.0")
+    serve.add_argument("--workers", type=int, default=(cpu_count * 2) + 1)
+    serve.add_argument("--threads", type=int, default=1)
+    serve.add_argument("--max-requests", type=int, default=1000)
+    serve.add_argument("--reload", action="store_true")
+    serve.set_defaults(func=run_serve)
 
-    gsecret = subparsers.add_parser("gensecret")
-    gsecret.set_defaults(func=gensecret)
+    gensecret = subparsers.add_parser("gensecret")
+    gensecret.set_defaults(func=run_gensecret)
 
     args = parser.parse_args()
     if args.subparser is None:

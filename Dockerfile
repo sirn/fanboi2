@@ -26,9 +26,11 @@ RUN set -xe \
  && rm s6-overlay.tar.gz \
  && apk del .s6-fetch
 
-ENV HOME /tmp
-ENV VENVDIR /venv
-ENV BUILDDIR /build
+ENV HOME /data
+
+ENV DATADIR /data
+ENV VENVDIR /data/venv
+ENV BUILDDIR /data/build
 
 WORKDIR /src
 
@@ -46,29 +48,22 @@ RUN set -xe \
         postgresql-libs \
  && sed -i -e 's/^all:*/all: prod/' Makefile \
  && sed -i -e 's/^ASSETS_SRCS.*/ASSETS_SRCS ?=/' Makefile \
- && make prod \
- && rm -rf /tmp/.cache \
+ && addgroup -g 10000 fanboi2 \
+ && adduser -D -h /tmp -u 10000 -G fanboi2 fanboi2 \
+ && mkdir -p $DATADIR \
+ && chown -R "10000:10000" $DATADIR \
+ && chown -R "10000:10000" /src \
+ && s6-setuidgid fanboi2 make prod \
+ && rm -rf /data/.cache \
  && apk del .app-build
 
-COPY alembic.ini ./
-COPY fanboi2/ ./fanboi2
-COPY migration/ ./migration
-
-COPY --from=assets /src/fanboi2/static ./fanboi2/static
-
-COPY vendor/rootfs/ /
-
-ARG user=fanboi2
-ARG group=fanboi2
-ARG uid=10000
-ARG gid=10000
+COPY rootfs/ /
+COPY --chown=fanboi2:fanboi2 alembic.ini ./
+COPY --chown=fanboi2:fanboi2 fanboi2/ ./fanboi2
+COPY --chown=fanboi2:fanboi2 migration/ ./migration
+COPY --chown=fanboi2:fanboi2 --from=assets /src/fanboi2/static ./fanboi2/static
 
 RUN set -xe \
- && addgroup -g ${gid} ${group} \
- && adduser -D -h /tmp -u ${uid} -G ${group} ${user} \
- && chown -R "${uid}:${gid}" /build \
- && chown -R "${uid}:${gid}" /src \
- && chown -R "${uid}:${gid}" /venv \
  && chmod +x /entrypoint
 
 ENTRYPOINT ["/init", "/entrypoint"]

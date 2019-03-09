@@ -16,7 +16,7 @@ environment:
   gs_bucket: gs://builds.fanboi.ch
 tasks:
   - setup: |
-      . fanboi2/vendor/builds/utils.sh
+      . fanboi2/scripts/utils.sh
       cd fanboi2/ || exit 1
 
       _local=$(git rev-parse HEAD)
@@ -39,7 +39,7 @@ tasks:
       echo 1 | sudo tee /proc/sys/kernel/unprivileged_userns_clone
       gcloud auth activate-service-account --key-file=$HOME/.creds/fanboi-gcp-builds.json
   - build: |
-      . fanboi2/vendor/builds/utils.sh
+      . fanboi2/scripts/utils.sh
       cd fanboi2/ || exit 1
 
       restore_cache $gs_bucket $HOME img Dockerfile || true
