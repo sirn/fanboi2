@@ -1,21 +1,21 @@
-LDFLAGS     += -L/usr/local/lib
-CFLAGS      += -I/usr/local/include
-HOSTNAME    != hostname -s
+LDFLAGS+=		-L/usr/local/lib
+CFLAGS+=		-I/usr/local/include
+HOSTNAME!=		hostname -s
 
-BUILDDIR    ?= builds/$(HOSTNAME)
-VENVDIR     ?= $(BUILDDIR)/venv
-YARN        ?= yarn
+BUILDDIR?=		builds/$(HOSTNAME)
+VENVDIR?=		$(BUILDDIR)/venv
+YARN?=			yarn
 
-VIRTUALENV  ?= virtualenv
-ALEMBIC      = $(VENVDIR)/bin/alembic
-FBCTL        = $(VENVDIR)/bin/fbctl
-FBCELERY     = $(VENVDIR)/bin/fbcelery
-PIP          = $(VENVDIR)/bin/pip3
-PYTHON       = $(VENVDIR)/bin/python3
+VIRTUALENV?=	virtualenv
+ALEMBIC=		$(VENVDIR)/bin/alembic
+FBCTL=			$(VENVDIR)/bin/fbctl
+FBCELERY=		$(VENVDIR)/bin/fbcelery
+PIP=			$(VENVDIR)/bin/pip3
+PYTHON=			$(VENVDIR)/bin/python3
 
-BUILDENV     = env LANG=en_US.UTF-8 LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS)"
+BUILDENV=		env LANG=en_US.UTF-8 LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS)"
 
-ASSETS_SRCS != [ -d assets ] && find assets/ -type f
+ASSETS_SRCS!=	[ -d assets ] && find assets/ -type f
 
 
 all: assets prod
