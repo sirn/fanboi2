@@ -1,3 +1,0 @@
-include *.ini *.cfg *.rst
-recursive-include fanboi2 *.py *.ico *.png *.css *.gif *.jpg *.mako *.js
-recursive-include migration *.py *.mako

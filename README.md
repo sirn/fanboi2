@@ -8,7 +8,7 @@ Board engine behind [Fanboi Channel](https://fanboi.ch/) written in Python.
 
 For production environment, Fanboi2 has the following runtime requirements:
 
--   [Python 3.6](https://www.python.org/downloads/) with [Virtualenv](https://virtualenv.pypa.io/en/stable/)
+-   [Python 3.6](https://www.python.org/downloads/) with [Poetry](https://poetry.eustace.io)
 -   [PostgreSQL 10](https://www.postgresql.org/)
 -   [Redis](https://redis.io/)
 
@@ -21,16 +21,18 @@ After all packages are installed, setup the application with:
 
     $ git clone https://git.sr.ht/~sirn/fanboi2 fanboi2
     $ cd fanboi2/
-    $ make all -j2
+    $ poetry install --no-dev
+    $ yarn install && yarn run gulp
 
 Then configure environment variables according to the configuring section below, and run:
 
-    $ make migrate
-    $ make serve
+    $ poetry run alembic upgrade head
+    $ poetry run fbctl serve
 
-You also need to run the worker (in another terminal) with:
+You also need to run the worker (each in its own terminal window) with:
 
-    $ make worker
+    $ poetry run fbcelery worker
+    $ poetry run fbcelery beat
 
 And you're done! Please visit <http://localhost:6543/admin/> to perform initial configuration.
 
@@ -51,14 +53,12 @@ Fanboi2 uses environment variable to configure the application. You may want to 
 
 To setup Fanboi2 in development mode, run the following commands after performing production setup steps:
 
-    $ make dev
+    $ poetry install
 
 And run the server with (each in its own terminal window):
 
-    $ make devserve
-    $ make devassets
-    $ make worker
-    $ make beat
+    $ poetry run fbctl serve --reload --workers=1 --threads=4
+    $ yarn run gulp watch
 
 ### Submitting changes
 
@@ -80,66 +80,6 @@ Submitting patches via mailing list is recommended in case you wish to remain an
 
 -   When making a non-trivial changes, please first discuss in the [mailing list](https://lists.sr.ht/~sirn/fanboi2-dev) or in the [development thread](https://fanboi.ch/meta/).
 -   Make sure new features has enough tests and no regressions.
-
-## Workflow
-
-Fanboi2 uses a `Makefile`-based workflow in its development and production cycle. You are encourage to use `make` rather than directly invoking underlying commands. The provided `Makefile` can be customized to certain extent using environment variable, such as:
-
--   `VERBOSE=1` -- Prints the underlying command when running `make`.
--   `VIRTUALENV=virtualenv` -- Specifies the `virtualenv` binary (e.g. `virtualenv-3.6` for BSDs)
--   `YARN=yarn` -- Specifies the `yarn` binary.
--   `VENVDIR=.venv` -- Specifies the virtualenv directory.
-
-The following make targets are available for use in production:
-
--   `make all` build the application and assets using production configurations.
--   `make prod` build the application using production configuration.
--   `make serve` run the application server.
--   `make worker` run the application worker.
--   `make assets` build assets.
--   `make migrate` migrate daabase.
--   `make clean` remove everything.
-
-The following make targets are available for use in development:
-
--   `make dev` builds the application using development configuration.
--   `make devrun` run the development application server, application worker and assets watcher.
--   `make devserve` run the development application server.
--   `make devassets` run the development assets watcher.
-
-The following make targets are available for use in test environment:
-
--   `make test` run tests.
-
-Most of these commands make use of VENVDIR.
-
-### The Adventurous Way
-
-If using `make` is not your thing, you can set everything up manually, for example on macOS:
-
-    $ brew install python@3 node@8 yarn
-
-Create the deploy environment:
-
-    $ mkdir -p $HOME/dev/fanboi2/venv
-    $ virtualenv new -p python3 $HOME/dev/fanboi2/venv
-    $ git clone https://git.sr.ht/~sirn/fanboi2 $HOME/dev/fanboi2/src
-
-Setup the application:
-
-    $ cd $HOME/dev/fanboi2/src
-    $ $HOME/dev/fanboi2/venv/bin/pip3 install -e .[dev,test]
-    $ yarn install
-    $ yarn run gulp
-
-Configure environment variable then:
-
-    $ $HOME/dev/fanboi2/venv/bin/alembic upgrade head
-    $ $HOME/dev/fanboi2/venv/bin/fbctl serve --reload
-
-In another terminal, run the worker:
-
-    $ $HOME/dev/fanboi2/venv/bin/fbcelery worker
 
 ## License
 

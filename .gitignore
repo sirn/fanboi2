@@ -16,8 +16,7 @@ tmp/
 celerybeat*
 
 # Building
-*.build
-*.venv
+dist/
 
 # Assets
 node_modules/
