@@ -67,20 +67,6 @@ And run the server with (which will run everything required for development):
 3. Run `cat builds/bootstrap.sh | ssh user@host sudo sh`
 4. Configure NFS mount or clone the project according to the instruction above.
 
-### Docker Compose
-
-To ease the development, we also provide a [Docker Compose](https://docs.docker.com/compose/) file suitable for both development and evaluation purpose. Please note that the resulting Dockerfile is not being used in [Fanboi Channel](https://fanboi.ch/) and may regress from time to time. To use this `docker-compose.yml` for evaluation purpose, simply use the auto-configuration tool:
-
-    $ ./docker-gen.sh -o docker-compose.override.yml
-    $ docker-compose up -d
-
-In case you wish to develop using Docker Compose, instead run:
-
-    $ ./docker-gen.sh -d -o docker-compose.override.yml
-    $ docker-compose up --build -d
-
-Please inspect and adjust `docker-compose.override.yml` as needed.
-
 ### Submitting changes
 
 To submit patches to mailing list:
