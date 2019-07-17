@@ -1,40 +1,28 @@
-image: freebsd/12.x
+image: freebsd/latest
 packages:
-  - google-cloud-sdk
   - node8
   - npm-node8
   - postgresql10-server
   - py36-pip
   - py36-sqlite3
   - py36-virtualenv
+  - python3
   - python36
+  - yarn-node8
 secrets:
-  - 0347322f-3bbd-4a3f-9df0-2868607e19f3
   - 1628f803-8887-41bc-9044-d8e909dcc77b
 sources:
   - https://git.sr.ht/~sirn/fanboi2
 environment:
   BUILDDIR: /tmp/fanboi2-build
   VENVDIR: /tmp/fanboi2-venv
-  VIRTUALENV: virtualenv-3.6
-  deploy_ref: refs/heads/master
-  deploy_repo: https://git.sr.ht/~sirn/fanboi2
-  deploy_target: app.targets.fanboi.ch
-  gs_bucket: gs://builds.fanboi.ch
 tasks:
-  - setup: |
-      sudo npm install -g yarn
-      gcloud auth activate-service-account --key-file=$HOME/.creds/fanboi-gcp-builds.json
   - build: |
-      . fanboi2/scripts/utils.sh
       cd fanboi2/ || exit 1
 
-      restore_cache $gs_bucket $HOME pip-cache setup.py || true
-      restore_cache $gs_bucket $HOME node-modules package.json || true
       make prod
       make assets
   - test: |
-      . fanboi2/scripts/utils.sh
       cd fanboi2/ || exit 1
 
       sudo service postgresql oneinitdb
@@ -48,28 +36,25 @@ tasks:
 
       sudo touch /var/log/postgresql.log
       sudo chown postgres /var/log/postgresql.log
-
       sudo service postgresql start
       trap "sudo service postgresql stop" 0 1 2 3 6 14 15
       sudo -u postgres createuser -ds fanboi2
       sudo -u postgres createdb -U fanboi2 fanboi2_test
 
       make test POSTGRESQL_TEST_DATABASE="postgresql://fanboi2:@localhost:5432/fanboi2_test"
-      store_cache $gs_bucket $HOME pip-cache setup.py .cache/pip || true
-      store_cache $gs_bucket $HOME node-modules package.json fanboi2/node_modules || true
 
       _local=$(git rev-parse HEAD)
-      _remote=$(git ls-remote $deploy_repo $deploy_ref | awk '{ print $1 }')
+      _remote=$(git ls-remote https://git.sr.ht/~sirn/fanboi2 refs/heads/master | awk '{ print $1 }')
       if [ "$_local" != "$_remote" ]; then
         complete-build
       fi
   - deploy: |
       cd fanboi2/ || exit 1
 
-      _hosts=$(host -t A $deploy_target | awk '{ print $4 }')
       make deploy
+
       $VENVDIR/bin/fbdeploy \
         --path=/srv/fanboi2 \
         --user=fanboi2 \
         --postcmd=/srv/fanboi2/postcmd \
-        $_hosts
+        $(host -t A app.targets.fanboi.ch | awk '{ print $4 }')
