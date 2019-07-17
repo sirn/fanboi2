@@ -43,3 +43,9 @@ tasks:
 
       export POSTGRESQL_TEST_DATABASE="postgresql://fanboi2:@localhost:5432/fanboi2_test"
       poetry run nose2 --verbose --with-coverage
+  - build: |
+      cd fanboi2/ || exit 1
+      export PATH=$HOME/.local/bin:$PATH
+
+      poetry build --format=sdist
+      tar -tvzf dist/fanboi2-*.tar.gz
