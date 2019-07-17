@@ -17,9 +17,9 @@ tasks:
       cd fanboi2/ || exit 1
       export PATH=$HOME/.local/bin:$PATH
 
-      pip install --user poetry
+      pip install -q --user poetry
       poetry install
-      yarn install
+      yarn install --no-progress
       yarn run gulp
   - test: |
       cd fanboi2/ || exit 1
@@ -42,4 +42,4 @@ tasks:
       sudo -u postgres createdb -U fanboi2 fanboi2_test
 
       export POSTGRESQL_TEST_DATABASE="postgresql://fanboi2:@localhost:5432/fanboi2_test"
-      poetry run nose2
+      poetry run nose2 --verbose --with-coverage
