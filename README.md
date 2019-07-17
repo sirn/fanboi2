@@ -132,7 +132,7 @@ Setup the application:
     $ yarn install
     $ yarn run gulp
 
-Configure `envfile` then:
+Configure environment variable then:
 
     $ $HOME/dev/fanboi2/venv/bin/alembic upgrade head
     $ $HOME/dev/fanboi2/venv/bin/fbctl serve --reload
