@@ -10,7 +10,6 @@ VIRTUALENV  ?= virtualenv
 ALEMBIC      = $(VENVDIR)/bin/alembic
 FBCTL        = $(VENVDIR)/bin/fbctl
 FBCELERY     = $(VENVDIR)/bin/fbcelery
-HONCHO       = $(VENVDIR)/bin/honcho
 PIP          = $(VENVDIR)/bin/pip3
 PYTHON       = $(VENVDIR)/bin/python3
 
@@ -100,10 +99,6 @@ assets: $(BUILDDIR)/.build-assets
 dev: $(BUILDDIR)/.build-dev
 
 
-devrun: dev assets
-	$(HONCHO) start -e $(ENVFILE) -f Procfile.dev
-
-
 devserve: dev
 	$(FBCTL) serve --reload --workers=1 --threads=4
 
@@ -157,5 +152,5 @@ $(VERBOSE).SILENT:
 
 .PHONY: all prod serve worker shell beat assets
 .PHONY: deploy dist distclean distpack
-.PHONY: dev devrun devserve devassets
+.PHONY: dev devserve devassets
 .PHONY: test migrate clean

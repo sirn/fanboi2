@@ -65,7 +65,7 @@ setup(
     zip_safe=False,
     test_suite="fanboi2.tests",
     extras_require={
-        "dev": ["honcho", "hupper", "pre-commit"],
+        "dev": ["hupper"],
         "test": ["nose", "coverage", "rednose"],
         "deploy": ["fabric", "patchwork", "invocations", "colorama"],
     },

@@ -53,10 +53,12 @@ To setup Fanboi2 in development mode, run the following commands after performin
 
     $ make dev
 
-And run the server with (which will run everything required for development):
+And run the server with (each in its own terminal window):
 
-    $ make devrun
-
+    $ make devserve
+    $ make devassets
+    $ make worker
+    $ make beat
 
 ### Submitting changes
 
