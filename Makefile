@@ -13,7 +13,6 @@ FBCTL        = $(VENVDIR)/bin/fbctl
 FBCELERY     = $(VENVDIR)/bin/fbcelery
 HONCHO       = $(VENVDIR)/bin/honcho
 PIP          = $(VENVDIR)/bin/pip3
-PRECOMMIT    = $(VENVDIR)/bin/pre-commit
 PYTHON       = $(VENVDIR)/bin/python3
 
 BUILDENV     = env LANG=en_US.UTF-8 LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS)"
@@ -105,10 +104,6 @@ dev: $(BUILDDIR)/.build-dev
 
 devrun: dev assets
 	$(HONCHO) start -e $(ENVFILE) -f Procfile.dev
-
-
-devhook: dev
-	$(PRECOMMIT) install $(ARGS)
 
 
 devserve: dev

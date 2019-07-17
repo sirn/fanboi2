@@ -52,7 +52,6 @@ Fanboi2 uses environment variable to configure the application. In case `make` i
 To setup Fanboi2 in development mode, run the following commands after performing production setup steps:
 
     $ make dev
-    $ make devhook
 
 And run the server with (which will run everything required for development):
 
@@ -87,7 +86,6 @@ Submitting patches via mailing list is recommended in case you wish to remain an
 
 -   When making a non-trivial changes, please first discuss in the [mailing list](https://lists.sr.ht/~sirn/fanboi2-dev) or in the [development thread](https://fanboi.ch/meta/).
 -   Make sure new features has enough tests and no regressions.
--   Fix any offenses as reported by pre-commit hooks.
 
 ## Workflow
 
@@ -113,7 +111,6 @@ The following make targets are available for use in development:
 
 -   `make dev` builds the application using development configuration.
 -   `make devrun` run the development application server, application worker and assets watcher.
--   `make devhook` install development pre-commit hook to the repository.
 -   `make devserve` run the development application server.
 -   `make devassets` run the development assets watcher.
 
@@ -151,10 +148,6 @@ Configure `envfile` then:
 In another terminal, run the worker:
 
     $ $HOME/dev/fanboi2/venv/bin/fbcelery worker
-
-Also install `pre-commit-hook` if you want to contribute to the project:
-
-    $ $HOME/dev/fanboi2/venv/bin/pre-commit install
 
 ## License
 
