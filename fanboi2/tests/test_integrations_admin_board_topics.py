@@ -1870,14 +1870,11 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
         def assert_posts_deleted(begin, end):
             if begin is not None:
                 for p in posts[:begin]:
-                    print(p.number, "f")
                     self.assertFalse(inspect(p).was_deleted)
             for p in posts[begin:end]:
-                print(p.number, "t")
                 self.assertTrue(inspect(p).was_deleted)
             if end is not None:
                 for p in posts[end:]:
-                    print(p.number, "f")
                     self.assertFalse(inspect(p).was_deleted)
 
         self.dbsession.commit()

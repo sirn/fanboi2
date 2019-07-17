@@ -206,7 +206,7 @@ class TestIntegrationAPI(ModelSessionMixin, unittest.TestCase):
         request.method = "GET"
         request.matchdict["board"] = "notexists"
         with self.assertRaises(NoResultFound):
-            print(board_topics_get(request))
+            board_topics_get(request)
 
     @unittest.mock.patch("fanboi2.tasks.topic.add_topic.delay")
     def test_board_topics_post(self, add_):
