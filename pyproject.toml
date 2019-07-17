@@ -4,7 +4,7 @@ version = "2019.8"
 description = "Pseudonomous message board"
 authors = ["Kridsada Thanabulpong <sirn@ogsite.net>"]
 license = "BSD-3-Clause"
-include = ["migration/**/*"]
+include = ["migration/**/*", "fanboi2/static/**/*"]
 exclude = ["fanboi2/tests/**/*"]
 
 [tool.poetry.scripts]
