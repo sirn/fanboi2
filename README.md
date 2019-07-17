@@ -23,7 +23,7 @@ After all packages are installed, setup the application with:
     $ cd fanboi2/
     $ make all -j2
 
-Then configure `.env` according to the configuring section below, and run:
+Then configure environment variables according to the configuring section below, and run:
 
     $ make migrate
     $ make serve
@@ -36,7 +36,7 @@ And you're done! Please visit <http://localhost:6543/admin/> to perform initial 
 
 ## Configuring
 
-Fanboi2 uses environment variable to configure the application. In case `make` is used, you can create a file named `.env` in the root directory of the project and our make configuration will happily use it up on `make serve` or `make devserve`. Otherwise you may want to use something like [Direnv](https://github.com/direnv/direnv).
+Fanboi2 uses environment variable to configure the application. You may want to use something like [Direnv](https://github.com/direnv/direnv) to manage these environment variables.
 
 -   `AUTH_SECRET` -- **Required**. Secret for authentication/authorization cookie.
 -   `CELERY_BROKER_URL` -- **Required**. Redis URL for Celery broker, e.g. redis://127.0.0.1/1
@@ -95,7 +95,6 @@ Fanboi2 uses a `Makefile`-based workflow in its development and production cycle
 -   `VIRTUALENV=virtualenv` -- Specifies the `virtualenv` binary (e.g. `virtualenv-3.6` for BSDs)
 -   `YARN=yarn` -- Specifies the `yarn` binary.
 -   `VENVDIR=.venv` -- Specifies the virtualenv directory.
--   `ENVFILE=.env` -- Specifies the file containing environment variable to load from.
 
 The following make targets are available for use in production:
 
@@ -118,7 +117,7 @@ The following make targets are available for use in test environment:
 
 -   `make test` run tests.
 
-Most of these commands make use of VENVDIR and ENVFILE.
+Most of these commands make use of VENVDIR.
 
 ### The Adventurous Way
 
@@ -138,7 +137,6 @@ Setup the application:
     $ $HOME/dev/fanboi2/venv/bin/pip3 install -e .[dev,test]
     $ yarn install
     $ yarn run gulp
-    $ vi $HOME/dev/fanboi2/envfile
 
 Configure `envfile` then:
 

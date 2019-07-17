@@ -4,7 +4,6 @@ HOSTNAME    != hostname -s
 
 BUILDDIR    ?= builds/$(HOSTNAME)
 VENVDIR     ?= $(BUILDDIR)/venv
-ENVFILE     ?= .env
 YARN        ?= yarn
 
 VIRTUALENV  ?= virtualenv
@@ -16,7 +15,6 @@ PIP          = $(VENVDIR)/bin/pip3
 PYTHON       = $(VENVDIR)/bin/python3
 
 BUILDENV     = env LANG=en_US.UTF-8 LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS)"
-RUNENV       = env LANG=en_US.UTF-8 $$(test -f $(ENVFILE) && cat $(ENVFILE))
 
 ASSETS_SRCS != [ -d assets ] && find assets/ -type f
 
@@ -77,19 +75,19 @@ prod: $(BUILDDIR)/.build
 
 
 serve: prod
-	$(RUNENV) $(FBCTL) serve
+	$(FBCTL) serve
 
 
 worker: prod
-	$(RUNENV) $(FBCELERY) worker
+	$(FBCELERY) worker
 
 
 shell: prod
-	$(RUNENV) $(FBCTL) shell
+	$(FBCTL) shell
 
 
 beat: prod
-	$(RUNENV) $(FBCELERY) beat
+	$(FBCELERY) beat
 
 
 assets: $(BUILDDIR)/.build-assets
@@ -107,7 +105,7 @@ devrun: dev assets
 
 
 devserve: dev
-	$(RUNENV) $(FBCTL) serve --reload --workers=1 --threads=4
+	$(FBCTL) serve --reload --workers=1 --threads=4
 
 
 devassets: assets
@@ -141,7 +139,7 @@ distpack:
 
 
 migrate: $(BUILDDIR)/.build
-	$(RUNENV) $(ALEMBIC) upgrade head $(ARGS)
+	$(ALEMBIC) upgrade head $(ARGS)
 
 
 clean:
