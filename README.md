@@ -57,14 +57,6 @@ And run the server with (which will run everything required for development):
 
     $ make devrun
 
-### FreeBSD
-
-[Fanboi Channel](https://fanboi.ch/) uses FreeBSD as its deploy target. We no longer provides Vagrantfile due to complexity to maintain the environment, however in case a FreeBSD VM is used (e.g. via Bhyve, Xhyve, Virtualbox or other virtual machine applications) we provide a `scripts/bootstrap.sh` script which should setup the environment to be as close to the production setup as much as possible. To use the script:
-
-1. Create a virtual machine running [FreeBSD 12.0-RELEASE](https://www.freebsd.org/releases/12.0R/relnotes.html)
-2. Setup your user with `sudo` and SSH.
-3. Run `cat builds/bootstrap.sh | ssh user@host sudo sh`
-4. Configure NFS mount or clone the project according to the instruction above.
 
 ### Submitting changes
 
