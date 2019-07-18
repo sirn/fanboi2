@@ -108,7 +108,7 @@ export class BoardSelector extends SingletonComponent {
         // or if selector was attached but not displayed.
         window.addEventListener("resize", (e: Event) => {
             clearTimeout(throttleTimer);
-            throttleTimer = setTimeout(() => {
+            throttleTimer = window.setTimeout(() => {
                 if ($selector && selectorState) {
                     _update(BoardSelector.getSelectorHeight($selector));
                     selectorState = true;

@@ -8,7 +8,7 @@ export class DelegationComponent implements IComponent {
     public targetSelector: string;
 
     constructor() {
-        setTimeout((): void => {
+        window.setTimeout((): void => {
             this.bindGlobal();
         }, 1);
     }
@@ -26,7 +26,7 @@ export class SingletonComponent implements IComponent {
             $context = document;
         }
 
-        setTimeout((): void => {
+        window.setTimeout((): void => {
             if ($context) {
                 let $element = $context.querySelector(this.targetSelector);
                 if ($element) {
@@ -49,7 +49,7 @@ export class CollectionComponent implements IComponent {
             $context = document;
         }
 
-        setTimeout((): void => {
+        window.setTimeout((): void => {
             if ($context) {
                 let $elements = $context.querySelectorAll(this.targetSelector);
                 this.bindAll($elements);

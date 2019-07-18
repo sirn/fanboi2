@@ -82,7 +82,7 @@ export class TopicQuickReply extends DelegationComponent {
 
         let _repositionPopover = () => {
             clearTimeout(throttleTimer);
-            throttleTimer = setTimeout(() => {
+            throttleTimer = window.setTimeout(() => {
                 if ($popover) {
                     let newPopoverNode = popoverView.render($target);
                     let patches = diff(popoverNode, newPopoverNode);

@@ -15,14 +15,14 @@ For production environment, Fanboi2 has the following runtime requirements:
 Additionally, the following packages are build-time requirements for compiling assets:
 
 -   [Node 8](https://nodejs.org/) (Node 10 will NOT work)
--   [Yarn](https://yarnpkg.com/)
+-   [NPM](https://www.npmjs.com)
 
 After all packages are installed, setup the application with:
 
     $ git clone https://git.sr.ht/~sirn/fanboi2 fanboi2
     $ cd fanboi2/
     $ poetry install --no-dev
-    $ yarn install && yarn run gulp
+    $ npm install && npm run gulp
 
 Then configure environment variables according to the configuring section below, and run:
 
@@ -58,7 +58,7 @@ To setup Fanboi2 in development mode, run the following commands after performin
 And run the server with (each in its own terminal window):
 
     $ poetry run fbctl serve --reload --workers=1 --threads=4
-    $ yarn run gulp watch
+    $ npm run gulp watch
 
 ### Submitting changes
 

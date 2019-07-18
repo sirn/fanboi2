@@ -56,7 +56,7 @@ export class TopicStateTracker extends CollectionComponent {
 
         $target.addEventListener("change", (e: Event): void => {
             clearTimeout(throttleTimer);
-            throttleTimer = setTimeout(() => {
+            throttleTimer = window.setTimeout(() => {
                 dispatchCustomEvent($target, "updateState", {
                     name: trackerName,
                     value: $target.value,

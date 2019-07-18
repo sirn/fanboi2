@@ -12,54 +12,8 @@ var buffer = require("vinyl-buffer");
 var browserify = require("browserify");
 var tsify = require("tsify");
 
-/* Settings
- * ---------------------------------------------------------------------- */
-
-var paths = {
-    /* Path for storing application-specific assets. */
-    app: {
-        assets: "assets/app/assets/*",
-        stylesheets: [
-            "assets/app/stylesheets/app.scss",
-            "assets/app/stylesheets/*.scss",
-            "assets/app/stylesheets/themes/*.scss",
-        ],
-        javascripts: {
-            glob: "assets/app/javascripts/**/*.ts",
-            base: "assets/app/javascripts/",
-            entry: "assets/app/javascripts/app.ts",
-        },
-    },
-
-    /* Path for storing admin-specific assets. */
-    admin: {
-        assets: "assets/admin/assets/*",
-        stylesheets: [
-            "assets/admin/stylesheets/*.scss",
-            "assets/admin/stylesheets/themes/*.scss",
-        ],
-    },
-
-    /* Path for storing third-party assets. */
-    vendor: {
-        assets: "assets/vendor/assets/*",
-        stylesheets: "assets/vendor/stylesheets/**/*.css",
-        javascripts: ["assets/vendor/javascripts/**/*.js"],
-    },
-
-    /* Path for storing compatibility assets. */
-    legacy: {
-        assets: "assets/legacy/assets/*",
-        stylesheets: "assets/legacy/stylesheets/**/*.css",
-        javascripts: "assets/legacy/javascripts/**/*.js",
-    },
-
-    /* Path to output compiled assets to. */
-    dest: "fanboi2/static",
-};
-
-/* Helpers
- * ----------------------------------------------------------------------------------- */
+/* Utils
+ * -------------------------------------------------------------------------------- */
 
 function logError(error) {
     console.log(error);
@@ -67,86 +21,93 @@ function logError(error) {
 }
 
 /* Assets
- * ---------------------------------------------------------------------- */
+ * -------------------------------------------------------------------------------- */
 
-gulp.task("assets", function() {
+function assets() {
     return es
         .merge([
-            gulp.src(paths.app.assets),
-            gulp.src(paths.admin.assets),
-            gulp.src(paths.vendor.assets),
-            gulp.src(paths.legacy.assets),
+            gulp.src("assets/admin/assets/*"),
+            gulp.src("assets/app/assets/*"),
+            gulp.src("assets/legacy/assets/*"),
+            gulp.src("assets/vendor/assets/*")
         ])
-        .pipe(gulp.dest(paths.dest));
-});
+        .pipe(gulp.dest("fanboi2/static"));
+}
 
-/* Stylesheets
- * ---------------------------------------------------------------------- */
+/* Styles
+ * -------------------------------------------------------------------------------- */
 
 var postcssProcessors = [
     require("autoprefixer"),
     require("postcss-round-subpixels"),
     require("css-mqpacker"),
     require("postcss-urlrev")({
-        relativePath: paths.dest,
+        relativePath: "fanboi2/static",
         replacer: function(url, hash) {
             /* PostCSS-Urlrev uses ?v= by default. Override to
              * make it compatible with ?h= syntax in app. */
             return url + "?h=" + hash.slice(0, 8);
-        },
+        }
     }),
-    require("cssnano")({ preset: "default" }),
+    require("cssnano")({ preset: "default" })
 ];
 
-gulp.task("styles/app", ["assets"], function() {
+function styleApp() {
     return gulp
-        .src(paths.app.stylesheets)
+        .src([
+            "assets/app/stylesheets/app.scss",
+            "assets/app/stylesheets/*.scss",
+            "assets/app/stylesheets/themes/*.scss"
+        ])
         .pipe(sourcemaps.init())
         .pipe(sass().on("error", sass.logError))
         .pipe(concat("app.css"))
         .pipe(postcss(postcssProcessors).on("error", logError))
         .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest(paths.dest));
-});
+        .pipe(gulp.dest("fanboi2/static"));
+}
 
-gulp.task("styles/admin", ["assets"], function() {
+function styleAdmin() {
     return gulp
-        .src(paths.admin.stylesheets)
+        .src([
+            "assets/admin/stylesheets/*.scss",
+            "assets/admin/stylesheets/themes/*.scss"
+        ])
         .pipe(sourcemaps.init())
         .pipe(sass().on("error", sass.logError))
         .pipe(concat("admin.css"))
         .pipe(postcss(postcssProcessors).on("error", logError))
         .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest(paths.dest));
-});
+        .pipe(gulp.dest("fanboi2/static"));
+}
 
-gulp.task("styles/vendor", function() {
+function styleVendor() {
     return gulp
-        .src(paths.vendor.stylesheets)
+        .src("assets/vendor/**/*.css")
         .pipe(sourcemaps.init())
         .pipe(concat("vendor.css"))
         .pipe(postcss(postcssProcessors).on("error", logError))
         .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest(paths.dest));
-});
+        .pipe(gulp.dest("fanboi2/static"));
+}
 
-gulp.task("styles", ["styles/app", "styles/admin", "styles/vendor"]);
+var styles = gulp.series(assets, gulp.parallel(styleApp, styleAdmin, styleVendor));
 
-/* JavaScripts
- * ---------------------------------------------------------------------- */
+/* Scripts
+ * -------------------------------------------------------------------------------- */
 
 var externalDependencies = [
     "dom4",
     "domready",
     "es6-promise",
     "js-cookie",
-    "virtual-dom",
+    "virtual-dom"
 ];
 
-gulp.task("javascripts/app", function() {
+var scriptApp = function() {
     return browserify({ debug: true })
         .plugin(tsify)
-        .require(paths.app.javascripts.entry, { entry: true })
+        .require("assets/app/javascripts/app.ts", { entry: true })
         .external(externalDependencies)
         .bundle()
         .on("error", logError)
@@ -155,10 +116,20 @@ gulp.task("javascripts/app", function() {
         .pipe(sourcemaps.init({ loadMaps: true }))
         .pipe(uglify())
         .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest(paths.dest));
-});
+        .pipe(gulp.dest("fanboi2/static"));
+};
 
-gulp.task("javascripts/vendor", function() {
+var scriptLegacy = function() {
+    return gulp
+        .src("assets/legacy/**/*.js")
+        .pipe(sourcemaps.init())
+        .pipe(concat("legacy.js"))
+        .pipe(uglify())
+        .pipe(sourcemaps.write("."))
+        .pipe(gulp.dest("fanboi2/static"));
+};
+
+var scriptVendor = function() {
     return browserify({ debug: true })
         .require(externalDependencies)
         .bundle()
@@ -168,36 +139,34 @@ gulp.task("javascripts/vendor", function() {
         .pipe(sourcemaps.init({ loadMaps: true }))
         .pipe(uglify())
         .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest(paths.dest));
-});
+        .pipe(gulp.dest("fanboi2/static"));
+};
 
-gulp.task("javascripts/legacy", function() {
-    return gulp
-        .src(paths.legacy.javascripts)
-        .pipe(sourcemaps.init())
-        .pipe(concat("legacy.js"))
-        .pipe(uglify())
-        .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest(paths.dest));
-});
+var scripts = gulp.parallel(scriptApp, scriptLegacy, scriptVendor);
 
-gulp.task("javascripts", [
-    "javascripts/app",
-    "javascripts/vendor",
-    "javascripts/legacy",
-]);
+/* Build
+ * -------------------------------------------------------------------------------- */
 
-/* Defaults
- * ---------------------------------------------------------------------- */
+var build = gulp.parallel(styles, scripts);
 
-gulp.task("default", ["assets", "styles", "javascripts"]);
+function watch() {
+    gulp.watch("assets/app/**/*.scss", styles);
+    gulp.watch("assets/admin/**/*.scss", styles);
+    gulp.watch("assets/vendor/**/*.css", styles);
 
-gulp.task("watch", ["default"], function() {
-    gulp.watch(paths.app.stylesheets, ["styles/app"]);
-    gulp.watch(paths.admin.stylesheets, ["styles/admin"]);
-    gulp.watch(paths.vendor.stylesheets, ["styles/vendor"]);
+    gulp.watch("assets/app/**/*.ts", scripts);
+    gulp.watch("assets/vendor/**/*.js", scripts);
+    gulp.watch("assets/legacy/**/*.js", scripts);
+}
 
-    gulp.watch(paths.app.javascripts.glob, ["javascripts/app"]);
-    gulp.watch(paths.vendor.javascripts, ["javascripts/vendor"]);
-    gulp.watch(paths.legacy.javascripts, ["javascripts/legacy"]);
-});
+/* Exports
+ * -------------------------------------------------------------------------------- */
+
+exports.watch = watch;
+exports.build = build;
+exports.assets = assets;
+exports.styles = styles;
+exports.scripts = scripts;
+
+/* Default task */
+exports.default = build;

@@ -118,7 +118,7 @@ export class AnchorPopover extends DelegationComponent {
                     // see if user will move mouse into the quote; otherwise
                     // immediately detach.
                     if ($popover.parentNode) {
-                        dismissTimer = setTimeout((): void => {
+                        dismissTimer = window.setTimeout((): void => {
                             _detach();
                         }, 100);
                     } else {

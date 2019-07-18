@@ -9,7 +9,6 @@ packages:
   - py36-virtualenv
   - python3
   - python36
-  - yarn-node8
 sources:
   - https://git.sr.ht/~sirn/fanboi2
 tasks:
@@ -19,8 +18,8 @@ tasks:
 
       pip install -q --user poetry
       poetry install
-      yarn install --no-progress
-      yarn run gulp
+      npm install
+      npm run gulp
   - test: |
       cd fanboi2/ || exit 1
       export PATH=$HOME/.local/bin:$PATH
