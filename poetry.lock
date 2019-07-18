@@ -1,5 +1,5 @@
 [[package]]
-category = "dev"
+category = "main"
 description = "A configurable sidebar-enabled Sphinx theme"
 name = "alabaster"
 optional = true
@@ -44,7 +44,7 @@ cffi = ">=1.0.0"
 six = "*"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Fast ASN.1 parser and serializer with definitions for private keys, public keys, certificates, CRL, OCSP, CMS, PKCS#3, PKCS#7, PKCS#8, PKCS#12, PKCS#5, X.509 and TSP"
 name = "asn1crypto"
 optional = true
@@ -52,7 +52,7 @@ python-versions = "*"
 version = "0.24.0"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Internationalization utilities"
 name = "babel"
 optional = true
@@ -63,7 +63,7 @@ version = "2.7.0"
 pytz = ">=2015.7"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Modern password hashing for your software and your servers"
 name = "bcrypt"
 optional = true
@@ -83,7 +83,7 @@ python-versions = "*"
 version = "3.5.0.5"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "A thin, practical wrapper around terminal coloring, styling, and positioning"
 name = "blessings"
 optional = true
@@ -134,7 +134,7 @@ python-versions = "*"
 version = "3.0.4"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Cross-platform colored terminal text."
 name = "colorama"
 optional = true
@@ -150,7 +150,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*, <4"
 version = "4.5.3"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
 name = "cryptography"
 optional = true
@@ -171,7 +171,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*"
 version = "4.4.0"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Docutils -- Python Documentation Utilities"
 name = "docutils"
 optional = true
@@ -190,7 +190,7 @@ version = "0.7.1"
 decorator = "*"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Python 3.4 Enum backported to 3.3, 3.2, 3.1, 2.7, 2.6, 2.5, and 2.4"
 name = "enum34"
 optional = true
@@ -198,7 +198,7 @@ python-versions = "*"
 version = "1.1.6"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "High level SSH command execution"
 name = "fabric"
 optional = true
@@ -255,7 +255,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "2.8"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Getting image size from png/jpeg/jpeg2000/gif file"
 name = "imagesize"
 optional = true
@@ -263,7 +263,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "1.1.0"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Common/best-practice Invoke tasks and collections"
 name = "invocations"
 optional = true
@@ -280,7 +280,7 @@ tabulate = "0.7.5"
 tqdm = ">=4.8.1"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Pythonic task execution"
 name = "invoke"
 optional = true
@@ -299,7 +299,7 @@ version = "0.6.0"
 six = "*"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "A small but fast and easy to use stand-alone template engine written in pure python."
 name = "jinja2"
 optional = true
@@ -379,7 +379,7 @@ coverage = ">=4.4.1"
 six = ">=1.7"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Core utilities for Python packages"
 name = "packaging"
 optional = true
@@ -391,7 +391,7 @@ pyparsing = ">=2.0.2"
 six = "*"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "SSH2 protocol library"
 name = "paramiko"
 optional = true
@@ -420,7 +420,7 @@ python-versions = "*"
 version = "2.0.1"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Deployment/sysadmin operations, powered by Fabric"
 name = "patchwork"
 optional = true
@@ -490,7 +490,7 @@ cffi = ">=1.4.1"
 six = "*"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Python parsing module"
 name = "pyparsing"
 optional = true
@@ -617,7 +617,7 @@ python-versions = "*"
 version = "2.0.0"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "A Sphinx extension for changelog manipulation"
 name = "releases"
 optional = true
@@ -651,7 +651,7 @@ idna = ">=2.5,<2.9"
 urllib3 = ">=1.21.1,<1.25.0 || >1.25.0,<1.25.1 || >1.25.1,<1.26"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "A library implementing the 'SemVer' scheme."
 name = "semantic-version"
 optional = true
@@ -667,7 +667,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*"
 version = "1.12.0"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "This package provides 23 stemmers for 22 languages generated from Snowball algorithms."
 name = "snowballstemmer"
 optional = true
@@ -675,7 +675,7 @@ python-versions = "*"
 version = "1.9.0"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Python documentation generator"
 name = "sphinx"
 optional = true
@@ -698,7 +698,7 @@ snowballstemmer = ">=1.1"
 sphinxcontrib-websupport = "*"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Sphinx API for Web Apps"
 name = "sphinxcontrib-websupport"
 optional = true
@@ -714,7 +714,7 @@ python-versions = "*"
 version = "1.2.19"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Pretty-print tabular data"
 name = "tabulate"
 optional = true
@@ -722,7 +722,7 @@ python-versions = "*"
 version = "0.7.5"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Fast, Extensible Progress Meter"
 name = "tqdm"
 optional = true
@@ -836,10 +836,10 @@ transaction = ">=1.6.0"
 "zope.interface" = ">=3.6.0"
 
 [extras]
-deploy = []
+deploy = ["fabric", "patchwork", "invocations", "colorama"]
 
 [metadata]
-content-hash = "72385dddd31ce11dd323c327d73270626c8bc4aa6176edf7200a2ba51e6af2c8"
+content-hash = "790ac8b2a5772d8d3968529c2d669c90bfd7769b2a53eed17b6eb775874c9270"
 python-versions = "^3.6"
 
 [metadata.hashes]
