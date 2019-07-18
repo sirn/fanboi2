@@ -159,7 +159,7 @@ def pack_app(args, sudo_user=None):
 
     echo("Compiling assets ... ")
     try:
-        run_local(["make", "assets"], hide=True)
+        run_local(["npm", "run", "gulp"], hide=True)
     except UnexpectedExit as e:
         echo("failed\n\n")
         echo_error("Failed to compile assets. The error given was:")
@@ -169,7 +169,7 @@ def pack_app(args, sudo_user=None):
 
     echo("Creating distribution ... ")
     try:
-        run_local(["make", "distclean", "distpack"], hide=True)
+        run_local(["poetry", "build", "--format=sdist"], hide=True)
     except UnexpectedExit as e:
         echo("failed\n\n")
         fail(e, "create distribution")
