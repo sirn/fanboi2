@@ -184,6 +184,7 @@ def pack_app(args, sudo_user=None):
 def _upload_artifact(conn, local, remote):
     echo("Uploading distribution ... ")
     conn.put(local, remote)
+    conn.run(normalize_cmd(["chmod", "0644", remote]), hide=True)
     echo("done\n")
 
 
@@ -238,10 +239,13 @@ def setup_app(args, metadata, sudo_user=None):
     dist_remote = "/tmp/%s-v%s.tar.gz" % (TS, __VERSION__)
     srcdir_remote = "%s/versions/%s-v%s" % (args.path, TS, __VERSION__)
     for host in args.host:
+        # Upload session need to be closed before running conn.run
+        # otherwise this may result in two SSH connections to the server.
         with Connection(host, port=args.port, user=args.user) as conn:
-            hostmeta = metadata[host]
             echo_h2(host)
             _upload_artifact(conn, dist_local, dist_remote)
+        with Connection(host, port=args.port, user=args.user) as conn:
+            hostmeta = metadata[host]
             _extract_artifact(conn, dist_remote, srcdir_remote, sudo_user)
             _setup_app(conn, srcdir_remote, hostmeta, sudo_user)
             echo("\n")
