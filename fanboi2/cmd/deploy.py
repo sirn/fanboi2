@@ -135,7 +135,7 @@ def check_readiness(args, sudo_user=None):
     success = True
     metadata = {}
     for host in args.host:
-        with Connection(host, user=args.user) as conn:
+        with Connection(host, port=args.port, user=args.user) as conn:
             echo_h2(host)
             ok1, m = _check_bin(conn, REQUIRED_BINS, sudo_user)
             ok2 = _check_path(conn, args.path, sudo_user)
@@ -238,7 +238,7 @@ def setup_app(args, metadata, sudo_user=None):
     dist_remote = "/tmp/%s-v%s.tar.gz" % (TS, __VERSION__)
     srcdir_remote = "%s/versions/%s-v%s" % (args.path, TS, __VERSION__)
     for host in args.host:
-        with Connection(host, user=args.user) as conn:
+        with Connection(host, port=args.port, user=args.user) as conn:
             hostmeta = metadata[host]
             echo_h2(host)
             _upload_artifact(conn, dist_local, dist_remote)
@@ -299,7 +299,7 @@ def commit_app(args, srcdir, sudo_user=None):
     versions = os.path.abspath(os.path.join(srcdir, ".."))
 
     for host in args.host:
-        with Connection(host, user=args.user) as conn:
+        with Connection(host, port=args.port, user=args.user) as conn:
             echo_h2(host)
             _commit_app(conn, srcdir, current, sudo_user)
             _commit_postcmd(conn, args.postcmd, sudo_user)
@@ -325,6 +325,7 @@ def main():
     parser.add_argument("--user", type=str, default=getpass.getuser())
     parser.add_argument("--path", type=str, required=True)
     parser.add_argument("--keep", type=int, default=3)
+    parser.add_argument("--port", type=int, default=22)
     parser.add_argument("--deployuser", type=str, default=None)
     parser.add_argument("--postcmd", type=str, default=None)
 
