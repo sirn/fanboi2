@@ -17,6 +17,55 @@ Additionally, the following packages are build-time requirements for compiling a
 -   [Node 8](https://nodejs.org/) (Node 10 will NOT work)
 -   [NPM](https://www.npmjs.com)
 
+### Installing on FreeBSD systems
+
+On FreeBSD systems, these packages can be installed with:
+
+```shell
+$ sudo pkg install ca_root_nss python36 py36-sqlite3 py36-pip postgresql10-server postgresql10-client redis node8 npm-node8
+$ pip install --user poetry
+```
+
+Setup PostgreSQL:
+
+```shell
+$ sudo sysrc postgresql_enable=YES
+$ sudo service postgresql initdb
+$ sudo service postgresql start
+$ sudo -u postgres createuser $USER
+$ sudo -u postgres createdb -O $USER fanboi2
+$ sudo -u postgres createdb -O $USER fanboi2_dev
+$ sudo -u postgres createdb -O $USER fanboi2_test
+```
+
+Setup Redis:
+
+```shell
+$ sudo sysrc redis_enable=YES
+$ sudo service redis start
+```
+
+### Configuring environment variables
+
+For convenient during development, configure these environment variables in `.profile`:
+
+```shell
+$ cat <<EOF >> ~/.profile
+PATH=\$PATH:\$HOME/.local/bin; export PATH
+CELERY_BROKER_URL=redis://127.0.0.1:6379/1; export CELERY_BROKER_URL
+DATABASE_URL=postgresql://127.0.0.1:5432/fanboi2_dev; export DATABASE_URL
+POSTGRESQL_TEST_DATABASE=postgresql://127.0.0.1:5432/fanboi2_test; export POSTGRESQL_TEST_DATABASE
+REDIS_URL=redis://127.0.0.1:6379/0; export REDIS_URL
+SERVER_DEV=true; export SERVER_DEV
+SERVER_HOST=0.0.0.0; export SERVER_HOST
+SERVER_PORT=6543; export SERVER_PORT
+SESSION_SECRET=\$(openssl rand -hex 32); export SESSION_SECRET
+AUTH_SECRET=\$(openssl rand -hex 32); export AUTH_SECRET
+EOF
+```
+
+### Setting up application
+
 After all packages are installed, setup the application with:
 
     $ git clone https://git.sr.ht/~sirn/fanboi2 fanboi2
@@ -24,7 +73,7 @@ After all packages are installed, setup the application with:
     $ poetry install --no-dev
     $ npm install && npm run gulp
 
-Then configure environment variables according to the configuring section below, and run:
+Then configure environment variables and run:
 
     $ poetry run alembic upgrade head
     $ poetry run fbctl serve
