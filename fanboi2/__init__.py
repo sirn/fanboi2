@@ -143,7 +143,7 @@ def make_config(settings):  # pragma: no cover
 
     config.set_session_factory(session_factory)
     config.set_csrf_storage_policy(SessionCSRFStoragePolicy(key="_csrf"))
-    config.set_request_property(route_name)
+    config.add_request_method(route_name, property=True)
     config.add_request_method(tagged_static_path)
     config.add_route("robots", "/robots.txt")
 
