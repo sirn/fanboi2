@@ -40,10 +40,9 @@ SCOPE_PARSER = Lark(
     value   : REGEXP | ESCAPED_STRING | STRING?
 
     KEYWORD : (LETTER | "_" | "-")+
-    REGEXP  : "/" STRING_INNER* "/"
+    REGEXP  : "/" ("\\\""|/[^"]/)* "/"
     STRING  : /[^" \t\f\r\n]/+
 
-    %import common.STRING_INNER   -> STRING_INNER
     %import common.ESCAPED_STRING -> ESCAPED_STRING
     %import common.LETTER         -> LETTER
     """,
