@@ -21,10 +21,7 @@ from ..version import __VERSION__
 TS = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
 
 
-REQUIRED_BINS = (
-    ("python3", ("python3.6", "python-3.6")),
-    ("virtualenv", ("virtualenv3.6", "virtualenv-3.6", "virtualenv")),
-)
+REQUIRED_BINS = (("python3", ("python3.6", "python-3.6")),)
 
 
 #
@@ -213,18 +210,9 @@ def _setup_app(conn, srcdir, hostmeta, sudo_user=None):
     try:
         with conn.cd(srcdir):
             run_as(
-                conn,
-                sudo_user,
-                [
-                    hostmeta["virtualenv"],
-                    "-p",
-                    hostmeta["python3"],
-                    "--always-copy",
-                    "venv",
-                ],
-                hide=True,
+                conn, sudo_user, [hostmeta["python3"], "-m", "venv", "venv"], hide=True
             )
-            run_as(conn, sudo_user, ["venv/bin/pip3", "install", "-e", "."], hide=True)
+            run_as(conn, sudo_user, ["venv/bin/pip", "install", "-e", "."], hide=True)
     except UnexpectedExit as e:
         echo("failed\n\n")
         fail(e, "setup application")

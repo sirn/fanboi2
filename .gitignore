@@ -5,9 +5,7 @@ Thumbs.db
 # Application runtime
 static/
 tmp/
-.eggs/
 *.dump
-*.egg-info/
 *.env
 *.log
 *.pyc
@@ -16,7 +14,10 @@ tmp/
 celerybeat*
 
 # Building
+*.egg-info/
+.eggs/
 dist/
+setup.py
 
 # Assets
 node_modules/
