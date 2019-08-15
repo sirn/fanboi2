@@ -4,7 +4,7 @@ version = "2019.8"
 description = "Pseudonomous message board"
 authors = ["Kridsada Thanabulpong <sirn@ogsite.net>"]
 license = "BSD-3-Clause"
-include = ["migration/**/*", "fanboi2/static/**/*"]
+include = ["migration/**/*", "fanboi2/static/**/*", "alembic.ini"]
 
 [tool.poetry.scripts]
 fbctl = "fanboi2.cmd.ctl:main"
