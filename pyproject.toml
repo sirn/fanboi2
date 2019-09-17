@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fanboi2"
-version = "2019.8"
+version = "2019.10"
 description = "Pseudonomous message board"
 authors = ["Kridsada Thanabulpong <sirn@ogsite.net>"]
 license = "BSD-3-Clause"
@@ -48,9 +48,14 @@ kombu = "~4.3"
 [tool.poetry.dev-dependencies]
 hupper = "^1.8"
 nose2 = "^0.9.1"
-black = {version = "^18.3-alpha.0", allows-prereleases = true}
+black = {version = "^19.3b0", allows-prereleases = true}
+python-language-server = "^0.28.3"
+pyls-black = "^0.4.4"
+pyls-isort = "^0.1.1"
+rope = "^0.14.0"
 flake8 = "^3.7"
 flake8-bugbear = "^19.8"
+pyls-flake8 = {git = "https://github.com/emanspeaks/pyls-flake8.git"}
 
 [tool.poetry.extras]
 deploy = ["fabric", "patchwork", "invocations", "colorama"]
