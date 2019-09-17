@@ -18,15 +18,19 @@ environment:
 tasks:
   - setup: |
       cd fanboi2/ || exit 1
-      export PATH=$HOME/.local/bin:$PATH
+      export VENV=$HOME/venv
+      export PATH=$VENV/bin:$PATH
 
-      pip install -q --user poetry
+      python3 -m venv "$VENV"
+      pip install -q poetry
       poetry install
+
       npm install
       npm run gulp
   - test: |
       cd fanboi2/ || exit 1
-      export PATH=$HOME/.local/bin:$PATH
+      export VENV=$HOME/venv
+      export PATH=$VENV/bin:$PATH
 
       sudo service postgresql oneinitdb
       sudo sysrc postgresql_enable=YES
@@ -48,7 +52,8 @@ tasks:
       poetry run nose2 --verbose --with-coverage
   - build: |
       cd fanboi2/ || exit 1
-      export PATH=$HOME/.local/bin:$PATH
+      export VENV=$HOME/venv
+      export PATH=$VENV/bin:$PATH
 
       poetry build --format=sdist
       tar -tvzf dist/fanboi2-*.tar.gz
@@ -61,7 +66,8 @@ tasks:
       fi
   - deploy: |
       cd fanboi2/ || exit 1
-      export PATH=$HOME/.local/bin:$PATH
+      export VENV=$HOME/venv
+      export PATH=$VENV/bin:$PATH
 
       poetry install --extras=deploy
       poetry run fbdeploy \
