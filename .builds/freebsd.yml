@@ -1,13 +1,12 @@
 image: freebsd/latest
 packages:
-  - node8
-  - npm-node8
-  - postgresql10-client
-  - postgresql10-server
-  - py36-pip
-  - py36-sqlite3
-  - python3
-  - python36
+  - node12
+  - npm-node12
+  - postgresql11-client
+  - postgresql11-server
+  - py37-pip
+  - py37-sqlite3
+  - python37
 sources:
   - https://git.sr.ht/~sirn/fanboi2
 secrets:
@@ -39,7 +38,7 @@ tasks:
         printf "local all all trust\\n"
         printf "host all all 127.0.0.1/32 trust\\n"
         printf "host all all ::1/128 trust\\n"
-      ) | sudo tee /var/db/postgres/data10/pg_hba.conf
+      ) | sudo tee /var/db/postgres/data11/pg_hba.conf
 
       sudo touch /var/log/postgresql.log
       sudo chown postgres /var/log/postgresql.log

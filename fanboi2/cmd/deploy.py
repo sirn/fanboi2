@@ -21,7 +21,7 @@ from ..version import __VERSION__
 TS = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
 
 
-REQUIRED_BINS = (("python3", ("python3.6", "python-3.6")),)
+REQUIRED_BINS = (("python3", ("python3.7", "python-3.7")),)
 
 
 #

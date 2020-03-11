@@ -4,6 +4,7 @@ import logging
 import os
 from functools import lru_cache
 
+from dotenv import load_dotenv, find_dotenv
 from pyramid.config import Configurator
 from pyramid.csrf import SessionCSRFStoragePolicy
 from pyramid.path import AssetResolver
@@ -83,6 +84,9 @@ def tagged_static_path(request, path, **kwargs):
 def settings_from_env(settings_map=ENV_SETTINGS_MAP, environ=os.environ):
     """Reads environment variable into Pyramid-style settings."""
     settings = {}
+
+    load_dotenv(find_dotenv())
+
     for env, rkey, default, fn in settings_map:
         value = environ.get(env, default)
         if value is NO_VALUE:

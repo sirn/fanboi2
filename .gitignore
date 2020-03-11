@@ -29,10 +29,12 @@ node_modules/
 *.ini
 .coverage
 .dir-locals.el
+.dir-locals.el
+.docker-compose.override.yml
 .idea
 .noseids
+.pyls_cmd
 .tool-versions
-.docker-compose.override.yml
 .vagrant
 node_modules/
 out/
