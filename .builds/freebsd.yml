@@ -20,8 +20,8 @@ tasks:
       export VENV=$HOME/venv
       export PATH=$VENV/bin:$PATH
 
-      python3 -m venv "$VENV"
-      pip install -q poetry
+      python3.7 -m venv "$VENV"
+      pip3 install -q poetry
       poetry install
 
       npm install
