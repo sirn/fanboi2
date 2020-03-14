@@ -49,29 +49,3 @@ tasks:
 
       export POSTGRESQL_TEST_DATABASE="postgresql://fanboi2:@localhost:5432/fanboi2_test"
       poetry run nose2 --verbose --with-coverage
-  - build: |
-      cd fanboi2/ || exit 1
-      export VENV=$HOME/venv
-      export PATH=$VENV/bin:$PATH
-
-      poetry build --format=sdist
-      tar -tvzf dist/fanboi2-*.tar.gz
-
-      local_ref=$(git rev-parse HEAD)
-      remote_ref=$(git ls-remote $deploy_repo $deploy_ref | awk '{ print $1 }')
-
-      if [ "$local_ref" != "$remote_ref" ]; then
-        complete-build
-      fi
-  - deploy: |
-      cd fanboi2/ || exit 1
-      export VENV=$HOME/venv
-      export PATH=$VENV/bin:$PATH
-
-      poetry install --extras=deploy
-      poetry run fbdeploy \
-        --path=/srv/fanboi2 \
-        --user=fanboi2 \
-        --postcmd=/srv/fanboi2/postcmd \
-        --port=4022 \
-        $(host -t A app.targets.fanboi.ch | awk '{ print $4 }')
