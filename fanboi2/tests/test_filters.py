@@ -394,6 +394,18 @@ class TestProxyDetector(unittest.TestCase):
 
     @unittest.mock.patch("fanboi2.filters.proxy.BlackBoxProxyDetector.check")
     @unittest.mock.patch("fanboi2.filters.proxy.GetIPIntelProxyDetector.check")
+    def test_check_ipv6(self, getipintel_check, blackbox_check):
+        from . import make_cache_region
+
+        settings = self._make_config()
+        cache_svc = make_cache_region({})
+        proxy_detector = self._make_one(settings, cache_svc)
+        self.assertFalse(proxy_detector.should_reject({"ip_address": "fe80:c9cd::1"}))
+        assert not blackbox_check.called
+        assert not getipintel_check.called
+
+    @unittest.mock.patch("fanboi2.filters.proxy.BlackBoxProxyDetector.check")
+    @unittest.mock.patch("fanboi2.filters.proxy.GetIPIntelProxyDetector.check")
     def test_check_cached(self, getipintel_check, blackbox_check):
         from . import make_cache_region
 
