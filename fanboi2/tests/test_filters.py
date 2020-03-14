@@ -132,6 +132,16 @@ class TestDNSBL(unittest.TestCase):
         lookup_call.assert_called_with("254.100.0.10.xbl.spamhaus.org.")
 
     @unittest.mock.patch("socket.gethostbyname")
+    def test_should_reject_ipv6(self, lookup_call):
+        lookup_call.return_value = "127.0.0.2"
+        dnsbl = self._make_one()
+        self.assertTrue(dnsbl.should_reject({"ip_address": "fe80:c9cd::1"}))
+        lookup_call.assert_called_with(
+            "1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0."
+            + "d.c.9.c.0.8.e.f.xbl.spamhaus.org."
+        )
+
+    @unittest.mock.patch("socket.gethostbyname")
     def test_should_reject_false(self, lookup_call):
         import socket
 

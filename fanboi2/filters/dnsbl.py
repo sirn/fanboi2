@@ -1,5 +1,5 @@
 import socket
-from ipaddress import ip_interface, ip_network
+from ipaddress import ip_address, ip_interface, ip_network
 
 from . import register_filter
 
@@ -21,11 +21,12 @@ class DNSBL(object):
         :param payload: A filter payload.
         """
         for provider in self.providers:
+            ipaddr = ip_address(payload["ip_address"])
+            lookup = ".".join(ipaddr.reverse_pointer.split(".")[:-2])
             try:
-                check = ".".join(reversed(payload["ip_address"].split(".")))
-                res = socket.gethostbyname("%s.%s." % (check, provider))
-                ipaddr = ip_interface("%s/255.0.0.0" % (res,))
-                if ipaddr.network == ip_network("127.0.0.0/8"):
+                res = socket.gethostbyname("%s.%s." % (lookup, provider))
+                result = ip_interface("%s/255.0.0.0" % (res,))
+                if result.network == ip_network("127.0.0.0/8"):
                     return True
             except (socket.gaierror, ValueError):
                 continue
