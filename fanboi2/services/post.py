@@ -1,4 +1,5 @@
 import datetime
+import ipaddress
 
 from sqlalchemy.sql import func
 
@@ -90,10 +91,21 @@ class PostCreateService(object):
         ident_type = "none"
         if board.settings["use_ident"]:
             ident_type = "ident"
+            ident_addr = ip_address
+
+            # Since it's common for IPv6 setup to delegate a /64 from ISP to a home
+            # network, it makes more sense here to always generate ident based on
+            # /64 network instead of individual address.
+            if ipaddress.ip_address(ip_address).version == 6:
+                ident_type = "ident_v6"
+                ident_addr = str(
+                    ipaddress.ip_network("%s/64" % (ip_address,), strict=False)
+                )
+
             ident = self.identity_svc.identity_with_tz_for(
                 self.setting_query_svc.value_from_key("app.time_zone"),
                 board=topic.board.slug,
-                ip_address=ip_address,
+                ip_address=ident_addr,
             )
 
         post = Post(

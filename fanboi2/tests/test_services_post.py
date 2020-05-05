@@ -52,6 +52,23 @@ class TestPostCreateService(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(topic_meta.post_count, 1)
         self.assertIsNotNone(topic_meta.bumped_at)
 
+    def test_create_ipv6(self):
+        from ..models import Board, Topic, TopicMeta
+
+        board = self._make(Board(slug="foo", title="Foo"))
+        topic = self._make(Topic(board=board, title="Hello", status="open"))
+        self._make(TopicMeta(topic=topic, post_count=0))
+        self.dbsession.commit()
+        post_create_svc = self._make_one()
+        post1 = post_create_svc.create(topic.id, "Hello!", True, "fe80:c9cd::1")
+        self.assertEqual(post1.ip_address, "fe80:c9cd::1")
+        self.assertEqual(post1.ident, "foo,fe80:c9cd::/64")
+        self.assertEqual(post1.ident_type, "ident_v6")
+        post2 = post_create_svc.create(topic.id, "Hello!", True, "fe80:c9cd::96f0:1111")
+        self.assertEqual(post2.ip_address, "fe80:c9cd::96f0:1111")
+        self.assertEqual(post2.ident, "foo,fe80:c9cd::/64")
+        self.assertEqual(post2.ident_type, "ident_v6")
+
     def test_create_without_bumped(self):
         from ..models import Board, Topic, TopicMeta
 
