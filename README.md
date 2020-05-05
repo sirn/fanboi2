@@ -137,26 +137,3 @@ To submit patches to mailing list:
 3.  Configure Git sendmail address: `git config sendemail.to ~sirn/fanboi2-dev@lists.sr.ht`
 4.  Create a patch: `git format-patch -1 HEAD` (refer to `git-format-patch(1)` for more info)
 5.  Send a patch: `git send-email -1` (refer to `git-send-email(1)` for more info)
-
-To submit patches via [GitHub Pull Request](https://github.com/sirn/fanboi2):
-
-1.  Fork the repository using "Fork" button on the top right of the [GitHub project page](https://github.com/sirn/fanboi2).
-2.  Make the necessary changes.
-3.  Submit pull request against the **master** branch.
-
-Submitting patches via mailing list is recommended in case you wish to remain anonymous (e.g. using thrown-away email address). GitHub, on the other hand, require you to create account with them and [GitHub terms of service explicitly forbids having more than one account](https://help.github.com/articles/github-terms-of-service/#b-account-terms). Whether method you choose, our reviewer will review and merge the patch as soon as possible. It would be much appreciated if you could follow the following guidelines:
-
--   When making a non-trivial changes, please first discuss in the [mailing list](https://lists.sr.ht/~sirn/fanboi2-dev) or in the [development thread](https://fanboi.ch/meta/).
--   Make sure new features has enough tests and no regressions.
-
-## License
-
-Copyright © 2013-2020, Kridsada Thanabulpong. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
--   Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
--   Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
--   Neither the name of the author nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

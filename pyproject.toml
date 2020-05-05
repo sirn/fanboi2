@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fanboi2"
-version = "2020.3"
+version = "2020.5"
 description = "Pseudonomous message board"
 authors = ["Kridsada Thanabulpong <sirn@ogsite.net>"]
 license = "BSD-3-Clause"
