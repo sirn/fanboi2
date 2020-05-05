@@ -17,14 +17,16 @@ export class PostCollectionView {
         return h(
             "div",
             { className: "js-post-collection" },
-            posts.map((post: Post): VNode => {
-                return h("div", { className: "post" }, [
-                    h("div", { className: "container" }, [
-                        PostCollectionView.renderHeader(post),
-                        PostCollectionView.renderBody(post),
-                    ]),
-                ]);
-            }),
+            posts.map(
+                (post: Post): VNode => {
+                    return h("div", { className: "post" }, [
+                        h("div", { className: "container" }, [
+                            PostCollectionView.renderHeader(post),
+                            PostCollectionView.renderBody(post)
+                        ])
+                    ]);
+                }
+            )
         );
     }
 
@@ -33,7 +35,7 @@ export class PostCollectionView {
             PostCollectionView.renderHeaderNumber(post),
             PostCollectionView.renderHeaderName(post),
             PostCollectionView.renderHeaderDate(post),
-            PostCollectionView.renderHeaderIdent(post),
+            PostCollectionView.renderHeaderIdent(post)
         ]);
     }
 
@@ -49,10 +51,10 @@ export class PostCollectionView {
             {
                 className: classList.join(" "),
                 dataset: {
-                    topicQuickReply: post.number,
-                },
+                    topicQuickReply: post.number
+                }
             },
-            [post.number.toString()],
+            [post.number.toString()]
         );
     }
 
@@ -60,9 +62,9 @@ export class PostCollectionView {
         return h(
             "span",
             {
-                className: "post-header-item name",
+                className: "post-header-item name"
             },
-            [post.name],
+            [post.name]
         );
     }
 
@@ -73,20 +75,39 @@ export class PostCollectionView {
         return h(
             "span",
             {
-                className: "post-header-item date",
+                className: "post-header-item date"
             },
-            [`Posted ${formatter}`],
+            [`Posted ${formatter}`]
         );
     }
 
     private static renderHeaderIdent(post: Post): VNode | string {
         if (post.ident) {
+            let identCls = ["post-header-item", "ident"];
+            let identName = "ID";
+
+            switch (post.identType) {
+                case "ident_v6": {
+                    identName = "ID6";
+                    identCls.push("ident-v6");
+                    break;
+                }
+
+                default: {
+                    identName = "ID";
+                    if (post.identType != "ident") {
+                        identCls.push(post.identType.replace("_", "-"));
+                    }
+                    break;
+                }
+            }
+
             return h(
                 "span",
                 {
-                    className: "post-header-item ident",
+                    className: identCls.join(" ")
                 },
-                [`ID:${post.ident}`],
+                [`${identName}:${post.ident}`]
             );
         } else {
             return "";
@@ -98,9 +119,9 @@ export class PostCollectionView {
             "div",
             {
                 className: "post-body",
-                innerHTML: post.bodyFormatted,
+                innerHTML: post.bodyFormatted
             },
-            [],
+            []
         );
     }
 }

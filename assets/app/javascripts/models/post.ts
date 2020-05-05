@@ -11,6 +11,7 @@ export class Post extends Model {
     bumped: boolean;
     createdAt: string;
     ident: string;
+    identType: string;
     name: string;
     number: number;
     topicId: number;
@@ -26,6 +27,7 @@ export class Post extends Model {
         this.bumped = data["bumped"];
         this.createdAt = data["created_at"];
         this.ident = data["ident"];
+        this.identType = data["ident_type"];
         this.name = data["name"];
         this.number = data["number"];
         this.topicId = data["topic_id"];
@@ -35,7 +37,7 @@ export class Post extends Model {
     static queryAll(
         topicId: number,
         query?: string,
-        token?: CancellableToken,
+        token?: CancellableToken
     ): Promise<Post[]> {
         let entryPoint = `/api/1.0/topics/${topicId}/posts/`;
 
@@ -44,16 +46,18 @@ export class Post extends Model {
         }
 
         return request("GET", entryPoint, {}, token).then(resp => {
-            return JSON.parse(resp).map((data: Object): Post => {
-                return new Post(data);
-            });
+            return JSON.parse(resp).map(
+                (data: Object): Post => {
+                    return new Post(data);
+                }
+            );
         });
     }
 
     static createOne(
         topicId: number,
         params: IRequestBody,
-        token?: CancellableToken,
+        token?: CancellableToken
     ): Promise<Post> {
         return request("POST", `/api/1.0/topics/${topicId}/posts/`, params, token).then(
             (resp: string) => {
@@ -66,7 +70,7 @@ export class Post extends Model {
                 } else {
                     return new Post(data);
                 }
-            },
+            }
         );
     }
 }
