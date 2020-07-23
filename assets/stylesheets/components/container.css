@@ -1,0 +1,16 @@
+/** @define container */
+
+/* Block: container
+ * A generic container for managing site min-width and other property. */
+.container {
+    @util clearfix;
+
+    box-sizing: border-box;
+    margin: auto;
+    max-width: var(--bp-desktop);
+    padding: 0 var(--sp-horizontal-normal);
+
+    @media (--desktop-viewport) {
+        padding: 0;
+    }
+}

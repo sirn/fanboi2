@@ -1,0 +1,39 @@
+/** @define form-group */
+
+/* Element: form-group
+ * Provides a group of form elements. */
+.form-group {
+    + .form-group {
+        margin-top: var(--sp-vertical-small);
+    }
+
+    &__label {
+        display: block;
+        margin-bottom: var(--sp-vertical-smaller);
+    }
+
+    &__input {
+        border: 1px solid;
+        box-sizing: border-box;
+        display: block;
+        font-family: var(--font-family);
+        font-size: var(--fs-normal);
+        line-height: var(--lh-default);
+        margin: 0;
+        max-width: 100%;
+        padding: var(--input-gap-vertical) var(--input-gap-horizontal);
+        width: 100%;
+
+        /* Default styling reset. */
+        appearance: none; /* WebKit on mobile */
+        background-color: #fff; /* Firefox on desktop */
+        background-image: none; /* Firefox on mobile */
+        border-radius: var(--radius); /* WebKit on mobile */
+        outline: none; /* WebKit on desktop */
+
+        &--compact {
+            padding: var(--input-gap-vertical-compact)
+                var(--input-gap-horizontal-compact);
+        }
+    }
+}

@@ -1,0 +1,13 @@
+.theme-topaz {
+    .links {
+        &__item {
+            &--current {
+                a,
+                a& {
+                    color: var(--topaz-gray1);
+                    font-weight: bold;
+                }
+            }
+        }
+    }
+}

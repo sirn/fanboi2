@@ -223,20 +223,44 @@ class TestFormatters(unittest.TestCase):
             format_text(text),
             Markup(
                 "<p>Hello from autolink:</p>\n"
-                '<p>Boom: <a href="http://example.com/%22%3Cscript'
-                '%3Ealert%28%22Hi%22%29%3C/script%3E%3Ca" '
-                'class="link" target="_blank" rel="nofollow">'
-                "http://example.com/&quot;&lt;script&gt;alert(&quot;"
-                "Hi&quot;)&lt;/script&gt;&lt;a</a><br>"
-                '<a href="http://www.example.com/%E3%81%BB%E3%81%92" '
-                'class="link" target="_blank" rel="nofollow">'
-                "http://www.example.com/ほげ</a><br>"
-                '<a href="http://www.example.com/%E3%81%BB%E3%81%92" '
-                'class="link" target="_blank" rel="nofollow">'
-                "http://www.example.com/ほげ</a><br>"
-                '<a href="https://www.example.com/test" '
-                'class="link" target="_blank" rel="nofollow">'
-                "https://www.example.com/test</a> foobar</p>"
+                "<p>"
+                "Boom: "
+                "<a"
+                ' class="post__link"'
+                ' href="'
+                "http://example.com/%22%3Cscript%3Ealert%28%22Hi%22%29%3C/script%3E%3Ca"
+                '"'
+                ' target="_blank"'
+                ' rel="nofollow">'
+                "http://example.com/&quot;&lt;script&gt;"
+                "alert(&quot;Hi&quot;)&lt;/script&gt;&lt;a"
+                "</a>"
+                "<br>"
+                "<a"
+                ' class="post__link"'
+                ' href="http://www.example.com/%E3%81%BB%E3%81%92"'
+                ' target="_blank"'
+                ' rel="nofollow">'
+                "http://www.example.com/ほげ"
+                "</a>"
+                "<br>"
+                "<a"
+                ' class="post__link"'
+                ' href="http://www.example.com/%E3%81%BB%E3%81%92"'
+                ' target="_blank"'
+                ' rel="nofollow">'
+                "http://www.example.com/ほげ"
+                "</a>"
+                "<br>"
+                "<a"
+                ' class="post__link"'
+                ' href="https://www.example.com/test"'
+                ' target="_blank"'
+                ' rel="nofollow">'
+                "https://www.example.com/test"
+                "</a>"
+                " foobar"
+                "</p>"
             ),
         )
 
@@ -272,43 +296,91 @@ class TestFormatters(unittest.TestCase):
         self.assertEqual(
             format_text(text),
             Markup(
-                '<p>New product! <a href="https://imgur.com/foobar1" '
-                'class="link" target="_blank" rel="nofollow">'
-                "https://imgur.com/foobar1</a></p>\n"
-                '<p><a href="http://i.imgur.com/foobar2.png" '
-                'class="link" target="_blank" rel="nofollow">'
-                "http://i.imgur.com/foobar2.png</a><br>"
-                '<a href="http://imgur.com/foobar3.jpg" class="link" '
-                'target="_blank" rel="nofollow">'
-                "http://imgur.com/foobar3.jpg</a><br>"
-                '<a href="http://youtu.be/test1" class="link" '
-                'target="_blank" rel="nofollow">'
-                "http://youtu.be/test1</a><br>"
-                '<a href="http://www.youtube.com/watch?v=test2" '
-                'class="link" target="_blank" rel="nofollow">'
-                "http://www.youtube.com/watch?v=test2</a><br>"
+                "<p>New product! "
+                "<a"
+                ' class="post__link"'
+                ' href="https://imgur.com/foobar1"'
+                ' target="_blank"'
+                ' rel="nofollow">'
+                "https://imgur.com/foobar1"
+                "</a>"
+                "</p>\n"
+                "<p>"
+                "<a"
+                ' class="post__link"'
+                ' href="http://i.imgur.com/foobar2.png"'
+                ' target="_blank"'
+                ' rel="nofollow">'
+                "http://i.imgur.com/foobar2.png"
+                "</a>"
+                "<br>"
+                "<a"
+                ' class="post__link"'
+                ' href="http://imgur.com/foobar3.jpg"'
+                ' target="_blank"'
+                ' rel="nofollow">'
+                "http://imgur.com/foobar3.jpg"
+                "</a>"
+                "<br>"
+                "<a"
+                ' class="post__link"'
+                ' href="http://youtu.be/test1"'
+                ' target="_blank"'
+                ' rel="nofollow">'
+                "http://youtu.be/test1"
+                "</a>"
+                "<br>"
+                "<a"
+                ' class="post__link"'
+                ' href="http://www.youtube.com/watch?v=test2"'
+                ' target="_blank"'
+                ' rel="nofollow">'
+                "http://www.youtube.com/watch?v=test2"
+                "</a>"
+                "<br>"
                 "Buy today get TWO for FREE!!1</p>\n"
-                '<p class="thumbnails"><a href="//imgur.com/foobar1" '
-                'class="thumbnail" target="_blank">'
-                '<img src="//i.imgur.com/foobar1b.jpg">'
+                '<div class="thumbnail-group">'
+                "<a"
+                ' class="thumbnail-group__item thumbnail"'
+                ' href="//imgur.com/foobar1"'
+                ' target="_blank">'
+                "<img"
+                ' class="thumbnail__item"'
+                ' src="//i.imgur.com/foobar1b.jpg">'
                 "</a>"
-                '<a href="//imgur.com/foobar2" '
-                'class="thumbnail" target="_blank">'
-                '<img src="//i.imgur.com/foobar2b.jpg">'
+                "<a"
+                ' class="thumbnail-group__item thumbnail"'
+                ' href="//imgur.com/foobar2"'
+                ' target="_blank">'
+                "<img"
+                ' class="thumbnail__item"'
+                ' src="//i.imgur.com/foobar2b.jpg">'
                 "</a>"
-                '<a href="//imgur.com/foobar3" '
-                'class="thumbnail" target="_blank">'
-                '<img src="//i.imgur.com/foobar3b.jpg">'
+                "<a"
+                ' class="thumbnail-group__item thumbnail"'
+                ' href="//imgur.com/foobar3"'
+                ' target="_blank">'
+                "<img"
+                ' class="thumbnail__item"'
+                ' src="//i.imgur.com/foobar3b.jpg">'
                 "</a>"
-                '<a href="//www.youtube.com/watch?v=test2" '
-                'class="thumbnail" target="_blank">'
-                '<img src="//i1.ytimg.com/vi/test2/mqdefault.jpg">'
+                "<a"
+                ' class="thumbnail-group__item thumbnail"'
+                ' href="//www.youtube.com/watch?v=test2"'
+                ' target="_blank">'
+                "<img"
+                ' class="thumbnail__item"'
+                ' src="//i1.ytimg.com/vi/test2/mqdefault.jpg">'
                 "</a>"
-                '<a href="//www.youtube.com/watch?v=test1" '
-                'class="thumbnail" target="_blank">'
-                '<img src="//i1.ytimg.com/vi/test1/mqdefault.jpg">'
+                "<a"
+                ' class="thumbnail-group__item thumbnail"'
+                ' href="//www.youtube.com/watch?v=test1"'
+                ' target="_blank">'
+                "<img"
+                ' class="thumbnail__item"'
+                ' src="//i1.ytimg.com/vi/test1/mqdefault.jpg">'
                 "</a>"
-                "</p>"
+                "</div>"
             ),
         )
 
@@ -419,78 +491,98 @@ class TestFormatters(unittest.TestCase):
             (post1, "<p>Hogehoge<br>Hogehoge</p>"),
             (
                 post2,
-                '<p><a data-anchor-topic="1" '
-                + 'data-anchor="1" '
-                + 'href="/foobar/1/1" '
-                + 'class="anchor">&gt;&gt;1</a></p>',
+                "<p><a"
+                + ' class="post__link--anchor"'
+                + ' data-anchor-topic="1"'
+                + ' data-anchor="1"'
+                + ' href="/foobar/1/1"'
+                + ">&gt;&gt;1</a></p>",
             ),
             (
                 post3,
-                '<p><a data-anchor-topic="1" '
-                + 'data-anchor="1-2" '
-                + 'href="/foobar/1/1-2" '
-                + 'class="anchor">&gt;&gt;1-2</a><br>Hoge</p>',
+                "<p><a"
+                + ' class="post__link--anchor"'
+                + ' data-anchor-topic="1"'
+                + ' data-anchor="1-2"'
+                + ' href="/foobar/1/1-2"'
+                + ">&gt;&gt;1-2</a><br>Hoge</p>",
             ),
             (
                 post4,
-                '<p><a data-anchor-board="demo" '
-                + 'data-anchor-topic="" '
-                + 'data-anchor="" '
-                + 'href="/demo" '
-                + 'class="anchor">&gt;&gt;&gt;/demo</a></p>',
+                "<p><a"
+                + ' class="post__link--anchor"'
+                + ' data-anchor-board="demo"'
+                + ' data-anchor-topic=""'
+                + ' data-anchor=""'
+                + ' href="/demo"'
+                + ">&gt;&gt;&gt;/demo</a></p>",
             ),
             (
                 post5,
-                '<p><a data-anchor-board="demo" '
-                + 'data-anchor-topic="123" '
-                + 'data-anchor="" '
-                + 'href="/demo/123/recent" '
-                + 'class="anchor">&gt;&gt;&gt;/demo/123</a></p>',
+                "<p><a"
+                + ' class="post__link--anchor"'
+                + ' data-anchor-board="demo"'
+                + ' data-anchor-topic="123"'
+                + ' data-anchor=""'
+                + ' href="/demo/123/recent"'
+                + ">&gt;&gt;&gt;/demo/123</a></p>",
             ),
             (
                 post6,
-                '<p><a data-anchor-board="demo" '
-                + 'data-anchor-topic="123" '
-                + 'data-anchor="100-" '
-                + 'href="/demo/123/100-" '
-                + 'class="anchor">&gt;&gt;&gt;/demo/123/100-</a></p>',
+                "<p><a"
+                + ' class="post__link--anchor"'
+                + ' data-anchor-board="demo"'
+                + ' data-anchor-topic="123"'
+                + ' data-anchor="100-"'
+                + ' href="/demo/123/100-"'
+                + ">&gt;&gt;&gt;/demo/123/100-</a></p>",
             ),
             (
                 post7,
-                '<p><a data-anchor-board="demo" '
-                + 'data-anchor-topic="123" '
-                + 'data-anchor="100-" '
-                + 'href="/demo/123/100-" '
-                + 'class="anchor">&gt;&gt;&gt;/demo/123/100-/</a></p>',
+                "<p><a"
+                + ' class="post__link--anchor"'
+                + ' data-anchor-board="demo"'
+                + ' data-anchor-topic="123"'
+                + ' data-anchor="100-"'
+                + ' href="/demo/123/100-"'
+                + ">&gt;&gt;&gt;/demo/123/100-/</a></p>",
             ),
             (
                 post8,
-                '<p><a data-anchor-board="demo" '
-                + 'data-anchor-topic="123" '
-                + 'data-anchor="" '
-                + 'href="/demo/123/recent" '
-                + 'class="anchor">&gt;&gt;&gt;/demo/123</a>-/100-/</p>',
+                "<p><a"
+                + ' class="post__link--anchor"'
+                + ' data-anchor-board="demo"'
+                + ' data-anchor-topic="123"'
+                + ' data-anchor=""'
+                + ' href="/demo/123/recent"'
+                + ">&gt;&gt;&gt;/demo/123</a>-/100-/</p>",
             ),
             (
                 post9,
-                '<p><a data-anchor-board="demo" '
-                + 'data-anchor-topic="" '
-                + 'data-anchor="" '
-                + 'href="/demo" '
-                + 'class="anchor">&gt;&gt;&gt;/demo/</a><br>'
-                + '<a data-anchor-board="demo" '
-                + 'data-anchor-topic="1" '
-                + 'data-anchor="" '
-                + 'href="/demo/1/recent" '
-                + 'class="anchor">&gt;&gt;&gt;/demo/1/</a></p>',
+                "<p><a"
+                + ' class="post__link--anchor"'
+                + ' data-anchor-board="demo"'
+                + ' data-anchor-topic=""'
+                + ' data-anchor=""'
+                + ' href="/demo"'
+                + ">&gt;&gt;&gt;/demo/</a><br>"
+                + "<a"
+                + ' class="post__link--anchor"'
+                + ' data-anchor-board="demo"'
+                + ' data-anchor-topic="1"'
+                + ' data-anchor=""'
+                + ' href="/demo/1/recent"'
+                + ">&gt;&gt;&gt;/demo/1/</a></p>",
             ),
             (
                 post10,
-                '<p><a data-anchor-board="demo" '
-                + 'data-anchor-topic="" '
-                + 'data-anchor="" '
-                + 'href="/demo" '
-                + 'class="anchor">&gt;&gt;&gt;/demo/</a>/100-/</p>',
+                "<p><a"
+                + ' class="post__link--anchor"'
+                + ' data-anchor-board="demo"'
+                + ' data-anchor-topic=""'
+                + ' data-anchor=""'
+                + ' href="/demo"'
+                + ">&gt;&gt;&gt;/demo/</a>/100-/</p>",
             ),
             (post11, "<p>&gt;&gt;&gt;//123-/100-/</p>"),
         )
@@ -509,9 +601,10 @@ class TestFormatters(unittest.TestCase):
         self.assertEqual(
             format_post(None, self.request, post, shorten=5),
             Markup(
-                '<p>Hello</p>\n<p class="shortened">'
-                'Post shortened. <a href="/foobar/1/1-" '
-                'class="anchor">See full post</a>.</p>'
+                "<p>Hello</p>\n"
+                '<div class="post__shortened">Post shortened. '
+                '<a class="post__link--emphasis" href="/foobar/1/1-">'
+                "View full post</a>.</div>"
             ),
         )
 

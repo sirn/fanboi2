@@ -16,6 +16,7 @@ Additionally, the following packages are build-time requirements for compiling a
 
 -   [Node LTS](https://nodejs.org/)
 -   [NPM](https://www.npmjs.com)
+-   [Yarn 1.2](https://classic.yarnpkg.com)
 
 ### Installing with Vagrant
 
@@ -32,7 +33,7 @@ Then `vagrant ssh` and follow the _Setting up applications_ section below.
 On FreeBSD systems, these packages can be installed with:
 
 ```shellsession
-$ sudo pkg install ca_root_nss python36 py36-sqlite3 py36-pip postgresql11-server postgresql11-client redis node12 npm-node12
+$ sudo pkg install ca_root_nss python36 py36-sqlite3 py36-pip postgresql11-server postgresql11-client redis node12 npm-node12 yarn-node12
 $ pip install --user poetry
 ```
 
@@ -82,7 +83,8 @@ After all packages are installed, setup the application with:
 $ git clone https://git.sr.ht/~sirn/fanboi2 fanboi2
 $ cd fanboi2/
 $ poetry install --no-dev
-$ npm install && npm run gulp
+$ yarn install
+$ yarn gulp
 ```
 
 Then configure environment variables and run:

@@ -1,0 +1,28 @@
+/** @define links */
+
+/* Element: links
+ * Formats a list of link horizontally or vertically. */
+.links {
+    @util clearfix;
+    display: block;
+    padding: 0;
+    margin: 0;
+
+    /* Element: item
+     * Represent each item in a list. */
+    &__item {
+        float: left;
+        list-style: none;
+        margin: 0 var(--sp-horizontal-small) 0 0;
+        padding: 0;
+    }
+
+    /* Modifier: tabs
+     * Make the link list looks like tabs. */
+    &--tabs {
+        .links__item {
+            padding: var(--sp-vertical-small) 0;
+            border-bottom: 2px solid;
+        }
+    }
+}

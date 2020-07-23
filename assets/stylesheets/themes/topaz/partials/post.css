@@ -1,0 +1,69 @@
+.theme-topaz {
+    .post {
+        color: var(--topaz-gray3);
+
+        &__item {
+            &--bumped {
+                background-color: var(--topaz-gray3);
+                border-color: var(--topaz-gray3);
+                color: var(--topaz-white);
+                font-weight: bold;
+            }
+
+            &--saged {
+                background-color: var(--topaz-white);
+                border-color: var(--topaz-gray3);
+                color: var(--topaz-gray3);
+                font-weight: bold;
+            }
+
+            &--bumped:hover,
+            &--saged:hover {
+                background-color: var(--topaz-gray2);
+                border-color: var(--topaz-gray2);
+                color: var(--topaz-white);
+            }
+
+            &--name {
+                background-color: var(--topaz-white);
+                border-color: var(--topaz-white);
+                font-weight: bold;
+            }
+
+            &--datetime {
+                font-style: italic;
+            }
+        }
+
+        &__container {
+            color: var(--topaz-secondary);
+        }
+
+        &__link {
+            &--emphasis {
+                font-weight: bold;
+            }
+
+            &--emphasis,
+            &--anchor {
+                color: #08c;
+
+                &:hover {
+                    color: var(--topaz-gray2);
+                }
+            }
+        }
+
+        &__shortened {
+            color: var(--topaz-gray3);
+            font-style: italic;
+        }
+
+        @media (--desktop-viewport) {
+            .post__item--datetime {
+                font-style: normal;
+                font-weight: bold;
+            }
+        }
+    }
+}

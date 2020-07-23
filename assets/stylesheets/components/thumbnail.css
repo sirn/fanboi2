@@ -1,0 +1,21 @@
+/** @define thumbnail */
+
+/* Block: thumbnail
+ * Wrapper for individual thumbnail. */
+.thumbnail {
+    height: var(--thumbnail-height);
+    overflow: hidden;
+    position: relative;
+    width: var(--thumbnail-width);
+
+    /* Element: item
+     * An actual image in thumbnail block. */
+    &__item {
+        left: 50%;
+        max-height: var(--thumbnail-height);
+        object-fit: cover;
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+}

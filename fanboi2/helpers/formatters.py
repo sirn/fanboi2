@@ -86,10 +86,27 @@ def extract_thumbnail(text):
     return thumbnails.items()
 
 
-TP_THUMB = '<a href="%s" class="thumbnail" target="_blank"><img src="%s"></a>'
-TP_LINK = '<a href="%s" class="link" target="_blank" rel="nofollow">%s</a>'
+TP_THUMB_PARAGRAPH = '<div class="thumbnail-group">%s</div>'
+TP_THUMB = (
+    "<a"
+    + ' class="thumbnail-group__item thumbnail"'
+    + ' href="%s"'
+    + ' target="_blank">'
+    + '<img class="thumbnail__item" src="%s">'
+    + "</a>"
+)
+
+TP_LINK = (
+    "<a"
+    + ' class="post__link"'
+    + ' href="%s"'
+    + ' target="_blank"'
+    + ' rel="nofollow">'
+    + "%s"
+    + "</a>"
+)
+
 TP_PARAGRAPH = "<p>%s</p>"
-TP_THUMB_PARAGRAPH = '<p class="thumbnails">%s</p>'
 
 
 def url_fix(string):
@@ -173,43 +190,43 @@ def format_markdown(context, request, text):
 
 
 RE_ANCHOR = re.compile(r"%s(\d+)(\-)?(\d+)?" % html.escape(">>"))
-TP_ANCHOR = "".join(
-    """
-<a data-anchor-topic="%s" data-anchor="%s" href="%s" class="anchor">
-%s
-</a>
-""".splitlines()
+TP_ANCHOR = (
+    "<a"
+    + ' class="post__link--anchor"'
+    + ' data-anchor-topic="%s"'
+    + ' data-anchor="%s"'
+    + ' href="%s">'
+    + "%s"
+    + "</a>"
 )
 
 RE_ANCHOR_CROSS = re.compile(
     r"""
-  %s\/                       # Syntax start
-  (\w+)                      # Board name
-  (?:\/(\d+))?               # Topic id
-  (?:\/(\d+)(\-)?(\d+)?)     # Post id
-  ?(\/?)                     # Trailing slash
-"""
+      %s\/                       # Syntax start
+      (\w+)                      # Board name
+      (?:\/(\d+))?               # Topic id
+      (?:\/(\d+)(\-)?(\d+)?)     # Post id
+      ?(\/?)                     # Trailing slash
+    """
     % html.escape(">>>"),
     re.VERBOSE,
 )
-TP_ANCHOR_CROSS = "".join(
-    """
-<a data-anchor-board="%s"
- data-anchor-topic="%s"
- data-anchor="%s"
- href="%s"
- class="anchor">
-%s
-</a>
-""".splitlines()
+TP_ANCHOR_CROSS = (
+    "<a"
+    + ' class="post__link--anchor"'
+    + ' data-anchor-board="%s"'
+    + ' data-anchor-topic="%s"'
+    + ' data-anchor="%s"'
+    + ' href="%s">'
+    + "%s"
+    + "</a>"
 )
 
-TP_SHORTENED = "".join(
-    """
-<p class="shortened">
-Post shortened. <a href="%s" class="anchor">See full post</a>.
-</p>
-""".splitlines()
+TP_SHORTENED = (
+    '<div class="post__shortened">'
+    + "Post shortened. "
+    + '<a class="post__link--emphasis" href="%s">View full post</a>.'
+    + "</div>"
 )
 
 

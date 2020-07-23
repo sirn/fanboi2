@@ -1,0 +1,73 @@
+/** @define utilities */
+
+/* Utility: util-padded
+ * Add top and bottom padding to the element. */
+.util-padded {
+    padding: var(--sp-vertical-large) 0;
+
+    /* Modifier: smaller
+     * Use smaller padding. */
+    &--smaller {
+        padding: var(--sp-vertical-small) 0;
+    }
+
+    /* Modifier: small
+     * Use small padding. */
+    &--small {
+        padding: var(--sp-vertical-small) 0;
+    }
+
+    /* Modifier: normal
+     * Use normal padding. */
+    &--normal {
+        padding: var(--sp-vertical-normal) 0;
+    }
+}
+
+/* Utility: util-padded-top
+ * Add top padding to the element. */
+.util-padded-top {
+    padding-top: var(--sp-vertical-large);
+
+    /* Modifier: smaller
+     * Use small padding. */
+    &--smaller {
+        padding-top: var(--sp-vertical-small);
+    }
+
+    /* Modifier: small
+     * Use small padding. */
+    &--small {
+        padding-top: var(--sp-vertical-small);
+    }
+
+    /* Modifier: normal
+     * Use normal padding. */
+    &--normal {
+        padding-top: var(--sp-vertical-normal);
+    }
+}
+
+/* Utility: util-padded-bottom
+ * Add bottom padding to the element. */
+.util-padded-bottom {
+    padding-bottom: var(--sp-vertical-large);
+
+    /* Modifier: smaller
+     * Use smaller padding. */
+    &--smaller {
+        padding-bottom: var(--sp-vertical-small);
+    }
+
+    /* Modifier: small
+     * Use small padding. */
+    &--small {
+        padding-bottom: var(--sp-vertical-small);
+    }
+
+    /* Modifier: normal
+     * Use normal padding. */
+    &--normal {
+        padding-bottom: var(--sp-vertical-normal);
+    }
+}

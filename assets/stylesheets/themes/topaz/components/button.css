@@ -1,0 +1,49 @@
+.theme-topaz {
+    .button {
+        background-color: var(--topaz-white);
+        border-color: var(--topaz-primary);
+        color: var(--topaz-primary);
+
+        &:hover {
+            background-color: var(--topaz-gray5);
+            border-color: var(--topaz-primary);
+            color: var(--topaz-primary);
+        }
+
+        &--primary {
+            background-color: var(--topaz-primary);
+            border-color: var(--topaz-primary);
+            color: var(--topaz-white);
+
+            &:hover {
+                background-color: color(var(--topaz-primary) l(+11%));
+                border-color: var(--topaz-primary);
+                color: var(--topaz-white);
+            }
+        }
+
+        &--action {
+            background-color: var(--topaz-gray5);
+            border-color: color(var(--topaz-gray5) l(-9%));
+            color: var(--topaz-gray2);
+
+            &:hover {
+                background-color: var(--topaz-white);
+                border-color: color(var(--topaz-gray5) l(-18%));
+                color: var(--topaz-gray1);
+            }
+        }
+
+        &--success {
+            background-color: var(--topaz-success);
+            border-color: color(var(--topaz-success) l(-5%));
+            color: var(--topaz-white);
+
+            &:hover {
+                background-color: color(var(--topaz-success) l(+3%));
+                border-color: color(var(--topaz-success) l(-8%));
+                color: var(--topaz-white);
+            }
+        }
+    }
+}

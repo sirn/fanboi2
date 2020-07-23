@@ -1,0 +1,13 @@
+.theme-topaz {
+    background: var(--topaz-bg);
+    color: var(--topaz-gray1);
+
+    a {
+        color: var(--topaz-link);
+        text-decoration: none;
+
+        &:hover {
+            color: var(--topaz-link-hover);
+        }
+    }
+}

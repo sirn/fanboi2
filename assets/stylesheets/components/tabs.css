@@ -1,0 +1,26 @@
+/** @define tabs */
+
+/* Element: tabs
+ * Formats a list of link into tabs. */
+.tabs {
+    @util clearfix;
+    display: block;
+    padding: 0;
+    margin: 0;
+
+    /* Element: item
+     * Represent each item in a list. */
+    &__item {
+        float: left;
+        list-style: none;
+        margin: 0 var(--sp-horizontal-small) 0 0;
+        padding: var(--sp-vertical-small) 0;
+        border-bottom: 2px solid;
+    }
+
+    @media (--tablet-viewport) {
+        .tabs__item {
+            margin: 0 var(--sp-horizontal-large) 0 0;
+        }
+    }
+}

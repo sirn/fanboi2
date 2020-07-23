@@ -1,0 +1,24 @@
+/* Partial: footer
+ * The bottom footer of the site, for disclaimer, links, etc. */
+.footer {
+    @util clearfix;
+
+    &__container {
+        position: relative;
+    }
+
+    /* Element: up
+     * Container for up button within the footer. */
+    &__up {
+        padding: var(--sp-vertical-normal) var(--sp-horizontal-normal);
+        position: absolute;
+        right: 0;
+        bottom: 2px;
+    }
+
+    @media (--desktop-viewport) {
+        &__up {
+            right: calc(var(--sp-horizontal-normal) * -1);
+        }
+    }
+}

@@ -1,0 +1,26 @@
+.theme-topaz {
+    .tabs {
+        &__item {
+            border-color: transparent;
+
+            a,
+            a& {
+                color: var(--topaz-gray1);
+            }
+
+            &--current {
+                border-color: var(--topaz-primary);
+
+                a,
+                a& {
+                    color: var(--topaz-primary);
+                }
+            }
+
+            a:hover,
+            a:hover& {
+                color: var(--topaz-primary);
+            }
+        }
+    }
+}

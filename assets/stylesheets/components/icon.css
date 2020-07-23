@@ -1,0 +1,47 @@
+/** @define icon */
+
+/* Block: icon
+ * Basic icon support. */
+.icon {
+    @util text-hide;
+
+    display: inline-block;
+    height: 20px;
+    overflow: hidden;
+    width: 20px;
+
+    &:before {
+        content: " ";
+        float: left;
+    }
+
+    /* Modifier: arrow
+     * Display an arrow icon. */
+    &--arrow:before {
+        background-image: image-set(
+            url(arrow.png) 1dppx,
+            url(arrow@2x.png) 2dppx,
+            url(arrow@3x.png) 3dppx
+        );
+    }
+
+    /* Modifier: arrow
+     * Display an arrow up icon. */
+    &--arrow-up:before {
+        background-image: image-set(
+            url(arrowup.png) 1dppx,
+            url(arrowup@2x.png) 2dppx,
+            url(arrowup@3x.png) 3dppx
+        );
+    }
+
+    /* Modifier: arrow
+     * Display a burger icon. */
+    &--burger:before {
+        background-image: image-set(
+            url(burger.png) 1dppx,
+            url(burger@2x.png) 2dppx,
+            url(burger@3x.png) 3dppx
+        );
+    }
+}

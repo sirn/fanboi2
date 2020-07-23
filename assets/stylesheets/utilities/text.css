@@ -1,0 +1,49 @@
+/** @define utilities */
+
+/* Utility: util-text-left
+ * Aligns text to the left. */
+.util-text-left {
+    text-align: left;
+}
+
+/* Utility: util-text-center
+ * Aligns text to the center. */
+.util-text-center {
+    text-align: center;
+}
+
+/* Utility: util-text-right
+ * Aligns text to the right. */
+.util-text-right {
+    text-align: right;
+}
+
+/* Utility: util-text-normal
+ * Make the text normal size. */
+.util-text-normal {
+    font-size: var(--fs-normal);
+}
+
+/* Utility: util-text-large
+ * Make the text large. */
+.util-text-large {
+    font-size: var(--fs-large);
+}
+
+/* Utility: util-text-larger
+ * Make the text larger. */
+.util-text-larger {
+    font-size: var(--fs-larger);
+}
+
+/* Utility: util-text-small
+ * Make the text small. */
+.util-text-small {
+    font-size: var(--fs-small);
+}
+
+/* Utility: util-text-smaller
+ * Make the text smaller. */
+.util-text-smaller {
+    font-size: var(--fs-smaller);
+}

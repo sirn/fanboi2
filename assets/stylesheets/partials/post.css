@@ -1,0 +1,82 @@
+/* Partial: post
+ * Styling for individual posts. */
+.post {
+    padding-top: var(--sp-vertical-small);
+    padding-bottom: calc(var(--sp-vertical-small) + var(--lh-default));
+    position: relative;
+
+    /* Element: post
+     * Represent individual item for a post. */
+    &__item {
+        display: inline-block;
+        font-size: var(--fs-small);
+
+        &--bumped {
+            transition: color var(--animation-timing) var(--animation-timing-fn),
+                background-color var(--animation-timing) var(--animation-timing-fn),
+                border-color var(--animation-timing) var(--animation-timing-fn);
+        }
+
+        &--bumped,
+        &--saged,
+        &--name {
+            border-radius: var(--radius);
+            border: 1px solid;
+            padding: var(--post-gap-vertical) var(--post-gap-horizontal);
+
+            /* A quick hack to make item visually middle-aligned, since these elements
+             * are bordered, the spacing from line-height doesn't get included as
+             * the visual spacing between elements.
+             *
+             * This margin is set to relative of the line-height, e.g. for 1.5em:
+             *
+             *     ------------ <- 0.25em of spacing at the top
+             *     LINE OF TEXT
+             *     ------------ <- 0.25em of spacing at the bottom
+             *
+             * The bottom spacing is what we're doing with the following calculation.
+             */
+            margin-bottom: calc(calc(var(--lh-default) - 1rem) / 2);
+        }
+
+        &--datetime {
+            bottom: var(--sp-vertical-small);
+            left: 0;
+            position: absolute;
+        }
+    }
+
+    &__container {
+        margin: var(--sp-vertical-smaller) 0 0;
+        overflow-y: auto;
+
+        p {
+            margin: 0 0 var(--sp-vertical-smaller);
+        }
+    }
+
+    &__shortened {
+        font-size: var(--fs-small);
+    }
+
+    /* Modifier: pseudo
+     * Post element that do not display datetime (e.g. no extra bottom padding) */
+    &--pseudo {
+        padding-bottom: var(--sp-vertical-smaller);
+    }
+
+    @media (--desktop-viewport) {
+        padding-bottom: var(--sp-vertical-smaller);
+
+        .post__item {
+            &--datetime {
+                position: static;
+
+                /* Workaround a bug in WebKit where text size doesn't properly
+                 * gets re-calculated. This element has no borders, so it's safe
+                 * to use inline. */
+                display: inline;
+            }
+        }
+    }
+}

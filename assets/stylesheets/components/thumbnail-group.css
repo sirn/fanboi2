@@ -1,0 +1,17 @@
+/** @define thumbnail-group */
+
+/* Block: thumbnail-group
+ * Container for hosting a group of thumbnails. */
+.thumbnail-group {
+    @util clearfix;
+
+    &__item {
+        display: inline-block;
+        float: left;
+        height: var(--thumbnail-height);
+        line-height: 0;
+        margin: 0 var(--thumbnail-gap-horizontal) var(--thumbnail-gap-vertical) 0;
+        overflow: hidden;
+        width: var(--thumbnail-width);
+    }
+}

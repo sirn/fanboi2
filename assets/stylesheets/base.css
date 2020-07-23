@@ -1,0 +1,12 @@
+html {
+    font-family: var(--font-family);
+    font-size: var(--fs-base);
+    line-height: var(--lh-default);
+    min-width: var(--bp-mobile);
+    text-rendering: optimizeLegibility;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}

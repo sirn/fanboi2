@@ -1,0 +1,117 @@
+/* Headers
+ * ---------------------------------------------------------------------- */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0 0 var(--sp-vertical-normal);
+}
+
+h1 {
+    font-size: var(--fs-larger);
+}
+
+h2 {
+    font-size: var(--fs-large);
+}
+
+h3,
+h4,
+h5,
+h6 {
+    font-size: var(--fs-normal);
+}
+
+/* Paragraphs
+ * ---------------------------------------------------------------------- */
+
+p {
+    margin: 0 0 var(--sp-vertical-normal);
+
+    &:last-child {
+        margin: 0;
+    }
+}
+
+/* Text elements
+ * ---------------------------------------------------------------------- */
+
+a,
+ins,
+u {
+    text-decoration-skip-ink: auto;
+    text-decoration-skip: edges;
+}
+
+abbr[title] {
+    border-bottom: 1px dotted;
+    cursor: help;
+    text-decoration: none;
+}
+
+/* Blockquote
+ * ---------------------------------------------------------------------- */
+
+blockquote {
+    border-left: 2px solid;
+    margin-left: 0;
+    padding: var(--sp-vertical-small) var(--sp-horizontal-small);
+}
+
+/* Lists
+ * ---------------------------------------------------------------------- */
+
+ul,
+ol {
+    margin: var(--sp-vertical-normal) var(--sp-horizontal-normal);
+    margin-right: 0;
+    padding: 0;
+
+    li {
+        margin: 0 0 0 var(--sp-horizontal-normal);
+    }
+}
+
+ul {
+    list-style: disc;
+
+    ul {
+        list-style-type: circle;
+    }
+}
+
+ol {
+    list-style: decimal;
+
+    ol {
+        list-style-type: lower-alpha;
+    }
+}
+
+.typo-plain ul,
+.typo-plain ol {
+    margin: 0;
+}
+
+ul:last-child:not(:only-child),
+ol:last-child:not(:only-child) {
+    margin-bottom: 0;
+}
+
+/* The no-margin modifier
+ * ---------------------------------------------------------------------- */
+
+.typo-plain {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p {
+        margin: 0;
+    }
+}

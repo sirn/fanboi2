@@ -1,0 +1,18 @@
+.theme-topaz {
+    .panel {
+        &--bordered,
+        &--bordered-top {
+            border-color: var(--topaz-gray5);
+        }
+
+        &--inverse {
+            background-color: var(--topaz-gray5);
+            border-color: var(--topaz-white);
+        }
+
+        &--tint {
+            background-color: var(--topaz-gray4);
+            border-color: var(--topaz-white);
+        }
+    }
+}

@@ -1,0 +1,9 @@
+.theme-topaz {
+    .util-text-primary {
+        color: var(--topaz-primary);
+    }
+
+    .util-text-gray {
+        color: var(--topaz-gray1);
+    }
+}

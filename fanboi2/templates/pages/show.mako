@@ -2,10 +2,10 @@
 <%include file='_subheader.mako' />
 <%inherit file='../partials/_layout.mako' />
 <%def name='title()'>${page.title}</%def>
-<div class="sheet">
+<div class="panel util-padded">
     <div class="container">
-         <div class="sheet-body content">
-              ${formatters.format_page(request, page)}
-         </div>
+        <div class="panel__item">
+            ${formatters.format_page(request, page)}
+        </div>
     </div>
 </div>

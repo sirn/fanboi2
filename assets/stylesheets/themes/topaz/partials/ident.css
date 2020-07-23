@@ -1,0 +1,9 @@
+.theme-topaz {
+    .ident {
+        &--ident_admin {
+            background-color: var(--topaz-white);
+            border-color: var(--topaz-white);
+            color: var(--topaz-primary);
+        }
+    }
+}

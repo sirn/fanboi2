@@ -1,0 +1,32 @@
+/** @define button */
+
+/* Block: button
+ * Generic styled buttons. */
+.button {
+    border-radius: var(--radius);
+    border: 1px solid;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: inline-block;
+    font-size: var(--fs-normal);
+    line-height: var(--lh-default);
+    margin: 0;
+    outline: none;
+    padding: var(--input-gap-vertical) var(--input-gap-horizontal);
+    text-decoration: none;
+
+    transition: color var(--animation-timing) var(--animation-timing-fn),
+        background-color var(--animation-timing) var(--animation-timing-fn),
+        border-color var(--animation-timing) var(--animation-timing-fn);
+
+    &--compact {
+        padding: var(--input-gap-vertical-compact) var(--input-gap-horizontal-compact);
+    }
+
+    @media (--mobile-viewport) {
+        &--mobile-block {
+            display: block;
+            margin: var(--button-gap-vertical) 0;
+        }
+    }
+}

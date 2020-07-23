@@ -1,0 +1,45 @@
+.theme-debug {
+    background-color: #999;
+
+    .container {
+        background-color: #c69;
+    }
+
+    .icon {
+        &--arrow:before {
+            background-image: image-set(
+                url(arrowb.png) 1dppx,
+                url(arrowb@2x.png) 2dppx,
+                url(arrowb@3x.png) 3dppx
+            );
+        }
+
+        &--arrow-up:before {
+            background-image: image-set(
+                url(arrowupb.png) 1dppx,
+                url(arrowupb@2x.png) 2dppx,
+                url(arrowupb@3x.png) 3dppx
+            );
+        }
+
+        &--burger:before {
+            background-image: image-set(
+                url(burgerb.png) 1dppx,
+                url(burgerb@2x.png) 2dppx,
+                url(burgerb@3x.png) 3dppx
+            );
+        }
+    }
+
+    .header {
+        background-color: #142;
+
+        &__logo:before {
+            background-image: image-set(
+                url(logob.png) 1dppx,
+                url(logob@2x.png) 2dppx,
+                url(logob@3x.png) 3dppx
+            );
+        }
+    }
+}

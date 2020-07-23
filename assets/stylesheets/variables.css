@@ -1,0 +1,65 @@
+@custom-media --mobile-viewport (max-width: 639px);
+@custom-media --tablet-viewport (min-width: 640px);
+@custom-media --desktop-viewport (min-width: 1004px); /* 980px + 12px + 12px */
+
+:root {
+    /* Font sizes */
+    --fs-base: 16px;
+    --fs-larger: 1.2rem;
+    --fs-large: 1.1rem;
+    --fs-normal: 1rem;
+    --fs-small: 0.9rem;
+    --fs-smaller: 0.8rem;
+
+    /* Typography */
+    --font-base: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial;
+    --font-emoji: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    --font-family: var(--font-base), sans-serif, var(--font-emoji);
+
+    /* Line heights */
+    --lh-default: 1.5rem;
+
+    /* Breakpoints */
+    --bp-mobile: 320px;
+    --bp-tablet: 640px;
+    --bp-desktop: 980px;
+
+    /* Vertical spacings */
+    --sp-horizontal-smaller: 0.5rem;
+    --sp-horizontal-small: 0.7rem;
+    --sp-horizontal-normal: 0.9rem;
+    --sp-horizontal-large: 1.1rem;
+    --sp-horizontal-larger: 1.3rem;
+
+    /* Horizontal spacings */
+    --sp-vertical-smaller: 0.5rem;
+    --sp-vertical-small: 0.7rem;
+    --sp-vertical-normal: 0.9rem;
+    --sp-vertical-large: 1.1rem;
+    --sp-vertical-larger: 1.3rem;
+
+    /* Input */
+    --input-gap-vertical: 0.35rem;
+    --input-gap-horizontal: 0.5em;
+    --input-gap-vertical-compact: 0.1rem;
+    --input-gap-horizontal-compact: 0.5em;
+
+    /* Bottons */
+    --button-gap-vertical: 0.2rem;
+
+    /* Posts */
+    --post-gap-vertical: 0rem;
+    --post-gap-horizontal: 0.25rem;
+
+    /* Thumbnails */
+    --thumbnail-width: 90px;
+    --thumbnail-height: 90px;
+    --thumbnail-gap-vertical: 0.3rem;
+    --thumbnail-gap-horizontal: 0.3rem;
+
+    /* Misc */
+    --radius: 2px;
+    --radius-large: 5px;
+    --animation-timing: 0.2s;
+    --animation-timing-fn: ease-in;
+}

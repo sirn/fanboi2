@@ -1,0 +1,44 @@
+/* Partial: header
+ * The top header of the site, for containing logo, buttons, search fields, etc. */
+.header {
+    @util clearfix;
+
+    /* Element: container
+     * Container for header elements. */
+    &__container {
+        position: relative;
+        padding: 0;
+
+        @media (--desktop-viewport) {
+            max-width: calc(var(--bp-desktop) + calc(var(--sp-horizontal-normal) * 2));
+        }
+    }
+
+    /* Element: button
+     * Container for button links within the header. */
+    &__button {
+        padding: var(--sp-vertical-normal) var(--sp-horizontal-normal);
+    }
+
+    /* Element: logo
+     * Container for site logo. */
+    &__logo {
+        @util text-hide;
+
+        display: block;
+        left: calc(20px + var(--sp-horizontal-normal));
+        padding: var(--sp-vertical-normal) var(--sp-horizontal-normal);
+        position: absolute;
+        top: 0;
+
+        &:before {
+            background-image: image-set(
+                url(logo.png) 1dppx,
+                url(logo@2x.png) 2dppx,
+                url(logo@3x.png) 3dppx
+            );
+            content: " ";
+            float: left;
+        }
+    }
+}
