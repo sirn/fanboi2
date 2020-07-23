@@ -1,6 +1,5 @@
 import argparse
 import code
-import multiprocessing
 import sys
 
 from ..version import __VERSION__, __PYRAMID__
@@ -38,34 +37,19 @@ def run_shell(args):
 
 def run_serve(args):
     """Run the web server for the application."""
-    from gunicorn.app.base import BaseApplication
+    from waitress import serve as waitress_serve
     from ..wsgi import app as wsgi_app
 
-    class FbserveApplication(BaseApplication):
-        def __init__(self, app, options=None):
-            if not options:
-                options = {}
-            self.options = options
-            self.application = app
-            super(FbserveApplication, self).__init__()
+    if args.reload:
+        try:
+            import hupper
+        except ImportError:
+            sys.stderr.write("Please install dev dependencies to use reloader.\n")
+            sys.exit(1)
+        hupper.start_reloader("fanboi2.cmd.ctl.main")
 
-        def load_config(self):
-            for key, value in self.options.items():
-                if key in self.cfg.settings and value is not None:
-                    self.cfg.set(key.lower(), value)
-
-        def load(self):
-            return self.application
-
-    options = {
-        "bind": "%s:%s" % (args.host, args.port),
-        "max_requests": args.max_requests,
-        "reload": args.reload,
-        "threads": args.threads,
-        "workers": args.workers,
-    }
-
-    FbserveApplication(wsgi_app, options).run()
+    waitress_serve(wsgi_app, host=args.host, port=args.port)
+    sys.exit(0)
 
 
 def run_gensecret(args):
@@ -84,13 +68,9 @@ def main():
     shell = subparsers.add_parser("shell")
     shell.set_defaults(func=run_shell)
 
-    cpu_count = multiprocessing.cpu_count()
     serve = subparsers.add_parser("serve")
     serve.add_argument("--port", type=int, default=6543)
     serve.add_argument("--host", default="0.0.0.0")
-    serve.add_argument("--workers", type=int, default=(cpu_count * 2) + 1)
-    serve.add_argument("--threads", type=int, default=1)
-    serve.add_argument("--max-requests", type=int, default=1000)
     serve.add_argument("--reload", action="store_true")
     serve.set_defaults(func=run_serve)
 

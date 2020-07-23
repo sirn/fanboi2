@@ -50,6 +50,24 @@ def route_name(request):
 
 
 @lru_cache(maxsize=10)
+def _get_asset_hash_cached(path):
+    """Similar to :func:`_get_asset_hash` but the result is cached.
+
+    :param path: An asset specification to the asset file.
+    """
+    if ":" in path:
+        package, path = path.split(":")
+        resolver = AssetResolver(package)
+    else:
+        resolver = AssetResolver()
+    fullpath = resolver.resolve(path).abspath()
+    md5 = hashlib.md5()
+    with open(fullpath, "rb") as f:
+        for chunk in iter(lambda: f.read(128 * md5.block_size), b""):
+            md5.update(chunk)
+    return md5.hexdigest()
+
+
 def _get_asset_hash(path):
     """Returns an MD5 hash of the given assets path.
 
@@ -77,7 +95,10 @@ def tagged_static_path(request, path, **kwargs):
     :param path: An asset specification to the asset file.
     :param kwargs: Arguments to pass to :meth:`request.static_path`.
     """
-    kwargs["_query"] = {"h": _get_asset_hash(path)[:8]}
+    if request.registry.settings["server.development"]:
+        kwargs["_query"] = {"h": _get_asset_hash(path)[:8]}
+    else:
+        kwargs["_query"] = {"h": _get_asset_hash_cached(path)[:8]}
     return request.static_path(path, **kwargs)
 
 
@@ -165,6 +186,10 @@ def make_config(settings):  # pragma: no cover
     config.include("fanboi2.views.api", route_prefix="/api")
     config.include("fanboi2.views.pages", route_prefix="/pages")
     config.include("fanboi2.views.boards", route_prefix="/")
-    config.add_static_view("static", "static", cache_max_age=3600)
+
+    if settings["server.development"]:
+        config.add_static_view("static", "static")
+    else:
+        config.add_static_view("static", "static", cache_max_age=3600)
 
     return config

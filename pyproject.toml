@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fanboi2"
-version = "2020.5"
+version = "2020.9"
 description = "Pseudonomous message board"
 authors = ["Kridsada Thanabulpong <sirn@ogsite.net>"]
 license = "BSD-3-Clause"
@@ -19,7 +19,6 @@ argon2-cffi = "^19.1"
 celery = "~4.4.1"
 "dogpile.cache" = "^0.9.0"
 geoip2 = "^2.9"
-gunicorn = "^20.0"
 hiredis = "^1.0.1"
 isodate = "^0.6.0"
 lark-parser = "^0.7.1"
@@ -44,6 +43,7 @@ patchwork = {version = "^1.0", optional = true}
 invocations = {version = "^1.4", optional = true}
 colorama = {version = "^0.4.1", optional = true}
 python-dotenv = "^0.12.0"
+waitress = "^1.4.4"
 
 [tool.poetry.dev-dependencies]
 hupper = "^1.8"
