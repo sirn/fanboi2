@@ -2,7 +2,7 @@ import re
 import datetime
 import pytz
 
-from .helpers.formatters import format_post, format_page
+from .renderers.formatters import format_post, format_page
 from .interfaces import ISettingQueryService
 
 
@@ -102,7 +102,7 @@ def _post_serializer(obj, request):
         "type": "post",
         "id": obj.id,
         "body": obj.body,
-        "body_formatted": format_post(None, request, obj),
+        "body_formatted": format_post(request, obj),
         "bumped": obj.bumped,
         "created_at": obj.created_at,
         "ident": obj.ident,
@@ -129,7 +129,7 @@ def _page_serializer(obj, request):
         "type": "page",
         "id": obj.id,
         "body": obj.body,
-        "body_formatted": format_page(None, request, obj),
+        "body_formatted": format_page(request, obj),
         "formatter": obj.formatter,
         "namespace": obj.namespace,
         "slug": obj.slug,

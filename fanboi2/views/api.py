@@ -274,7 +274,7 @@ def _api_routes_only(context, request):
 def includeme(config):  # pragma: no cover
     config.add_route("api_root", "/")
     config.add_view(
-        root, request_method="GET", route_name="api_root", renderer="api/show.mako"
+        root, request_method="GET", route_name="api_root", renderer="api/show.jinja2"
     )
 
     #

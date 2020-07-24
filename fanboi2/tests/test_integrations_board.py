@@ -383,7 +383,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.matchdict["board"] = board.slug
         request.GET = MultiDict({})
         request.GET["task"] = "dummy"
-        renderer = self.config.testing_add_renderer("boards/new_wait.mako")
+        renderer = self.config.testing_add_renderer("boards/new_wait.jinja2")
         board_new_get(request)
         renderer.assert_(request=request, board=board)
         result_.assert_called_with("dummy")
@@ -412,7 +412,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.matchdict["board"] = board.slug
         request.GET = MultiDict({})
         request.GET["task"] = "dummy"
-        renderer = self.config.testing_add_renderer("boards/new_error.mako")
+        renderer = self.config.testing_add_renderer("boards/new_error.jinja2")
         board_new_get(request)
         renderer.assert_(request=request, board=board, name="akismet_rejected")
         result_.assert_called_with("dummy")
@@ -441,7 +441,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.matchdict["board"] = board.slug
         request.GET = MultiDict({})
         request.GET["task"] = "dummy"
-        renderer = self.config.testing_add_renderer("boards/new_error.mako")
+        renderer = self.config.testing_add_renderer("boards/new_error.jinja2")
         board_new_get(request)
         renderer.assert_(request=request, board=board, name="dnsbl_rejected")
         result_.assert_called_with("dummy")
@@ -470,7 +470,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.matchdict["board"] = board.slug
         request.GET = MultiDict({})
         request.GET["task"] = "dummy"
-        renderer = self.config.testing_add_renderer("boards/new_error.mako")
+        renderer = self.config.testing_add_renderer("boards/new_error.jinja2")
         board_new_get(request)
         renderer.assert_(request=request, board=board, name="ban_rejected")
         result_.assert_called_with("dummy")
@@ -499,7 +499,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.matchdict["board"] = board.slug
         request.GET = MultiDict({})
         request.GET["task"] = "dummy"
-        renderer = self.config.testing_add_renderer("boards/new_error.mako")
+        renderer = self.config.testing_add_renderer("boards/new_error.jinja2")
         board_new_get(request)
         renderer.assert_(
             request=request, board=board, status="test", name="status_rejected"
@@ -530,7 +530,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.matchdict["board"] = board.slug
         request.GET = MultiDict({})
         request.GET["task"] = "dummy"
-        renderer = self.config.testing_add_renderer("boards/new_error.mako")
+        renderer = self.config.testing_add_renderer("boards/new_error.jinja2")
         board_new_get(request)
         renderer.assert_(request=request, board=board, name="proxy_rejected")
         result_.assert_called_with("dummy")
@@ -760,7 +760,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.POST["title"] = "title"
         request.POST["body"] = "bodyb"
         request.POST["csrf_token"] = request.session.get_csrf_token()
-        renderer = self.config.testing_add_renderer("boards/new_error.mako")
+        renderer = self.config.testing_add_renderer("boards/new_error.jinja2")
         board_new_post(request)
         renderer.assert_(request=request, board=board, name="ban_rejected")
         self.assertEqual(self.dbsession.query(Topic).count(), 0)
@@ -791,7 +791,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.POST["title"] = "title"
         request.POST["body"] = "bodyb"
         request.POST["csrf_token"] = request.session.get_csrf_token()
-        renderer = self.config.testing_add_renderer("boards/new_error.mako")
+        renderer = self.config.testing_add_renderer("boards/new_error.jinja2")
         board_new_post(request)
         renderer.assert_(request=request, board=board, name="ban_rejected")
         self.assertEqual(self.dbsession.query(Topic).count(), 0)
@@ -834,7 +834,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.POST["title"] = "title"
         request.POST["body"] = "foo\nhttps://bit.ly/spam\nbar"
         request.POST["csrf_token"] = request.session.get_csrf_token()
-        renderer = self.config.testing_add_renderer("boards/new_error.mako")
+        renderer = self.config.testing_add_renderer("boards/new_error.jinja2")
         board_new_post(request)
         renderer.assert_(request=request, board=board, name="banword_rejected")
         self.assertEqual(self.dbsession.query(Topic).count(), 0)
@@ -877,7 +877,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.POST["title"] = "title"
         request.POST["body"] = "foo\nhttps://bit.ly/spam\nbar"
         request.POST["csrf_token"] = request.session.get_csrf_token()
-        renderer = self.config.testing_add_renderer("boards/new_error.mako")
+        renderer = self.config.testing_add_renderer("boards/new_error.jinja2")
         board_new_post(request)
         renderer.assert_(request=request, board=board, name="banword_rejected")
         self.assertEqual(self.dbsession.query(Topic).count(), 0)
@@ -923,7 +923,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.POST["title"] = "title"
         request.POST["body"] = "bodyb"
         request.POST["csrf_token"] = request.session.get_csrf_token()
-        renderer = self.config.testing_add_renderer("boards/new_error.mako")
+        renderer = self.config.testing_add_renderer("boards/new_error.jinja2")
         rate_limiter_svc.limit_for(10, ip_address=request.client_addr, board=board.slug)
         board_new_post(request)
         renderer.assert_(
@@ -1286,7 +1286,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.matchdict["topic"] = topic.id
         request.GET = MultiDict({})
         request.GET["task"] = "dummy"
-        renderer = self.config.testing_add_renderer("topics/show_wait.mako")
+        renderer = self.config.testing_add_renderer("topics/show_wait.jinja2")
         topic_show_get(request)
         renderer.assert_(request=request, board=board, topic=topic)
         result_.assert_called_with("dummy")
@@ -1325,7 +1325,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.matchdict["topic"] = topic.id
         request.GET = MultiDict({})
         request.GET["task"] = "dummy"
-        renderer = self.config.testing_add_renderer("topics/show_error.mako")
+        renderer = self.config.testing_add_renderer("topics/show_error.jinja2")
         topic_show_get(request)
         renderer.assert_(
             request=request, board=board, topic=topic, name="akismet_rejected"
@@ -1366,7 +1366,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.matchdict["topic"] = topic.id
         request.GET = MultiDict({})
         request.GET["task"] = "dummy"
-        renderer = self.config.testing_add_renderer("topics/show_error.mako")
+        renderer = self.config.testing_add_renderer("topics/show_error.jinja2")
         topic_show_get(request)
         renderer.assert_(
             request=request, board=board, topic=topic, name="dnsbl_rejected"
@@ -1407,7 +1407,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.matchdict["topic"] = topic.id
         request.GET = MultiDict({})
         request.GET["task"] = "dummy"
-        renderer = self.config.testing_add_renderer("topics/show_error.mako")
+        renderer = self.config.testing_add_renderer("topics/show_error.jinja2")
         topic_show_get(request)
         renderer.assert_(request=request, board=board, topic=topic, name="ban_rejected")
         result_.assert_called_with("dummy")
@@ -1446,7 +1446,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.matchdict["topic"] = topic.id
         request.GET = MultiDict({})
         request.GET["task"] = "dummy"
-        renderer = self.config.testing_add_renderer("topics/show_error.mako")
+        renderer = self.config.testing_add_renderer("topics/show_error.jinja2")
         topic_show_get(request)
         renderer.assert_(
             request=request,
@@ -1491,7 +1491,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.matchdict["topic"] = topic.id
         request.GET = MultiDict({})
         request.GET["task"] = "dummy"
-        renderer = self.config.testing_add_renderer("topics/show_error.mako")
+        renderer = self.config.testing_add_renderer("topics/show_error.jinja2")
         topic_show_get(request)
         renderer.assert_(
             request=request, board=board, topic=topic, name="proxy_rejected"
@@ -1789,7 +1789,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.POST["body"] = "bodyb"
         request.POST["bumped"] = True
         request.POST["csrf_token"] = request.session.get_csrf_token()
-        renderer = self.config.testing_add_renderer("topics/show_error.mako")
+        renderer = self.config.testing_add_renderer("topics/show_error.jinja2")
         topic_show_post(request)
         renderer.assert_(request=request, board=board, topic=topic, name="ban_rejected")
         self.assertEqual(self.dbsession.query(Post).count(), 0)
@@ -1835,7 +1835,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.POST["body"] = "bodyb"
         request.POST["bumped"] = True
         request.POST["csrf_token"] = request.session.get_csrf_token()
-        renderer = self.config.testing_add_renderer("topics/show_error.mako")
+        renderer = self.config.testing_add_renderer("topics/show_error.jinja2")
         topic_show_post(request)
         renderer.assert_(request=request, board=board, topic=topic, name="ban_rejected")
         self.assertEqual(self.dbsession.query(Post).count(), 0)
@@ -1886,7 +1886,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.POST["body"] = "foo\nhttps://bit.ly/spam\nbar"
         request.POST["bumped"] = True
         request.POST["csrf_token"] = request.session.get_csrf_token()
-        renderer = self.config.testing_add_renderer("topics/show_error.mako")
+        renderer = self.config.testing_add_renderer("topics/show_error.jinja2")
         topic_show_post(request)
         renderer.assert_(
             request=request, board=board, topic=topic, name="banword_rejected"
@@ -1942,7 +1942,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         request.POST["body"] = "bodyb"
         request.POST["bumped"] = True
         request.POST["csrf_token"] = request.session.get_csrf_token()
-        renderer = self.config.testing_add_renderer("topics/show_error.mako")
+        renderer = self.config.testing_add_renderer("topics/show_error.jinja2")
         rate_limiter_svc.limit_for(10, ip_address=request.client_addr, board=board.slug)
         topic_show_post(request)
         renderer.assert_(
@@ -1954,7 +1954,7 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         from pyramid.httpexceptions import HTTPNotFound
         from ..views.boards import error_not_found
 
-        self.config.testing_add_renderer("not_found.mako")
+        self.config.testing_add_renderer("not_found.jinja2")
         response = error_not_found(HTTPNotFound(), self.request)
         self.assertEqual(response.status, "404 Not Found")
 
@@ -1962,6 +1962,6 @@ class TestIntegrationBoard(IntegrationMixin, unittest.TestCase):
         from pyramid.httpexceptions import HTTPBadRequest
         from ..views.boards import error_bad_request
 
-        self.config.testing_add_renderer("bad_request.mako")
+        self.config.testing_add_renderer("bad_request.jinja2")
         response = error_bad_request(HTTPBadRequest(), self.request)
         self.assertEqual(response.status, "400 Bad Request")

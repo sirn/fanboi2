@@ -1,13 +1,10 @@
 import binascii
-import hashlib
 import logging
 import os
-from functools import lru_cache
 
 from dotenv import load_dotenv, find_dotenv
 from pyramid.config import Configurator
 from pyramid.csrf import SessionCSRFStoragePolicy
-from pyramid.path import AssetResolver
 from pyramid.settings import asbool
 from pyramid_nacl_session import EncryptedCookieSessionFactory
 
@@ -34,6 +31,7 @@ ENV_SETTINGS_MAP = (
     ("SERVER_DEV", "server.development", False, asbool),
     ("SERVER_SECURE", "server.secure", False, asbool),
     ("SESSION_SECRET", "session.secret", NO_VALUE, None),
+    ("TEMPLATE_PATH", "template.path", None, None),
 )
 
 LOGGING_FMT = "%(asctime)s %(levelname)s %(name)s[%(process)d] %(message)s"
@@ -47,59 +45,6 @@ def route_name(request):
     """
     if request.matched_route:
         return request.matched_route.name
-
-
-@lru_cache(maxsize=10)
-def _get_asset_hash_cached(path):
-    """Similar to :func:`_get_asset_hash` but the result is cached.
-
-    :param path: An asset specification to the asset file.
-    """
-    if ":" in path:
-        package, path = path.split(":")
-        resolver = AssetResolver(package)
-    else:
-        resolver = AssetResolver()
-    fullpath = resolver.resolve(path).abspath()
-    md5 = hashlib.md5()
-    with open(fullpath, "rb") as f:
-        for chunk in iter(lambda: f.read(128 * md5.block_size), b""):
-            md5.update(chunk)
-    return md5.hexdigest()
-
-
-def _get_asset_hash(path):
-    """Returns an MD5 hash of the given assets path.
-
-    :param path: An asset specification to the asset file.
-    """
-    if ":" in path:
-        package, path = path.split(":")
-        resolver = AssetResolver(package)
-    else:
-        resolver = AssetResolver()
-    fullpath = resolver.resolve(path).abspath()
-    md5 = hashlib.md5()
-    with open(fullpath, "rb") as f:
-        for chunk in iter(lambda: f.read(128 * md5.block_size), b""):
-            md5.update(chunk)
-    return md5.hexdigest()
-
-
-def tagged_static_path(request, path, **kwargs):
-    """Similar to Pyramid's :meth:`request.static_path` but append first 8
-    characters of file hash as query string ``h`` to it forcing proxy server
-    and browsers to expire cache immediately after the file is modified.
-
-    :param request: A :class:`pyramid.request.Request` object.
-    :param path: An asset specification to the asset file.
-    :param kwargs: Arguments to pass to :meth:`request.static_path`.
-    """
-    if request.registry.settings["server.development"]:
-        kwargs["_query"] = {"h": _get_asset_hash(path)[:8]}
-    else:
-        kwargs["_query"] = {"h": _get_asset_hash_cached(path)[:8]}
-    return request.static_path(path, **kwargs)
 
 
 def settings_from_env(settings_map=ENV_SETTINGS_MAP, environ=os.environ):
@@ -136,7 +81,6 @@ def make_config(settings):  # pragma: no cover
     config = Configurator(settings=settings)
     config.add_settings(
         {
-            "mako.directories": "fanboi2:templates",
             "dogpile.backend": "dogpile.cache.redis",
             "dogpile.arguments.url": config.registry.settings["redis.url"],
             "dogpile.redis_expiration_time": 60 * 60 * 1,  # 1 hour
@@ -157,7 +101,6 @@ def make_config(settings):  # pragma: no cover
         )
         config.include("pyramid_debugtoolbar")
 
-    config.include("pyramid_mako")
     config.include("pyramid_services")
 
     session_secret_hex = config.registry.settings["session.secret"].strip()
@@ -169,13 +112,13 @@ def make_config(settings):  # pragma: no cover
     config.set_session_factory(session_factory)
     config.set_csrf_storage_policy(SessionCSRFStoragePolicy(key="_csrf"))
     config.add_request_method(route_name, property=True)
-    config.add_request_method(tagged_static_path)
     config.add_route("robots", "/robots.txt")
 
     config.include("fanboi2.auth")
     config.include("fanboi2.cache")
     config.include("fanboi2.filters")
     config.include("fanboi2.geoip")
+    config.include("fanboi2.renderers")
     config.include("fanboi2.models")
     config.include("fanboi2.redis")
     config.include("fanboi2.serializers")

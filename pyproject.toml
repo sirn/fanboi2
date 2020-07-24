@@ -27,7 +27,6 @@ passlib = "^1.7"
 psycopg2 = "^2.8.4"
 pyramid = "^1.10.4"
 pyramid-debugtoolbar = "^4.6"
-pyramid-mako = "^1.1"
 pyramid-nacl-session = "^0.3.0"
 pyramid-services = "^2.2"
 pyramid-tm = "^2.4"
@@ -44,6 +43,7 @@ invocations = {version = "^1.4", optional = true}
 colorama = {version = "^0.4.1", optional = true}
 python-dotenv = "^0.12.0"
 waitress = "^1.4.4"
+pyramid-jinja2 = "^2.8"
 
 [tool.poetry.dev-dependencies]
 hupper = "^1.8"

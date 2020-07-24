@@ -1688,7 +1688,7 @@ class TestIntegrationAdminBoardTopics(IntegrationMixin, unittest.TestCase):
         request.matchdict["board"] = board.slug
         request.matchdict["topic"] = topic1.id
         renderer = self.config.testing_add_renderer(
-            "admin/boards/topics/posts/delete_error.mako"
+            "admin/boards/topics/posts/delete_error.jinja2"
         )
         board_topic_posts_delete_get(request)
         renderer.assert_(

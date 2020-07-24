@@ -82,7 +82,7 @@ def board_new_get(request):
                     extra_locals["status"] = obj.status
 
                 response = render_to_response(
-                    "boards/new_error.mako",
+                    "boards/new_error.jinja2",
                     {"board": board, "name": obj.name, **extra_locals},
                     request=request,
                 )
@@ -96,7 +96,7 @@ def board_new_get(request):
             )
 
         return render_to_response(
-            "boards/new_wait.mako", {"board": board}, request=request
+            "boards/new_wait.jinja2", {"board": board}, request=request
         )
 
     form = TopicForm(request=request)
@@ -123,7 +123,7 @@ def board_new_post(request):
     ban_scope = {"board": board.slug}
     if ban_query_svc.is_banned(request.client_addr, scopes=ban_scope):
         response = render_to_response(
-            "boards/new_error.mako",
+            "boards/new_error.jinja2",
             {"board": board, "name": "ban_rejected"},
             request=request,
         )
@@ -133,7 +133,7 @@ def board_new_post(request):
     banword_query_svc = request.find_service(IBanwordQueryService)
     if banword_query_svc.is_banned(form.body.data, scopes=ban_scope):
         response = render_to_response(
-            "boards/new_error.mako",
+            "boards/new_error.jinja2",
             {"board": board, "name": "banword_rejected"},
             request=request,
         )
@@ -145,7 +145,7 @@ def board_new_post(request):
         payload = {"ip_address": request.client_addr, "board": board.slug}
         if rate_limiter_svc.is_limited(**payload):
             response = render_to_response(
-                "boards/new_error.mako",
+                "boards/new_error.jinja2",
                 {
                     "board": board,
                     "name": "rate_limited",
@@ -228,7 +228,7 @@ def topic_show_get(request):
                     extra_locals["status"] = obj.status
 
                 response = render_to_response(
-                    "topics/show_error.mako",
+                    "topics/show_error.jinja2",
                     {"board": board, "topic": topic, "name": obj.name, **extra_locals},
                     request=request,
                 )
@@ -245,7 +245,7 @@ def topic_show_get(request):
             )
 
         return render_to_response(
-            "topics/show_wait.mako",
+            "topics/show_wait.jinja2",
             {"request": request, "board": board, "topic": topic},
             request=request,
         )
@@ -287,7 +287,7 @@ def topic_show_post(request):
     ban_scope = {"board": board.slug, "topic": topic.title}
     if ban_query_svc.is_banned(request.client_addr, scopes=ban_scope):
         response = render_to_response(
-            "topics/show_error.mako",
+            "topics/show_error.jinja2",
             {"board": board, "topic": topic, "name": "ban_rejected"},
             request=request,
         )
@@ -297,7 +297,7 @@ def topic_show_post(request):
     banword_query_svc = request.find_service(IBanwordQueryService)
     if banword_query_svc.is_banned(form.body.data, scopes=ban_scope):
         response = render_to_response(
-            "topics/show_error.mako",
+            "topics/show_error.jinja2",
             {"board": board, "topic": topic, "name": "banword_rejected"},
             request=request,
         )
@@ -309,7 +309,7 @@ def topic_show_post(request):
         payload = {"ip_address": request.client_addr, "board": board.slug}
         if rate_limiter_svc.is_limited(**payload):
             response = render_to_response(
-                "topics/show_error.mako",
+                "topics/show_error.jinja2",
                 {
                     "board": board,
                     "topic": topic,
@@ -355,7 +355,7 @@ def error_not_found(exc, request):
     :param exc: An :class:`Exception`.
     :param request: A :class:`pyramid.request.Request` object.
     """
-    response = render_to_response("not_found.mako", {}, request=request)
+    response = render_to_response("not_found.jinja2", {}, request=request)
     response.status = "404 Not Found"
     return response
 
@@ -367,7 +367,7 @@ def error_bad_request(exc, request):
     :param exc: An :class:`Exception`.
     :param request: A :class:`pyramid.request.Request` object.
     """
-    response = render_to_response("bad_request.mako", {}, request=request)
+    response = render_to_response("bad_request.jinja2", {}, request=request)
     response.status = "400 Bad Request"
     return response
 
@@ -375,7 +375,9 @@ def error_bad_request(exc, request):
 def includeme(config):  # pragma: no cover
     config.add_route("root", "/")
 
-    config.add_view(root, request_method="GET", route_name="root", renderer="root.mako")
+    config.add_view(
+        root, request_method="GET", route_name="root", renderer="index.jinja2"
+    )
 
     #
     # Board
@@ -389,28 +391,28 @@ def includeme(config):  # pragma: no cover
         board_show,
         request_method="GET",
         route_name="board",
-        renderer="boards/show.mako",
+        renderer="boards/show.jinja2",
     )
 
     config.add_view(
         board_all,
         request_method="GET",
         route_name="board_all",
-        renderer="boards/all.mako",
+        renderer="boards/all.jinja2",
     )
 
     config.add_view(
         board_new_get,
         request_method="GET",
         route_name="board_new",
-        renderer="boards/new.mako",
+        renderer="boards/new.jinja2",
     )
 
     config.add_view(
         board_new_post,
         request_method="POST",
         route_name="board_new",
-        renderer="boards/new.mako",
+        renderer="boards/new.jinja2",
     )
 
     #
@@ -424,21 +426,21 @@ def includeme(config):  # pragma: no cover
         topic_show_get,
         request_method="GET",
         route_name="topic",
-        renderer="topics/show.mako",
+        renderer="topics/show.jinja2",
     )
 
     config.add_view(
         topic_show_post,
         request_method="POST",
         route_name="topic",
-        renderer="topics/show.mako",
+        renderer="topics/show.jinja2",
     )
 
     config.add_view(
         topic_show_get,
         request_method="GET",
         route_name="topic_scoped",
-        renderer="topics/show.mako",
+        renderer="topics/show.jinja2",
     )
 
     #

@@ -1,17 +1,14 @@
 import html
-import json
 import re
-import urllib
+import hashlib
 import urllib.parse as urlparse
 from collections import OrderedDict
 from html.parser import HTMLParser
 
-import isodate
 import misaka
-import pytz
 from markupsafe import Markup
-
-from ..interfaces import ISettingQueryService
+from functools import lru_cache
+from pyramid.path import AssetResolver
 
 
 RE_PARAGRAPH = re.compile(r"(?:(?P<newline>\r\n|\n|\r)(?P=newline)+)")
@@ -178,11 +175,9 @@ def format_text(text, shorten=None):
     return markup
 
 
-def format_markdown(context, request, text):
+def format_markdown(text):
     """Format text using Markdown parser.
 
-    :param context: A :class:`mako.runtime.Context` object.
-    :param request: A :class:`pyramid.request.Request` object.
     :param text: A :type:`str` containing unformatted Markdown text.
     """
     if text is not None:
@@ -230,13 +225,12 @@ TP_SHORTENED = (
 )
 
 
-def format_post(context, request, post, shorten=None):
+def format_post(request, post, shorten=None):
     """Works similar to :func:`format_text` but also process link within
     the same topic, i.e. a `>>52` anchor syntax will create a link to
     post numbered 52 in the same topic, as well as display "click to see
     more" link for posts that has been shortened.
 
-    :param context: A :class:`mako.runtime.Context` object.
     :param request: A :class:`pyramid.request.Request` object.
     :param post: A :class:`fanboi2.models.Post` object.
     :param shorten: An :type:`int` or :type:`None`.
@@ -308,74 +302,42 @@ def format_post(context, request, post, shorten=None):
     return Markup(text)
 
 
-def format_page(context, request, page):
+def format_page(request, page):
     """Format a :class:`fanboi2.models.Page` object content based on the
     formatter specified in such page.
 
-    :param context: A :class:`mako.runtime.Context` object.
     :param request: A :class:`pyramid.request.Request` object.
     :param page: A :class:`fanboi2.models.Page` object.
     """
     if page.formatter == "markdown":
-        return format_markdown(context, request, page.body)
+        return format_markdown(page.body)
     elif page.formatter == "html":
         return Markup(page.body)
     return Markup(html.escape(page.body))
 
 
-def format_datetime(context, request, dt):
-    """Format datetime into a human-readable format.
+@lru_cache(maxsize=10)
+def get_asset_hash_cached(path):  # pragma: no cover
+    """Similar to :func:`_get_asset_hash` but the result is cached.
 
-    :param context: A :class:`mako.runtime.Context` object.
-    :param request: A :class:`pyramid.request.Request` object.
-    :param dt: A :class:`datetime.datetime` object.
+    :param path: An asset specification to the asset file.
     """
-    setting_query_svc = request.find_service(ISettingQueryService)
-    tz = pytz.timezone(setting_query_svc.value_from_key("app.time_zone"))
-    return dt.astimezone(tz).strftime("%b %d, %Y at %H:%M:%S")
+    return get_asset_hash(path)
 
 
-def format_isotime(context, request, dt):
-    """Format datetime into a machine-readable format.
+def get_asset_hash(path):
+    """Returns an MD5 hash of the given assets path.
 
-    :param context: A :class:`mako.runtime.Context` object.
-    :param request: A :class:`pyramid.request.Request` object.
-    :param dt: A :class:`datetime.datetime` object.
+    :param path: An asset specification to the asset file.
     """
-    return isodate.datetime_isoformat(dt.astimezone(pytz.utc))
-
-
-def format_json(context, request, data):
-    """Format the given data structure into JSON string.
-
-    :param context: A :class:`mako.runtime.Context` object.
-    :param request: A :class:`pyramid.request.Request` object.
-    :param data: A data to format to JSON.
-    """
-    return json.dumps(data, indent=4, sort_keys=True)
-
-
-def unquoted_path(context, request, *args, **kwargs):
-    """Returns an unquoted path for specific arguments.
-
-    :param context: A :class:`mako.runtime.Context` object.
-    :param request: A :class:`pyramid.request.Request` object.
-    """
-    return urllib.parse.unquote(request.route_path(*args, **kwargs))
-
-
-THEMES = ["topaz", "obsidian", "debug"]
-
-
-def user_theme(context, request, cookie="_theme"):
-    """Returns the current theme set by the user. If no theme was set
-    in the :param:`cookie`, or one was set but invalid, the default
-    theme will be returned.
-
-    :param context: A :class:`mako.runtime.Context` object.
-    :param request: A :class:`pyramid.request.Request` object.
-    """
-    user_theme = request.cookies.get(cookie)
-    if user_theme is None or user_theme not in THEMES:
-        user_theme = THEMES[0]
-    return "theme-%s" % user_theme
+    if ":" in path:
+        package, path = path.split(":")
+        resolver = AssetResolver(package)
+    else:
+        resolver = AssetResolver()
+    fullpath = resolver.resolve(path).abspath()
+    md5 = hashlib.md5()
+    with open(fullpath, "rb") as f:
+        for chunk in iter(lambda: f.read(128 * md5.block_size), b""):
+            md5.update(chunk)
+    return md5.hexdigest()[:8]

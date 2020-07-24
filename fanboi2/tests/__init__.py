@@ -145,6 +145,7 @@ class IntegrationMixin(ModelSessionMixin, object):
     def setUp(self):
         super(IntegrationMixin, self).setUp()
         self.config = testing.setUp()
+        self.config.include("pyramid_jinja2")
         self.request = testing.DummyRequest()
         self.request.registry = self.config.registry
         self.request.user_agent = "Mock/1.0"

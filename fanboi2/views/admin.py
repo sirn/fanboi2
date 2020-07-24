@@ -602,7 +602,7 @@ def board_topic_posts_delete_get(request):
 
     if posts[0].number == 1:
         return render_to_response(
-            "admin/boards/topics/posts/delete_error.mako",
+            "admin/boards/topics/posts/delete_error.jinja2",
             {"board": board, "topic": topic, "posts": posts, "query": query},
             request=request,
         )
@@ -865,14 +865,14 @@ def includeme(config):  # pragma: no cover
         login_get,
         request_method="GET",
         route_name="admin_root",
-        renderer="admin/login.mako",
+        renderer="admin/login.jinja2",
     )
 
     config.add_view(
         login_post,
         request_method="POST",
         route_name="admin_root",
-        renderer="admin/login.mako",
+        renderer="admin/login.jinja2",
     )
 
     #
@@ -893,7 +893,7 @@ def includeme(config):  # pragma: no cover
         setup_get,
         request_method="GET",
         route_name="admin_setup",
-        renderer="admin/setup.mako",
+        renderer="admin/setup.jinja2",
         custom_predicates=[_setup_required],
     )
 
@@ -901,7 +901,7 @@ def includeme(config):  # pragma: no cover
         setup_post,
         request_method="POST",
         route_name="admin_setup",
-        renderer="admin/setup.mako",
+        renderer="admin/setup.jinja2",
         custom_predicates=[_setup_required],
     )
 
@@ -915,7 +915,7 @@ def includeme(config):  # pragma: no cover
         dashboard_get,
         request_method="GET",
         route_name="admin_dashboard",
-        renderer="admin/dashboard.mako",
+        renderer="admin/dashboard.jinja2",
         permission="manage",
     )
 
@@ -933,7 +933,7 @@ def includeme(config):  # pragma: no cover
         bans_get,
         request_method="GET",
         route_name="admin_bans",
-        renderer="admin/bans/all.mako",
+        renderer="admin/bans/all.jinja2",
         permission="manage",
     )
 
@@ -941,7 +941,7 @@ def includeme(config):  # pragma: no cover
         bans_inactive_get,
         request_method="GET",
         route_name="admin_bans_inactive",
-        renderer="admin/bans/inactive.mako",
+        renderer="admin/bans/inactive.jinja2",
         permission="manage",
     )
 
@@ -949,7 +949,7 @@ def includeme(config):  # pragma: no cover
         ban_new_get,
         request_method="GET",
         route_name="admin_ban_new",
-        renderer="admin/bans/new.mako",
+        renderer="admin/bans/new.jinja2",
         permission="manage",
     )
 
@@ -957,7 +957,7 @@ def includeme(config):  # pragma: no cover
         ban_new_post,
         request_method="POST",
         route_name="admin_ban_new",
-        renderer="admin/bans/new.mako",
+        renderer="admin/bans/new.jinja2",
         permission="manage",
     )
 
@@ -965,7 +965,7 @@ def includeme(config):  # pragma: no cover
         ban_get,
         request_method="GET",
         route_name="admin_ban",
-        renderer="admin/bans/show.mako",
+        renderer="admin/bans/show.jinja2",
         permission="manage",
     )
 
@@ -973,7 +973,7 @@ def includeme(config):  # pragma: no cover
         ban_edit_get,
         request_method="GET",
         route_name="admin_ban_edit",
-        renderer="admin/bans/edit.mako",
+        renderer="admin/bans/edit.jinja2",
         permission="manage",
     )
 
@@ -981,7 +981,7 @@ def includeme(config):  # pragma: no cover
         ban_edit_post,
         request_method="POST",
         route_name="admin_ban_edit",
-        renderer="admin/bans/edit.mako",
+        renderer="admin/bans/edit.jinja2",
         permission="manage",
     )
 
@@ -999,7 +999,7 @@ def includeme(config):  # pragma: no cover
         banwords_get,
         request_method="GET",
         route_name="admin_banwords",
-        renderer="admin/banwords/all.mako",
+        renderer="admin/banwords/all.jinja2",
         permission="manage",
     )
 
@@ -1007,7 +1007,7 @@ def includeme(config):  # pragma: no cover
         banwords_inactive_get,
         request_method="GET",
         route_name="admin_banwords_inactive",
-        renderer="admin/banwords/inactive.mako",
+        renderer="admin/banwords/inactive.jinja2",
         permission="manage",
     )
 
@@ -1015,7 +1015,7 @@ def includeme(config):  # pragma: no cover
         banword_new_get,
         request_method="GET",
         route_name="admin_banword_new",
-        renderer="admin/banwords/new.mako",
+        renderer="admin/banwords/new.jinja2",
         permission="manage",
     )
 
@@ -1023,7 +1023,7 @@ def includeme(config):  # pragma: no cover
         banword_new_post,
         request_method="POST",
         route_name="admin_banword_new",
-        renderer="admin/banwords/new.mako",
+        renderer="admin/banwords/new.jinja2",
         permission="manage",
     )
 
@@ -1031,7 +1031,7 @@ def includeme(config):  # pragma: no cover
         banword_get,
         request_method="GET",
         route_name="admin_banword",
-        renderer="admin/banwords/show.mako",
+        renderer="admin/banwords/show.jinja2",
         permission="manage",
     )
 
@@ -1039,7 +1039,7 @@ def includeme(config):  # pragma: no cover
         banword_edit_get,
         request_method="GET",
         route_name="admin_banword_edit",
-        renderer="admin/banwords/edit.mako",
+        renderer="admin/banwords/edit.jinja2",
         permission="manage",
     )
 
@@ -1047,7 +1047,7 @@ def includeme(config):  # pragma: no cover
         banword_edit_post,
         request_method="POST",
         route_name="admin_banword_edit",
-        renderer="admin/banwords/edit.mako",
+        renderer="admin/banwords/edit.jinja2",
         permission="manage",
     )
 
@@ -1073,7 +1073,7 @@ def includeme(config):  # pragma: no cover
         boards_get,
         request_method="GET",
         route_name="admin_boards",
-        renderer="admin/boards/all.mako",
+        renderer="admin/boards/all.jinja2",
         permission="manage",
     )
 
@@ -1081,7 +1081,7 @@ def includeme(config):  # pragma: no cover
         board_new_get,
         request_method="GET",
         route_name="admin_board_new",
-        renderer="admin/boards/new.mako",
+        renderer="admin/boards/new.jinja2",
         permission="manage",
     )
 
@@ -1089,7 +1089,7 @@ def includeme(config):  # pragma: no cover
         board_new_post,
         request_method="POST",
         route_name="admin_board_new",
-        renderer="admin/boards/new.mako",
+        renderer="admin/boards/new.jinja2",
         permission="manage",
     )
 
@@ -1097,7 +1097,7 @@ def includeme(config):  # pragma: no cover
         board_get,
         request_method="GET",
         route_name="admin_board",
-        renderer="admin/boards/show.mako",
+        renderer="admin/boards/show.jinja2",
         permission="manage",
     )
 
@@ -1105,7 +1105,7 @@ def includeme(config):  # pragma: no cover
         board_edit_get,
         request_method="GET",
         route_name="admin_board_edit",
-        renderer="admin/boards/edit.mako",
+        renderer="admin/boards/edit.jinja2",
         permission="manage",
     )
 
@@ -1113,7 +1113,7 @@ def includeme(config):  # pragma: no cover
         board_edit_post,
         request_method="POST",
         route_name="admin_board_edit",
-        renderer="admin/boards/edit.mako",
+        renderer="admin/boards/edit.jinja2",
         permission="manage",
     )
 
@@ -1121,7 +1121,7 @@ def includeme(config):  # pragma: no cover
         board_topics_get,
         request_method="GET",
         route_name="admin_board_topics",
-        renderer="admin/boards/topics/all.mako",
+        renderer="admin/boards/topics/all.jinja2",
         permission="manage",
     )
 
@@ -1129,7 +1129,7 @@ def includeme(config):  # pragma: no cover
         board_topic_new_get,
         request_method="GET",
         route_name="admin_board_topic_new",
-        renderer="admin/boards/topics/new.mako",
+        renderer="admin/boards/topics/new.jinja2",
         permission="manage",
     )
 
@@ -1137,7 +1137,7 @@ def includeme(config):  # pragma: no cover
         board_topic_new_post,
         request_method="POST",
         route_name="admin_board_topic_new",
-        renderer="admin/boards/topics/new.mako",
+        renderer="admin/boards/topics/new.jinja2",
         permission="manage",
     )
 
@@ -1145,7 +1145,7 @@ def includeme(config):  # pragma: no cover
         board_topic_get,
         request_method="GET",
         route_name="admin_board_topic",
-        renderer="admin/boards/topics/show.mako",
+        renderer="admin/boards/topics/show.jinja2",
         permission="manage",
     )
 
@@ -1153,7 +1153,7 @@ def includeme(config):  # pragma: no cover
         board_topic_post,
         request_method="POST",
         route_name="admin_board_topic",
-        renderer="admin/boards/topics/show.mako",
+        renderer="admin/boards/topics/show.jinja2",
         permission="manage",
     )
 
@@ -1161,7 +1161,7 @@ def includeme(config):  # pragma: no cover
         board_topic_edit_get,
         request_method="GET",
         route_name="admin_board_topic_edit",
-        renderer="admin/boards/topics/edit.mako",
+        renderer="admin/boards/topics/edit.jinja2",
         permission="manage",
     )
 
@@ -1169,7 +1169,7 @@ def includeme(config):  # pragma: no cover
         board_topic_edit_post,
         request_method="POST",
         route_name="admin_board_topic_edit",
-        renderer="admin/boards/topics/edit.mako",
+        renderer="admin/boards/topics/edit.jinja2",
         permission="manage",
     )
 
@@ -1177,7 +1177,7 @@ def includeme(config):  # pragma: no cover
         board_topic_delete_get,
         request_method="GET",
         route_name="admin_board_topic_delete",
-        renderer="admin/boards/topics/delete.mako",
+        renderer="admin/boards/topics/delete.jinja2",
         permission="manage",
     )
 
@@ -1192,7 +1192,7 @@ def includeme(config):  # pragma: no cover
         board_topic_posts_delete_get,
         request_method="GET",
         route_name="admin_board_topic_posts_delete",
-        renderer="admin/boards/topics/posts/delete.mako",
+        renderer="admin/boards/topics/posts/delete.jinja2",
         permission="manage",
     )
 
@@ -1207,7 +1207,7 @@ def includeme(config):  # pragma: no cover
         board_topic_get,
         request_method="GET",
         route_name="admin_board_topic_posts",
-        renderer="admin/boards/topics/show.mako",
+        renderer="admin/boards/topics/show.jinja2",
         permission="manage",
     )
 
@@ -1228,7 +1228,7 @@ def includeme(config):  # pragma: no cover
         pages_get,
         request_method="GET",
         route_name="admin_pages",
-        renderer="admin/pages/all.mako",
+        renderer="admin/pages/all.jinja2",
         permission="manage",
     )
 
@@ -1236,7 +1236,7 @@ def includeme(config):  # pragma: no cover
         page_new_get,
         request_method="GET",
         route_name="admin_page_new",
-        renderer="admin/pages/new.mako",
+        renderer="admin/pages/new.jinja2",
         permission="manage",
     )
 
@@ -1244,7 +1244,7 @@ def includeme(config):  # pragma: no cover
         page_new_post,
         request_method="POST",
         route_name="admin_page_new",
-        renderer="admin/pages/new.mako",
+        renderer="admin/pages/new.jinja2",
         permission="manage",
     )
 
@@ -1252,7 +1252,7 @@ def includeme(config):  # pragma: no cover
         page_get,
         request_method="GET",
         route_name="admin_page",
-        renderer="admin/pages/show.mako",
+        renderer="admin/pages/show.jinja2",
         permission="manage",
     )
 
@@ -1260,7 +1260,7 @@ def includeme(config):  # pragma: no cover
         page_edit_get,
         request_method="GET",
         route_name="admin_page_edit",
-        renderer="admin/pages/edit.mako",
+        renderer="admin/pages/edit.jinja2",
         permission="manage",
     )
 
@@ -1268,7 +1268,7 @@ def includeme(config):  # pragma: no cover
         page_edit_post,
         request_method="POST",
         route_name="admin_page_edit",
-        renderer="admin/pages/edit.mako",
+        renderer="admin/pages/edit.jinja2",
         permission="manage",
     )
 
@@ -1276,7 +1276,7 @@ def includeme(config):  # pragma: no cover
         page_delete_get,
         request_method="GET",
         route_name="admin_page_delete",
-        renderer="admin/pages/delete.mako",
+        renderer="admin/pages/delete.jinja2",
         permission="manage",
     )
 
@@ -1291,7 +1291,7 @@ def includeme(config):  # pragma: no cover
         page_internal_get,
         request_method="GET",
         route_name="admin_page_internal",
-        renderer="admin/pages/show_internal.mako",
+        renderer="admin/pages/show_internal.jinja2",
         permission="manage",
     )
 
@@ -1299,7 +1299,7 @@ def includeme(config):  # pragma: no cover
         page_internal_edit_get,
         request_method="GET",
         route_name="admin_page_internal_edit",
-        renderer="admin/pages/edit_internal.mako",
+        renderer="admin/pages/edit_internal.jinja2",
         permission="manage",
     )
 
@@ -1307,7 +1307,7 @@ def includeme(config):  # pragma: no cover
         page_internal_edit_post,
         request_method="POST",
         route_name="admin_page_internal_edit",
-        renderer="admin/pages/edit_internal.mako",
+        renderer="admin/pages/edit_internal.jinja2",
         permission="manage",
     )
 
@@ -1315,7 +1315,7 @@ def includeme(config):  # pragma: no cover
         page_internal_delete_get,
         request_method="GET",
         route_name="admin_page_internal_delete",
-        renderer="admin/pages/delete_internal.mako",
+        renderer="admin/pages/delete_internal.jinja2",
         permission="manage",
     )
 
@@ -1337,7 +1337,7 @@ def includeme(config):  # pragma: no cover
         settings_get,
         request_method="GET",
         route_name="admin_settings",
-        renderer="admin/settings/all.mako",
+        renderer="admin/settings/all.jinja2",
         permission="manage",
     )
 
@@ -1345,7 +1345,7 @@ def includeme(config):  # pragma: no cover
         setting_get,
         request_method="GET",
         route_name="admin_setting",
-        renderer="admin/settings/show.mako",
+        renderer="admin/settings/show.jinja2",
         permission="manage",
     )
 
@@ -1353,7 +1353,7 @@ def includeme(config):  # pragma: no cover
         setting_post,
         request_method="POST",
         route_name="admin_setting",
-        renderer="admin/settings/show.mako",
+        renderer="admin/settings/show.jinja2",
         permission="manage",
     )
 

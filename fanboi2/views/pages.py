@@ -34,7 +34,7 @@ def includeme(config):  # pragma: no cover
     )
 
     config.add_view(
-        page_show, request_method="GET", route_name="page", renderer="pages/show.mako"
+        page_show, request_method="GET", route_name="page", renderer="pages/show.jinja2"
     )
 
     config.scan()

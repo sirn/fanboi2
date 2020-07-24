@@ -1,10 +1,11 @@
 from markupsafe import Markup
+from pyramid.request import Request
 
 from ..interfaces import IPageQueryService
 from .formatters import format_markdown
 
 
-def get_partial(request, slug):
+def get_partial(request: Request, slug: str):
     """Returns a content of internal page.
 
     :param request: A :class:`pyramid.request.Request` object.
@@ -17,37 +18,27 @@ def get_partial(request, slug):
         return None
 
 
-def global_css(context, request):
+def global_css(request: Request):
     """Returns a string of inline global custom CSS for site-wide CSS override.
     This custom CSS is the content of ``internal:global/css`` page.
-
-    :param context: A :class:`mako.runtime.Context` object.
-    :param request: A :class:`pyramid.request.Request` object.
     """
     page = get_partial(request, "global/css")
     if page:
         return Markup(page)
 
 
-def global_appendix(context, request):
+def global_appendix(request: Request):
     """Returns a HTML of global appendix content. This appendix content is the
     content of ``internal:global/appendix`` page.
-
-    :param context: A :class:`mako.runtime.Context` object.
-    :param request: A :class:`pyramid.request.Request` object.
     """
     page = get_partial(request, "global/appendix")
     if page:
-        return format_markdown(context, request, page)
+        return format_markdown(page)
 
 
-def global_footer(context, request):
+def global_footer(request: Request):
     """Returns a HTML of global footer content. This footer content is the
     content of ``internal:global/footer`` page.
-
-    :param context: A :class:`mako.runtime.Context` object.
-    :param request: A :class:`pyramid.request.Request` object.
-    :param cache_region: Optional cache region to cache this partial.
     """
     page = get_partial(request, "global/footer")
     if page:
