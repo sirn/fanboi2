@@ -3,8 +3,8 @@ var sourcemaps = require("gulp-sourcemaps");
 var concat = require("gulp-concat");
 var es = require("event-stream");
 
-var sass = require("gulp-sass");
 var postcss = require("gulp-postcss");
+var { sass } = require("@mr-hope/gulp-sass");
 
 var uglify = require("gulp-uglify");
 var source = require("vinyl-source-stream");
@@ -29,7 +29,7 @@ function assets() {
             gulp.src("assets/admin/assets/*"),
             gulp.src("assets/app/assets/*"),
             gulp.src("assets/legacy/assets/*"),
-            gulp.src("assets/vendor/assets/*")
+            gulp.src("assets/vendor/assets/*"),
         ])
         .pipe(gulp.dest("fanboi2/static"));
 }
@@ -43,13 +43,13 @@ var postcssProcessors = [
     require("css-mqpacker"),
     require("postcss-urlrev")({
         relativePath: "fanboi2/static",
-        replacer: function(url, hash) {
+        replacer: function (url, hash) {
             /* PostCSS-Urlrev uses ?v= by default. Override to
              * make it compatible with ?h= syntax in app. */
             return url + "?h=" + hash.slice(0, 8);
-        }
+        },
     }),
-    require("cssnano")({ preset: "default" })
+    require("cssnano")({ preset: "default" }),
 ];
 
 function styleApp() {
@@ -57,7 +57,7 @@ function styleApp() {
         .src([
             "assets/app/stylesheets/app.scss",
             "assets/app/stylesheets/*.scss",
-            "assets/app/stylesheets/themes/*.scss"
+            "assets/app/stylesheets/themes/*.scss",
         ])
         .pipe(sourcemaps.init())
         .pipe(sass().on("error", sass.logError))
@@ -71,7 +71,7 @@ function styleAdmin() {
     return gulp
         .src([
             "assets/admin/stylesheets/*.scss",
-            "assets/admin/stylesheets/themes/*.scss"
+            "assets/admin/stylesheets/themes/*.scss",
         ])
         .pipe(sourcemaps.init())
         .pipe(sass().on("error", sass.logError))
@@ -101,10 +101,10 @@ var externalDependencies = [
     "domready",
     "es6-promise",
     "js-cookie",
-    "virtual-dom"
+    "virtual-dom",
 ];
 
-var scriptApp = function() {
+var scriptApp = function () {
     return browserify({ debug: true })
         .plugin(tsify)
         .require("assets/app/javascripts/app.ts", { entry: true })
@@ -119,7 +119,7 @@ var scriptApp = function() {
         .pipe(gulp.dest("fanboi2/static"));
 };
 
-var scriptLegacy = function() {
+var scriptLegacy = function () {
     return gulp
         .src("assets/legacy/**/*.js")
         .pipe(sourcemaps.init())
@@ -129,7 +129,7 @@ var scriptLegacy = function() {
         .pipe(gulp.dest("fanboi2/static"));
 };
 
-var scriptVendor = function() {
+var scriptVendor = function () {
     return browserify({ debug: true })
         .require(externalDependencies)
         .bundle()

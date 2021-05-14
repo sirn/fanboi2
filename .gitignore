@@ -15,6 +15,7 @@ celerybeat*
 
 # Building
 *.egg-info/
+.pnpm-store/
 .eggs/
 dist/
 setup.py

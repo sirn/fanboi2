@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-    config.vm.box = "generic/freebsd12"
+    config.vm.box = "pxfs/freebsd-13.0"
     config.vm.network "forwarded_port", guest: 6543, host: 6543
     config.ssh.shell = "sh"
 

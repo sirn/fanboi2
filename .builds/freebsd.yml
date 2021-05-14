@@ -1,12 +1,13 @@
+---
 image: freebsd/latest
 packages:
-  - node12
-  - npm-node12
+  - node14
+  - npm-node14
   - postgresql11-client
   - postgresql11-server
-  - py37-pip
-  - py37-sqlite3
-  - python37
+  - py38-pip
+  - py38-sqlite3
+  - python38
 sources:
   - https://git.sr.ht/~sirn/fanboi2
 secrets:
@@ -18,14 +19,16 @@ tasks:
   - setup: |
       cd fanboi2/ || exit 1
       export VENV=$HOME/venv
-      export PATH=$VENV/bin:$PATH
+      export PATH=$VENV/bin:$VENV/.local/bin:$PATH
 
-      python3.7 -m venv "$VENV"
+      python3.8 -m venv "$VENV"
       pip3 install -q poetry
       poetry install
 
-      npm install
-      npm run gulp
+      npm set prefix="$HOME/.local"
+      npm install -g pnpm
+      pnpm install
+      pnpm run gulp
   - test: |
       cd fanboi2/ || exit 1
       export VENV=$HOME/venv
@@ -34,11 +37,11 @@ tasks:
       sudo service postgresql oneinitdb
       sudo sysrc postgresql_enable=YES
       sudo sysrc postgresql_flags="-l /var/log/postgresql.log"
-      (
-        printf "local all all trust\\n"
-        printf "host all all 127.0.0.1/32 trust\\n"
-        printf "host all all ::1/128 trust\\n"
-      ) | sudo tee /var/db/postgres/data11/pg_hba.conf
+
+      cat <<EOF | sudo tee /var/db/postgres/data11/pg_hba.conf
+      local all all trust
+      host all all 127.0.0.1/32 trust
+      host all all ::1/128 trust
 
       sudo touch /var/log/postgresql.log
       sudo chown postgres /var/log/postgresql.log

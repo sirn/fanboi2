@@ -1,13 +1,9 @@
 #!/bin/sh
 #
-# Setting up user.
+# Setting up (user).
 #
 
 set -e
-
-
-## Utils
-##
 
 T_BOLD=$(tput bold 2>/dev/null || true)
 T_RESET=$(tput sgr0 2>/dev/null || true)
@@ -24,74 +20,91 @@ printe_h2() {
     printf -- "--> %s\\n" "$@"
 }
 
-
-## Cleanup
-##
+## Initial configuration
+## ----------------------------------------------------------------------------
 
 printe_h1 "Cleaning up home..."
 
-cd "$HOME" || exit
-
-rm -f \
-   .bashrc \
-   .cshrc \
-   .lesshst \
-   .login \
-   .login-e \
-   .login_conf \
-   .mail_aliases \
-   .mailrc \
-   .profile \
-   .profile-e \
-   .rhosts \
-   .rnd \
-   .shrc
-
+cd "$HOME" || exit 1
+cat <<EOF | xargs rm -f
+.bashrc
+.cshrc
+.lesshst
+.login
+.login-e
+.login_conf
+.mail_aliases
+.mailrc
+.profile
+.profile-e
+.rhosts
+.rnd
+.shrc
+EOF
 
 ## Setup Profile
-##
+## ----------------------------------------------------------------------------
 
-if [ ! -f "$HOME/.profile" ]; then
-    printe_h1 "Setting up profile..."
+printe_h1 "Setting up profile..."
 
-    cat <<EOPROFILE > "$HOME/.profile"
+cat <<EOF > "$HOME/.profile"
 EDITOR=vim; export EDITOR
 PAGER=more; export PAGER
 LANG=en_US.UTF-8; export LANG
-PATH=\$PATH:\$HOME/.venv/bin; export PATH
-EOPROFILE
-fi
+PATH=\$PATH:\$HOME/.local/bin:\$HOME/.venv/bin; export PATH
+EOF
 
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090,SC1091
 . "$HOME/.profile"
 
+## Python Venv
+## ----------------------------------------------------------------------------
 
-## Prepare Python
-##
-
-printe_h1 "Preparing Python environment..."
+printe_h1 "Preparing Python venv..."
 
 if [ ! -d "$HOME/.venv" ]; then
-    python3.7 -m venv "$HOME/.venv"
+    /usr/local/bin/python3.8 -m venv "$HOME/.venv"
+fi
+
+if [ ! -f "$HOME/.venv/bin/pip3" ]; then
+    "$HOME/.venv/bin/python3" -m ensurepip
 fi
 
 if [ ! -f "$HOME/.venv/bin/poetry" ]; then
-    pip3 install poetry
+    "$HOME/.venv/bin/pip3" install poetry
 fi
 
+## Nodejs
+## ----------------------------------------------------------------------------
+
+printe_h1 "Preparing Nodejs..."
+
+npm set prefix="$HOME/.local"
+if [ ! -f "$HOME/.local/bin/pnpm" ]; then
+    npm install -g pnpm
+fi
 
 ## Prepare application
-##
+## ----------------------------------------------------------------------------
 
 printe_h1 "Setting up application..."
 
-cd /vagrant || exit
+cd /vagrant || exit 1
 
 psql template1 -c "CREATE DATABASE fanboi2_dev;" || true
 psql template1 -c "CREATE DATABASE fanboi2_test;" || true
 
+"$HOME/.venv/bin/poetry" install || exit 1
+# "$HOME/.local/bin/pnpm" install || exit 1
+# "$HOME/.local/bin/pnpm" run gulp || exit 1
+
+## Configure application
+## ----------------------------------------------------------------------------
+
 if [ ! -f /vagrant/.env ]; then
-    cat <<EOENV > "/vagrant/.env"
+    print_h1 "Configuring application..."
+
+    cat <<EOF > "/vagrant/.env"
 CELERY_BROKER_URL=redis://127.0.0.1:6379/1
 DATABASE_URL=postgresql://vagrant:@127.0.0.1:5432/fanboi2_dev
 REDIS_URL=redis://127.0.0.1:6379/0
@@ -100,9 +113,5 @@ SERVER_HOST=0.0.0.0
 SERVER_PORT=6543
 SESSION_SECRET=\$(openssl rand -hex 32)
 AUTH_SECRET=\$(openssl rand -hex 32)
-EOENV
+EOF
 fi
-
-poetry install || exit 1
-npm install || exit 1
-npm run gulp || exit 1

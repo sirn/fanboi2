@@ -5,10 +5,6 @@
 
 set -e
 
-
-## Utils
-##
-
 T_BOLD=$(tput bold 2>/dev/null || true)
 T_RESET=$(tput sgr0 2>/dev/null || true)
 
@@ -24,13 +20,11 @@ printe_h2() {
     printf -- "--> %s\\n" "$@"
 }
 
-
 ## Initial configuration
-##
+## ----------------------------------------------------------------------------
 
 if [ "$(hostname)" != "vagrant" ]; then
     printe_h1 "Setting up hostname..."
-
     sysrc hostname=vagrant
     hostname vagrant
 fi
@@ -45,49 +39,54 @@ if grep -q ^firstboot /etc/rc.conf; then
     fi
 fi
 
+## Packages
+## ----------------------------------------------------------------------------
 
-## Upgrades
-##
+if grep -q "url:.*/quarterly" /etc/pkg/FreeBSD.conf; then
+    printe_h1 "Switching pkgs to latest..."
+    sed -i '' 's|\(url:.*\/\)quarterly"|\1latest"|' /etc/pkg/FreeBSD.conf
+fi
 
-printe_h1 "Upgrading packages, this may take a while..."
+printe_h1 "Updating packages, this may take a while..."
 pkg upgrade -qy
 pkg update -qf
 
 printe_h1 "Installing packages..."
-pkg install -y \
-    bzip2 \
-    ca_root_nss \
-    curl \
-    git-lite \
-    gmake \
-    node12 \
-    npm-node12 \
-    ntp \
-    postgresql11-client \
-    postgresql11-server \
-    py37-pip \
-    py37-sqlite3 \
-    python37 \
-    redis \
-    sqlite3 \
-    sudo
+cat <<EOF | xargs pkg install -y
+bzip2
+ca_root_nss
+curl
+git-lite
+gmake
+node14
+npm-node14
+ntp
+postgresql11-client
+postgresql11-server
+py38-pip
+py38-sqlite3
+python38
+redis
+sqlite3
+sudo
+EOF
 
-
-## Enable services
-##
-
-printe_h1 "Enabling services..."
+## Services: ntpd
+## ----------------------------------------------------------------------------
 
 if ! service ntpd onestatus >/dev/null; then
-    printe_h2 "Enabling ntpd..."
+    printe_h1 "Enabling ntpd..."
 
     sysrc ntpd_enable=YES
     ntpd -qg
     service ntpd start
 fi
 
+## Services: postgresql
+## ----------------------------------------------------------------------------
+
 if ! service postgresql onestatus >/dev/null; then
-    printe_h2 "Enabling PostgreSQL..."
+    printe_h1 "Enabling PostgreSQL..."
 
     sysrc postgresql_enable=YES
     service postgresql initdb
@@ -102,16 +101,18 @@ EOF
     sudo -u postgres createuser -ds fanboi2 || true
 fi
 
+## Services: redis
+## ----------------------------------------------------------------------------
+
 if ! service redis onestatus >/dev/null; then
-    printe_h2 "Enabling Redis..."
+    printe_h1 "Enabling Redis..."
 
     sysrc redis_enable=YES
     service redis start
 fi
 
-
-## User
-##
+## User setup
+## ----------------------------------------------------------------------------
 
 printe_h1 "Setting up user..."
 

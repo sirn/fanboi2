@@ -1,6 +1,6 @@
 # Fanboi2
 
-[![python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://docs.python.org/3/whatsnew/3.7.html) [![builds.sr.ht status](https://builds.sr.ht/~sirn/fanboi2/freebsd.yml.svg)](https://builds.sr.ht/~sirn/fanboi2/freebsd.yml?)
+[![python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://docs.python.org/3/whatsnew/3.8.html) [![builds.sr.ht status](https://builds.sr.ht/~sirn/fanboi2/freebsd.yml.svg)](https://builds.sr.ht/~sirn/fanboi2/freebsd.yml?)
 
 Board engine behind [Fanboi Channel](https://fanboi.ch/) written in Python.
 
@@ -8,8 +8,8 @@ Board engine behind [Fanboi Channel](https://fanboi.ch/) written in Python.
 
 For production environment, Fanboi2 has the following runtime requirements:
 
--   [Python 3.7](https://www.python.org/downloads/) with [Poetry](https://poetry.eustace.io)
--   [PostgreSQL 10](https://www.postgresql.org/)
+-   [Python 3.8](https://www.python.org/downloads/) with [Poetry](https://poetry.eustace.io)
+-   [PostgreSQL 11](https://www.postgresql.org/)
 -   [Redis](https://redis.io/)
 
 Additionally, the following packages are build-time requirements for compiling assets:
@@ -32,8 +32,8 @@ Then `vagrant ssh` and follow the _Setting up applications_ section below.
 On FreeBSD systems, these packages can be installed with:
 
 ```shellsession
-$ sudo pkg install ca_root_nss python36 py36-sqlite3 py36-pip postgresql11-server postgresql11-client redis node12 npm-node12
-$ pip install --user poetry
+$ sudo pkg install ca_root_nss python38 py38-pip py38-sqlite3 postgresql11-server postgresql11-client redis node14 npm-node14
+$ pip3 install --user poetry
 ```
 
 Setup PostgreSQL:
