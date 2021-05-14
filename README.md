@@ -1,6 +1,7 @@
 # Fanboi2
 
-[![python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://docs.python.org/3/whatsnew/3.8.html) [![builds.sr.ht status](https://builds.sr.ht/~sirn/fanboi2/freebsd.yml.svg)](https://builds.sr.ht/~sirn/fanboi2/freebsd.yml?)
+[![python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://docs.python.org/3/whatsnew/3.8.html)
+[![builds.sr.ht status](https://builds.sr.ht/~sirn/fanboi2/commits/freebsd.yml.svg)](https://builds.sr.ht/~sirn/fanboi2/commits/freebsd.yml?)
 
 Board engine behind [Fanboi Channel](https://fanboi.ch/) written in Python.
 
