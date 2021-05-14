@@ -55,17 +55,7 @@ def _get_asset_hash_cached(path):
 
     :param path: An asset specification to the asset file.
     """
-    if ":" in path:
-        package, path = path.split(":")
-        resolver = AssetResolver(package)
-    else:
-        resolver = AssetResolver()
-    fullpath = resolver.resolve(path).abspath()
-    md5 = hashlib.md5()
-    with open(fullpath, "rb") as f:
-        for chunk in iter(lambda: f.read(128 * md5.block_size), b""):
-            md5.update(chunk)
-    return md5.hexdigest()
+    return _get_asset_hash(path)
 
 
 def _get_asset_hash(path):
@@ -86,6 +76,17 @@ def _get_asset_hash(path):
     return md5.hexdigest()
 
 
+def tagged_static_path_cached(request, path, **kwargs):
+    """Similar to Pyramid's :func:`tagged_static_path` but the result is cached.
+
+    :param request: A :class:`pyramid.request.Request` object.
+    :param path: An asset specification to the asset file.
+    :param kwargs: Arguments to pass to :meth:`request.static_path`.
+    """
+    kwargs["_query"] = {"h": _get_asset_hash_cached(path)[:8]}
+    return request.static_path(path, **kwargs)
+
+
 def tagged_static_path(request, path, **kwargs):
     """Similar to Pyramid's :meth:`request.static_path` but append first 8
     characters of file hash as query string ``h`` to it forcing proxy server
@@ -95,10 +96,7 @@ def tagged_static_path(request, path, **kwargs):
     :param path: An asset specification to the asset file.
     :param kwargs: Arguments to pass to :meth:`request.static_path`.
     """
-    if request.registry.settings["server.development"]:
-        kwargs["_query"] = {"h": _get_asset_hash(path)[:8]}
-    else:
-        kwargs["_query"] = {"h": _get_asset_hash_cached(path)[:8]}
+    kwargs["_query"] = {"h": _get_asset_hash(path)[:8]}
     return request.static_path(path, **kwargs)
 
 
@@ -169,7 +167,12 @@ def make_config(settings):  # pragma: no cover
     config.set_session_factory(session_factory)
     config.set_csrf_storage_policy(SessionCSRFStoragePolicy(key="_csrf"))
     config.add_request_method(route_name, property=True)
-    config.add_request_method(tagged_static_path)
+
+    if config.registry.settings["server.development"]:
+        config.add_request_method(tagged_static_path)
+    else:
+        config.add_request_method(tagged_static_path_cached)
+
     config.add_route("robots", "/robots.txt")
 
     config.include("fanboi2.auth")

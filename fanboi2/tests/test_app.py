@@ -37,7 +37,7 @@ class DummyStaticURLInfo:
         return self.result
 
 
-class TestTaggedStaticUrl(unittest.TestCase):
+class TestTaggedStaticPath(unittest.TestCase):
     def setUp(self):
         from pyramid.url import URLMethodsMixin
 
@@ -122,6 +122,13 @@ class TestTaggedStaticUrl(unittest.TestCase):
         self.request.registry.registerUtility(info, IStaticURLInfo)
         with self.assertRaises(IOError):
             self._get_function()(self.request, "static/notexists")
+
+
+class TestTaggedStaticPathCached(TestTaggedStaticPath):
+    def _get_function(self):
+        from .. import tagged_static_path_cached
+
+        return tagged_static_path_cached
 
 
 class TestSettingsFromEnv(unittest.TestCase):
