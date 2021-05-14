@@ -20,7 +20,7 @@ export class TopicInlineReply extends SingletonComponent {
                 if ($button) {
                     e.preventDefault();
                     loadingState.bind(() => {
-                        return new Promise(resolve => {
+                        return new Promise((resolve) => {
                             if ($form instanceof HTMLFormElement) {
                                 dispatchCustomEvent($form, "newPost", {
                                     params: serializeForm($form),
@@ -28,14 +28,14 @@ export class TopicInlineReply extends SingletonComponent {
                                         if ($form instanceof HTMLFormElement) {
                                             detachErrors($form);
                                             $form.reset();
-                                            resolve();
+                                            resolve(true);
                                         }
                                     },
                                     errorCallback: (error: ResourceError) => {
                                         if ($form instanceof HTMLFormElement) {
                                             detachErrors($form);
                                             attachErrors($form, error);
-                                            resolve();
+                                            resolve(true);
                                         }
                                     },
                                 });

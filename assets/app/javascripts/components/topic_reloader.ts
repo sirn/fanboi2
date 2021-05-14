@@ -12,10 +12,10 @@ export class TopicReloader extends SingletonComponent {
         $target.addEventListener("click", (e: Event) => {
             e.preventDefault();
             loadingState.bind(() => {
-                return new Promise(resolve => {
+                return new Promise((resolve) => {
                     dispatchCustomEvent($target, "loadPosts", {
                         callback: () => {
-                            resolve();
+                            resolve(true);
                         },
                     });
                 });
@@ -52,8 +52,8 @@ export class TopicReloader extends SingletonComponent {
                 "href",
                 originalHref.replace(
                     /^(\/\w+\/\d+)\/\d+\-\/$/,
-                    `$1/${lastPostNumber}-/`,
-                ),
+                    `$1/${lastPostNumber}-/`
+                )
             );
         }
     }

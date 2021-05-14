@@ -27,8 +27,8 @@ export class BoardSelector extends SingletonComponent {
                     document.body.insertBefore($selector, $element.nextSibling);
                 });
             } else {
-                return new Promise(resolve => {
-                    resolve();
+                return new Promise((resolve) => {
+                    resolve(true);
                 });
             }
         };
@@ -47,7 +47,7 @@ export class BoardSelector extends SingletonComponent {
             }
         };
 
-        let _animate = (updateFn: ((elapsedPercent: number) => void)) => {
+        let _animate = (updateFn: (elapsedPercent: number) => void) => {
             let startTime: number = 0;
             let _animateStep = (time: number) => {
                 if (!startTime) {
@@ -70,10 +70,10 @@ export class BoardSelector extends SingletonComponent {
         $button = create(
             h("div", { className: "js-board-selector-button" }, [
                 h("a", { href: "#" }, ["Boards"]),
-            ]),
+            ])
         );
 
-        $button.addEventListener("click", e => {
+        $button.addEventListener("click", (e) => {
             e.preventDefault();
             _render().then(() => {
                 if ($selector) {
