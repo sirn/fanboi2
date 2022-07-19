@@ -4,7 +4,6 @@ import re
 import urllib
 import urllib.parse as urlparse
 from collections import OrderedDict
-from html.parser import HTMLParser
 
 import isodate
 import misaka
@@ -12,7 +11,6 @@ import pytz
 from markupsafe import Markup
 
 from ..interfaces import ISettingQueryService
-
 
 RE_PARAGRAPH = re.compile(r"(?:(?P<newline>\r\n|\n|\r)(?P=newline)+)")
 RE_THUMBNAILS = (
@@ -127,7 +125,7 @@ def format_text(text, shorten=None):
 
     # Auto-link
     def _replace_link(match):
-        link = HTMLParser().unescape(urlparse.unquote(match.group(0)))
+        link = html.unescape(urlparse.unquote(match.group(0)))
         return Markup(TP_LINK % (url_fix(link), html.escape(link)))
 
     # Turns text into paragraph.

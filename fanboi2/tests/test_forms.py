@@ -1,4 +1,5 @@
 import unittest
+
 from pyramid import testing
 
 
@@ -457,7 +458,7 @@ class TestAdminBoardForm(_FormMixin, unittest.TestCase):
             }
         )
         self.assertFalse(form.validate())
-        self.assertListEqual(form.status.errors, ["Not a valid choice"])
+        self.assertListEqual(form.status.errors, ["This field is required."])
 
     def test_status_not_allowed(self):
         form = self._make_one(
@@ -578,7 +579,7 @@ class TestAdminBoardNewForm(_FormMixin, unittest.TestCase):
             }
         )
         self.assertFalse(form.validate())
-        self.assertListEqual(form.status.errors, ["Not a valid choice"])
+        self.assertListEqual(form.status.errors, ["This field is required."])
 
     def test_status_not_allowed(self):
         form = self._make_one(
@@ -711,7 +712,7 @@ class TestAdminTopicForm(_FormMixin, unittest.TestCase):
     def test_status_missing(self):
         form = self._make_one({})
         self.assertFalse(form.validate())
-        self.assertListEqual(form.status.errors, ["Not a valid choice"])
+        self.assertListEqual(form.status.errors, ["This field is required."])
 
     def test_status_not_allowed(self):
         form = self._make_one({"status": "foobar"})
