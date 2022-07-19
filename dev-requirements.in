@@ -1,0 +1,9 @@
+-c requirements.txt
+black >= 22.6.0, < 23
+hupper >= 1.10.3, < 2
+pyls-flake8 >= 0.4.0, < 0.5
+pyls-isort >= 0.2.2, < 0.3
+python-lsp-black >= 1.2.1, < 2
+python-lsp-server >= 1.5.0, < 2
+flake8 >= 4.0.0, < 5
+flake8-bugbear >= 22.7, < 23

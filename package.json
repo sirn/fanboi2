@@ -13,6 +13,7 @@
         "dom4": "^2.1.6",
         "domready": "^1.0.8",
         "es6-promise": "^4.2.8",
+        "fanboi2": "link:",
         "js-cookie": "^2.2.1",
         "virtual-dom": "^2.1.1"
     },

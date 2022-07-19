@@ -1,63 +1,29 @@
-[tool.poetry]
-name = "fanboi2"
-version = "2021.7"
-description = "Pseudonomous message board"
-authors = ["Kridsada Thanabulpong <sirn@ogsite.net>"]
-license = "BSD-3-Clause"
-include = ["migration/**/*", "fanboi2/static/**/*", "alembic.ini"]
+[build-system]
+requires = ["setuptools >= 63"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry.scripts]
+[project]
+name = "fanboi2"
+version = "2022.7"
+description = "Pseudonomous board engine"
+requires-python = ">=3.9"
+maintainers = [{name = "Marisa Thanabulpong", email = "sirn@ogsite.net"}]
+license = {text = "BSD-3-Clause"}
+dynamic = ["dependencies", "optional-dependencies"]
+
+[project.scripts]
 fbctl = "fanboi2.cmd.ctl:main"
 fbcelery = "fanboi2.cmd.celery:main"
 
-[tool.poetry.dependencies]
-python = "^3.7"
-MarkupSafe = "^1.1"
-alembic = "^1.0.11"
-argon2-cffi = "^19.1"
-celery = "~4.4.1"
-"dogpile.cache" = "^0.9.0"
-geoip2 = "^2.9"
-hiredis = "^1.0.1"
-isodate = "^0.6.0"
-lark-parser = "^0.7.1"
-misaka = "^2.1"
-passlib = "^1.7"
-psycopg2 = "^2.8.4"
-pyramid = "^1.10.4"
-pyramid-debugtoolbar = "^4.6"
-pyramid-mako = "^1.1"
-pyramid-nacl-session = "^0.3.0"
-pyramid-services = "^2.2"
-pyramid-tm = "^2.4"
-pytz = "^2019.1"
-redis = "^3.4.1"
-requests = "^2.22"
-sqlalchemy = "^1.3.5"
-transaction = "^3.0"
-wtforms = "^2.2.1"
-"zope.sqlalchemy" = "^1.1"
-fabric = {version = "^2.5", optional = true}
-patchwork = {version = "^1.0", optional = true}
-invocations = {version = "^1.4", optional = true}
-colorama = {version = "^0.4.1", optional = true}
-python-dotenv = "^0.12.0"
-waitress = "^1.4.4"
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["fanboi2*"]
+exclude = ["fanboi2.tests*"]
+namespaces = true
 
-[tool.poetry.dev-dependencies]
-hupper = "^1.8"
-nose2 = "^0.9.1"
-black = {version = ">=0", allow-prereleases = true}
-python-language-server = ">=0"
-pyls-black = ">=0"
-pyls-isort = ">=0"
-rope = ">=0"
-flake8 = ">=0"
-flake8-bugbear = ">=0"
-honcho = ">=0"
+[tool.setuptools.dynamic]
+dependencies = {file = "requirements.txt"}
 
-[tool.poetry.extras]
-
-[build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+[tool.setuptools.dynamic.optional-dependencies]
+test = {file = "test-requirements.txt"}
+dev = {file = "dev-requirements.txt"}

@@ -1,44 +1,28 @@
 ---
 image: freebsd/latest
 packages:
-  - node14
-  - npm-node14
-  - postgresql11-client
-  - postgresql11-server
-  - py38-pip
-  - py38-sqlite3
-  - python38
+  - node16
+  - npm-node16
+  - postgresql13-client
+  - postgresql13-server
+  - py39-pip
+  - py39-sqlite3
+  - python39
 sources:
   - https://git.sr.ht/~sirn/fanboi2
-secrets:
-  - 1628f803-8887-41bc-9044-d8e909dcc77b
-environment:
-  deploy_ref: refs/heads/master
-  deploy_repo: https://git.sr.ht/~sirn/fanboi2
 tasks:
   - setup: |
       cd fanboi2/ || exit 1
-      export VENV=$HOME/venv
-      export PATH=$VENV/bin:$HOME/.local/bin:$PATH
-
-      python3.8 -m venv "$VENV"
-      pip3 install -q poetry
-      poetry install --no-ansi
+      export PATH=$HOME/.local/bin:$PATH
 
       npm set prefix="$HOME/.local"
       npm install -g pnpm
-      pnpm install
-      pnpm run gulp
-  - test: |
-      cd fanboi2/ || exit 1
-      export VENV=$HOME/venv
-      export PATH=$VENV/bin:$HOME/.local/bin:$PATH
 
       sudo service postgresql oneinitdb
       sudo sysrc postgresql_enable=YES
       sudo sysrc postgresql_flags="-l /var/log/postgresql.log"
 
-      cat <<EOF | sudo tee /var/db/postgres/data11/pg_hba.conf
+      cat <<EOF | sudo tee /var/db/postgres/data13/pg_hba.conf
       local all all trust
       host all all 127.0.0.1/32 trust
       host all all ::1/128 trust
@@ -47,9 +31,18 @@ tasks:
       sudo touch /var/log/postgresql.log
       sudo chown postgres /var/log/postgresql.log
       sudo service postgresql start
-      trap "sudo service postgresql stop" 0 1 2 3 6 14 15
       sudo -u postgres createuser -ds fanboi2
       sudo -u postgres createdb -U fanboi2 fanboi2_test
-
+  - build: |
+      cd fanboi2/ || exit 1
+      export PATH=$HOME/.local/bin:$PATH
+      export PYTHON=/usr/local/bin/python3.9
+      pnpm install
+      pnpm run gulp
+  - test: |
+      cd fanboi2/ || exit 1
+      export PATH=$HOME/.local/bin:$PATH
+      export VENVDIR=$HOME/venv
+      export PYTHON=/usr/local/bin/python3.9
       export POSTGRESQL_TEST_DATABASE="postgresql://fanboi2:@localhost:5432/fanboi2_test"
-      poetry run nose2 --verbose --with-coverage
+      make test

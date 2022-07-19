@@ -1,0 +1,2 @@
+-c requirements.txt
+nose2 >= 0.9.1, < 0.10

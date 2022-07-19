@@ -1,4 +1,4 @@
-web: poetry run fbctl serve --reload
-worker: poetry run fbcelery worker
-beat: poetry run fbcelery beat
-assets: yarn gulp build watch
+web: ${VENV:-./venv}/bin/fbctl serve --reload
+worker: ${VENV:-./venv}/bin/fbcelery worker
+beat: ${VENV:-./venv}/bin/fbcelery beat
+assets: pnpm exec gulp build watch
