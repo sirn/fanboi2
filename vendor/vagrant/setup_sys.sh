@@ -34,7 +34,7 @@ fi
 if grep -q ^firstboot /etc/rc.conf; then
     printe_h1 "Removing invalid rc.conf..."
 
-    if awk '! /^firstboot/' < /etc/rc.conf > /etc/rc.conf.tmp; then
+    if awk '! /^firstboot-/' < /etc/rc.conf > /etc/rc.conf.tmp; then
         mv /etc/rc.conf.tmp /etc/rc.conf
     fi
 fi
@@ -58,14 +58,14 @@ ca_root_nss
 curl
 git-lite
 gmake
-node14
-npm-node14
+node16
+npm-node16
 ntp
-postgresql11-client
-postgresql11-server
-py38-pip
-py38-sqlite3
-python38
+postgresql13-client
+postgresql13-server
+py39-pip
+py39-sqlite3
+python39
 redis
 sqlite3
 sudo
@@ -90,7 +90,7 @@ if ! service postgresql onestatus >/dev/null; then
 
     sysrc postgresql_enable=YES
     service postgresql initdb
-    cat <<EOF > /var/db/postgres/data11/pg_hba.conf
+    cat <<EOF > /var/db/postgres/data13/pg_hba.conf
 local all all trust
 host all all 127.0.0.1/32 trust
 host all all ::1/128 trust

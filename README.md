@@ -1,6 +1,6 @@
 # Fanboi2
 
-[![python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://docs.python.org/3/whatsnew/3.8.html)
+[![python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://docs.python.org/3/whatsnew/3.9.html)
 [![builds.sr.ht status](https://builds.sr.ht/~sirn/fanboi2/commits/freebsd.yml.svg)](https://builds.sr.ht/~sirn/fanboi2/commits/freebsd.yml?)
 
 Board engine behind [Fanboi Channel](https://fanboi.ch/) written in Python.
@@ -9,14 +9,16 @@ Board engine behind [Fanboi Channel](https://fanboi.ch/) written in Python.
 
 For production environment, Fanboi2 has the following runtime requirements:
 
--   [Python 3.8](https://www.python.org/downloads/) with [Poetry](https://poetry.eustace.io)
--   [PostgreSQL 11](https://www.postgresql.org/)
+-   [Python 3.9](https://www.python.org/downloads/)
+-   [PostgreSQL 13](https://www.postgresql.org/)
 -   [Redis](https://redis.io/)
 
 Additionally, the following packages are build-time requirements for compiling assets:
 
 -   [Node LTS](https://nodejs.org/)
--   [NPM](https://www.npmjs.com)
+-   [PNPM](https://github.com/pnpm/pnpm)
+
+On a non-FreeBSD, you will also need to install **BSD Make** (usually called `bmake` in GNU systems.)
 
 ### Installing with Vagrant
 
@@ -26,15 +28,21 @@ If you're looking to develop or test Fanboi2, simply install [Vagrant](https://w
 $ vagrant up
 ```
 
-Then `vagrant ssh` and follow the _Setting up applications_ section below.
+Then `vagrant ssh` and follow the _Setting up application_ section below.
 
 ### Installing on FreeBSD systems
 
 On FreeBSD systems, these packages can be installed with:
 
 ```shellsession
-$ sudo pkg install ca_root_nss python38 py38-pip py38-sqlite3 postgresql11-server postgresql11-client redis node14 npm-node14
-$ pip3 install --user poetry
+$ sudo pkg install ca_root_nss python39 py39-pip py39-sqlite3 postgresql13-server postgresql13-client redis node16 npm-node16
+```
+
+Install PNPM:
+
+```shellsession
+$ npm set prefix="$HOME/.local"
+$ npm install -g pnpm
 ```
 
 Setup PostgreSQL:
@@ -56,51 +64,53 @@ $ sudo sysrc redis_enable=YES
 $ sudo service redis start
 ```
 
-### Configuring environment variables
-
-For convenient during development, configure these environment variables in `.profile`:
+After all packages are installed, setup the application with:
 
 ```shellsession
-$ cat <<EOF >> ~/.profile
-PATH=\$PATH:\$HOME/.local/bin; export PATH
-CELERY_BROKER_URL=redis://127.0.0.1:6379/1; export CELERY_BROKER_URL
-DATABASE_URL=postgresql://127.0.0.1:5432/fanboi2_dev; export DATABASE_URL
-POSTGRESQL_TEST_DATABASE=postgresql://127.0.0.1:5432/fanboi2_test; export POSTGRESQL_TEST_DATABASE
-REDIS_URL=redis://127.0.0.1:6379/0; export REDIS_URL
-SERVER_DEV=true; export SERVER_DEV
-SERVER_HOST=0.0.0.0; export SERVER_HOST
-SERVER_PORT=6543; export SERVER_PORT
-SESSION_SECRET=\$(openssl rand -hex 32); export SESSION_SECRET
-AUTH_SECRET=\$(openssl rand -hex 32); export AUTH_SECRET
+$ git clone https://git.sr.ht/~sirn/fanboi2
+$ cd fanboi2/
+$ make
+```
+
+### Configuring environment variables
+
+For convenient during development, configure these environment variables in `.env`:
+
+```shellsession
+$ cat <<EOF > .env
+CELERY_BROKER_URL=redis://127.0.0.1:6379/1
+DATABASE_URL=postgresql://127.0.0.1:5432/fanboi2_dev
+POSTGRESQL_TEST_DATABASE=postgresql://127.0.0.1:5432/fanboi2_test
+REDIS_URL=redis://127.0.0.1:6379/0
+SERVER_DEV=true
+SERVER_HOST=0.0.0.0
+SERVER_PORT=6543
+SESSION_SECRET=\$(openssl rand -hex 32)
+AUTH_SECRET=\$(openssl rand -hex 32)
 EOF
+```
+
+Load environment by sourcing it:
+
+```shellsession
+$ . fanboi2-env.sh
 ```
 
 ### Setting up application
 
-After all packages are installed, setup the application with:
+Migrate the database:
 
 ```shellsession
-$ git clone https://git.sr.ht/~sirn/fanboi2 fanboi2
-$ cd fanboi2/
-$ poetry install --no-dev
-$ npm install && npm run gulp
+$ make db-migrate
 ```
 
-Then configure environment variables and run:
+Start the application:
 
 ```shellsession
-$ poetry run alembic upgrade head
-$ poetry run fbctl serve
+$ make prod-run
 ```
 
-You also need to run the worker (each in its own terminal window) with:
-
-```shellsession
-$ poetry run fbcelery worker
-$ poetry run fbcelery beat
-```
-
-And you're done! Please visit <http://localhost:6543/admin/> to perform initial configuration.
+And you're done. Visit <http://localhost:6543/admin/> to perform initial configuration.
 
 ## Configuring
 
@@ -117,16 +127,16 @@ Fanboi2 uses environment variable to configure the application. You may want to 
 
 ## Development
 
-To setup Fanboi2 in development mode, run the following commands after performing production setup steps:
+To setup Fanboi2 in development mode, run the following commands:
 
 ```shellsession
-$ poetry install
+$ make dev
 ```
 
 And run the server with:
 
 ```shellsession
-$ poetry run honcho start
+$ make dev-run
 ```
 
 ### Submitting changes

@@ -51,28 +51,12 @@ cat <<EOF > "$HOME/.profile"
 EDITOR=vim; export EDITOR
 PAGER=more; export PAGER
 LANG=en_US.UTF-8; export LANG
-PATH=\$PATH:\$HOME/.local/bin:\$HOME/.venv/bin; export PATH
+PATH=\$HOME/.local/bin:\$PATH; export PATH
+PYTHON=/usr/local/bin/python3.9; export PYTHON
 EOF
 
 # shellcheck disable=SC1090,SC1091
 . "$HOME/.profile"
-
-## Python Venv
-## ----------------------------------------------------------------------------
-
-printe_h1 "Preparing Python venv..."
-
-if [ ! -d "$HOME/.venv" ]; then
-    /usr/local/bin/python3.8 -m venv "$HOME/.venv"
-fi
-
-if [ ! -f "$HOME/.venv/bin/pip3" ]; then
-    "$HOME/.venv/bin/python3" -m ensurepip
-fi
-
-if [ ! -f "$HOME/.venv/bin/poetry" ]; then
-    "$HOME/.venv/bin/pip3" install poetry
-fi
 
 ## Nodejs
 ## ----------------------------------------------------------------------------
@@ -94,9 +78,7 @@ cd /vagrant || exit 1
 psql template1 -c "CREATE DATABASE fanboi2_dev;" || true
 psql template1 -c "CREATE DATABASE fanboi2_test;" || true
 
-"$HOME/.venv/bin/poetry" install || exit 1
-# "$HOME/.local/bin/pnpm" install || exit 1
-# "$HOME/.local/bin/pnpm" run gulp || exit 1
+make dev
 
 ## Configure application
 ## ----------------------------------------------------------------------------
@@ -104,9 +86,10 @@ psql template1 -c "CREATE DATABASE fanboi2_test;" || true
 if [ ! -f /vagrant/.env ]; then
     print_h1 "Configuring application..."
 
-    cat <<EOF > "/vagrant/.env"
+    cat <<EOF > /vagrant/.env
 CELERY_BROKER_URL=redis://127.0.0.1:6379/1
-DATABASE_URL=postgresql://vagrant:@127.0.0.1:5432/fanboi2_dev
+DATABASE_URL=postgresql://127.0.0.1:5432/fanboi2_dev
+POSTGRESQL_TEST_DATABASE=postgresql://127.0.0.1:5432/fanboi2_test
 REDIS_URL=redis://127.0.0.1:6379/0
 SERVER_DEV=true
 SERVER_HOST=0.0.0.0
