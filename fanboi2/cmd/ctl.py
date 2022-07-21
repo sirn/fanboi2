@@ -25,9 +25,13 @@ Loaded locals:
 
 def run_shell(args):
     """Run the interactive shell for the application."""
-    from ..wsgi import app, config
     import pyramid.scripting
+    from .. import make_configurator
+    from ..settings import settings_from_env
 
+    settings = settings_from_env()
+    config = make_configurator(settings)
+    app = config.make_wsgi_app()
     with pyramid.scripting.prepare() as env:
         code.interact(
             SHELL_BANNER % (__VERSION__, __PYRAMID__),
@@ -38,7 +42,8 @@ def run_shell(args):
 def run_serve(args):
     """Run the web server for the application."""
     from waitress import serve as waitress_serve
-    from ..wsgi import app as wsgi_app
+    from .. import make_configurator
+    from ..settings import settings_from_env
 
     if args.reload:
         try:
@@ -47,6 +52,10 @@ def run_serve(args):
             sys.stderr.write("Please install dev dependencies to use reloader.\n")
             sys.exit(1)
         hupper.start_reloader("fanboi2.cmd.ctl.main")
+
+    settings = settings_from_env()
+    config = make_configurator(settings)
+    wsgi_app = config.make_wsgi_app()
 
     waitress_serve(wsgi_app, host=args.host, port=args.port)
     sys.exit(0)

@@ -14,7 +14,7 @@ class TestRouteName(unittest.TestCase):
         testing.tearDown()
 
     def _get_function(self):
-        from .. import route_name
+        from ..helpers import route_name
 
         return route_name
 
@@ -57,7 +57,7 @@ class TestTaggedStaticPath(unittest.TestCase):
         testing.tearDown()
 
     def _get_function(self):
-        from .. import tagged_static_path
+        from ..core.static import tagged_static_path
 
         return tagged_static_path
 
@@ -101,12 +101,12 @@ class TestTaggedStaticPath(unittest.TestCase):
 
         info = DummyStaticURLInfo("foobar")
         self.request.registry.registerUtility(info, IStaticURLInfo)
-        result = self._get_function()(self.request, "tests/test_app.py")
+        result = self._get_function()(self.request, "../tests/test_app.py")
         self.assertEqual(result, "foobar")
         self.assertEqual(
             info.args,
             (
-                "fanboi2:tests/test_app.py",
+                "fanboi2.core:../tests/test_app.py",
                 self.request,
                 {
                     "_app_url": "",
@@ -126,19 +126,19 @@ class TestTaggedStaticPath(unittest.TestCase):
 
 class TestTaggedStaticPathCached(TestTaggedStaticPath):
     def _get_function(self):
-        from .. import tagged_static_path_cached
+        from ..core.static import tagged_static_path_cached
 
         return tagged_static_path_cached
 
 
 class TestSettingsFromEnv(unittest.TestCase):
     def _getFunction(self):
-        from .. import settings_from_env
+        from ..settings import settings_from_env
 
         return settings_from_env
 
     def _make_one(self, environ, settings_map=None):
-        from .. import NO_VALUE
+        from ..settings import NO_VALUE
 
         if settings_map is None:
             settings_map = (
@@ -172,7 +172,7 @@ class TestTmMaybeActivate(unittest.TestCase):
         testing.tearDown()
 
     def _get_function(self):
-        from .. import tm_maybe_activate
+        from ..core.sqlalchemy import tm_maybe_activate
 
         return tm_maybe_activate
 

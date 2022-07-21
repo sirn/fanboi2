@@ -1,7 +1,8 @@
 import geoip2.database as geoip_db
+from pyramid.config import Configurator  # type: ignore
 
 
-def includeme(config):  # pragma: no cache
+def includeme(config: Configurator):  # pragma: no cache
     geoip_path = config.registry.settings["geoip.path"]
     if not geoip_path:
         return

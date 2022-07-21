@@ -36,7 +36,7 @@ class _RendererMixin(object):
         testing.tearDown()
 
     def _get_target_function(self):
-        from ..serializers import initialize_renderer
+        from ..core.serializers import initialize_renderer
 
         return initialize_renderer()
 

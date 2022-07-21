@@ -5,7 +5,7 @@ from passlib.context import CryptContext
 from sqlalchemy.sql import and_, or_, func, desc
 from sqlalchemy.orm import joinedload
 
-from ..auth import SESSION_TOKEN_VALIDITY
+from ..core.auth import SESSION_TOKEN_VALIDITY
 from ..models import User, UserSession, Group
 
 

@@ -1,18 +1,18 @@
 import hashlib
 
-from dogpile.cache import make_region
+from dogpile.cache import make_region  # type: ignore
+from pyramid.config import Configurator  # type: ignore
 
 
-def key_mangler(key):
-    """Retrieve cache keys as a long concatenated strings and turn them into
+def key_mangler(key: str) -> str:
+    """
+    Convert a concatenated strings of a hash key and turn them into
     an SHA256 hash.
-
-    :param key: A cache key :type:`str`.
     """
     return hashlib.sha256(bytes(key.encode("utf8"))).hexdigest()
 
 
-def includeme(config):  # pragma: no cover
+def includeme(config: Configurator):  # pragma: no cover
     cache_region = make_region(key_mangler=key_mangler)
     cache_region.configure_from_config(config.registry.settings, "dogpile.")
 

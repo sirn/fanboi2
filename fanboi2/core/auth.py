@@ -1,9 +1,12 @@
-from pyramid.authentication import AuthTktAuthenticationPolicy
-from pyramid.authorization import ACLAuthorizationPolicy
-from pyramid.security import ALL_PERMISSIONS, Allow
+from typing import List, Optional
 
-from .interfaces import IUserLoginService
+from pyramid.authentication import AuthTktAuthenticationPolicy  # type: ignore
+from pyramid.authorization import ACLAuthorizationPolicy  # type: ignore
+from pyramid.config import Configurator  # type: ignore
+from pyramid.request import Request  # type: ignore
+from pyramid.security import ALL_PERMISSIONS, Allow  # type: ignore
 
+from ..interfaces import IUserLoginService
 
 SESSION_TOKEN_VALIDITY = 3600
 SESSION_TOKEN_REISSUE = 300
@@ -16,7 +19,7 @@ class Root(object):  # pragma: no cover
         self.request = request
 
 
-def groupfinder(userid, request):
+def groupfinder(userid: str, request: Request) -> Optional[List[str]]:
     """Resolve the given :param:`userid` (the session token) into a list of
     group names prefixed with ``g:`` to indicate group permissions.
     """
@@ -30,7 +33,7 @@ def groupfinder(userid, request):
     return ["g:%s" % (g,) for g in groups]
 
 
-def includeme(config):  # pragma: no cover
+def includeme(config: Configurator):  # pragma: no cover
     authz_policy = ACLAuthorizationPolicy()
     authn_policy = AuthTktAuthenticationPolicy(
         config.registry.settings["auth.secret"],

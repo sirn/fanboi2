@@ -2,6 +2,8 @@ import datetime
 import unittest
 import unittest.mock
 
+import pytz
+
 
 class TestIdentityService(unittest.TestCase):
     def _get_target_class(self):
@@ -64,14 +66,14 @@ class TestIdentityService(unittest.TestCase):
                 return {"app.ident_size": 10}.get(key, None)
 
         tz = "Asia/Bangkok"
-        redis_conn = DummyRedis(datetime.datetime(2018, 12, 9, 17, 0, 0, 0, None))
+        redis_conn = DummyRedis(datetime.datetime(2018, 12, 9, 17, 0, 0, 0, pytz.utc))
         identity_svc = self._get_target_class()(redis_conn, _DummySettingQueryService())
         ident1 = identity_svc.identity_with_tz_for(tz, a="1", b="2")
         ident2 = identity_svc.identity_with_tz_for(tz, b="2", a="1", timestamp="foo")
-        redis_conn._set_time(datetime.datetime(2018, 12, 10, 16, 59, 59, 0, None))
+        redis_conn._set_time(datetime.datetime(2018, 12, 10, 16, 59, 59, 0, pytz.utc))
         ident3 = identity_svc.identity_with_tz_for(tz, a="1", b="2")
         ident4 = identity_svc.identity_with_tz_for(tz, a="3", b="4")
-        redis_conn._set_time(datetime.datetime(2018, 12, 10, 17, 0, 0, 0, None))
+        redis_conn._set_time(datetime.datetime(2018, 12, 10, 17, 0, 0, 0, pytz.utc))
         ident5 = identity_svc.identity_with_tz_for(tz, a="1", b="2")
         ident6 = identity_svc.identity_with_tz_for(tz, a="3", b="4")
         self.assertEqual(ident1, ident2)
@@ -95,12 +97,12 @@ class TestIdentityService(unittest.TestCase):
                 return {"app.ident_size": 10}.get(key, None)
 
         tz = pytz.timezone("Asia/Bangkok")
-        redis_conn = DummyRedis(datetime.datetime(2018, 12, 9, 17, 0, 0, 0, None))
+        redis_conn = DummyRedis(datetime.datetime(2018, 12, 9, 17, 0, 0, 0, pytz.utc))
         identity_svc = self._get_target_class()(redis_conn, _DummySettingQueryService())
         ident1 = identity_svc.identity_with_tz_for(tz, a="1", b="2")
-        redis_conn._set_time(datetime.datetime(2018, 12, 10, 16, 59, 59, 0, None))
+        redis_conn._set_time(datetime.datetime(2018, 12, 10, 16, 59, 59, 0, pytz.utc))
         ident2 = identity_svc.identity_with_tz_for(tz, a="1", b="2")
-        redis_conn._set_time(datetime.datetime(2018, 12, 10, 17, 0, 0, 0, None))
+        redis_conn._set_time(datetime.datetime(2018, 12, 10, 17, 0, 0, 0, pytz.utc))
         ident3 = identity_svc.identity_with_tz_for(tz, a="1", b="2")
         self.assertEqual(ident1, ident2)
         self.assertNotEqual(ident1, ident3)

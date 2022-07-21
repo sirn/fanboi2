@@ -1,7 +1,8 @@
+from pyramid.config import Configurator  # type: ignore
 from redis import StrictRedis
 
 
-def includeme(config):  # pragma: no cache
+def includeme(config: Configurator):  # pragma: no cover
     redis_url = config.registry.settings["redis.url"]
     redis_conn = StrictRedis.from_url(redis_url)
 

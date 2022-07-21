@@ -29,9 +29,9 @@ def make_cache_region(store=None):
 
 def mock_service(request, mappings):
     def _find_service(iface=None, name=None):
-        for l in (iface, name):
-            if l in mappings:
-                return mappings[l]
+        for lookup in (iface, name):
+            if lookup in mappings:
+                return mappings[lookup]
 
     request.find_service = _find_service
     return request

@@ -32,7 +32,7 @@ class TestGroupFinder(unittest.TestCase):
         testing.tearDown()
 
     def _get_target_function(self):
-        from ..auth import groupfinder
+        from ..core.auth import groupfinder
 
         return groupfinder
 

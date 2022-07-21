@@ -1,52 +1,51 @@
-import re
 import datetime
+import re
+from typing import Any, List
+
 import pytz
+from celery.result import AsyncResult  # type: ignore
+from pyramid.config import Configurator  # type: ignore
+from pyramid.renderers import JSON as JSONRenderer  # type: ignore
+from pyramid.request import Request  # type: ignore
+from sqlalchemy.orm import Query
 
-from .helpers.formatters import format_post, format_page
-from .interfaces import ISettingQueryService
-
+from ..errors import BaseError
+from ..helpers.formatters import format_page, format_post
+from ..interfaces import ISettingQueryService
+from ..models import Board, Page, Post, Topic
+from ..tasks import ResultProxy
 
 TRUTHY_RE = re.compile("^Y|y|T|t|[1-9]")
 
+# See https://github.com/python/mypy/issues/731
+JSON = Any
 
-def _truthy(request, key):
-    """Check that ``key`` in the request params is truty value.
 
-    :param request: A :class:`pyramid.request.Request` object.
-    :param key: A :type:`str` to lookup for.
-    """
+def _truthy(request: Request, key: str) -> bool:
+    """Check that ``key`` in the request params is a truthy value."""
     if key not in request.params:
         return False
     val = str(request.params.get(key, "false"))
     return bool(TRUTHY_RE.match(val))
 
 
-def _datetime_adapter(obj, request):
-    """Serialize :type:`datetime.datetime` object into a string.
-
-    :param obj: A :class:`datetime.datetime` object.
-    :param request: A :class:`pyramid.request.Request` object.
-    """
+def _datetime_adapter(obj: datetime.datetime, request: Request) -> str:
+    """serializea :type:`datetime.datetime` object into a string."""
     setting_query_svc = request.find_service(ISettingQueryService)
     tz = pytz.timezone(setting_query_svc.value_from_key("app.time_zone"))
     return obj.astimezone(tz).isoformat()
 
 
-def _sqlalchemy_query_adapter(obj, request):
-    """Serialize SQLAlchemy query into a list.
-
-    :param obj: An iterable SQLAlchemy's :class:`sqlalchemy.orm.Query` object.
-    :param request: A :class:`pyramid.request.Request` object.
-    """
+def _sqlalchemy_query_adapter(obj: Query, request: Request) -> List[Any]:
+    """Serialize SQLAlchemy query into a list."""
     return [item for item in obj]
 
 
-def _board_serializer(obj, request):
-    """Serialize :class:`fanboi2.models.Board` into a :type:`dict`.
-
-    :param obj: A :class:`fanboi2.models.Board` object.
-    :param request: A :class:`pyramid.request.Request` object.
-    """
+def _board_serializer(
+    obj: Board,
+    request: Request,
+) -> JSON:
+    """Serialize :class:`fanboi2.models.Board` into a :type:`dict`."""
     result = {
         "type": "board",
         "id": obj.id,
@@ -63,12 +62,11 @@ def _board_serializer(obj, request):
     return result
 
 
-def _topic_serializer(obj, request):
-    """Serialize :class:`fanboi2.models.Topic` into a :type:`dict`.
-
-    :param obj: A :class:`fanboi2.models.Topic` object.
-    :param request: A :class:`pyramid.request.Request` object.
-    """
+def _topic_serializer(
+    obj: Topic,
+    request: Request,
+) -> JSON:
+    """Serialize :class:`fanboi2.models.Topic` into a :type:`dict`."""
     result = {
         "type": "topic",
         "id": obj.id,
@@ -88,16 +86,11 @@ def _topic_serializer(obj, request):
     return result
 
 
-def _post_serializer(obj, request):
-    """Serialize :class:`fanboi2.models.Post` into a :type:`dict`.
-
-    :param obj: A :class:`fanboi2.models.Post` object.
-    :param request: A :class:`pyramid.request.Request` object.
-
-    :type obj: fanboi2.models.Post
-    :type request: pyramid.request.Request
-    :rtype: dict
-    """
+def _post_serializer(
+    obj: Post,
+    request: Request,
+) -> JSON:
+    """Serialize :class:`fanboi2.models.Post` into a :type:`dict`."""
     result = {
         "type": "post",
         "id": obj.id,
@@ -119,12 +112,11 @@ def _post_serializer(obj, request):
     return result
 
 
-def _page_serializer(obj, request):
-    """Serialize :class:`fanboi2.models.Page` into a :type:`dict`.
-
-    :param obj: A :class:`fanboi2.models.Page` object.
-    :param request: A :class:`pyramid.request.Request` object.
-    """
+def _page_serializer(
+    obj: Page,
+    request: Request,
+) -> JSON:
+    """Serialize :class:`fanboi2.models.Page` into a :type:`dict`."""
     return {
         "type": "page",
         "id": obj.id,
@@ -139,12 +131,11 @@ def _page_serializer(obj, request):
     }
 
 
-def _result_proxy_serializer(obj, request):
-    """Serialize :class:`fanboi2.tasks.ResultProxy` into a :type:`dict`.
-
-    :param obj: A :class:`fanboi2.tasks.ResultProxy` object.
-    :param request: A :class:`pyramid.request.Request` object.
-    """
+def _result_proxy_serializer(
+    obj: ResultProxy,
+    request: Request,
+) -> JSON:
+    """Serialize :class:`fanboi2.tasks.ResultProxy` into a :type:`dict`."""
     result = {
         "type": "task",
         "id": obj.id,
@@ -156,12 +147,11 @@ def _result_proxy_serializer(obj, request):
     return result
 
 
-def _async_result_serializer(obj, request):
-    """Serialize :class:`celery.result.AsyncResult` into a :type:`dict`.
-
-    :param obj: A :class:`celery.result.AsyncResult` object.
-    :param request: A :class:`pyramid.request.Request` object.
-    """
+def _async_result_serializer(
+    obj: AsyncResult,
+    request: Request,
+) -> JSON:
+    """Serialize :class:`celery.result.AsyncResult` into a :type:`dict`."""
     return {
         "type": "task",
         "id": obj.id,
@@ -170,25 +160,19 @@ def _async_result_serializer(obj, request):
     }
 
 
-def _base_error_serializer(obj, request):
-    """Serialize :class:`fanboi2.errors.BaseError` and its subclasses
+def _base_error_serializer(
+    obj: BaseError,
+    request: Request,
+) -> JSON:
+    """
+    Serialize :class:`fanboi2.errors.BaseError` and its subclasses
     into :type:`dict` using message and the name defined in the class.
-
-    :param obj: A :class:`fanboi2.errors.BaseError` object.
-    :param request: A :class:`pyramid.request.Request` object.
     """
     return {"type": "error", "status": obj.name, "message": obj.message(request)}
 
 
-def initialize_renderer():
-    from celery.result import AsyncResult
-    from pyramid.renderers import JSON
-    from sqlalchemy.orm import Query
-    from fanboi2.models import Board, Topic, Post, Page
-    from fanboi2.errors import BaseError
-    from fanboi2.tasks import ResultProxy
-
-    json_renderer = JSON()
+def initialize_renderer() -> JSONRenderer:
+    json_renderer = JSONRenderer()
     json_renderer.add_adapter(datetime.datetime, _datetime_adapter)
     json_renderer.add_adapter(Query, _sqlalchemy_query_adapter)
     json_renderer.add_adapter(Board, _board_serializer)
@@ -201,6 +185,6 @@ def initialize_renderer():
     return json_renderer
 
 
-def includeme(config):  # pragma: no cover
+def includeme(config: Configurator):  # pragma: no cover
     json_renderer = initialize_renderer()
     config.add_renderer("json", json_renderer)
