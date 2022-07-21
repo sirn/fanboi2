@@ -27,3 +27,6 @@ dependencies = {file = "requirements.txt"}
 [tool.setuptools.dynamic.optional-dependencies]
 test = {file = "test-requirements.txt"}
 dev = {file = "dev-requirements.txt"}
+
+[tool.mypy]
+plugins = "sqlmypy"

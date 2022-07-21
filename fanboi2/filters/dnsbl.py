@@ -1,19 +1,22 @@
 import socket
 from ipaddress import ip_address, ip_interface, ip_network
+from typing import Iterable, Optional
 
-from . import register_filter
+from . import Payload, Services, register_filter
+
+Providers = Optional[Iterable[str]]
 
 
 @register_filter(name="dnsbl")
 class DNSBL(object):
     """Utility class for checking IP address against DNSBL providers."""
 
-    def __init__(self, providers, services=None):
+    def __init__(self, providers: Providers, services: Services = None):
         if not providers:
             providers = tuple()
         self.providers = tuple(providers)
 
-    def should_reject(self, payload):
+    def should_reject(self, payload: Payload) -> bool:
         """Returns :type:`True` if the given IP address is listed in the
         DNSBL providers. Returns :type:`False` if not listed or no DNSBL
         providers present.
