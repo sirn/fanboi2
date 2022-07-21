@@ -20,16 +20,6 @@ Additionally, the following packages are build-time requirements for compiling a
 
 On a non-FreeBSD, you will also need to install **BSD Make** (usually called `bmake` in GNU systems.)
 
-### Installing with Vagrant
-
-If you're looking to develop or test Fanboi2, simply install [Vagrant](https://www.vagrantup.com/) and run:
-
-```shellsession
-$ vagrant up
-```
-
-Then `vagrant ssh` and follow the _Setting up application_ section below.
-
 ### Installing on FreeBSD systems
 
 On FreeBSD systems, these packages can be installed with:
