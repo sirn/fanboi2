@@ -61,27 +61,29 @@ body {
  * ------------------------------------------------------------------------ */
 
 .header {
-    padding: $spacing-vertical 0;
+    padding: 0;
     border-bottom: 1px solid;
 }
 
 .header-brand {
-    $logo-width: 97px;
+    $box-width: 63px;
+    $box-height: $icon-tappable-height;
+    $logo-width: 63px;
     $logo-height: 20px;
 
-    @include retina-background("logo", "png", $logo-width, $logo-height);
+    @include svg-background("logo-white", $logo-width, $logo-height);
     font-size: $font-size;
-    height: $logo-height;
+    height: $box-height;
     line-height: $font-size;
     margin: 0 auto;
     text-indent: -10000em;
-    width: $logo-width;
+    width: $box-width;
 
     a {
         display: block;
         float: left;
-        height: $logo-height;
-        width: $logo-width;
+        height: $box-height;
+        width: $box-width;
     }
 
     @media (min-width: $bound-tablet) {
@@ -90,22 +92,19 @@ body {
 }
 
 .header-scroll-button {
-    $icon-width: 20px;
-    $icon-height: 20px;
-
-    @include retina-background("arrow", "png", $icon-width, $icon-height);
-    height: $icon-height;
+    @include svg-background("arrow-down-white", $icon-width, $icon-height);
+    height: $icon-tappable-height;
     position: absolute;
-    right: $spacing-horizontal;
+    right: 0;
     text-indent: -10000em;
     top: 0;
-    width: $icon-width;
+    width: $icon-tappable-width;
 
     a {
         display: block;
         float: left;
-        height: $icon-height;
-        width: $icon-width;
+        height: $icon-tappable-height;
+        width: $icon-tappable-width;
     }
 }
 
@@ -143,22 +142,19 @@ body {
 }
 
 .footer-scroll-button {
-    $icon-width: 20px;
-    $icon-height: 20px;
-
-    @include retina-background("arrow_up", "png", $icon-width, $icon-height);
-    top: -2px; /* To centerize with responsibility line. */
-    height: $icon-height;
+    @include svg-background("arrow-up-blue", $icon-width, $icon-height);
+    top: -14px; /* To centerize with responsibility line. */
+    height: $icon-tappable-height;
     position: absolute;
-    right: $spacing-horizontal;
+    right: 0;
     text-indent: -10000em;
-    width: $icon-width;
+    width: $icon-tappable-width;
 
     a {
         display: block;
         float: left;
-        height: $icon-height;
-        width: $icon-width;
+        height: $icon-tappable-height;
+        width: $icon-tappable-width;
     }
 
     @media (min-width: $bound-desktop) {
@@ -194,7 +190,7 @@ body {
     @media (min-width: $bound-tablet) {
         float: right;
         font-size: $font-size-small;
-        margin-right: 20px + $spacing-horizontal-small;
+        margin-right: $icon-tappable-width;
         text-align: right;
     }
 }

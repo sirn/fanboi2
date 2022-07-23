@@ -45,27 +45,24 @@
 }
 
 .js-board-selector-button {
-    $icon-width: 20px;
-    $icon-height: 20px;
-
-    @include retina-background("burger", "png", $icon-width, $icon-height);
-    height: $icon-height;
-    left: $spacing-horizontal;
+    @include svg-background("burger-white", $icon-width, $icon-height);
+    height: $icon-tappable-height;
+    left: 0;
     position: absolute;
     text-indent: -10000em;
     top: 0;
-    width: $icon-width;
+    width: $icon-tappable-width;
 
     a {
         display: block;
         float: left;
-        height: $icon-height;
-        width: $icon-width;
+        height: $icon-tappable-height;
+        width: $icon-tappable-width;
     }
 
     @media (min-width: $bound-tablet) {
         left: auto;
-        right: ($spacing-horizontal * 2) + $icon-width;
+        right: $icon-tappable-width;
     }
 }
 
