@@ -4,7 +4,7 @@ var concat = require("gulp-concat");
 var es = require("event-stream");
 
 var postcss = require("gulp-postcss");
-var { sass } = require("@mr-hope/gulp-sass");
+var sass = require("gulp-sass")(require("sass"));
 
 var uglify = require("gulp-uglify");
 var source = require("vinyl-source-stream");
@@ -40,7 +40,7 @@ function assets() {
 var postcssProcessors = [
     require("autoprefixer"),
     require("postcss-round-subpixels"),
-    require("css-mqpacker"),
+    require("mqpacker"),
     require("postcss-urlrev")({
         relativePath: "fanboi2/static",
         replacer: function (url, hash) {

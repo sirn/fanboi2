@@ -1,3 +1,4 @@
+@use "sass:math";
 @import "variables";
 @import "mixins";
 
@@ -238,7 +239,7 @@ body {
      * even when line-height is taken into consideration. */
     $line-height: ($font-size-small * $line-height-content);
     $diff-height: $line-height - $font-size;
-    $spacing: $diff-height / 2;
+    $spacing: math.div($diff-height, 2);
 
     margin: 0 0 (-$spacing);
 
