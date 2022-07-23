@@ -87,6 +87,10 @@ $(BUILDDIR)/.build-assets: $(BUILDDIR) node_modules $(_ASSETS)
 
 .PHONY: assets
 assets: $(BUILDDIR)/.build-assets
+	@: # Build assets with gulp
+	@: #
+	@: # Assets are only built when there are changes inside assets/
+	@: # or within node_modules
 
 
 ## ----------------------------------------------------------------------------
@@ -95,13 +99,23 @@ assets: $(BUILDDIR)/.build-assets
 
 .PHONY: prod
 prod: $(BUILDDIR)/.build $(BUILDDIR)/.build-assets
+	@: # Install production dependencies
 
 .PHONY: prod-run
 prod-run: $(BUILDDIR)/.build $(BUILDDIR)/.build-assets
+	@: # Run production server
+	@: #
+	@: # This command requires PostgreSQL and Redis to be running
+	@: # and configured via .env
 	$(VENV_HONCHO) start -f Procfile
 
 .PHONY: dist
 dist: $(VENVDIR) $(BUILDDIR)/.build-assets
+	@: # Create a source distribution for remote installation
+	@: #
+	@: # Resulting distribution will have a pre-compiled assets 
+	@: # and would not require Node.js to run, make it suitable
+	@: # for running in a production environment 
 	$(VENV_PIP) install --upgrade build
 	$(VENV_PYTHON) -m build --sdist
 
@@ -112,6 +126,10 @@ dist: $(VENVDIR) $(BUILDDIR)/.build-assets
 
 .PHONY: db-migrate
 db-migrate: $(BUILDDIR)/.build
+	@: # Migrate the database with alembic
+	@: #
+	@: # By default it will migrate from current revision to HEAD,
+	@: # to run other commands, use `venv/bin/alembic' directly
 	$(VENV_ALEMBIC) upgrade head
 
 
@@ -120,10 +138,15 @@ db-migrate: $(BUILDDIR)/.build
 ##
 
 .PHONY: dev
-dev: $(BUILDDIR)/.build-dev
+dev: $(BUILDDIR)/.build-dev $(BUILDDIR)/.build-assets
+	@: # Install development dependencies
 
 .PHONY: dev-run
 dev-run: $(BUILDDIR)/.build-dev $(BUILDDIR)/.build-assets
+	@: # Run development server
+	@: #
+	@: # This command will also run a local PostgreSQL and Redis
+	@: # instance with datadir set to tmp/ for ease of environment
 	$(VENV_HONCHO) start -f Procfile.dev
 
 
@@ -133,6 +156,7 @@ dev-run: $(BUILDDIR)/.build-dev $(BUILDDIR)/.build-assets
 
 .PHONY: test
 test: $(BUILDDIR)/.build-test
+	@: # Run tests with nosetests
 	$(VENV_NOSE2) --verbose --with-coverage
 
 
@@ -140,12 +164,9 @@ test: $(BUILDDIR)/.build-test
 ## Maintenance
 ##
 
-.PHONY: migrate
-migrate: $(BUILDDIR)/.build
-	$(VENV_ALEMBIC) upgrade head $(ARGS)
-
 .PHONY: clean
 clean:
+	@: # Clean build and runtime artifacts
 	rm -rf \
 		$(BUILDDIR) \
 		fanboi2.egginfo \
@@ -154,4 +175,9 @@ clean:
 		node_modules \
 		$(VENVDIR)
 
-$(VERBOSE).SILENT:
+
+## ----------------------------------------------------------------------------
+## Common
+##
+
+.include "Makefile.inc"
