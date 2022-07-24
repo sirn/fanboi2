@@ -47,7 +47,7 @@
     <p>Are you sure you want to delete public page <strong>${page.title}</strong>? This operation cannot be undone.</p>
 </div>
 <div class="sheet-body">
-    <form class="form noshade" action="${request.route_path('admin_page_delete', page=page.slug)}" method="post">
+    <form class="form" action="${request.route_path('admin_page_delete', page=page.slug)}" method="post">
         <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
         <button class="button brand" type="submit">Delete Public Page</button>
         <a class="button" href="${request.route_path('admin_page', page=page.slug)}">Cancel</a>

@@ -5,34 +5,32 @@
  * ------------------------------------------------------------------------ */
 
 .topic {
+    /* Noop */
 }
 
 .topic-header {
     border-bottom: 1px solid;
     margin: 0;
     overflow-x: auto;
-
-    /* Bottom padding needs to consider margin-bottom of .topic-header-item. */
-    $bottom-spacing: $spacing-vertical-large - $spacing-vertical-small;
-    padding: $spacing-vertical-large 0 $bottom-spacing;
+    padding: $spacing-vertical 0;
 }
 
 .topic-header-title {
     font-size: $font-size-large;
-    line-height: $font-size-large;
-    margin: 0 0 $spacing-vertical-small;
+    line-height: $line-height;
+    margin: 0;
 }
 
 .topic-header-item {
     font-size: $font-size-small;
-    line-height: $font-size-small;
-    margin: 0 0 $spacing-vertical-small;
+    line-height: $line-height;
+    margin: 0;
 }
 
 .topic-subheader {
     border-bottom: 1px solid;
     font-size: $font-size-small;
-    line-height: $font-size-small;
+    line-height: $line-height;
 
     a {
         @include clearfix();
@@ -48,11 +46,16 @@
     display: block;
     float: left;
     margin: 0 $spacing-horizontal-small 0 0;
-    padding: $item-spacing 0;
+
+    /* Compensate 1px border alignment in .number below */
+    padding: 1px 0;
 
     &.number {
         border: 1px solid;
-        padding: ($item-spacing - 1) ($item-spacing - 1);
+        border-radius: 2px;
+        font-size: $font-size-small;
+        line-height: $line-height;
+        padding: 0 ($item-spacing - 1);
     }
 }
 

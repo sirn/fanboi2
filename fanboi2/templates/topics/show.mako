@@ -94,22 +94,26 @@
         </div>
     </div>
 % else:
-    <form class="form" id="reply" action="${request.route_path('topic', board=board.slug, topic=topic.id)}" method="post" data-topic-inline-reply="true">
-        <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
+    <div class="sheet">
         <div class="container">
-            <div class="form-item${' error' if form.body.errors else ''}">
-                <label class="form-item-label" for="${form.body.id}">Reply</label>
-                ${form.body(class_='input block content', rows=4, **{'data-form-anchor': 'true', 'data-topic-quick-reply-input': 'true'})}
-                % if form.body.errors:
-                    <span class="form-item-error">${form.body.errors[0]}</span>
-                % endif
-            </div>
-            <div class="form-item">
-                <button class="button green" type="submit">Post Reply</button>
-                <span class="form-item-inline">
-                    ${form.bumped(**{'data-topic-state-tracker': "bump"})} <label for="${form.bumped.id}">${form.bumped.label.text}</label>
-                </span>
+            <div class="sheet-body">
+                <form class="form" id="reply" action="${request.route_path('topic', board=board.slug, topic=topic.id)}" method="post" data-topic-inline-reply="true">
+                    <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
+                    <div class="form-item${' error' if form.body.errors else ''}">
+                        <label class="form-item-label" for="${form.body.id}">Reply</label>
+                        ${form.body(class_='input block content', rows=4, **{'data-form-anchor': 'true', 'data-topic-quick-reply-input': 'true'})}
+                        % if form.body.errors:
+                            <span class="form-item-error">${form.body.errors[0]}</span>
+                        % endif
+                    </div>
+                    <div class="form-item">
+                        <button class="button green" type="submit">Post Reply</button>
+                        <span class="form-item-inline">
+                            ${form.bumped(**{'data-topic-state-tracker': "bump"})} <label for="${form.bumped.id}">${form.bumped.label.text}</label>
+                        </span>
+                    </div>
+                </form>
             </div>
         </div>
-    </form>
+    </div>
 % endif

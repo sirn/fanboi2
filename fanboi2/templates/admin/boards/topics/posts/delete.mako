@@ -39,7 +39,7 @@
     </p>
 </div>
 <div class="sheet-body">
-    <form class="form noshade" action="${request.route_path('admin_board_topic_posts_delete', board=board.slug, topic=topic.id, query=query)}" method="post">
+    <form class="form" action="${request.route_path('admin_board_topic_posts_delete', board=board.slug, topic=topic.id, query=query)}" method="post">
         <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
         <button class="button brand" type="submit">
             Delete

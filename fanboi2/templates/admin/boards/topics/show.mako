@@ -57,6 +57,7 @@
         </a>
     </div>
     % endif
+    <div class="sheet-body">
     % for post in posts:
     <div class="admin-cascade">
         <div class="admin-cascade-header">
@@ -76,6 +77,7 @@
         </div>
     </div>
     % endfor
+    </div>
     % if posts[-1].number != topic.meta.post_count:
     <div class="sheet-body">
         <a href="${request.route_path('admin_board_topic_posts', board=board.slug, topic=topic.id, query="%s-" % posts[0].number)}" class="button block muted">Load posts ${posts[-1].number + 1}-</a>
@@ -83,30 +85,30 @@
     % endif
 % endif
 % if topic.status != 'archived' and board.status != 'archived':
-<form class="form noshade" action="${request.route_path('admin_board_topic', board=board.slug, topic=topic.id)}" method="post">
-    <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
-    <div class="container">
-        <div class="form-item${' error' if form.body.errors else ''}">
-            <label class="form-item-label" for="${form.body.id}">Reply</label>
-            ${form.body(class_='input block content', rows=4)}
-            % if form.body.errors:
-                <span class="form-item-error">${form.body.errors[0]}</span>
-            % endif
-        </div>
-        <div class="form-item">
-            <p>Posting as <strong>${user.name}</strong> with ident <strong>${ident.render_ident(user.ident, user.ident_type)}</strong></p>
-            % if topic.status == 'locked':
-            <p>Topic is currently <strong>locked</strong>. You can post, but other users won't be able to respond.</p>
-            % elif board.status == 'locked':
-            <p>Board is currently <strong>locked</strong>. You can post, but other users won't be able to respond.</p>
-            % endif
-        </div>
-        <div class="form-item">
-            <button class="button green" type="submit">Post Reply</button>
-            <span class="form-item-inline">
-                ${form.bumped} <label for="${form.bumped.id}">${form.bumped.label.text}</label>
-            </span>
-        </div>
+    <div class="sheet-body">
+        <form class="form" action="${request.route_path('admin_board_topic', board=board.slug, topic=topic.id)}" method="post">
+            <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
+            <div class="form-item${' error' if form.body.errors else ''}">
+                <label class="form-item-label" for="${form.body.id}">Reply</label>
+                ${form.body(class_='input block content', rows=4)}
+                % if form.body.errors:
+                    <span class="form-item-error">${form.body.errors[0]}</span>
+                % endif
+            </div>
+            <div class="form-item">
+                <p>Posting as <strong>${user.name}</strong> with ident <strong>${ident.render_ident(user.ident, user.ident_type)}</strong></p>
+                % if topic.status == 'locked':
+                    <p>Topic is currently <strong>locked</strong>. You can post, but other users won't be able to respond.</p>
+                % elif board.status == 'locked':
+                    <p>Board is currently <strong>locked</strong>. You can post, but other users won't be able to respond.</p>
+                % endif
+            </div>
+            <div class="form-item">
+                <button class="button green" type="submit">Post Reply</button>
+                <span class="form-item-inline">
+                    ${form.bumped} <label for="${form.bumped.id}">${form.bumped.label.text}</label>
+                </span>
+            </div>
+        </form>
     </div>
-</form>
 % endif

@@ -1,3 +1,4 @@
+@use "sass:math";
 @import "variables";
 @import "mixins";
 
@@ -10,9 +11,6 @@ $thumbnail-gap-vertical: $spacing-vertical-smaller;
 $thumbnail-gap-horizontal: $spacing-horizontal-smaller;
 $thumbnails-margin-vertical: $spacing-vertical - $thumbnail-gap-vertical;
 
-/* Needs rounded value otherwise whitespace calculation in .post will break. */
-$post-date-size: round($font-size-small);
-
 /* Post
  * ------------------------------------------------------------------------ */
 
@@ -23,9 +21,18 @@ $post-date-size: round($font-size-small);
     overflow-y: hidden;
     position: relative;
 
-    /* Extra padding values for date part. */
-    $spacing-bottom: $post-gap-spacing + $spacing-vertical;
-    padding: $post-gap-spacing 0 ($spacing-bottom + $post-date-size);
+    /* Extra padding values for date part which is set via absolute positioning
+     * due to requirement to inline while on desktop. Padding is calculated
+     * from an absolute spacing plus calculated total line height, i.e.
+     *
+     *   (post-gap-spacing + spacing-vertical + (font-size * line-height)) 
+     * 
+     * however since we defined font-size and line-height with rem, we need to
+     * first convert post-gap-spacing + spacing-vertical into rem first */
+    $rel-bottom: math.div($post-gap-spacing + $spacing-vertical, $font-size-base);
+    /* rem*rem also doesn't work, we had to convert rem to unitless first */
+    $rel-height: math.div($line-height, 1rem) * $font-size-small;
+    padding: $post-gap-spacing 0 ($rel-bottom + $rel-height);
 
     @media (min-width: $bound-tablet) {
         padding: $post-gap-spacing 0;
@@ -35,7 +42,7 @@ $post-date-size: round($font-size-small);
 .post-header {
     @include clearfix();
     font-size: $font-size-small;
-    line-height: $font-size-small;
+    line-height: $line-height;
     margin: 0 0 $spacing-vertical;
 }
 
@@ -43,24 +50,25 @@ $post-date-size: round($font-size-small);
     display: block;
     float: left;
     margin: 0 $spacing-horizontal-small 0 0;
-    padding: $post-item-spacing 0;
+    padding: 1px 0;
 
     &.number {
         border: 1px solid;
         cursor: pointer;
-        padding: ($post-item-spacing - 1) ($post-item-spacing - 1);
+        border-radius: 2px;
+        padding: 0 ($post-item-spacing - 1);
     }
 
     &.name {
-        padding: $post-item-spacing $post-item-spacing;
+        padding: 1px $post-item-spacing;
+        border-radius: 2px;
     }
 
     &.date {
         bottom: $post-gap-spacing;
-        font-size: $post-date-size;
+        font-size: $font-size-small;
         font-style: italic;
-        line-height: $post-date-size;
-        padding: 0;
+        line-height: $line-height;
         position: absolute;
     }
 
@@ -68,19 +76,18 @@ $post-date-size: round($font-size-small);
         &.date {
             font-size: inherit;
             font-style: inherit;
-            padding: $post-item-spacing 0;
             position: inherit;
         }
     }
 
     &.ident-admin {
-        padding: $post-item-spacing $post-item-spacing;
+        padding: 1px $post-item-spacing;
     }
 }
 
 .post-body {
-    font-size: $font-size-content;
-    line-height: $line-height-content;
+    font-size: $font-size;
+    line-height: $line-height;
     margin: 0 0 (-$spacing-vertical) 0;
 
     p {
@@ -95,11 +102,12 @@ $post-date-size: round($font-size-small);
     p.shortened {
         font-size: $font-size-small;
         font-style: italic;
-        line-height: $font-size-small;
+        line-height: $line-height;
         margin: 0 0 $spacing-vertical-small;
     }
 
     a.anchor {
+        /* Noop */
     }
 
     a.thumbnail {

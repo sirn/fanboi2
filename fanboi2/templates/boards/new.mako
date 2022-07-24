@@ -17,25 +17,29 @@
         </div>
     </div>
 </div>
-<form class="form" action="${request.route_path('board_new', board=board.slug)}" method="post">
-    <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
-    <div class="container">
-        <div class="form-item${' error' if form.title.errors else ''}">
-            <label class="form-item-label" for="${form.title.id}">Topic</label>
-            ${form.title(class_="input block font-large")}
-            % if form.title.errors:
-                <span class="form-item-error">${form.title.errors[0]}</span>
-            % endif
-        </div>
-        <div class="form-item${' error' if form.body.errors else ''}">
-            <label class="form-item-label" for="${form.body.id}">Body</label>
-            ${form.body(class_="input block font-content", rows=6)}
-            % if form.body.errors:
-                <span class="form-item-error">${form.body.errors[0]}</span>
-            % endif
-        </div>
-        <div class="form-item">
-            <button class="button brand" type="submit">New Topic</button>
+<div class="sheet">
+    <div class="sheet-body">
+        <div class="container">
+            <form class="form" action="${request.route_path('board_new', board=board.slug)}" method="post">
+                <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
+                <div class="form-item${' error' if form.title.errors else ''}">
+                    <label class="form-item-label" for="${form.title.id}">Topic</label>
+                    ${form.title(class_="input block font-large")}
+                    % if form.title.errors:
+                        <span class="form-item-error">${form.title.errors[0]}</span>
+                    % endif
+                </div>
+                <div class="form-item${' error' if form.body.errors else ''}">
+                    <label class="form-item-label" for="${form.body.id}">Body</label>
+                    ${form.body(class_="input block font-content", rows=6)}
+                    % if form.body.errors:
+                        <span class="form-item-error">${form.body.errors[0]}</span>
+                    % endif
+                </div>
+                <div class="form-item">
+                    <button class="button brand" type="submit">New Topic</button>
+                </div>
+            </form>
         </div>
     </div>
-</form>
+</div>

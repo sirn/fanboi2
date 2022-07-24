@@ -1,3 +1,4 @@
+@use "sass:color";
 @import "../variables";
 @import "variables_topaz";
 
@@ -22,7 +23,7 @@
      * -------------------------------------------------------------------- */
 
     .noticebar {
-        background-color: #fff;
+        background-color: $color-background;
         color: $color-gray-dark;
         font-weight: bold;
 
@@ -42,7 +43,7 @@
 
     .appendix {
         background-color: $color-gray-lighter;
-        border-color: $color-tint;
+        border-color: $color-background;
         color: $color-gray-dark;
 
         a {
@@ -55,8 +56,7 @@
     }
 
     .cascade {
-        background-color: $color-tint-lighter;
-        border-color: $color-tint-light;
+        border-color: $color-gray-lighter;
         color: $color-gray-dark;
 
         a {
@@ -64,9 +64,34 @@
         }
     }
 
+    .button {
+        box-shadow: 0 1px 2px $color-button-shadow;
+
+        &.default {
+            background-color: $color-background;
+            border-color: $color-gray-light;
+            color: $color-gray-dark;
+        }
+
+        &.muted {
+            background-color: $color-gray-dark;
+            color: $color-text-light;
+        }
+
+        &.brand {
+            background-color: $color-brand;
+            color: $color-text-light;
+        }
+
+        &.green {
+            background-color: $color-green;
+            color: $color-text-light;
+        }
+    }
+
     .subheader {
         background-color: $color-brand-dark;
-        border-color: $color-brand-dark;
+        border-color: transparent;
     }
 
     .subheader-title {
@@ -84,21 +109,23 @@
     .subheader-footer {
         .button {
             border-color: transparent;
-            color: $color-gray;
+            box-shadow: 0 1px 2px #000;
+            color: $color-text-light;
 
-            &:hover {
-                color: $color-gray-lighter;
+            &.default {
+                background-color: $color-gray-darker;
+                border-color: transparent;
             }
         }
     }
 
     .sheet {
-        background-color: #fff;
-        border-color: $color-background-dark;
+        background-color: $color-background;
+        border-color: $color-gray-lighter;
 
         &.alternate {
-            background-color: $color-tint-lighter;
-            border-color: $color-tint-light;
+            background-color: $color-gray-lighter;
+            border-color: $color-gray-lighter;
         }
     }
 
@@ -107,8 +134,21 @@
     }
 
     .form {
-        background-color: #fff;
-        border-color: $color-background-dark;
+        background-color: $color-background;
+        border-color: transparent;
+    }
+
+    .form-item-label {
+        color: $color-gray-dark;
+        font-weight: bold;
+    }
+
+    .input {
+        border-color: $color-gray-light;
+
+        &:focus {
+            border-color: $color-gray-dark;
+        }
     }
 
     .form-item {
@@ -123,11 +163,6 @@
         }
     }
 
-    .form-item-label {
-        color: $color-gray-dark;
-        font-weight: bold;
-    }
-
     .form-item-inline {
         color: $color-gray-dark;
         font-weight: bold;
@@ -135,91 +170,12 @@
 
     .form-item-error {
         background-color: $color-red;
-        color: #fff;
-    }
-
-    .input {
-        border-color: $color-tint;
-
-        &:focus {
-            border-color: $color-tint-dark;
-        }
-    }
-
-    .button {
-        &.default {
-            background-color: $color-gray-lighter;
-            border-color: $color-gray-light;
-            color: $color-gray-dark;
-
-            &:hover {
-                background-color: #fff;
-            }
-        }
-
-        &.muted {
-            background-color: $color-gray-dark;
-            border-color: $color-gray-dark;
-            color: #fff;
-
-            &:hover {
-                background-color: #fff;
-                color: $color-gray-dark;
-            }
-        }
-
-        &.brand {
-            background-color: $color-brand;
-            border-color: $color-brand;
-            color: #fff;
-
-            &:hover {
-                background-color: #fff;
-                color: $color-brand;
-            }
-        }
-
-        &.green {
-            background-color: $color-green;
-            border-color: $color-green;
-            color: #fff;
-
-            &:hover {
-                background-color: #fff;
-                color: $color-green;
-            }
-        }
-
-        &.static {
-            &.default:hover {
-                background-color: $color-gray-lighter;
-                color: $color-gray-dark;
-            }
-
-            &.muted:hover {
-                background-color: $color-gray-dark;
-                color: #fff;
-            }
-
-            &.brand:hover {
-                background-color: $color-brand;
-                color: #fff;
-            }
-
-            &.green:hover {
-                background-color: $color-green;
-                color: #fff;
-            }
-        }
+        color: $color-text-light;
     }
 
     .codeblock {
-        background-color: $color-gray-lighter;
+        background-color: $color-gray-light;
         color: $color-gray-darker;
-
-        &.noshade {
-            background: none;
-        }
     }
 
     .content {
@@ -233,11 +189,10 @@
     }
 
     .menu {
-        background-color: $color-tint-lighter;
-        border-color: $color-tint-light;
+        background-color: $color-gray-lighter;
+        border-color: $color-gray-light;
 
         @media (min-width: $bound-tablet) {
-            border-radius: 2px;
             overflow: hidden;
         }
     }
@@ -247,18 +202,22 @@
     }
 
     .menu-actions {
-        background-color: #fff;
+        background-color: $color-background;
     }
 
     .menu-actions-item {
-        border-color: $color-tint-light;
+        border-color: $color-gray-light;
     }
 
     /* api.scss
      * -------------------------------------------------------------------- */
 
+    .api-section {
+        border-color: $color-gray-light;
+    }
+
     .api-request {
-        background-color: #fff;
+        background-color: $color-background;
     }
 
     .api-request-title {
@@ -275,9 +234,8 @@
     }
 
     .api-request-verb {
-        border-radius: 2px;
         font-weight: bold;
-        color: #fff;
+        color: $color-text-light;
 
         &.verb-get {
             background-color: $color-green;
@@ -289,8 +247,7 @@
     }
 
     .api-response {
-        background-color: $color-tint-lighter;
-        border-color: $color-tint;
+        background-color: $color-background;
     }
 
     .api-response-title {
@@ -298,20 +255,19 @@
     }
 
     .api-table {
-        border-color: $color-tint;
+        border-color: $color-gray-light;
     }
 
     .api-table-item {
-        border-color: $color-tint;
+        border-color: $color-gray-light;
 
         &.type {
-            color: $color-gray-dark;
+            color: $color-gray-darker;
         }
 
         &.title {
-            color: $color-gray-dark;
-            border-color: #fff;
-            background-color: $color-tint;
+            color: $color-gray-darker;
+            background-color: $color-gray-light;
         }
     }
 
@@ -326,17 +282,17 @@
      * -------------------------------------------------------------------- */
 
     .topic {
-        background-color: #fff;
+        background-color: $color-background;
     }
 
     .topic-header {
-        border-color: #fff;
+        border-color: transparent;
         color: $color-gray-dark;
     }
 
     .topic-subheader {
-        background-color: $color-tint-light;
-        border-color: #fff;
+        background-color: $color-gray-light;
+        border-color: transparent;
 
         a {
             color: $color-gray-dark;
@@ -347,26 +303,19 @@
         &.number {
             background-color: $color-gray;
             border-color: $color-gray;
-            color: #fff;
+            color: $color-text-light;
             font-weight: bold;
         }
     }
 
     .topic-footer {
-        background-color: $color-tint-light;
-        border-color: $color-tint;
+        background-color: $color-gray-light;
+        border-color: transparent;
 
         .button {
             &.action {
-                background: $color-tint-lighter;
-                border-color: $color-tint;
+                background-color: $color-background;
                 color: $color-gray-dark;
-
-                &:hover {
-                    background-color: #fff;
-                    border-color: $color-tint-dark;
-                    color: $color-gray-dark;
-                }
             }
         }
     }
@@ -375,41 +324,41 @@
      * -------------------------------------------------------------------- */
 
     .post {
-        background-color: $color-tint-lighter;
-        border-color: #fff;
+        background-color: $color-gray-lighter;
+        border-color: $color-background;
     }
 
     .post-header {
-        color: $color-gray;
+        color: $color-gray-dark;
         font-weight: bold;
     }
 
     .post-header-item {
         &.number {
-            background-color: #fff;
+            background-color: $color-background;
             border: 1px solid $color-gray;
             color: $color-gray;
 
             &:hover {
                 background-color: $color-gray-darker;
                 border-color: $color-gray-darker;
-                color: #fff;
+                color: $color-text-light;
             }
 
             &.bumped {
                 background-color: $color-gray;
-                color: #fff;
+                color: $color-text-light;
 
                 &:hover {
                     background-color: $color-gray-darker;
                     border-color: $color-gray-darker;
-                    color: #fff;
+                    color: $color-text-light;
                 }
             }
         }
 
         &.name {
-            background-color: #fff;
+            background-color: $color-background;
         }
 
         &.date {
@@ -417,11 +366,11 @@
         }
 
         &.ident {
-            color: $color-tint-darker;
+            color: $color-gray;
         }
 
         &.ident-admin {
-            background-color: #fff;
+            background-color: $color-background;
             color: $color-brand;
         }
 
@@ -433,19 +382,19 @@
     }
 
     .post-body {
-        p.shortened {
-            color: $color-gray;
-
-            a.anchor {
-                font-weight: bold;
-            }
-        }
-
         a.anchor {
             color: #08c;
 
             &:hover {
                 color: $color-gray-dark;
+            }
+        }
+
+        p.shortened {
+            color: $color-gray-dark;
+
+            a.anchor {
+                font-weight: bold;
             }
         }
 
@@ -469,8 +418,8 @@
 
         &.muted {
             &:after {
-                border-color: rgba(#fff, 0.7);
-                border-top-color: rgba(#fff, 1);
+                border-color: rgba($color-background, 0.7);
+                border-top-color: rgba($color-background, 1);
             }
 
             &:hover:after {
@@ -481,8 +430,8 @@
 
         &.brand {
             &:after {
-                border-color: rgba(#fff, 0.7);
-                border-top-color: rgba(#fff, 1);
+                border-color: rgba($color-background, 0.7);
+                border-top-color: rgba($color-background, 1);
             }
 
             &:hover:after {
@@ -493,8 +442,8 @@
 
         &.green {
             &:after {
-                border-color: rgba(#fff, 0.7);
-                border-top-color: rgba(#fff, 1);
+                border-color: rgba($color-background, 0.7);
+                border-top-color: rgba($color-background, 1);
             }
 
             &:hover:after {
@@ -513,21 +462,21 @@
 
     .js-popover {
         .js-board {
-            background-color: $color-tint-lighter;
+            background-color: $color-gray-lighter;
         }
 
         .js-topic {
-            background-color: $color-tint-lighter;
+            background-color: $color-gray-lighter;
         }
     }
 
     .js-popover-inner {
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-        border-color: #fff;
+        box-shadow: 0 1px 2px 0 $color-button-shadow;
+        border-color: $color-background;
     }
 
     .js-popover-inner-title {
-        background-color: $color-tint-lighter;
+        background-color: $color-gray-lighter;
     }
 
     .js-popover-inner-title-label {
@@ -537,7 +486,7 @@
 
     .js-popover-inner-title-dismiss {
         background-color: $color-gray-darker;
-        color: #fff;
+        color: $color-text-light;
         font-weight: bold;
 
         &:hover {

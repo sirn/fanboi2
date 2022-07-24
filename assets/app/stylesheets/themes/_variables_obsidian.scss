@@ -1,17 +1,13 @@
-$color-gray-base: #161b1e;
-$color-gray-darker: lighten($color-gray-base, 3%);
-$color-gray-dark: lighten($color-gray-base, 5%);
-$color-gray: lighten($color-gray-base, 8%);
-$color-gray-light: lighten($color-gray-base, 44%);
-$color-gray-lighter: lighten($color-gray-base, 80%);
+@use "sass:color";
 
-$color-muted-base: #293033;
-$color-muted-darker: lighten($color-muted-base, 2%);
-$color-muted-dark: lighten($color-muted-base, 10%);
-$color-muted: lighten($color-muted-base, 20%);
-$color-muted-light: lighten($color-muted-base, 30%);
-$color-muted-lighter: lighten($color-muted-base, 50%);
+$color-gray-base: #171d21;
+$color-gray-darker: color.adjust($color-gray-base, $lightness: 1.5%);
+$color-gray-dark: color.adjust($color-gray-base, $lightness: 3%, $saturation: 2%);
+$color-gray: color.adjust($color-gray-base, $lightness: 10%, $saturation: 3%);
+$color-gray-light: color.adjust($color-gray-base, $lightness: 40%, $saturation: 3%);
+$color-gray-lighter: color.adjust($color-gray-base, $lightness: 70%, $saturation: 5%);
 
 $color-background: $color-gray-base;
-$color-background-light: lighten($color-gray-base, 1.5%);
+$color-button-shadow: rgba(0, 0, 0, 0.6);
+
 $color-text: #cfcfcf;

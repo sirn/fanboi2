@@ -8,8 +8,8 @@
         </div>
         <div class="subheader-footer">
             <ul class="actions">
-                <li class="actions-item"><a class="button static" href="${request.route_path('board', board=board.slug)}">Back</a></li>
-                <li class="actions-item"><a class="button brand static" href="${request.route_path('topic', board=board.slug, topic=topic.id)}">Show topic</a></li>
+                <li class="actions-item"><a class="button default" href="${request.route_path('board', board=board.slug)}">Back</a></li>
+                <li class="actions-item"><a class="button brand" href="${request.route_path('topic', board=board.slug, topic=topic.id)}">Show topic</a></li>
                 % if topic.status == 'open' and board.status in ('open', 'restricted'):
                     <li class="actions-item"><a class="button green static" href="#reply">Reply</a></li>
                 % endif

@@ -44,7 +44,7 @@
 % if page:
 <div class="sheet-body content">
     <div class="admin-embed">
-        <pre class="codeblock noshade">${page.body}</pre>
+        <pre class="codeblock">${page.body}</pre>
     </div>
 </div>
 <div class="sheet-body">

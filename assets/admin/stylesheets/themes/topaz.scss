@@ -2,12 +2,11 @@
 @import "../../../app/stylesheets/themes/variables_topaz";
 
 .theme-topaz {
-
     /* admin.scss
      * -------------------------------------------------------------------- */
 
     .admin-table {
-        border-color: $color-tint-light;
+        border-color: $color-gray-light;
         overflow: hidden;
     }
 
@@ -22,29 +21,29 @@
             .admin-table-item {
                 &.title {
                     background-color: #fff;
-                    border-color: $color-tint-light;
+                    border-color: $color-gray-light;
                 }
             }
         }
     }
 
     .admin-table-item {
-        border-color: $color-tint-light;
+        border-color: $color-gray-light;
 
         &.title {
             color: $color-gray-dark;
             border-color: #fff;
-            background-color: $color-tint-lighter;
+            background-color: $color-gray-lighter;
         }
     }
 
     .admin-cascade {
-        border-color: $color-tint-light;
+        border-color: $color-gray-light;
     }
 
     .admin-cascade-header {
-        background-color: $color-tint-lighter;
-        border-color: $color-tint-lighter;
+        background-color: $color-gray-lighter;
+        border-color: $color-gray-lighter;
         color: $color-gray-dark;
     }
 
@@ -53,7 +52,7 @@
     }
 
     .admin-cascade-footer {
-        border-color: $color-tint-light;
+        border-color: $color-gray-light;
         color: $color-gray-dark;
     }
 
@@ -95,7 +94,6 @@
     }
 
     .admin-embed {
-        background-color: $color-tint-lighter;
+        background-color: $color-gray-lighter;
     }
-
 }

@@ -44,7 +44,7 @@
     <p>Are you sure you want to delete topic <strong>${topic.title}</strong>? This operation cannot be undone.</p>
 </div>
 <div class="sheet-body">
-    <form class="form noshade" action="${request.route_path('admin_board_topic_delete', board=board.slug, topic=topic.id)}" method="post">
+    <form class="form" action="${request.route_path('admin_board_topic_delete', board=board.slug, topic=topic.id)}" method="post">
         <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
         <button class="button brand" type="submit">Delete Topic</button>
         <a class="button" href="${request.route_path('admin_board_topic', board=board.slug, topic=topic.id)}">Cancel</a>

@@ -84,6 +84,7 @@
 }
 
 .js-theme-selector-title {
+    /* Noop */
 }
 
 .js-theme-selector-list {
@@ -140,13 +141,14 @@
     .js-post-form {
         .form {
             border-bottom: none;
+            padding: $spacing-vertical 0;
         }
 
         @media (min-width: $bound-desktop) {
             width: $bound-tablet;
 
             .form {
-                padding: $spacing-vertical $spacing-horizontal 0;
+                padding: $spacing-vertical $spacing-horizontal;
             }
         }
     }
@@ -159,21 +161,22 @@
 
     @media (min-width: $bound-desktop) {
         width: auto;
+        border-radius: 3px;
     }
 }
 
 .js-popover-inner-title {
     @include clearfix();
     font-size: $font-size-small;
-    line-height: $font-size-small;
+    line-height: $line-height;
 }
 
 .js-popover-inner-title-label {
     float: left;
-    padding: $spacing-vertical $spacing-horizontal;
+    padding: $spacing-vertical-small $spacing-horizontal-small;
 }
 
 .js-popover-inner-title-dismiss {
     float: right;
-    padding: $spacing-vertical $spacing-horizontal;
+    padding: $spacing-vertical-small $spacing-horizontal-small;
 }
