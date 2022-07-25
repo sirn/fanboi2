@@ -110,18 +110,25 @@ body {
     border-bottom: 1px solid;
     font-size: $font-size-small;
     line-height: $line-height;
-    padding: $spacing-vertical-large 0;
+
+    /* Take into account margins introduced by ul/p elements */
+    $bottom-padding: $spacing-vertical-large - $spacing-vertical-small;
+    padding: $spacing-vertical-large 0 $bottom-padding;
 
     ul {
         display: block;
         list-style: none;
-        margin: 0 0 0 (-$spacing-horizontal-small);
+        margin: 0 0 $spacing-vertical-small;
         padding: 0;
     }
 
     li {
         display: block;
-        margin: 0 0 0 $spacing-horizontal-small;
+        margin: 0;
+    }
+
+    p {
+        margin: 0 0 $spacing-vertical-small;
     }
 }
 
@@ -175,7 +182,7 @@ body {
 
 .footer-links {
     display: block;
-    font-size: $font-size-smaller;
+    font-size: $font-size-small;
     line-height: $line-height;
     list-style: none;
     margin: 0;
@@ -193,6 +200,10 @@ body {
 .footer-links-item {
     display: inline;
     margin: 0;
+
+    + .footer-links-item {
+        margin-left: $spacing-horizontal-small;
+    }
 
     @media (min-width: $bound-tablet) {
         margin: 0;
@@ -337,24 +348,16 @@ body {
 .subheader-body {
     font-size: $font-size-small;
     line-height: $line-height;
-    margin: 0 0 (-$spacing-vertical-smaller);
+    margin: 0;
 
     p {
-        margin: 0 0 $spacing-vertical-smaller 0;
-    }
-
-    &.lines {
         margin: 0;
-
-        p {
-            margin: 0;
-        }
     }
 }
 
 .subheader-footer {
-    margin: 0 0 (-$spacing-vertical);
-    padding: $spacing-vertical 0;
+    margin: 0;
+    padding: 0;
 
     .actions-item {
         display: inline-block;
@@ -367,6 +370,10 @@ body {
             float: left;
             margin: 0 $spacing-horizontal-smaller 0 0;
         }
+    }
+
+    .subheader-body + & {
+        margin: $spacing-vertical 0 0;
     }
 }
 
@@ -382,7 +389,7 @@ body {
 .form-item {
     margin: 0;
 
-    + .form-item {
+    & + & {
         margin: $spacing-vertical 0 0;
     }
 
@@ -518,20 +525,13 @@ textarea.input {
  * ------------------------------------------------------------------------ */
 
 .menu {
-    border-bottom: 1px solid;
-    border-top: 1px solid;
-    margin: 0 (-$spacing-horizontal);
+    border: 1px solid;
+    border-radius: 3px;
+    margin: 0;
 
     ul {
         margin: 0;
         padding: 0;
-    }
-
-    @media (min-width: $bound-tablet) {
-        border-left: 1px solid;
-        border-right: 1px solid;
-        border-radius: 2px;
-        margin: 0;
     }
 }
 

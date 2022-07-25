@@ -49,19 +49,23 @@ $thumbnails-margin-vertical: $spacing-vertical - $thumbnail-gap-vertical;
 .post-header-item {
     display: block;
     float: left;
-    margin: 0 $spacing-horizontal-small 0 0;
+    margin: 0;
     padding: 1px 0;
 
+    & + & {
+        margin-left: $spacing-horizontal-small;
+    }
+
     &.number {
+        border-radius: 2px;
         border: 1px solid;
         cursor: pointer;
-        border-radius: 2px;
         padding: 0 ($post-item-spacing - 1);
     }
 
     &.name {
-        padding: 1px $post-item-spacing;
         border-radius: 2px;
+        padding: 1px $post-item-spacing;
     }
 
     &.date {
@@ -70,6 +74,11 @@ $thumbnails-margin-vertical: $spacing-vertical - $thumbnail-gap-vertical;
         font-style: italic;
         line-height: $line-height;
         position: absolute;
+        margin: 0;
+    }
+
+    &.ident-admin {
+        padding: 1px $post-item-spacing;
     }
 
     @media (min-width: $bound-tablet) {
@@ -77,33 +86,34 @@ $thumbnails-margin-vertical: $spacing-vertical - $thumbnail-gap-vertical;
             font-size: inherit;
             font-style: inherit;
             position: inherit;
+            margin-left: $spacing-horizontal-small;
         }
-    }
-
-    &.ident-admin {
-        padding: 1px $post-item-spacing;
     }
 }
 
 .post-body {
     font-size: $font-size;
     line-height: $line-height;
-    margin: 0 0 (-$spacing-vertical) 0;
+    margin: 0;
 
     p {
-        margin: 0 0 $spacing-vertical;
-    }
+        margin: 0;
 
-    p.thumbnails {
-        @include clearfix();
-        margin: 0 0 $thumbnails-margin-vertical;
-    }
+        + p {
+            margin: $spacing-vertical 0 0;
+        }
 
-    p.shortened {
-        font-size: $font-size-small;
-        font-style: italic;
-        line-height: $line-height;
-        margin: 0 0 $spacing-vertical-small;
+        &.thumbnails {
+            @include clearfix();
+            display: block;
+            margin: $spacing-vertical 0 (-$thumbnail-gap-vertical);
+        }
+
+        &.shortened {
+            font-size: $font-size-small;
+            font-style: italic;
+            line-height: $line-height;
+        }
     }
 
     a.anchor {
@@ -132,7 +142,7 @@ $thumbnails-margin-vertical: $spacing-vertical - $thumbnail-gap-vertical;
 
     @media (min-width: $bound-tablet) {
         p.shortened {
-            margin: 0 0 $spacing-vertical-large;
+            margin: $spacing-vertical-small 0 0;
         }
     }
 }

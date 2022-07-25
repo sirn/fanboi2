@@ -22,20 +22,6 @@
     /* app.scss
      * -------------------------------------------------------------------- */
 
-    .noticebar {
-        background-color: $color-background;
-        color: $color-gray-dark;
-        font-weight: bold;
-
-        &.error {
-            color: $color-red;
-        }
-
-        &.success {
-            color: $color-green;
-        }
-    }
-
     .header {
         background-color: $color-brand;
         border-color: $color-brand;
