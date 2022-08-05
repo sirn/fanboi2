@@ -53,9 +53,14 @@ tasks:
       export VENVDIR=$HOME/venv
       export PYTHON=/usr/local/bin/python3.9
       export POSTGRESQL_TEST_DATABASE="postgresql://fanboi2:@localhost:5432/fanboi2_test"
+
       make test
   - package: |
       cd fanboi2/ || exit 1
+      export PATH=$HOME/.local/bin:$PATH
+      export VENVDIR=$HOME/venv
+      export PYTHON=/usr/local/bin/python3.9
+
       gcloud auth activate-service-account --key-file ~/.local/etc/google_service_account.json
       bmake dist
 

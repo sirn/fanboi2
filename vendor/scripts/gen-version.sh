@@ -11,7 +11,7 @@ cd "$BASE_DIR/" || exit 1
 # as this commit, `5` is number of commits since the tag, and `e8df964a`
 # being the rev of the latest commit.
 #
-VERSION=$(git describe --tags --long --dirty 2>/dev/null)
+VERSION=$(git describe --tags --dirty 2>/dev/null)
 
 if [ -n "$VERSION" ]; then
     echo "$VERSION"
