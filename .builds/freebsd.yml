@@ -1,6 +1,7 @@
 ---
 image: freebsd/latest
 packages:
+  - google-cloud-sdk
   - node16
   - npm-node16
   - postgresql13-client
@@ -8,8 +9,11 @@ packages:
   - py39-pip
   - py39-sqlite3
   - python39
+  - rust
 sources:
   - https://git.sr.ht/~sirn/fanboi2
+secrets:
+  - 1d90529f-f66a-44bb-b5db-b41b255df8c2
 tasks:
   - setup: |
       cd fanboi2/ || exit 1
@@ -37,6 +41,10 @@ tasks:
       cd fanboi2/ || exit 1
       export PATH=$HOME/.local/bin:$PATH
       export PYTHON=/usr/local/bin/python3.9
+
+      NEW_VERSION=$(./vendor/scripts/gen-version.sh)
+      ./vendor/scripts/update-version.sh "$NEW_VERSION"
+
       pnpm install
       make assets
   - test: |
@@ -46,3 +54,12 @@ tasks:
       export PYTHON=/usr/local/bin/python3.9
       export POSTGRESQL_TEST_DATABASE="postgresql://fanboi2:@localhost:5432/fanboi2_test"
       make test
+  - package: |
+      cd fanboi2/ || exit 1
+      gcloud auth activate-service-account --key-file ~/.local/etc/google_service_account.json
+      bmake dist
+
+      DIST_NAME=$(ls -t1 dist | head -n1)
+      echo "$DIST_NAME" > CURRENT
+      gsutil cp dist/"$DIST_NAME" gs://artifacts.fanboi.ch/dist/"$DIST_NAME"
+      gsutil cp CURRENT gs://artifacts.fanboi.ch/dist/CURRENT

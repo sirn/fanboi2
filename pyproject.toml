@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fanboi2"
-version = "2022.7"
+version = "2022.8.1"
 description = "Pseudonomous board engine"
 requires-python = ">=3.9"
 maintainers = [{name = "Marisa Thanabulpong", email = "sirn@ogsite.net"}]
