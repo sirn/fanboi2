@@ -68,3 +68,8 @@ tasks:
       echo "$DIST_NAME" > CURRENT
       gsutil cp dist/"$DIST_NAME" gs://artifacts.fanboi.ch/dist/"$DIST_NAME"
       gsutil cp CURRENT gs://artifacts.fanboi.ch/dist/CURRENT
+
+      if [ -n "$(git tag --points-at HEAD)" ]; then
+           echo "$DIST_NAME" > RELEASE
+           gsutil cp RELEASE gs://artifacts.fanboi.ch/dist/RELEASE
+      fi
