@@ -19,7 +19,7 @@ if test -f pyproject.toml; then
     PEP440_LOCAL=${NEW_VERSION##"$PEP440_VERSION"-}
 
     LOCAL1=${PEP440_LOCAL%%-*}
-    if [ -n "$LOCAL1" ]; then
+    if [ -n "$LOCAL1" ] && [ "$LOCAL1" != "$PEP440_LOCAL" ]; then
         PEP440_VERSION="${PEP440_VERSION}+$LOCAL1"
         LOCAL1_REST=${PEP440_LOCAL##"$LOCAL1"-}
     fi
