@@ -2,8 +2,7 @@ import argparse
 import code
 import sys
 
-from ..version import __VERSION__, __PYRAMID__
-
+from ..version import __PYRAMID__, __VERSION__
 
 SHELL_BANNER = """\
       ___  ___
@@ -26,6 +25,7 @@ Loaded locals:
 def run_shell(args):
     """Run the interactive shell for the application."""
     import pyramid.scripting
+
     from .. import make_configurator
     from ..settings import settings_from_env
 
@@ -42,6 +42,7 @@ def run_shell(args):
 def run_serve(args):
     """Run the web server for the application."""
     from waitress import serve as waitress_serve
+
     from .. import make_configurator
     from ..settings import settings_from_env
 
@@ -57,7 +58,7 @@ def run_serve(args):
     config = make_configurator(settings)
     wsgi_app = config.make_wsgi_app()
 
-    waitress_serve(wsgi_app, host=args.host, port=args.port)
+    waitress_serve(wsgi_app, host=args.host, port=args.port, threads=args.threads)
     sys.exit(0)
 
 
@@ -80,6 +81,7 @@ def main():
     serve = subparsers.add_parser("serve")
     serve.add_argument("--port", type=int, default=6543)
     serve.add_argument("--host", default="0.0.0.0")
+    serve.add_argument("--threads", default=4)
     serve.add_argument("--reload", action="store_true")
     serve.set_defaults(func=run_serve)
 
