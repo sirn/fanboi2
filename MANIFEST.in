@@ -4,4 +4,4 @@ include dev-requirements.txt
 include test-requirements.txt
 recursive-include migration *.py *.mako
 recursive-include fanboi2/templates *.mako
-recursive-include fanboi2/static *.css *.js *.map *.png *.svg
+recursive-include fanboi2/static *.css *.js *.map *.png *.svg *.ico
