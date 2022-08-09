@@ -33,8 +33,7 @@ all: prod
 
 $(VENVDIR):
 	$(VENVCMD) "$(VENVDIR)"
-	$(VENV_PIP) install --upgrade pip
-	$(VENV_PIP) install --upgrade pip-tools
+	$(VENV_PIP) install --upgrade pip wheel pip-tools
 	$(VENV_PIP) install --upgrade honcho
 
 requirements.txt: pyproject.toml requirements.in
@@ -113,9 +112,9 @@ prod-run: $(BUILDDIR)/.build $(BUILDDIR)/.build-assets
 dist: $(VENVDIR) $(BUILDDIR)/.build-assets
 	@: # Create a source distribution for remote installation
 	@: #
-	@: # Resulting distribution will have a pre-compiled assets 
+	@: # Resulting distribution will have a pre-compiled assets
 	@: # and would not require Node.js to run, make it suitable
-	@: # for running in a production environment 
+	@: # for running in a production environment
 	$(VENV_PIP) install --upgrade build
 	$(VENV_PYTHON) -m build --sdist
 
