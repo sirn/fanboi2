@@ -56,8 +56,8 @@ def includeme(config: Configurator):
     config.add_route("robots", "/robots.txt")
 
     if config.registry.settings["server.development"]:
-        config.add_request_method(tagged_static_path)
+        config.add_request_method(tagged_static_path, name="tagged_static_path")
         config.add_static_view("static", "fanboi2:static")
     else:
-        config.add_request_method(tagged_static_path_cached)
+        config.add_request_method(tagged_static_path_cached, name="tagged_static_path")
         config.add_static_view("static", "fanboi2:static", cache_max_age=3600)
