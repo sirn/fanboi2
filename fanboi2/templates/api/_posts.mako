@@ -141,9 +141,11 @@
                             <th class="api-table-item title">ident_type</th>
                             <td class="api-table-item type">String</td>
                             <td class="api-table-item">
-                                <p>The type of the user ident to distinguish user info.</p>
+                                <p>The type of the user ident.</p>
+                                <p>IPv6 idents are normalized to <code>/64</code> CIDR by default which may be shared between multiple users in some network configuration (such as mobile network) and thus are distinguised by a separate ident_type.</p>
                                 <ul>
-                                    <li><strong>ident</strong> — normal user ident</li>
+                                    <li><strong>ident</strong> — normal user ident (IPv4)</li>
+                                    <li><strong>ident_v6</strong> — normal user ident (IPv6)</li>
                                     <li><strong>ident_admin</strong> — admin ident</li>
                                 </ul>
                                 <pre class="codeblock">"ident_type":"ident"</pre>
