@@ -27,6 +27,7 @@ def make_configurator(settings: Dict[str, Union[int, str, bool]]):  # pragma: no
                 "dogpile.arguments.url": config.registry.settings["redis.url"],
                 "dogpile.redis_expiration_time": 60 * 60 * 1,  # 1 hour
                 "dogpile.arguments.distributed_lock": True,
+                "dogpile.arguments.thread_local_lock": False,
             }
         )
 
