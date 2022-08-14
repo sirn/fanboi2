@@ -415,20 +415,10 @@
                 border-color: rgba($color-background, 0.7);
                 border-top-color: rgba($color-background, 1);
             }
-
-            &:hover:after {
-                border-color: rgba($color-gray-dark, 0.7);
-                border-top-color: rgba($color-gray-dark, 1);
-            }
         }
 
         &.brand {
             &:after {
-                border-color: rgba($color-background, 0.7);
-                border-top-color: rgba($color-background, 1);
-            }
-
-            &:hover:after {
                 border-color: rgba($color-background, 0.7);
                 border-top-color: rgba($color-background, 1);
             }
@@ -438,11 +428,6 @@
             &:after {
                 border-color: rgba($color-background, 0.7);
                 border-top-color: rgba($color-background, 1);
-            }
-
-            &:hover:after {
-                border-color: rgba($color-green, 0.7);
-                border-top-color: rgba($color-green, 1);
             }
         }
     }
