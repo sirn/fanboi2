@@ -2,7 +2,7 @@
     "author": "Kridsada Thanabulpong",
     "name": "fanboi2",
     "description": "Assets for Fanboi2 board",
-    "version": "2022.8.1",
+    "version": "0.0.0-dev",
     "repository": "https://git.sr.ht/~sirn/fanboi2",
     "license": "BSD-3-Clause",
     "dependencies": {

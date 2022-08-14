@@ -33,9 +33,10 @@ class TestPartials(unittest.TestCase):
 
     def test_get_partial(self):
         from markupsafe import Markup
-        from . import mock_service
+
         from ..helpers.partials import get_partial
         from ..interfaces import IPageQueryService
+        from . import mock_service
 
         request = mock_service(self.request, {IPageQueryService: _DummyPageService()})
         self.assertEqual(
@@ -43,9 +44,9 @@ class TestPartials(unittest.TestCase):
         )
 
     def test_get_partial_invalid(self):
-        from . import mock_service
         from ..helpers.partials import get_partial
         from ..interfaces import IPageQueryService
+        from . import mock_service
 
         request = mock_service(
             self.request, {IPageQueryService: _DummyPageInvalidService()}
@@ -54,18 +55,20 @@ class TestPartials(unittest.TestCase):
 
     def test_global_css(self):
         from markupsafe import Markup
-        from . import mock_service
+
         from ..helpers.partials import global_css
         from ..interfaces import IPageQueryService
+        from . import mock_service
 
         request = mock_service(self.request, {IPageQueryService: _DummyPageService()})
         self.assertEqual(global_css(None, request), Markup("call1_global/css"))
 
     def test_global_appendix(self):
         from markupsafe import Markup
-        from . import mock_service
+
         from ..helpers.partials import global_appendix
         from ..interfaces import IPageQueryService
+        from . import mock_service
 
         request = mock_service(self.request, {IPageQueryService: _DummyPageService()})
         self.assertEqual(
@@ -74,9 +77,10 @@ class TestPartials(unittest.TestCase):
 
     def test_global_footer(self):
         from markupsafe import Markup
-        from . import mock_service
+
         from ..helpers.partials import global_footer
         from ..interfaces import IPageQueryService
+        from . import mock_service
 
         request = mock_service(self.request, {IPageQueryService: _DummyPageService()})
         self.assertEqual(global_footer(None, request), Markup("call1_global/footer"))
@@ -180,6 +184,7 @@ class TestFormatters(unittest.TestCase):
 
     def test_post_markup(self):
         from markupsafe import Markup
+
         from ..helpers.formatters import PostMarkup
 
         markup = PostMarkup("<p>foo</p>")
@@ -192,6 +197,7 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_text(self):
         from markupsafe import Markup
+
         from ..helpers.formatters import format_text
 
         tests = (
@@ -210,6 +216,7 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_text_autolink(self):
         from markupsafe import Markup
+
         from ..helpers.formatters import format_text
 
         text = (
@@ -242,7 +249,8 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_text_shorten(self):
         from markupsafe import Markup
-        from ..helpers.formatters import format_text, PostMarkup
+
+        from ..helpers.formatters import PostMarkup, format_text
 
         tests = (
             ("Hello, world!", "<p>Hello, world!</p>", 13, False),
@@ -259,6 +267,7 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_text_thumbnail(self):
         from markupsafe import Markup
+
         from ..helpers.formatters import format_text
 
         text = (
@@ -314,6 +323,7 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_markdown(self):
         from markupsafe import Markup
+
         from ..helpers.formatters import format_markdown
 
         tests = (
@@ -334,9 +344,10 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_datetime(self):
         from datetime import datetime, timezone
-        from . import mock_service
-        from ..interfaces import ISettingQueryService
+
         from ..helpers.formatters import format_datetime
+        from ..interfaces import ISettingQueryService
+        from . import mock_service
 
         request = mock_service(
             self.request, {ISettingQueryService: _DummySettingQueryService()}
@@ -347,7 +358,8 @@ class TestFormatters(unittest.TestCase):
         self.assertEqual(format_datetime(None, request, d2), "Dec 31, 2012 at 23:59:59")
 
     def test_format_isotime(self):
-        from datetime import datetime, timezone, timedelta
+        from datetime import datetime, timedelta, timezone
+
         from ..helpers.formatters import format_isotime
 
         ict = timezone(timedelta(hours=7))
@@ -397,8 +409,9 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_post(self):
         from markupsafe import Markup
-        from ..models import Board, Topic, Post
+
         from ..helpers.formatters import format_post
+        from ..models import Board, Post, Topic
 
         self.config.add_route("board", "/{board}")
         self.config.add_route("topic_scoped", "/{board}/{topic}/{query}")
@@ -499,8 +512,9 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_post_shorten(self):
         from markupsafe import Markup
-        from ..models import Board, Topic, Post
+
         from ..helpers.formatters import format_post
+        from ..models import Board, Post, Topic
 
         self.config.add_route("topic_scoped", "/{board}/{topic}/{query}")
         board = Board(title="Foobar", slug="foobar")
@@ -517,8 +531,9 @@ class TestFormatters(unittest.TestCase):
 
     def test_format_page(self):
         from markupsafe import Markup
-        from ..models import Page
+
         from ..helpers.formatters import format_page
+        from ..models import Page
 
         page1 = Page(body="**Markdown**", formatter="markdown")
         page2 = Page(body="<em>**HTML**</em>", formatter="html")
@@ -530,3 +545,19 @@ class TestFormatters(unittest.TestCase):
         )
         for source, target in tests:
             self.assertEqual(format_page(None, None, source), Markup(target))
+
+
+class TestInfo(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+        self.request = testing.DummyRequest()
+        self.request.registry = self.config.registry
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def test_app_version(self):
+        from ..helpers.info import app_version
+        from ..version import __VERSION__
+
+        self.assertEqual(app_version(None, self.request), __VERSION__)

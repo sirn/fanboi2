@@ -1,5 +1,6 @@
 <%namespace name="formatters" module="fanboi2.helpers.formatters" />
 <%namespace name="partials" module="fanboi2.helpers.partials" />
+<%namespace name="info" module="fanboi2.helpers.info" />
 <!DOCTYPE html>
 <html>
 <head>
@@ -44,26 +45,28 @@
 
 ${next.body()}
 
+<section class="appendix">
+    <div class="container">
 <% global_appendix = partials.global_appendix(request) %>
 % if global_appendix:
-    <section class="appendix">
-        <div class="container">
+        <div class="appendix-content">
             ${global_appendix}
         </div>
-    </section>
 % endif
+        <div class="appendix-lines" data-theme-selector="true">
+            <p class="appendix-lines-item">All contents are responsibility of its posters.</p>
+        </div>
+    </div>
+</section>
 
 <footer id="bottom" class="footer">
     <div class="container">
         <div class="footer-scroll-button">
           <a href="#top">Scroll to top</a>
         </div>
-        <div class="footer-lines" data-theme-selector="true">
-            <p class="footer-lines-item">All contents are responsibility of its posters.</p>
-        </div>
         <ul class="footer-links">
+            <li class="footer-links-item"><a href="https://git.sr.ht/~sirn/fanboi2">Fanboi2 v${info.app_version(request)}</a></li>
             <li class="footer-links-item"><a href="${request.route_path('api_root')}">API documentation</a></li>
-            <li class="footer-links-item"><a href="https://git.sr.ht/~sirn/fanboi2">Source code</a></li>
         </ul>
     </div>
 </footer>

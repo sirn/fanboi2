@@ -6,7 +6,10 @@
 
 .api-section {
     padding: $spacing-vertical-larger 0;
-    border-bottom: 1px solid;
+
+    + .api-section {
+        border-top: 1px solid;
+    }
 }
 
 .api-request {

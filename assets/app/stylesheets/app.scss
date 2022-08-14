@@ -110,7 +110,9 @@ body {
     border-bottom: 1px solid;
     font-size: $font-size-small;
     line-height: $line-height;
+}
 
+.appendix-content {
     /* Take into account margins introduced by ul/p elements */
     $bottom-padding: $spacing-vertical-large - $spacing-vertical-small;
     padding: $spacing-vertical-large 0 $bottom-padding;
@@ -132,11 +134,28 @@ body {
     }
 }
 
+.appendix-lines {
+    padding: $spacing-vertical-large 0;
+    font-size: $font-size-small;
+    line-height: $line-height;
+    text-align: left;
+
+    .appendix-content + & {
+        padding: 0 0 $spacing-vertical-large;
+    }
+}
+
+.appendix-lines-item {
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
 /* Site footer
  * ------------------------------------------------------------------------ */
 
 .footer {
-    padding: $spacing-vertical 0;
+    padding: $spacing-vertical-large 0;
 
     .container {
         position: relative;
@@ -158,26 +177,6 @@ body {
         height: $icon-tappable-height;
         width: $icon-tappable-width;
     }
-
-    @media (min-width: $bound-desktop) {
-        right: 0;
-    }
-}
-
-.footer-lines {
-    font-size: $font-size-small;
-    line-height: $line-height;
-    text-align: left;
-
-    @media (min-width: $bound-tablet) {
-        float: left;
-    }
-}
-
-.footer-lines-item {
-    display: block;
-    margin: 0;
-    padding: 0;
 }
 
 .footer-links {
@@ -188,27 +187,10 @@ body {
     margin: 0;
     padding: 0;
     text-align: left;
-
-    @media (min-width: $bound-tablet) {
-        float: right;
-        font-size: $font-size-small;
-        margin-right: $icon-tappable-width;
-        text-align: right;
-    }
 }
 
 .footer-links-item {
-    display: inline;
     margin: 0;
-
-    + .footer-links-item {
-        margin-left: $spacing-horizontal-small;
-    }
-
-    @media (min-width: $bound-tablet) {
-        margin: 0;
-        display: block;
-    }
 }
 
 /* Cascade
@@ -216,8 +198,11 @@ body {
 
 .cascade {
     padding: $spacing-vertical-large 0;
-    border-bottom: 1px solid;
     position: relative;
+
+    + .cascade {
+        border-top: 1px solid;
+    }
 }
 
 .cascade-header {
