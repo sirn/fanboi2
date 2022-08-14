@@ -315,7 +315,7 @@
     }
 
     .post-header {
-        color: $color-gray-dark;
+        color: $color-gray;
         font-weight: bold;
     }
 
@@ -349,10 +349,6 @@
 
         &.date {
             font-weight: normal;
-        }
-
-        &.ident {
-            color: $color-gray;
         }
 
         &.ident-admin {
