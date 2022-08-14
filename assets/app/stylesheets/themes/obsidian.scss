@@ -154,12 +154,22 @@
     }
 
     .content {
-        h1,
+        color: $color-text;
+
+        h1 {
+            color: $color-brand;
+        }
+
         h2,
         h3,
         h4,
         h5 {
-            color: $color-brand;
+            color: $color-gray-lighter;
+        }
+
+        blockquote {
+            border-color: $color-gray;
+            background-color: $color-gray-dark;
         }
     }
 

@@ -279,17 +279,14 @@ body {
 .content {
     font-size: $font-size;
     line-height: $line-height;
+    margin: $spacing-vertical-large 0;
 
-    h1 {
-        font-size: $font-size-larger;
+    > :first-child {
+        margin-top: 0;
     }
-    h2 {
-        font-size: $font-size-large;
-    }
-    h3,
-    h4,
-    h5 {
-        font-size: $font-size;
+
+    > :last-child {
+        margin-bottom: 0;
     }
 
     h1,
@@ -297,16 +294,55 @@ body {
     h3,
     h4,
     h5,
-    p,
     ul,
-    ol {
-        margin: 0 0 $spacing-vertical;
-        padding: 0;
+    ol,
+    p,
+    blockquote {
+        margin: 0.8rem 0;
+    }
+
+    h1 {
+        font-size: 1.5em;
+        margin-top: 2rem;
+    }
+
+    h2 {
+        font-size: 1.3em;
+        margin-top: 1.7rem;
+    }
+
+    h3 {
+        font-size: 1.15em;
+        margin-top: 1.5rem;
+    }
+
+    h4 {
+        font-size: 1.1rem;
+        margin-top: 1.3rem;
+    }
+
+    h5 {
+        font-size: 1rem;
+        margin-top: 1.2rem;
     }
 
     ul,
     ol {
-        padding: 0 $spacing-horizontal-larger 0;
+        padding: 0 2rem;
+
+        ul,
+        ol {
+            margin: 0;
+        }
+
+        li {
+            margin: 0.1rem 0 0;
+        }
+    }
+
+    blockquote {
+        padding: 0.3rem 2rem;
+        border-left: 3px solid;
     }
 }
 
