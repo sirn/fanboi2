@@ -28,7 +28,6 @@ function assets() {
         .merge([
             gulp.src("assets/admin/assets/*"),
             gulp.src("assets/app/assets/*"),
-            gulp.src("assets/legacy/assets/*"),
             gulp.src("assets/vendor/assets/*"),
         ])
         .pipe(gulp.dest("fanboi2/static"));
@@ -119,16 +118,6 @@ var scriptApp = function () {
         .pipe(gulp.dest("fanboi2/static"));
 };
 
-var scriptLegacy = function () {
-    return gulp
-        .src("assets/legacy/**/*.js")
-        .pipe(sourcemaps.init())
-        .pipe(concat("legacy.js"))
-        .pipe(uglify())
-        .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest("fanboi2/static"));
-};
-
 var scriptVendor = function () {
     return browserify({ debug: true })
         .require(externalDependencies)
@@ -142,7 +131,7 @@ var scriptVendor = function () {
         .pipe(gulp.dest("fanboi2/static"));
 };
 
-var scripts = gulp.parallel(scriptApp, scriptLegacy, scriptVendor);
+var scripts = gulp.parallel(scriptApp, scriptVendor);
 
 /* Build
  * -------------------------------------------------------------------------------- */
@@ -156,7 +145,6 @@ function watch() {
 
     gulp.watch("assets/app/**/*.ts", scripts);
     gulp.watch("assets/vendor/**/*.js", scripts);
-    gulp.watch("assets/legacy/**/*.js", scripts);
 }
 
 /* Exports

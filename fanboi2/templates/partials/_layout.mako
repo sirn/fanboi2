@@ -15,7 +15,6 @@
 
     <link rel="stylesheet" href="${request.tagged_static_path('fanboi2:static/vendor.css')}">
     <link rel="stylesheet" href="${request.tagged_static_path('fanboi2:static/app.css')}">
-    <!--[if IE]><script type="text/javascript" src="${request.tagged_static_path('fanboi2:static/legacy.js')}"></script><![endif]-->
 
     <title>${self.title() + ' - ' if hasattr(self, 'title') else ''}Fanboi Channel</title>
 
