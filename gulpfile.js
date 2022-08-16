@@ -25,11 +25,7 @@ function logError(error) {
 
 function assets() {
     return es
-        .merge([
-            gulp.src("assets/admin/assets/*"),
-            gulp.src("assets/app/assets/*"),
-            gulp.src("assets/vendor/assets/*"),
-        ])
+        .merge([gulp.src("assets/app/assets/*"), gulp.src("assets/vendor/assets/*")])
         .pipe(gulp.dest("fanboi2/static"));
 }
 
@@ -66,20 +62,6 @@ function styleApp() {
         .pipe(gulp.dest("fanboi2/static"));
 }
 
-function styleAdmin() {
-    return gulp
-        .src([
-            "assets/admin/stylesheets/*.scss",
-            "assets/admin/stylesheets/themes/*.scss",
-        ])
-        .pipe(sourcemaps.init())
-        .pipe(sass().on("error", sass.logError))
-        .pipe(concat("admin.css"))
-        .pipe(postcss(postcssProcessors).on("error", logError))
-        .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest("fanboi2/static"));
-}
-
 function styleVendor() {
     return gulp
         .src("assets/vendor/**/*.css")
@@ -90,7 +72,7 @@ function styleVendor() {
         .pipe(gulp.dest("fanboi2/static"));
 }
 
-var styles = gulp.series(assets, gulp.parallel(styleApp, styleAdmin, styleVendor));
+var styles = gulp.series(assets, gulp.parallel(styleApp, styleVendor));
 
 /* Scripts
  * -------------------------------------------------------------------------------- */
@@ -140,9 +122,7 @@ var build = gulp.parallel(styles, scripts);
 
 function watch() {
     gulp.watch("assets/app/**/*.scss", styles);
-    gulp.watch("assets/admin/**/*.scss", styles);
     gulp.watch("assets/vendor/**/*.css", styles);
-
     gulp.watch("assets/app/**/*.ts", scripts);
     gulp.watch("assets/vendor/**/*.js", scripts);
 }

@@ -1,5 +1,4 @@
 <%inherit file='../partials/_layout.mako' />
-<%def name='header()'><link rel="stylesheet" href="${request.tagged_static_path('fanboi2:static/admin.css')}"></%def>
 % if hasattr(self, 'subheader_title') and hasattr(self, 'subheader_body'):
 <header class="subheader">
     <div class="container">
