@@ -207,6 +207,95 @@
         border-color: $color-gray-light;
     }
 
+    /* admin.scss
+     * -------------------------------------------------------------------- */
+
+    .admin-table {
+        border-color: $color-gray-light;
+        overflow: hidden;
+    }
+
+    .admin-table-item {
+        border-color: $color-gray-light;
+
+        &.title {
+            color: $color-gray-dark;
+            border-color: #fff;
+            background-color: $color-gray-lighter;
+        }
+    }
+
+    .admin-table-body {
+        .admin-table-item {
+            &.title {
+                font-weight: normal;
+            }
+        }
+
+        @media (min-width: $bound-tablet) {
+            .admin-table-item {
+                &.title {
+                    background-color: #fff;
+                    border-color: $color-gray-light;
+                }
+            }
+        }
+    }
+
+    .admin-cascade {
+        border-color: $color-gray-light;
+    }
+
+    .admin-cascade-header {
+        background-color: $color-gray-lighter;
+        border-color: $color-gray-lighter;
+        color: $color-gray-dark;
+    }
+
+    .admin-cascade-body {
+        color: $color-gray-dark;
+    }
+
+    .admin-cascade-footer {
+        border-color: $color-gray-light;
+        color: $color-gray-dark;
+    }
+
+    .admin-post-body {
+        color: $color-text;
+    }
+
+    .admin-post-info {
+        &.number {
+            background-color: #fff;
+            border-color: $color-gray-light;
+            font-weight: bold;
+
+            &.bumped {
+                background-color: $color-gray;
+                border-color: $color-gray;
+                color: #fff;
+            }
+        }
+
+        &.date {
+            font-weight: bold;
+        }
+
+        &.ident-admin {
+            font-weight: bold;
+            color: $color-brand;
+        }
+
+        &.ip-address {
+            font-weight: bold;
+        }
+    }
+
+    .admin-embed {
+        background-color: $color-gray-lighter;
+    }
+
     /* api.scss
      * -------------------------------------------------------------------- */
 

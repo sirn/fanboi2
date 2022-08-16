@@ -20,20 +20,6 @@
     }
 }
 
-.admin-table-header {
-    display: none;
-
-    .admin-table-item {
-        &.title {
-            border-bottom: none;
-        }
-    }
-
-    @media (min-width: $bound-tablet) {
-        display: table-row-group;
-    }
-}
-
 .admin-table-body {
     display: block;
 
@@ -78,6 +64,20 @@
         &.tail {
             width: 320px;
         }
+    }
+}
+
+.admin-table-header {
+    display: none;
+
+    .admin-table-item {
+        &.title {
+            border-bottom: none;
+        }
+    }
+
+    @media (min-width: $bound-tablet) {
+        display: table-row-group;
     }
 }
 
