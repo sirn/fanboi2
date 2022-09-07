@@ -1,7 +1,6 @@
 import binascii
 
 from pyramid.config import Configurator  # type: ignore
-from pyramid.csrf import SessionCSRFStoragePolicy  # type: ignore
 from pyramid_nacl_session import EncryptedCookieSessionFactory  # type: ignore
 
 
@@ -13,4 +12,3 @@ def includeme(config: Configurator):
     )
 
     config.set_session_factory(session_factory)
-    config.set_csrf_storage_policy(SessionCSRFStoragePolicy(key="_csrf"))
