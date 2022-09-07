@@ -1,4 +1,4 @@
-web: ${VENV:-./venv}/bin/fbctl serve
+web: ${VENV:-./venv}/bin/fbctl serve --reload
 worker: ${VENV:-./venv}/bin/fbcelery worker
 beat: ${VENV:-./venv}/bin/fbcelery beat
 assets: ${PNPM:-pnpm} run gulp build watch
