@@ -43,7 +43,7 @@ def run_serve(args):
     """Run the web server for the application."""
     from waitress import serve as waitress_serve
 
-    from .. import make_configurator
+    from .. import make_configurator, setup_logger
     from ..settings import settings_from_env
 
     if args.reload:
@@ -55,6 +55,7 @@ def run_serve(args):
         hupper.start_reloader("fanboi2.cmd.ctl.main")
 
     settings = settings_from_env()
+    setup_logger(settings)
     config = make_configurator(settings)
     wsgi_app = config.make_wsgi_app()
 
