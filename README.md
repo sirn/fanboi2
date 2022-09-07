@@ -80,12 +80,6 @@ AUTH_SECRET=\$(openssl rand -hex 32)
 EOF
 ```
 
-Load environment by sourcing it:
-
-```shellsession
-$ . fanboi2-env.sh
-```
-
 ### Setting up application
 
 Migrate the database:

@@ -2,5 +2,5 @@ web: ${VENV:-./venv}/bin/fbctl serve --reload
 worker: ${VENV:-./venv}/bin/fbcelery worker
 beat: ${VENV:-./venv}/bin/fbcelery beat
 assets: ${PNPM:-pnpm} run gulp build watch
-postgres: vendor/scripts/run-postgres.sh
-redis: vendor/scripts/run-redis.sh
+postgres: tools/scripts/run-postgres.sh
+redis: tools/scripts/run-redis.sh

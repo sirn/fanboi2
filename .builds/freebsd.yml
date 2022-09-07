@@ -42,8 +42,8 @@ tasks:
       export PATH=$HOME/.local/bin:$PATH
       export PYTHON=/usr/local/bin/python3.9
 
-      NEW_VERSION=$(./vendor/scripts/gen-version.sh)
-      ./vendor/scripts/update-version.sh "$NEW_VERSION"
+      NEW_VERSION=$(./tools/scripts/gen-version.sh)
+      ./tools/scripts/update-version.sh "$NEW_VERSION"
 
       pnpm install
       make assets
