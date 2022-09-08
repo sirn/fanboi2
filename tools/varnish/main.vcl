@@ -87,6 +87,11 @@ sub vcl_recv {
     # Announce ESI support to the backend.
     set req.http.surrogate-capability = "key=ESI/1.0";
 
+    # Disallow external access to ESI endpoints.
+    if (req.esi_level == 0 && req.url ~ "^/esi/.*") {
+        return (synth(403, "Access denied"));
+    }
+
     # Never cache authorization.
     if (req.http.authorization) {
         return (pass);

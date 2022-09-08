@@ -26,6 +26,7 @@ ENV_SETTINGS_MAP = (
     ("REDIS_URL", "redis.url", NO_VALUE, None),
     ("SERVER_DEV", "server.development", False, asbool),
     ("SERVER_SECURE", "server.secure", False, asbool),
+    ("SERVER_ESI", "server.esi", False, asbool),
     ("SESSION_SECRET", "session.secret", NO_VALUE, None),
 )
 
