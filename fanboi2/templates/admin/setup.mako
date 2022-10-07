@@ -47,7 +47,7 @@
             % endif
         </div>
         <div class="form-item">
-            <button class="button brand" type="submit">Create account</button>
+            <button class="btn btn--shadowed btn--brand" type="submit">Create account</button>
         </div>
     </div>
 </form>

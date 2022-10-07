@@ -1,9 +1,7 @@
-<%inherit file='../_layout.mako' />
-<%def name='title()'>Boards - Admin Panel</%def>
-<%def name='subheader_title()'>Boards</%def>
-<%def name='subheader_body()'>Manage boards.</%def>
-<h2 class="sheet-title">${board.title}</h2>
-<%include file='_nav.mako' />
+<%namespace name="nav" file="_nav.mako"/>
+<%inherit file="../_layout.mako" />
+<%def name="title()">Boards - Admin Panel</%def>
+<%nav:render_nav title="${board.title}" board="${board}" />
 <div class="sheet-body">
     <form class="form" action="${request.route_path('admin_board_edit', board=board.slug)}" method="post">
         <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
@@ -43,7 +41,7 @@
             % endif
         </div>
         <div class="form-item">
-            <button class="button brand" type="submit">Update Board</button>
+            <button class="btn btn--shadowed btn--brand" type="submit">Update Board</button>
         </div>
     </form>
 </div>

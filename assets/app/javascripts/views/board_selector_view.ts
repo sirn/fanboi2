@@ -1,37 +1,37 @@
-import { VNode, h } from "virtual-dom";
+import isEqual = require("lodash.isequal");
+import { h, VNode } from "virtual-dom";
 import { Board } from "../models/board";
 import { BoardView } from "./board_view";
 
 export class BoardSelectorView {
+    boards: Board[];
+
+    // Cache
     boardListNode: VNode[];
+    boardArgs: any = {};
 
     constructor(boards: Board[]) {
-        this.boardListNode = BoardSelectorView.renderBoards(boards);
+        this.boards = boards;
     }
 
     render(args: any = {}): VNode {
-        return h("div", BoardSelectorView.getViewClassName(args), [
-            h("div", { className: "js-board-selector-inner" }, this.boardListNode),
-        ]);
-    }
+        let wrapperArgs = args.wrapper || {};
+        let boardArgs = args.board || {};
 
-    private static renderBoards(boards: Board[]): VNode[] {
-        return boards.map((board: Board): VNode => {
-            return new BoardView(board).render();
-        });
-    }
-
-    private static getViewClassName(args: any): any {
-        const className = "js-board-selector";
-
-        if (args.className) {
-            let classNames = args.className.split(" ");
-            classNames.push(className);
-            args.className = classNames.join(" ");
-        } else {
-            args.className = className;
+        if (!wrapperArgs.style) {
+            wrapperArgs.style = { height: "0px" };
         }
 
-        return args;
+        if (!this.boardListNode || !isEqual(this.boardArgs, boardArgs)) {
+            this.boardArgs = boardArgs;
+            this.boardListNode = this.boards.map((board: Board): VNode => {
+                return new BoardView(board).render(boardArgs);
+            });
+        }
+
+        wrapperArgs.style.overflow = "hidden";
+        return h("div", wrapperArgs, [
+            h("div", { dataset: { boardSelectorInner: true } }, this.boardListNode),
+        ]);
     }
 }

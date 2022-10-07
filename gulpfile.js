@@ -33,6 +33,8 @@ function assets() {
  * -------------------------------------------------------------------------------- */
 
 var postcssProcessors = [
+    require("postcss-normalize"),
+    require("postcss-custom-media"),
     require("autoprefixer"),
     require("postcss-round-subpixels"),
     require("mqpacker"),
@@ -44,18 +46,27 @@ var postcssProcessors = [
             return url + "?h=" + hash.slice(0, 8);
         },
     }),
-    require("cssnano")({ preset: "default" }),
+    require("@fullhuman/postcss-purgecss")({
+        content: ["fanboi2/templates/**/*.mako", "assets/app/**/*.ts"],
+        safelist: [/^theme-/, /^ident-/, "shortened", "anchor"],
+    }),
+    require("cssnano")({ preset: "advanced" }),
+    require("postcss-variable-compress"),
 ];
 
 function styleApp() {
     return gulp
-        .src([
-            "assets/app/stylesheets/app.scss",
-            "assets/app/stylesheets/*.scss",
-            "assets/app/stylesheets/themes/*.scss",
-        ])
+        .src(["assets/app/stylesheets/app.scss"])
         .pipe(sourcemaps.init())
-        .pipe(sass().on("error", sass.logError))
+        .pipe(
+            sass({
+                options: {
+                    sourceMap: true,
+                    sourceComments: true,
+                    outputStyle: "expanded",
+                },
+            }).on("error", sass.logError)
+        )
         .pipe(concat("app.css"))
         .pipe(postcss(postcssProcessors).on("error", logError))
         .pipe(sourcemaps.write("."))
@@ -64,7 +75,7 @@ function styleApp() {
 
 function styleVendor() {
     return gulp
-        .src("assets/vendor/**/*.css")
+        .src("assets/vendor/stylesheets/vendor.scss")
         .pipe(sourcemaps.init())
         .pipe(concat("vendor.css"))
         .pipe(postcss(postcssProcessors).on("error", logError))
@@ -82,6 +93,7 @@ var externalDependencies = [
     "domready",
     "es6-promise",
     "js-cookie",
+    "lodash.isequal",
     "virtual-dom",
 ];
 
@@ -125,6 +137,10 @@ function watch() {
     gulp.watch("assets/vendor/**/*.css", styles);
     gulp.watch("assets/app/**/*.ts", scripts);
     gulp.watch("assets/vendor/**/*.js", scripts);
+
+    /* Required for PurgeCSS */
+    gulp.watch("assets/app/**/*.ts", styles);
+    gulp.watch("fanboi2/templates/**/*.mako", styles);
 }
 
 /* Exports

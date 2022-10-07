@@ -1,0 +1,155 @@
+/* Partial: post
+ * Styling for individual posts. */
+.post {
+    $post-padding-vertical: var(--sp-vertical-s);
+    $post-content-vertical: var(--sp-vertical-s);
+
+    padding: $post-padding-vertical 0;
+
+    /* Element: post
+     * Represent individual item for a post. */
+    &__item {
+        display: inline-block;
+        font-size: var(--fs-s);
+
+        &--bumped,
+        &--saged,
+        &--name {
+            border-radius: var(--radius);
+            border: 1px solid;
+            padding: var(--sp-post-item-vertical) var(--sp-post-item-horizontal);
+        }
+
+        &--bumped {
+            background: var(--color-post-item-bumped-background);
+            border-color: var(--color-post-item-bumped-border);
+            color: var(--color-post-item-bumped-text);
+            font-weight: bold;
+        }
+
+        &--saged {
+            background: var(--color-post-item-saged-background);
+            border-color: var(--color-post-item-saged-border);
+            color: var(--color-post-item-saged-text);
+            font-weight: bold;
+        }
+
+        &--bumped:hover,
+        &--saged:hover {
+            background: var(--color-post-item-hover-background);
+            border-color: var(--color-post-item-hover-border);
+            color: var(--color-post-item-hover-text);
+        }
+
+        &--name {
+            background: var(--color-post-item-name-background);
+            border-color: var(--color-post-item-name-border);
+            color: var(--color-post-item-name-text);
+            font-weight: bold;
+        }
+
+        &--datetime {
+            background: var(--color-post-item-datetime-background);
+            border-color: var(--color-post-item-datetime-border);
+            color: var(--color-post-item-datetime-text);
+            font-weight: bold;
+        }
+    }
+
+    &__header {
+        margin: 0 0 $post-padding-vertical;
+    }
+
+    &__container {
+        @include scrollable;
+        padding: 0;
+
+        p {
+            margin: 0;
+
+            + p {
+                margin: $post-content-vertical 0 0;
+            }
+        }
+
+        a.anchor {
+            color: var(--color-post-anchor-link);
+
+            &:hover {
+                color: var(--color-post-anchor-link-hover);
+            }
+        }
+
+        p.shortened {
+            color: var(--color-post-shortened-text);
+            font-size: var(--fs-s);
+            font-style: italic;
+
+            a.anchor {
+                font-weight: bold;
+            }
+        }
+    }
+
+    /* Modifier: datetime-mobile
+     * Post element moves datetime to the bottom in mobile. */
+    &--datetime-mobile {
+        position: relative;
+
+        /* Calculation from
+         *
+         * calc(
+         *   $post-padding-vertical The actual .post__item padding
+         *   * 2                    Top and bottom
+         * )
+         * + 1rem                   Text height constant
+         * + calc(
+         *     calc(
+         *         var(--lh)        Line height
+         *       - 1rem             Minus text height constant
+         *     )                     = 0.5rem, total line-height spacing
+         *     / 2                  Divide by two to get only bottom spacing
+         *   )                       = 0.25rem
+         *
+         * We need to do this to make sure the top of the datetime line
+         * is flushed to the margin, so the spacing of .post__container
+         * is consistent between top padding and bottom padding.
+         *
+         * Setting line-height: 1rem would be easier, but it looks so much
+         * nicer with bottom line-height spacing still applies.
+         */
+        padding-bottom: calc(
+            calc($post-padding-vertical * 2) + 1rem + calc(calc(var(--lh) - 1rem) / 2)
+        );
+
+        .post__item--datetime {
+            bottom: $post-padding-vertical;
+            left: 0;
+            position: absolute;
+            font-style: italic;
+            font-weight: normal;
+        }
+
+        @media (--tablet-viewport) {
+            /* Compensate line-height between header and container; similar to
+             * datetime--mobile calculation (but only single side since we
+             * don't need to compensate for date line). */
+            padding-bottom: calc(
+                $post-padding-vertical + calc(calc(var(--lh) - 1rem) / 2)
+            );
+
+            .post__item {
+                &--datetime {
+                    position: static;
+                    font-style: normal;
+                    font-weight: bold;
+
+                    /* Workaround a bug in WebKit where text size doesn't properly
+                     * gets re-calculated. This element has no borders, so it's safe
+                     * to use inline. */
+                    display: inline;
+                }
+            }
+        }
+    }
+}

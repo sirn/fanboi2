@@ -1,10 +1,8 @@
-<%namespace name='datetime' file='../../../partials/_datetime.mako' />
-<%inherit file='../../_layout.mako' />
-<%def name='title()'>${board.title} - Admin Panel</%def>
-<%def name='subheader_title()'>Topics</%def>
-<%def name='subheader_body()'>Manage topics.</%def>
-<h2 class="sheet-title">${topic.title}</h2>
-<%include file='_nav.mako' />
+<%namespace name="datetime" file="../../../partials/_datetime.mako" />
+<%namespace name="nav" file="_nav.mako"/>
+<%inherit file="../../_layout.mako" />
+<%def name="title()">${board.title} - Admin Panel</%def>
+<%nav:render_nav title="${topic.title}" board="${board}" />
 <div class="sheet-body">
     <table class="admin-table">
         <tbody class="admin-table-body">
@@ -46,7 +44,7 @@
 <div class="sheet-body">
     <form class="form" action="${request.route_path('admin_board_topic_delete', board=board.slug, topic=topic.id)}" method="post">
         <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
-        <button class="button brand" type="submit">Delete Topic</button>
-        <a class="button" href="${request.route_path('admin_board_topic', board=board.slug, topic=topic.id)}">Cancel</a>
+        <button class="btn btn--shadowed btn--brand" type="submit">Delete Topic</button>
+        <a class="btn btn--shadowed" href="${request.route_path('admin_board_topic', board=board.slug, topic=topic.id)}">Cancel</a>
     </form>
 </div>

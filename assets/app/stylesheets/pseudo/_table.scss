@@ -1,0 +1,142 @@
+/* The year is 2022. We've survived global pandemic, and CSS table styling
+ * is still a pain in the ass */
+%table {
+    border-collapse: separate;
+    box-shadow: 0 1px 2px var(--color-table-shadow);
+    margin-bottom: 2px;
+    border-spacing: 0;
+
+    /* For shadow clipping. */
+    border-radius: var(--radius);
+
+    /* First we start with Basic styling... */
+    td,
+    th {
+        border-bottom: 1px solid var(--color-table-inner-border);
+        padding: var(--sp-vertical-s) var(--sp-horizontal-s);
+        background: var(--color-table-background);
+        text-align: left;
+        vertical-align: top;
+
+        /* Only apply border to the left of the row. */
+        &:first-child {
+            border-left: 1px solid var(--color-table-border);
+        }
+
+        /* ...and to the right of the row. */
+        &:last-child {
+            border-right: 1px solid var(--color-table-border);
+        }
+
+        /* Make sure any element nested inside the table cell doesn't
+         * ruin the entire layout, but still allow some nice room to
+         * breathe */
+        > :first-child {
+            margin-top: 0;
+        }
+        > :last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    th {
+        color: var(--color-table-header-text);
+    }
+
+    /* Set the top border of the entire table; this is a hack; it works
+     * by setting the border top of <tr> and <td> of the first row in the table
+     *
+     * However, this doesn't really work the way you expect: <tr> are always
+     * nested inside either <tbody> or <thead>, so two or more "first row"
+     * can be present in a table. */
+    tr:first-child {
+        td,
+        th {
+            border-top: 1px solid var(--color-table-border);
+
+            /* Apply radius to top left cell since we can't do so for <table>
+             * nor the <tr>, so the first <td> or <tr> in a row that is. */
+            &:first-child {
+                border-top-left-radius: var(--radius);
+            }
+
+            /* ...and to the right cell, using the same method. */
+            &:last-child {
+                border-top-right-radius: var(--radius);
+            }
+        }
+    }
+
+    /* Notice the lack of tr:last-child? This is because browsers still don't
+     * have :has() selector support, so we have to compromise with bottom
+     * border-radius never apply to a row within <thead> even when there's only
+     * <thead> without <tbody> (because we can't do `thead:has(+ tbody)` to
+     * reset it.)
+
+    /* Where the fun starts! <thead> deserve some emphasis since we have
+         * a policy to always have table header everywhere, and it looks nicer
+         * this way. That comes with a (whole lot of) costs. */
+    thead {
+        color: var(--color-table-header-text);
+
+        /* For background clipping (see next) */
+        border-radius: var(--radius);
+
+        /* We have to set background here otherwise it won't clip to the
+         * border-radius. */
+        td,
+        th {
+            background: var(--color-table-header-background);
+        }
+
+        /* To workaround the double <tr> being treat as a first row, we
+         * make sure any <tbody> that comes immediately after <thead>
+         * have its border-radius reset. */
+        + tbody {
+            tr:first-child {
+                td,
+                th {
+                    border-top: none;
+
+                    &:first-child {
+                        border-top-left-radius: 0;
+                    }
+
+                    &:last-child {
+                        border-top-right-radius: 0;
+                    }
+                }
+            }
+        }
+
+        /* &:has(+ tbody) goes here for resetting border-radius of the
+         * :last-child of the thead. Available whenever more browsers
+         * start supporting it.
+         *
+         * https://developer.mozilla.org/en-US/docs/Web/CSS/:has#browser_compatibility
+         */
+    }
+
+    /* Then a proper tbody. */
+    tbody {
+        color: var(--color-table-text);
+
+        /* This entire tr:last-child should have been right after tr:first-child
+         * above (before thead), but due to aforementioned :has() selector issue
+         * we assume (for now) only a row in <tbody> can have the border-radius */
+        tr:last-child {
+            td,
+            th {
+                border-bottom: 1px solid var(--color-table-border);
+
+                &:first-child {
+                    border-bottom-left-radius: var(--radius);
+                }
+
+                &:last-child {
+                    border-bottom-right-radius: var(--radius);
+                }
+            }
+        }
+    }
+}

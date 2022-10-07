@@ -1,0 +1,24 @@
+html {
+    font-family: var(--font-family);
+    font-size: var(--fs-base);
+    line-height: var(--lh);
+    min-width: var(--bp-mobile);
+    text-rendering: optimizeLegibility;
+}
+
+body {
+    background: var(--color-bg);
+    text-size-adjust: 100%;
+    margin: 0;
+    padding: 0;
+    color: var(--color-text);
+
+    a {
+        text-decoration: none;
+        color: var(--color-link);
+
+        &:hover {
+            color: var(--color-link-hover);
+        }
+    }
+}

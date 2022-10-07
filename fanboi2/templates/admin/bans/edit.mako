@@ -1,45 +1,12 @@
-<%inherit file='../_layout.mako' />
-<%def name='title()'>Bans - Admin Panel</%def>
-<%def name='subheader_title()'>Bans</%def>
-<%def name='subheader_body()'>Manage IP bans.</%def>
-<h2 class="sheet-title">${ban.ip_address}</h2>
-<%include file='_nav.mako' />
-<div class="sheet-body">
-    <form class="form" action="${request.route_path('admin_ban_edit', ban=ban.id)}" method="post">
-        <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
-        <div class="form-item${' error' if form.ip_address.errors else ''}">
-            <label class="form-item-label" for="${form.ip_address.id}">IP address</label>
-            ${form.ip_address(class_="input block font-large")}
-            % if form.ip_address.errors:
-                <span class="form-item-error">${form.ip_address.errors[0]}</span>
-            % endif
+<%namespace name="formtpl" file="_form.mako" />
+<%namespace name="nav" file="_nav.mako" />
+<%inherit file="../_layout.mako" />
+<%def name="title()">Bans - Admin Panel</%def>
+<%nav:render_nav title="${ban.ip_address}" />
+<div class="panel">
+    <div class="panel__item panel panel--gray1 panel--rounded u-pd-m">
+        <div class="panel__item">
+            <%formtpl:render_form form="${form}" href="${request.route_path('admin_ban_edit', ban=ban.id)}" button_label="Update Ban" button_color="danger" />
         </div>
-        <div class="form-item${' error' if form.description.errors else ''}">
-            <label class="form-item-label" for="${form.description.id}">Description</label>
-            ${form.description(class_="input block font-large")}
-            % if form.description.errors:
-                <span class="form-item-error">${form.description.errors[0]}</span>
-            % endif
-        </div>
-        <div class="form-item${' error' if form.duration.errors else ''}">
-            <label class="form-item-label" for="${form.duration.id}">Duration</label>
-            ${form.duration(class_="input block font-large")}
-            % if form.duration.errors:
-                <span class="form-item-error">${form.duration.errors[0]}</span>
-            % endif
-        </div>
-        <div class="form-item${' error' if form.scope.errors else ''}">
-            <label class="form-item-label" for="${form.scope.id}">Scope</label>
-            ${form.scope(class_="input block font-large")}
-            % if form.scope.errors:
-                <span class="form-item-error">${form.scope.errors[0]}</span>
-            % endif
-        </div>
-        <div class="form-item">
-            <button class="button brand" type="submit">Update Ban</button>
-            <span class="form-item-inline">
-                ${form.active()} <label for="${form.active.id}">${form.active.label.text}</label>
-            </span>
-        </div>
-    </form>
+    </div>
 </div>

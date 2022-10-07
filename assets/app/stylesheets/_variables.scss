@@ -1,60 +1,70 @@
-/* Colors
- * ------------------------------------------------------------------------ */
+@custom-media --mobile-viewport (max-width: 639px);
+@custom-media --tablet-viewport (min-width: 640px);
+@custom-media --desktop-viewport (min-width: 1004px); /* 980px + 12px + 12px */
 
-$color-brand: #fc2e05;
-$color-brand-dark: #152226;
-$color-gray-base: #5e6b71;
+:root {
+    /* Font sizes */
+    --fs-base: 16px;
+    --fs-xl: 1.2rem;
+    --fs-l: 1.1rem;
+    --fs-m: 1rem;
+    --fs-s: 0.9rem;
+    --fs-xs: 0.8rem;
 
-$color-green: #1fba41;
-$color-red: #e01a1a;
+    /* Typography */
+    --font-base: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial;
+    --font-emoji: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    --font-family: var(--font-base), sans-serif, var(--font-emoji);
 
-/* Responsive width boundaries
- * ------------------------------------------------------------------------ */
+    /* Line heights */
+    --lh: 1.5rem;
 
-$bound-mobile: 320px;
-$bound-tablet: 640px;
-$bound-desktop: 980px;
+    /* Breakpoints */
+    --bp-mobile: 320px;
+    --bp-tablet: 640px;
+    --bp-desktop: 980px;
 
-/* Icons
- * ------------------------------------------------------------------------ */
+    /* Horizontal spacings */
+    --sp-horizontal-xs: 0.2rem;
+    --sp-horizontal-s: 0.7rem;
+    --sp-horizontal-m: 0.9rem;
+    --sp-horizontal-l: 1.2rem;
+    --sp-horizontal-xl: 1.5rem;
 
-$icon-width: 16px;
-$icon-height: 16px;
-$icon-tappable-width: 44px;
-$icon-tappable-height: 44px;
+    /* Vertical spacings */
+    --sp-vertical-xs: 0.2rem;
+    --sp-vertical-s: 0.7rem;
+    --sp-vertical-m: 0.9rem;
+    --sp-vertical-l: 1.2rem;
+    --sp-vertical-xl: 1.5rem;
 
-/* Typography
- * ------------------------------------------------------------------------ */
+    /* Input */
+    --sp-input-vertical: 0.5rem;
+    --sp-input-horizontal: 0.5em;
+    --sp-input-vertical-compact: 0.1rem;
+    --sp-input-horizontal-compact: 0.5em;
 
-$font-size-base: 16px;
-$font-size-smaller: 0.8rem;
-$font-size-small: 0.9rem;
-$font-size: 1rem;
-$font-size-large: 1.1rem;
-$font-size-larger: 1.2rem;
+    /* Post */
+    --sp-post-item-horizontal: 0.2rem;
+    --sp-post-item-vertical: 0;
 
-$line-height: 1.5rem;
+    /* Dimensions */
+    --dm-icon-height: 16px;
+    --dm-icon-width: 16px;
+    --dm-icon-height-tappable: 44px;
+    --dm-icon-width-tappable: 44px;
 
-/* Animations
- * ------------------------------------------------------------------------ */
+    --dm-header-logo-height-container: var(--dm-icon-height-tappable);
+    --dm-header-logo-height: 20px;
+    --dm-header-logo-width-container: var(--dm-header-logo-width);
+    --dm-header-logo-width: 63px;
 
-$animation-timing: 0.08s;
-$animation-function: linear;
+    /* Misc */
+    --radius: 3px;
 
-/* Metrics
- * ------------------------------------------------------------------------ */
-
-$spacing-horizontal-smaller: 6px;
-$spacing-horizontal-small: 8px;
-$spacing-horizontal: 14px;
-$spacing-horizontal-large: 20px;
-$spacing-horizontal-larger: 26px;
-
-$spacing-vertical-smaller: 4px;
-$spacing-vertical-small: 6px;
-$spacing-vertical: 12px;
-$spacing-vertical-large: 18px;
-$spacing-vertical-larger: 24px;
-
-$spacing-vertical-input: 8px;
-$spacing-horizontal-input: 8px;
+    /* Colors */
+    --color-brand: #fc2e05;
+    --color-brand-dark: #152226;
+    --color-primary: #1fba41;
+    --color-danger: #e01a1a;
+}

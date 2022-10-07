@@ -1,12 +1,10 @@
-<%namespace name='formatters' module='fanboi2.helpers.formatters' />
-<%namespace name='datetime' file='../../../../partials/_datetime.mako' />
-<%namespace name='ident' file='../../../../partials/_ident.mako' />
-<%inherit file='../../../_layout.mako' />
-<%def name='title()'>${board.title} - Admin Panel</%def>
-<%def name='subheader_title()'>Topics</%def>
-<%def name='subheader_body()'>Manage topics.</%def>
-<h2 class="sheet-title">${topic.title}</h2>
-<%include file='../_nav.mako' />
+<%namespace name="formatters" module="fanboi2.helpers.formatters" />
+<%namespace name="datetime" file="../../../../partials/_datetime.mako" />
+<%namespace name="ident" file="../../../../partials/_ident.mako" />
+<%namespace name="nav" file="../_nav.mako"/>
+<%inherit file="../../../_layout.mako" />
+<%def name="title()">${board.title} - Admin Panel</%def>
+<%nav:render_nav title="${topic.title}" board="${board}" />
 % for post in posts:
 <div class="admin-cascade">
     <div class="admin-cascade-header">
@@ -41,7 +39,7 @@
 <div class="sheet-body">
     <form class="form" action="${request.route_path('admin_board_topic_posts_delete', board=board.slug, topic=topic.id, query=query)}" method="post">
         <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
-        <button class="button brand" type="submit">
+        <button class="btn btn--shadowed btn--brand" type="submit">
             Delete
             % if num_posts == 1:
             Post
@@ -49,6 +47,6 @@
             Posts
             % endif
         </button>
-        <a class="button" href="${request.route_path('admin_board_topic', board=board.slug, topic=topic.id)}">Cancel</a>
+        <a class="btn btn--shadowed" href="${request.route_path('admin_board_topic', board=board.slug, topic=topic.id)}">Cancel</a>
     </form>
 </div>

@@ -1,0 +1,74 @@
+@import "../mixins";
+
+/** @define form */
+
+/* Block: form
+ * A generic form styling. */
+.form {
+    display: block;
+    margin: 0;
+
+    /* Element: item
+     * Part of the form. */
+    &__item {
+        /* Noop */
+
+        /* Modifier: error
+         * Form item with error */
+        &--error {
+            /* Noop */
+        }
+    }
+
+    &__label {
+        display: block;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    &__input {
+        background: var(--color-input-background);
+        border-radius: var(--radius);
+        border: 1px solid transparent;
+        box-sizing: border-box;
+        color: var(--color-input-text);
+        display: block;
+        font-family: var(--font-base);
+        font-size: var(--fs-m);
+        line-height: var(--lh);
+        margin: 0;
+        max-width: 100%;
+        min-width: 100%;
+        padding: var(--sp-input-vertical) var(--sp-input-horizontal);
+        resize: vertical;
+        width: 100%;
+
+        /* Default styling reset. */
+        appearance: none; /* WebKit on mobile */
+        background-image: none; /* Firefox on mobile */
+        outline: none; /* WebKit on desktop */
+
+        /* Modifier: shadowed
+         * Add shadow to the button. */
+        &--bordered {
+            border-color: var(--color-input-border);
+        }
+
+        /* Modifier: shadowed-dark
+         * Add shadow to the button, darker styling. */
+        &--shadowed {
+            box-shadow: 0 1px 2px var(--color-input-shadow);
+        }
+
+        &:focus {
+            background: var(--color-input-focus-background);
+            border-color: var(--color-input-focus-border);
+            color: var(--color-input-focus-text);
+        }
+    }
+
+    &__error {
+        display: inline-block;
+        padding: var(--sp-vertical-s) var(--sp-horizontal-s);
+    }
+}

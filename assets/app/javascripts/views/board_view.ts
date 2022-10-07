@@ -1,42 +1,38 @@
-import { VNode, h } from "virtual-dom";
+import { h, VNode } from "virtual-dom";
 import { Board } from "../models/board";
+import { mergeClasses } from "../utils/template";
 
 export class BoardView {
-    boardNode: VNode;
+    board: Board;
 
     constructor(board: Board) {
-        this.boardNode = BoardView.renderBoard(board);
+        this.board = board;
     }
 
-    render(): VNode {
-        return this.boardNode;
-    }
+    render(args: any = {}): VNode {
+        let panelArgs = args.panel || {};
+        let containerArgs = args.container || { className: "u-pd-vertical-l" };
 
-    private static renderBoard(board: Board): VNode {
-        return h("div", { className: "js-board" }, [
-            h("div", { className: "cascade" }, [
-                h("div", { className: "container" }, [
-                    BoardView.renderTitle(board),
-                    BoardView.renderDescription(board),
+        return h(
+            "div",
+            mergeClasses(panelArgs, ["panel", "panel--separator", "panel--unit-link"]),
+            [
+                h("div", mergeClasses(containerArgs, ["container"]), [
+                    h("h3", { className: "panel__item" }, [
+                        h(
+                            "a",
+                            {
+                                className: "panel__link",
+                                href: `/${this.board.slug}/`,
+                            },
+                            [this.board.title]
+                        ),
+                    ]),
+                    h("div", { className: "panel__item u-txt-s u-txt-gray4" }, [
+                        this.board.description,
+                    ]),
                 ]),
-            ]),
-        ]);
-    }
-
-    private static renderTitle(board: Board): VNode {
-        return h("div", { className: "cascade-header" }, [
-            h(
-                "a",
-                {
-                    className: "cascade-header-link",
-                    href: `/${board.slug}/`,
-                },
-                [board.title],
-            ),
-        ]);
-    }
-
-    private static renderDescription(board: Board): VNode {
-        return h("div", { className: "cascade-body" }, [board.description]);
+            ]
+        );
     }
 }

@@ -1,0 +1,24 @@
+@import "../mixins";
+@import "../pseudo/table";
+
+/** @define table */
+
+/* Block: table
+ * Generic styled table. */
+.table {
+    @extend %table;
+
+    /* Modifier: fill
+     * Make the table the entire width of its container. */
+    &--fill {
+        width: 100%;
+    }
+
+    @each $viewport in $viewports {
+        /* Modifier: #{$viewport}-width
+         * Make the table at least the size of #{$viewport} viewport. */
+        &--#{$viewport}-width {
+            min-width: var(--bp-#{$viewport});
+        }
+    }
+}

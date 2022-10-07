@@ -8,11 +8,7 @@ export class Theme implements ITheme {
     constructor(public identifier: string, public name: string) {}
 }
 
-const themes = [
-    new Theme("topaz", "Topaz"),
-    new Theme("obsidian", "Obsidian"),
-    new Theme("debug", "Debug"),
-];
+const themes = [new Theme("topaz", "Topaz"), new Theme("obsidian", "Obsidian")];
 
 export class ThemeSelector extends SingletonComponent {
     public targetSelector = "[data-theme-selector]";
@@ -20,7 +16,7 @@ export class ThemeSelector extends SingletonComponent {
     protected bindOne($target: Element) {
         let selectorView = new ThemeSelectorView(themes);
         let selectorNode = selectorView.render(
-            document.body.className.replace(/theme-/, ""),
+            document.body.className.replace(/theme-/, "")
         );
 
         let $selector = create(selectorNode);

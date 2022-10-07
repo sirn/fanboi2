@@ -16,9 +16,9 @@
         </div>
         <div class="form-item">
             % if page:
-                <button class="button brand" type="submit">Update Internal Page</button>
+                <button class="btn btn--shadowed btn--brand" type="submit">Update Internal Page</button>
             % else:
-                <button class="button brand" type="submit">Create Internal Page</button>
+                <button class="btn btn--shadowed btn--brand" type="submit">Create Internal Page</button>
             % endif
         </div>
     </form>

@@ -1,42 +1,110 @@
-/* Retina
- * ------------------------------------------------------------------------ */
+@use "sass:meta";
+@use "sass:color";
 
-@mixin retina-background($image, $extension, $width, $height) {
-    background-image: url($image + "." + $extension);
-    background-position: 50% 50%;
-    background-repeat: no-repeat;
-    background-size: $width $height;
+/* Variables */
+$aligns: left, center, right;
+$directions: left, right;
+$sizes: xl, l, m, s, xs;
+$viewports: mobile, tablet, desktop;
 
-    @media (-webkit-min-device-pixel-ratio: 1.3), (min-resolution: 1.3dppx) {
-        background-image: url($image + "@2x." + $extension);
-    }
+$colors: (
+    brand,
+    brand-dark,
+    primary,
+    danger,
+    dark,
+    muted,
+    light,
+    gray1,
+    gray2,
+    gray3,
+    gray4,
+    gray5,
+    shade1,
+    shade2,
+    shade3,
+    shade4
+);
 
-    @media (-webkit-min-device-pixel-ratio: 2.3), (min-resolution: 2.3dppx) {
-        background-image: url($image + "@3x." + $extension);
+/* Mixin: color-vars
+ * Define a color and its surrounding variants */
+@mixin color-vars($name, $color, $text-on-color: inherit, $border-on-color: $color) {
+    --color-#{$name}-text: #{$color};
+    --color-btn-#{$name}-background: #{$color};
+    --color-btn-#{$name}-border: #{$border-on-color};
+    --color-btn-#{$name}-text: #{$text-on-color};
+    --color-panel-#{$name}-background: #{$color};
+    --color-panel-#{$name}-border: #{$border-on-color};
+    @if meta.type-of($text-on-color) == color {
+        --color-btn-#{$name}-loading-border: #{color.change(
+                $text-on-color,
+                $alpha: 0.5
+            )};
+        --color-btn-#{$name}-loading-border-top: #{$text-on-color};
     }
 }
 
-/* SVG
- * ------------------------------------------------------------------------ */
+/* Mixin: viewport-modifiers
+ * Define a modifier for each viewport breakpoint */
+@mixin viewport-modifiers($name, $comment: "") {
+    /* Modifier: #{$name}
+     * #{$comment} */
+    @at-root &--#{$name} {
+        @content;
+    }
 
-@mixin svg-background($image, $width, $height) {
-    background-image: url($image + ".svg");
-    background-position: 50% 50%;
-    background-repeat: no-repeat;
-    background-size: $width $height;
+    @each $viewport in $viewports {
+        @media (--#{$viewport}-viewport) {
+            /* Modifier: #{$name}-#{$viewport}
+             * #{$comment} (only on #{$viewport}) */
+            @at-root &--#{$name}-#{$viewport} {
+                @content;
+            }
+        }
+    }
 }
 
-/* Hacks
- * ------------------------------------------------------------------------ */
+/* Mixin: viewport-utilities
+ * Define a utility class for each viewport breakpoints */
+@mixin viewport-utilities($name, $comment: "") {
+    /* Utility: #{$name}
+     * #{$comment} */
+    .#{$name} {
+        @content;
+    }
 
+    @each $viewport in $viewports {
+        /* Utility: #{$name}-#{$viewport}
+         * #{$comment} (only on #{$viewport}) */
+        @media (--#{$viewport}-viewport) {
+            .#{$name}-#{$viewport} {
+                @content;
+            }
+        }
+    }
+}
+
+/* Mixin: clearfix
+ * Clears the float. */
 @mixin clearfix {
-    &:before,
     &:after {
         content: "";
-        display: table;
-    }
-
-    &:after {
+        display: block;
         clear: both;
     }
+}
+
+/* Mixin: text-hide
+ * Hide the text in the block. */
+@mixin text-hide {
+    overflow: hidden;
+    text-indent: -100000em;
+    white-space: nowrap;
+}
+
+/* Mixin: y-scrollable
+ * Make the element y-scrollable. */
+@mixin scrollable {
+    overflow-y: hidden !important;
+    overflow-x: auto !important;
 }

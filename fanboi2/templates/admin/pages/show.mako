@@ -48,6 +48,6 @@
     </div>
 </div>
 <div class="sheet-body">
-    <a class="button brand" href="${request.route_path('admin_page_edit', page=page.slug)}">Edit Public Page</a>
-    <a class="button default" href="${request.route_path('admin_page_delete', page=page.slug)}">Delete Public Page</a>
+    <a class="btn btn--shadowed btn--brand" href="${request.route_path('admin_page_edit', page=page.slug)}">Edit Public Page</a>
+    <a class="btn btn--shadowed" href="${request.route_path('admin_page_delete', page=page.slug)}">Delete Public Page</a>
 </div>

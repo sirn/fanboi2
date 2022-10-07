@@ -1,6 +1,6 @@
 import { create, h } from "virtual-dom";
-import { ResourceError } from "./errors";
 import { addClass, removeClass } from "./elements";
+import { ResourceError } from "./errors";
 
 export let serializeForm = (form: HTMLFormElement): any => {
     let formData: { [key: string]: any } = {};

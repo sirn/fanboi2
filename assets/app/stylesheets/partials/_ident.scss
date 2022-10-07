@@ -1,0 +1,17 @@
+/* Partial: ident
+ * Styling for idents. */
+.ident {
+    background: var(--color-ident-background);
+    color: var(--color-ident-text);
+    font-weight: bold;
+
+    /* Modifier: admin
+     * Ident styling for site administrator. */
+    &--admin {
+        background: var(--color-ident-admin-background);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-ident-admin-border);
+        color: var(--color-ident-admin-text);
+        padding: var(--sp-post-item-vertical) var(--sp-post-item-horizontal);
+    }
+}

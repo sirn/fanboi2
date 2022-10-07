@@ -29,7 +29,7 @@
             % endif
         </div>
         <div class="form-item">
-            <button class="button green" type="submit">Create Public Page</button>
+            <button class="btn btn--shadowed btn--primary" type="submit">Create Public Page</button>
         </div>
     </form>
 </div>

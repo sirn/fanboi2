@@ -1,47 +1,39 @@
 import { VNode, h } from "virtual-dom";
 import { formatDate } from "../utils/formatters";
+import { mergeClasses } from "../utils/template";
 import { Topic } from "../models/topic";
 
 export class TopicView {
-    topicNode: VNode;
+    topic: Topic;
 
     constructor(topic: Topic) {
-        this.topicNode = TopicView.renderTopic(topic);
+        this.topic = topic;
     }
 
-    render(): VNode {
-        return this.topicNode;
-    }
+    render(args: any = {}): VNode {
+        let panelArgs = args.panel || { className: "panel--shade1" };
+        let containerArgs = args.container || { className: "u-pd-vertical-m" };
+        let titleArgs = args.title || {};
+        let bodyArgs = args.body || { className: "u-txt-s u-txt-gray4" };
 
-    private static renderTopic(topic: Topic): VNode {
-        return h("div", { className: "js-topic" }, [
-            h("div", { className: "topic-header" }, [
-                h("div", { className: "container" }, [
-                    TopicView.renderTitle(topic),
-                    TopicView.renderDate(topic),
-                    TopicView.renderCount(topic),
+        return h("div", mergeClasses(panelArgs, ["panel"]), [
+            h("div", mergeClasses(containerArgs, ["container"]), [
+                h("h3", mergeClasses(titleArgs, ["panel__item"]), [this.topic.title]),
+                h("div", mergeClasses(bodyArgs, ["panel__item"]), [
+                    h("ul", { className: "list" }, [
+                        h("li", { className: "list__item" }, [
+                            "Last posted ",
+                            h("strong", {}, [
+                                formatDate(new Date(this.topic.postedAt)),
+                            ]),
+                        ]),
+                        h("li", { className: "list__item" }, [
+                            "Total of ",
+                            h("strong", {}, [`${this.topic.postCount} posts`]),
+                        ]),
+                    ]),
                 ]),
             ]),
-        ]);
-    }
-
-    private static renderTitle(topic: Topic): VNode {
-        return h("h3", { className: "topic-header-title" }, [topic.title]);
-    }
-
-    private static renderDate(topic: Topic): VNode {
-        let postedAt = new Date(topic.postedAt);
-        let formatter = formatDate(postedAt);
-        return h("p", { className: "topic-header-item" }, [
-            "Last posted ",
-            h("strong", {}, [formatter]),
-        ]);
-    }
-
-    private static renderCount(topic: Topic): VNode {
-        return h("p", { className: "topic-header-item" }, [
-            "Total of ",
-            h("strong", {}, [`${topic.postCount} posts`]),
         ]);
     }
 }

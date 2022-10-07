@@ -1,10 +1,8 @@
-<%namespace name='datetime' file='../../partials/_datetime.mako' />
-<%inherit file='../_layout.mako' />
-<%def name='title()'>Boards - Admin Panel</%def>
-<%def name='subheader_title()'>Boards</%def>
-<%def name='subheader_body()'>Manage boards.</%def>
-<h2 class="sheet-title">All Boards</h2>
-<%include file='_nav.mako' />
+<%namespace name="datetime" file="../../partials/_datetime.mako" />
+<%namespace name="nav" file="_nav.mako"/>
+<%inherit file="../_layout.mako" />
+<%def name="title()">Boards - Admin Panel</%def>
+<%nav:render_nav title="All Boards" />
 <div class="sheet-body">
     <table class="admin-table">
         <thead class="admin-table-header">

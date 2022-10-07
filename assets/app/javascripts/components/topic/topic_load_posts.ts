@@ -1,10 +1,9 @@
-import { VNode, create, diff, patch } from "virtual-dom";
-
-import { ITopicEventHandler } from "./base";
+import { create, diff, patch, VNode } from "virtual-dom";
 import { Post } from "../../models/post";
-import { PostCollectionView } from "../../views/post_collection_view";
 import { dispatchCustomEvent } from "../../utils/elements";
 import { LoadingState } from "../../utils/loading";
+import { PostCollectionView } from "../../views/post_collection_view";
+import { ITopicEventHandler } from "./base";
 
 export class TopicLoadPosts implements ITopicEventHandler {
     lastPostNumber: number;
@@ -15,16 +14,22 @@ export class TopicLoadPosts implements ITopicEventHandler {
     loadingState: LoadingState;
 
     constructor(public topicId: number, public element: Element) {
-        let postNumbers = element.querySelectorAll(".post-header-item.number");
-        let lastPostNumber = postNumbers[postNumbers.length - 1];
+        let $postNumbers = element.querySelectorAll("[data-post]");
+
+        if ($postNumbers) {
+            let $lastPostNumber = $postNumbers[$postNumbers.length - 1];
+            let lastPostNumber = $lastPostNumber.getAttribute("data-post");
+            if (lastPostNumber) {
+                this.lastPostNumber = parseInt(lastPostNumber, 10);
+            }
+        }
 
         this.loadedPosts = [];
-        this.lastPostNumber = parseInt(lastPostNumber.innerHTML, 10);
         this.loadingState = new LoadingState();
     }
 
     bind(e: CustomEvent): void {
-        let callback: ((lastPostNumber: number) => void) = e.detail.callback;
+        let callback: (lastPostNumber: number) => void = e.detail.callback;
 
         this.loadingState.bind(() => {
             return Post.queryAll(this.topicId, `${this.lastPostNumber + 1}-`).then(
@@ -43,7 +48,7 @@ export class TopicLoadPosts implements ITopicEventHandler {
                     dispatchCustomEvent(this.element, "postsLoaded", {
                         lastPostNumber: this.lastPostNumber,
                     });
-                },
+                }
             );
         });
     }
@@ -53,12 +58,12 @@ export class TopicLoadPosts implements ITopicEventHandler {
 
         if (!this.collectionElement) {
             this.collectionElement = create(newCollectionNode);
-            let postElements = this.element.querySelectorAll(".post");
+            let postElements = this.element.querySelectorAll("[data-post]");
             let lastElement = postElements[postElements.length - 1];
             if (lastElement && lastElement.parentElement) {
                 lastElement.parentElement.insertBefore(
                     this.collectionElement,
-                    lastElement.nextSibling,
+                    lastElement.nextSibling
                 );
             }
         } else {
@@ -84,7 +89,7 @@ export class TopicLoadPosts implements ITopicEventHandler {
                 window.history.replaceState(
                     undefined,
                     `Posts up to ${this.lastPostNumber}`,
-                    newPath,
+                    newPath
                 );
             }
         }

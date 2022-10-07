@@ -1,0 +1,188 @@
+@import "../mixins";
+@import "../pseudo/table";
+
+/** @define utilities */
+
+@each $size in $sizes {
+    @include viewport-utilities(u-txt-#{$size}, "Makes the text #{$size}") {
+        font-size: var(--fs-#{$size}) !important;
+    }
+}
+
+@each $color in $colors {
+    .u-txt-#{$color} {
+        color: var(--color-#{$color}-text) !important;
+    }
+
+    .u-txt-pill-#{$color} {
+        background: var(--color-btn-#{$color}-background) !important;
+        border-radius: var(--radius);
+        color: var(--color-btn-#{$color}-text) !important;
+        padding: var(--sp-vertical-xs) var(--sp-horizontal-xs) !important;
+    }
+}
+
+@each $align in $aligns {
+    @include viewport-utilities(u-txt-#{$align}, "Aligns text to the #{$align}") {
+        text-align: #{$align} !important;
+    }
+}
+
+/* Utility: u-txt-monospace
+ * Make the text monospaced. */
+.u-txt-monospace {
+    font-family: monospace;
+}
+
+/* Utility: u-txt-plain
+ * Makes the text inside the block looks boring */
+.u-txt-plain {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5 {
+        font-size: var(--fs-m);
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+    }
+
+    li {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+}
+
+/*! purgecss start ignore */
+/* Utility: u-txt-rich
+ * Increase readability for content inside the block */
+.u-txt-rich {
+    color: var(--color-text);
+
+    > :first-child {
+        margin-top: 0;
+    }
+
+    > :last-child {
+        margin-bottom: 0;
+    }
+
+    blockquote,
+    codeblock,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    ol,
+    p,
+    pre,
+    ul {
+        margin: 0 0 1rem;
+    }
+
+    h1 {
+        color: var(--color-header-text);
+        font-size: 1.5em;
+        margin-top: 2rem;
+    }
+
+    h2 {
+        font-size: 1.3em;
+        margin-top: 1.7rem;
+    }
+
+    h3 {
+        font-size: 1.15em;
+        margin-top: 1.5rem;
+    }
+
+    h4 {
+        font-size: 1.1rem;
+        margin-top: 1.3rem;
+    }
+
+    h5 {
+        font-size: 1rem;
+        margin-top: 1.2rem;
+    }
+
+    h2,
+    h3,
+    h4,
+    h5 {
+        color: var(--color-subheader-text);
+    }
+
+    ul,
+    ol {
+        padding: 0 2rem;
+
+        ul,
+        ol {
+            margin: 0;
+        }
+
+        li {
+            margin: 0.1rem 0 0;
+        }
+    }
+
+    blockquote {
+        background: var(--color-blockquote-background);
+        border-left: 3px solid var(--color-blockquote-border);
+        border-radius: var(--radius);
+        padding: 1.2rem 2rem;
+    }
+
+    table {
+        @extend %table;
+    }
+
+    pre,
+    codeblock {
+        background: var(--color-codeblock-background);
+        border-radius: var(--radius);
+        color: var(--color-codeblock-text);
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: var(--sp-vertical-s) var(--sp-horizontal-s);
+    }
+}
+/*! purgecss end ignore */
+
+/* Utility: u-txt-unlinked
+ * Make text appears unlinked */
+.u-txt-unlinked {
+    color: unset;
+    text-decoration: none;
+
+    &:hover {
+        color: unset;
+    }
+}
+
+/* Utility: u-txt-reset
+ * Reset text styling. */
+.u-txt-reset {
+    font-size: var(--fs-m);
+    font-style: normal;
+    font-weight: normal;
+    letter-spacing: normal;
+    line-break: auto;
+    line-height: var(--lh);
+    text-align: left;
+    text-align: start;
+    text-decoration: none;
+    text-shadow: none;
+    text-transform: none;
+    white-space: normal;
+    word-break: normal;
+    word-spacing: normal;
+    word-wrap: normal;
+}

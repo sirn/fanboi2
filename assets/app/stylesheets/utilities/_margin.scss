@@ -1,0 +1,33 @@
+@import "../mixins";
+
+/** @define utilities */
+
+@include viewport-utilities(u-mg-reset, "Reset margin on element") {
+    margin: 0 !important;
+}
+
+@each $size in $sizes {
+    @include viewport-utilities(u-mg-#{$size}, "Add #{$size} margin to the element") {
+        margin: var(--sp-vertical-#{$size}) var(--sp-horizontal-#{$size}) !important;
+    }
+}
+
+@mixin u-mg($name, $orient, $sides...) {
+    @each $size in $sizes {
+        @include viewport-utilities(
+            u-mg-#{$name}-#{$size},
+            "Add #{$size} #{$name} margin to the element"
+        ) {
+            @each $side in $sides {
+                margin-#{$side}: var(--sp-#{$orient}-#{$size}) !important;
+            }
+        }
+    }
+}
+
+@include u-mg(top, vertical, top);
+@include u-mg(bottom, vertical, bottom);
+@include u-mg(right, horizontal, right);
+@include u-mg(left, horizontal, left);
+@include u-mg(horizontal, horizontal, right, left);
+@include u-mg(vertical, vertical, top, bottom);

@@ -1,0 +1,130 @@
+@import "../mixins";
+
+/** @define btn */
+
+@keyframes btn--loading-keyframe {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(359deg);
+    }
+}
+
+/* Block: btn
+ * Generic styled buttons.*/
+.btn {
+    background: var(--color-btn-background);
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+    box-sizing: border-box;
+    color: var(--color-btn-text);
+    cursor: pointer;
+    display: inline-block;
+    font-size: var(--fs-s);
+    margin: 0;
+    outline: none;
+    padding: var(--sp-input-vertical) var(--sp-input-horizontal);
+    text-decoration: none;
+
+    /* For consistency between <button> element and <a> element. */
+    line-height: normal;
+
+    /* Misc. styling reset */
+    appearance: none; /* WebKit on mobile */
+    background-image: none; /* Firefox on mobile */
+
+    &:hover {
+        color: var(--color-btn-text);
+    }
+
+    @include viewport-modifiers(block, "Full-width buttons") {
+        display: block;
+        width: 100%;
+    }
+
+    /* Modifier: shadowed
+     * Add shadow to the button. */
+    &--shadowed {
+        box-shadow: 0 1px 2px var(--color-btn-shadow);
+    }
+
+    /* Modifier: shadowed-dark
+     * Add shadow to the button, darker styling. */
+    &--shadowed-dark {
+        box-shadow: 0 1px 2px var(--color-btn-shadow-dark);
+    }
+
+    /* Modifier: bordered
+     * Add border to the button. */
+    &--bordered {
+        border-color: var(--color-btn-border);
+    }
+
+    /* Modifier: loading
+     * Add loading indicator to the button. */
+    &--loading {
+        position: relative;
+
+        /* calc(
+         *   var(--sp-input-horizontal)   Actual button padding
+         * * 2                            Text padding and icon padding
+         * + var(--dm-icon-width)         Inner width of the icon
+         * + 2px                          Border left
+         * + 2px                          Border right
+         * )
+         */
+        padding-right: calc(
+            var(--sp-input-horizontal) * 2 + var(--dm-icon-width) + 2px + 2px
+        );
+
+        &:after {
+            animation: btn--loading-keyframe 0.6s infinite linear;
+            border-radius: 100%;
+            border: 2px solid;
+            border-color: var(--color-btn-loading-border);
+            border-top-color: var(--color-btn-loading-border-top);
+            content: "";
+            display: block;
+            height: var(--dm-icon-height);
+            position: absolute;
+            right: var(--sp-input-horizontal);
+            top: 50%;
+            width: var(--dm-icon-width);
+
+            /* Border is addictive, so actual spinner size is calculated from
+             * icon height + border top + border bottom */
+            margin-top: calc(calc(var(--dm-icon-height) + 2px + 2px) * -0.5);
+        }
+    }
+
+    @each $color in $colors {
+        /* Modifier: #{$color}
+         * A #{$color} color variant. */
+        &--#{$color} {
+            background: var(--color-btn-#{$color}-background);
+            color: var(--color-btn-#{$color}-text);
+
+            &:hover {
+                color: var(--color-btn-#{$color}-text);
+            }
+
+            @at-root &.btn--loading {
+                &:after {
+                    border-color: var(
+                        --color-btn-#{$color}-loading-border,
+                        var(--color-btn-loading-border)
+                    );
+                    border-top-color: var(
+                        --color-btn-#{$color}-loading-border-top,
+                        var(--color-btn-loading-border-top)
+                    );
+                }
+            }
+
+            @at-root &.btn--bordered {
+                border-color: var(--color-btn-#{$color}-border);
+            }
+        }
+    }
+}

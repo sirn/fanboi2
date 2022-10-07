@@ -1,0 +1,143 @@
+@use "sass:color";
+@import "../mixins";
+
+$color-gray-base: #1f2b33;
+$color-gray1: color.adjust($color-gray-base, $lightness: 79%);
+$color-gray2: color.adjust($color-gray-base, $lightness: 74%);
+$color-gray3: color.adjust($color-gray-base, $lightness: 42%);
+$color-gray4: color.adjust($color-gray-base, $lightness: 30%);
+$color-gray5: color.adjust($color-gray-base, $lightness: 20%);
+
+:root {
+    .theme-topaz {
+        /* Gray
+         * ----------------------------------------------------------------- */
+
+        --color-gray1: #{$color-gray1};
+        --color-gray2: #{$color-gray2};
+        --color-gray3: #{$color-gray3};
+        --color-gray4: #{$color-gray4};
+        --color-gray5: #{$color-gray5};
+
+        /* Base
+         * ----------------------------------------------------------------- */
+
+        --color-bg: #fff;
+        --color-text: #333;
+        --color-link: var(--color-brand);
+        --color-link-hover: var(--color-gray4);
+        --color-shadow: #{color.change($color-gray3, $alpha: 0.3)};
+
+        /* Component defaults
+         * ----------------------------------------------------------------- */
+
+        --color-blockquote-background: var(--color-gray1);
+        --color-blockquote-border: var(--color-gray2);
+        --color-btn-background: #fff;
+        --color-btn-border: var(--color-gray2);
+        --color-btn-loading-border-top: var(--color-gray4);
+        --color-btn-loading-border: #{color.change($color-gray4, $alpha: 0.5)};
+        --color-btn-shadow-dark: #000;
+        --color-btn-shadow: var(--color-shadow);
+        --color-btn-text: var(--color-gray4);
+        --color-codeblock-background: var(--color-gray2);
+        --color-codeblock-text: var(--color-gray5);
+        --color-header-text: var(--color-brand);
+        --color-input-background: #fff;
+        --color-input-border: var(--color-gray2);
+        --color-input-focus-background: var(--color-input-background);
+        --color-input-focus-border: var(--color-gray4);
+        --color-input-focus-text: var(--color-input-text);
+        --color-input-shadow: var(--color-shadow);
+        --color-input-text: var(--color-text);
+        --color-modal-border: #fff;
+        --color-modal-shadow: var(--color-shadow);
+        --color-panel-background: var(--color-bg);
+        --color-panel-border: var(--color-gray1);
+        --color-subheader-text: var(--color-text);
+        --color-table-background: #{color.change(#fff, $alpha: 0.7)};
+        --color-table-border: var(--color-gray2);
+        --color-table-header-background: var(--color-gray1);
+        --color-table-header-text: var(--color-gray5);
+        --color-table-inner-border: #{color.change($color-gray2, $alpha: 0.5)};
+        --color-table-shadow: var(--color-shadow);
+        --color-table-text: var(--color-text);
+
+        /* Component variants
+         * ----------------------------------------------------------------- */
+
+        @include color-vars(brand, var(--color-brand), $text-on-color: #fff);
+        @include color-vars(brand-dark, var(--color-brand-dark), $text-on-color: #fff);
+        @include color-vars(primary, var(--color-primary), $text-on-color: #fff);
+        @include color-vars(danger, var(--color-danger), $text-on-color: #fff);
+        @include color-vars(gray1, var(--color-gray1));
+        @include color-vars(gray2, var(--color-gray2));
+        @include color-vars(gray3, var(--color-gray3), $text-on-color: #fff);
+        @include color-vars(gray4, var(--color-gray4), $text-on-color: #fff);
+        @include color-vars(gray5, var(--color-gray5), $text-on-color: #fff);
+
+        /* Dark/Light/Muted
+         * Independent of themes, for use with --brand-dark */
+        @include color-vars(
+            dark,
+            var(--color-gray5),
+            $text-on-color: var(--color-gray2)
+        );
+        @include color-vars(muted, var(--color-gray3));
+        @include color-vars(light, var(--color-gray1), $text-on-color: #fff);
+
+        /* Shades
+         * Theme hack for post styling
+         *
+         *   +--------  +-----------------------
+         *   | shade1   | Topic etc.
+         *   |          | Last posted ...
+         *   +--------  +-----------------------
+         *   | shade2   | [1] Nameless Fanboi
+         *   |          | ...
+         *   |          +-----------------------
+         *   |          | [2] Nameless Fanboi
+         *   |          | ...
+         *   +--------  +-----------------------
+         *   | shade3   | [Recent posts] [...]
+         *   +--------  +-----------------------
+         *   | shade4   | Be Civil
+         *   |          | All contents are ...
+         *   +--------  +-----------------------
+         */
+        @include color-vars(shade1, #fff);
+        @include color-vars(shade2, var(--color-gray1), $border-on-color: #fff);
+        @include color-vars(shade3, var(--color-gray2));
+        @include color-vars(shade4, var(--color-gray1));
+
+        /* Partials
+         * ----------------------------------------------------------------- */
+
+        --color-post-item-bumped-background: var(--color-gray3);
+        --color-post-item-bumped-border: var(--color-gray3);
+        --color-post-item-bumped-text: #fff;
+        --color-post-item-saged-background: #fff;
+        --color-post-item-saged-border: var(--color-gray3);
+        --color-post-item-saged-text: var(--color-gray3);
+        --color-post-item-hover-background: var(--color-gray5);
+        --color-post-item-hover-border: var(--color-gray5);
+        --color-post-item-hover-text: #fff;
+        --color-post-item-name-background: #fff;
+        --color-post-item-name-border: #fff;
+        --color-post-item-name-text: var(--color-gray3);
+        --color-post-item-datetime-background: transparent;
+        --color-post-item-datetime-border: transparent;
+        --color-post-item-datetime-text: var(--color-gray3);
+
+        --color-ident-background: transparent;
+        --color-ident-border: transparent;
+        --color-ident-text: var(--color-gray3);
+        --color-ident-admin-background: #fff;
+        --color-ident-admin-border: transparent;
+        --color-ident-admin-text: var(--color-brand);
+
+        --color-post-shortened-text: var(--color-gray3);
+        --color-post-anchor-link: #08c;
+        --color-post-anchor-link-hover: var(--color-link-hover);
+    }
+}

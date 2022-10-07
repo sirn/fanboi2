@@ -1,10 +1,8 @@
-<%namespace name='ident' file='../../../partials/_ident.mako' />
-<%inherit file='../../_layout.mako' />
-<%def name='title()'>${board.title} - Admin Panel</%def>
-<%def name='subheader_title()'>Topics</%def>
-<%def name='subheader_body()'>Manage topics.</%def>
-<h2 class="sheet-title">${board.title}</h2>
-<%include file='_nav.mako' />
+<%namespace name="ident" file="../../../partials/_ident.mako" />
+<%namespace name="nav" file="_nav.mako"/>
+<%inherit file="../../_layout.mako" />
+<%def name="title()">${board.title} - Admin Panel</%def>
+<%nav:render_nav title="${board.title}" board="${board}" />
 <div class="sheet-body">
     <form class="form" action="${request.route_path('admin_board_topic_new', board=board.slug)}" method="post">
         <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
@@ -31,7 +29,7 @@
             % endif
         </div>
         <div class="form-item">
-            <button class="button green" type="submit">Create Topic</button>
+            <button class="btn btn--shadowed btn--primary" type="submit">Create Topic</button>
         </div>
     </form>
 </div>
