@@ -22,7 +22,7 @@
             % endif
         </div>
         <div class="form-item">
-            <button class="button brand" type="submit">Update Public Page</button>
+            <button class="btn btn--shadowed btn--primary" type="submit">Update Public Page</button>
         </div>
     </form>
 </div>

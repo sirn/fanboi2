@@ -1,0 +1,61 @@
+/** @define panel */
+
+/* Block: panel
+ * Generic styled container for hosting content. */
+.panel {
+    @include clearfix;
+    background: var(--color-panel-background);
+
+    /* Element: item
+     * Part of the panel. */
+    &__item {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Modifier: separator
+     * Add separator to the panel. */
+    &--separator {
+        + .panel--separator {
+            border-top: 1px solid var(--color-panel-border);
+        }
+    }
+
+    /* Modifier: rounded
+     * Make the panel rounded. */
+    &--rounded {
+        border-radius: var(--radius);
+    }
+
+    /* Modifier: unit-link
+     * Panel container to the link element fill all the content area. */
+    &--unit-link {
+        position: relative;
+
+        /* Element: link
+         * Make the link fill the content area. */
+        .panel__link {
+            &:after {
+                bottom: 0;
+                content: " ";
+                left: 0;
+                position: absolute;
+                right: 0;
+                top: 0;
+            }
+        }
+    }
+
+    @each $color in $colors {
+        /* Modifier: #${color}
+         * A #{$color} color variant. */
+        &--#{$color} {
+            background: var(--color-panel-#{$color}-background);
+
+            &.panel--separator + &.panel--separator {
+                border-color: var(--color-panel-#{$color}-border);
+            }
+        }
+    }
+}

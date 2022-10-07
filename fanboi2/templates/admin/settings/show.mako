@@ -15,7 +15,7 @@
             % endif
         </div>
         <div class="form-item">
-            <button class="button brand" type="submit">Update Setting</button>
+            <button class="btn btn--shadowed btn--brand" type="submit">Update Setting</button>
         </div>
     </form>
 </div>

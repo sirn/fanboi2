@@ -1,7 +1,7 @@
-import { Model, IModelData } from "./base";
-import { Post } from "./post";
 import { CancellableToken } from "../utils/cancellable";
 import { request } from "../utils/request";
+import { IModelData, Model } from "./base";
+import { Post } from "./post";
 
 enum Statuses {
     Open,
@@ -53,7 +53,7 @@ export class Topic extends Model {
                 return JSON.parse(resp).map((data: Object) => {
                     return new Topic(data);
                 });
-            },
+            }
         );
     }
 
@@ -61,7 +61,7 @@ export class Topic extends Model {
         return request("GET", `/api/1.0/topics/${id}/`, {}, token).then(
             (resp: string) => {
                 return new Topic(JSON.parse(resp));
-            },
+            }
         );
     }
 

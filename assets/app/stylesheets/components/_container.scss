@@ -1,0 +1,26 @@
+@import "../mixins";
+
+/** @define container */
+
+/* Block: container
+ * A generic container for managing site min-width and other property. */
+.container {
+    @include clearfix;
+
+    box-sizing: border-box;
+    margin: auto;
+    max-width: var(--bp-desktop);
+    padding: 0 var(--sp-horizontal-m);
+
+    @media (--desktop-viewport) {
+        padding: 0;
+    }
+
+    &--fill {
+        max-width: 100%;
+
+        @media (--desktop-viewport) {
+            padding: 0 var(--sp-horizontal-m);
+        }
+    }
+}

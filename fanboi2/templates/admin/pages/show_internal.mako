@@ -48,11 +48,11 @@
     </div>
 </div>
 <div class="sheet-body">
-    <a class="button brand" href="${request.route_path('admin_page_internal_edit', page=page.slug)}">Edit Internal Page</a>
-    <a class="button default" href="${request.route_path('admin_page_internal_delete', page=page.slug)}">Delete Internal Page</a>
+    <a class="btn btn--shadowed btn--brand" href="${request.route_path('admin_page_internal_edit', page=page.slug)}">Edit Internal Page</a>
+    <a class="btn btn--shadowed" href="${request.route_path('admin_page_internal_delete', page=page.slug)}">Delete Internal Page</a>
 </div>
 % else:
 <div class="sheet-body">
-    <a class="button brand" href="${request.route_path('admin_page_internal_edit', page=page_slug)}">Create Internal Page</a>
+    <a class="btn btn--shadowed btn--brand" href="${request.route_path('admin_page_internal_edit', page=page_slug)}">Create Internal Page</a>
 </div>
 % endif

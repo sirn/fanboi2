@@ -11,7 +11,6 @@ export class BoardSelector extends SingletonComponent {
     public targetSelector = "[data-board-selector]";
 
     protected bindOne($element: Element): void {
-        let $button: Element;
         let $selector: Element | undefined;
         let selectorView: BoardSelectorView | undefined;
         let selectorNode: VNode | undefined;
@@ -36,8 +35,10 @@ export class BoardSelector extends SingletonComponent {
         let _update = (height: number): void => {
             if ($selector && selectorView && selectorNode) {
                 let newSelectorNode = selectorView.render({
-                    style: {
-                        height: `${height}px`,
+                    wrapper: {
+                        style: {
+                            height: `${height}px`,
+                        },
                     },
                 });
 
@@ -67,37 +68,28 @@ export class BoardSelector extends SingletonComponent {
             requestAnimationFrame(_animateStep);
         };
 
-        $button = create(
-            h("div", { className: "js-board-selector-button" }, [
-                h("a", { href: "#" }, ["Boards"]),
-            ])
-        );
+        let $button = $element.querySelector("[data-board-selector-button]");
+        if ($button) {
+            $button.addEventListener("click", (e) => {
+                e.preventDefault();
+                _render().then(() => {
+                    if ($selector) {
+                        let selectorHeight = BoardSelector.getSelectorHeight($selector);
 
-        $button.addEventListener("click", (e) => {
-            e.preventDefault();
-            _render().then(() => {
-                if ($selector) {
-                    let selectorHeight = BoardSelector.getSelectorHeight($selector);
-
-                    if (selectorState) {
-                        selectorState = false;
-                        _animate((elapsedPercent: number) => {
-                            _update(selectorHeight * (1 - elapsedPercent));
-                        });
-                    } else {
-                        selectorState = true;
-                        _animate((elapsedPercent: number) => {
-                            _update(selectorHeight * elapsedPercent);
-                        });
+                        if (selectorState) {
+                            selectorState = false;
+                            _animate((elapsedPercent: number) => {
+                                _update(selectorHeight * (1 - elapsedPercent));
+                            });
+                        } else {
+                            selectorState = true;
+                            _animate((elapsedPercent: number) => {
+                                _update(selectorHeight * elapsedPercent);
+                            });
+                        }
                     }
-                }
+                });
             });
-        });
-
-        let $container = $element.querySelector(".container");
-        if ($container) {
-            $container.appendChild($button);
-            addClass($element, ["js-board-selector-wrapper"]);
         }
 
         // Attempt to restore height on resize. Since the resize may cause
@@ -118,7 +110,7 @@ export class BoardSelector extends SingletonComponent {
     }
 
     private static getSelectorHeight($selector: Element): number {
-        let $el = $selector.querySelector(".js-board-selector-inner");
+        let $el = $selector.querySelector("[data-board-selector-inner]");
 
         if ($el) {
             return $el.clientHeight;

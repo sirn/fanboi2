@@ -1,12 +1,10 @@
-<%namespace name='formatters' module='fanboi2.helpers.formatters' />
-<%namespace name='datetime' file='../../../partials/_datetime.mako' />
-<%namespace name='ident' file='../../../partials/_ident.mako' />
-<%inherit file='../../_layout.mako' />
-<%def name='title()'>${board.title} - Admin Panel</%def>
-<%def name='subheader_title()'>Topics</%def>
-<%def name='subheader_body()'>Manage topics.</%def>
-<h2 class="sheet-title">${topic.title}</h2>
-<%include file='_nav.mako' />
+<%namespace name="formatters" module="fanboi2.helpers.formatters" />
+<%namespace name="datetime" file="../../../partials/_datetime.mako" />
+<%namespace name="ident" file="../../../partials/_ident.mako" />
+<%namespace name="nav" file="_nav.mako"/>
+<%inherit file="../../_layout.mako" />
+<%def name="title()">${board.title} - Admin Panel</%def>
+<%nav:render_nav title="${topic.title}" board="${board}" />
 <div class="sheet-body">
     <table class="admin-table">
         <tbody class="admin-table-body">
@@ -42,13 +40,13 @@
     </table>
 </div>
 <div class="sheet-body">
-    <a class="button brand" href="${request.route_path('admin_board_topic_edit', board=board.slug, topic=topic.id)}">Edit Topic</a>
-    <a class="button default" href="${request.route_path('admin_board_topic_delete', board=board.slug, topic=topic.id)}">Delete Topic</a>
+    <a class="btn btn--shadowed btn--brand" href="${request.route_path('admin_board_topic_edit', board=board.slug, topic=topic.id)}">Edit Topic</a>
+    <a class="btn btn--shadowed" href="${request.route_path('admin_board_topic_delete', board=board.slug, topic=topic.id)}">Delete Topic</a>
 </div>
 % if posts:
     % if posts[0].number != 1:
     <div class="sheet-body">
-        <a href="${request.route_path('admin_board_topic_posts', board=board.slug, topic=topic.id, query="1-%s" % posts[-1].number)}" class="button block muted">
+        <a href="${request.route_path('admin_board_topic_posts', board=board.slug, topic=topic.id, query="1-%s" % posts[-1].number)}" class="btn btn--shadowed btn--secondary btn--block u-txt-center">
         % if posts[0].number <= 2:
         Load post 1
         % else:
@@ -80,7 +78,7 @@
     </div>
     % if posts[-1].number != topic.meta.post_count:
     <div class="sheet-body">
-        <a href="${request.route_path('admin_board_topic_posts', board=board.slug, topic=topic.id, query="%s-" % posts[0].number)}" class="button block muted">Load posts ${posts[-1].number + 1}-</a>
+        <a href="${request.route_path('admin_board_topic_posts', board=board.slug, topic=topic.id, query="%s-" % posts[0].number)}" class="btn btn--shadowed btn--secondary btn--block u-txt-center">Load posts ${posts[-1].number + 1}-</a>
     </div>
     % endif
 % endif
@@ -104,7 +102,7 @@
                 % endif
             </div>
             <div class="form-item">
-                <button class="button green" type="submit">Post Reply</button>
+                <button class="btn btn--shadowed btn--primary" type="submit">Post Reply</button>
                 <span class="form-item-inline">
                     ${form.bumped} <label for="${form.bumped.id}">${form.bumped.label.text}</label>
                 </span>

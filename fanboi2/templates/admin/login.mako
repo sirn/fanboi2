@@ -1,34 +1,20 @@
-<%inherit file='../partials/_layout.mako' />
+<%inherit file="../partials/_layout.mako" />
+<%namespace name="subheader" file="../partials/_subheader.mako" />
+<%namespace name="formtpl" file="../partials/_form.mako" />
 <%def name='title()'>Login - Admin Panel</%def>
-<header class="subheader">
-    <div class="container">
-        <h2 class="subheader-title">Admin Panel</h2>
-        <div class="subheader-body"><p>Login is required beyond this point.</p></div>
-    </div>
-</header>
-<div class="sheet">
-    <div class="container">
-        <div class="sheet-body">
-            <form class="form" action="${request.route_path('admin_root')}" method="post">
-                <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
-                <div class="form-item${' error' if form.username.errors else ''}">
-                    <label class="form-item-label" for="${form.username.id}">Username</label>
-                    ${form.username(class_="input block font-large")}
-                    % if form.username.errors:
-                        <span class="form-item-error">${form.username.errors[0]}</span>
-                    % endif
-                </div>
-                <div class="form-item${' error' if form.password.errors else ''}">
-                    <label class="form-item-label" for="${form.password.id}">Password</label>
-                    ${form.password(class_="input block font-large")}
-                    % if form.password.errors:
-                        <span class="form-item-error">${form.password.errors[0]}</span>
-                    % endif
-                </div>
-                <div class="form-item">
-                    <button class="button brand" type="submit">Login</button>
-                </div>
-            </form>
+<%subheader:render_subheader title="Admin Panel">
+    <%def name="description()">
+        <p>Login is required beyond this point.</p>
+    </%def>
+</%subheader:render_subheader>
+<div class="panel panel--shade3">
+    <div class="container u-pd-vertical-l">
+        <div class="panel__item">
+            <%formtpl:render_form href="${request.route_path('admin_root')}">
+                <%formtpl:render_field form="${form}" field="username" />
+                <%formtpl:render_field form="${form}" field="password" />
+                <%formtpl:render_button form="${form}" label="Login" color="brand" />
+            </%formtpl:render_form>
         </div>
     </div>
 </div>

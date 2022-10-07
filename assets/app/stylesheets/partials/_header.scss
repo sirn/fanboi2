@@ -1,0 +1,76 @@
+/* Partial: header
+ * Styling for header. */
+.header {
+    display: flex;
+    flex-direction: row;
+
+    /* Modifier: h-container
+     * Hack to undo padding of the .container */
+    &--h-container {
+        margin: 0 calc(var(--sp-horizontal-m) * -1);
+    }
+
+    @media (--tablet-viewport) {
+        &--h-container {
+            margin: 0;
+        }
+    }
+
+    /* Element: item
+     * Represent each item in the header. */
+    &__item {
+        display: inline;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        /* Modifier: logo
+         * Fanboi logo */
+        &--logo {
+            flex-grow: 1;
+            order: 1;
+        }
+
+        /* Modifier: scroll
+         * Scroll down button */
+        &--scroll {
+            order: 2;
+        }
+
+        /* Modifier: board
+         * Board selector button */
+        &--board {
+            order: 0;
+        }
+    }
+
+    @media (--tablet-viewport) {
+        &__item {
+            &--logo {
+                order: 0;
+            }
+
+            &--scroll {
+                order: 1;
+            }
+        }
+    }
+
+    /* Element: icon-logo
+     * Fanboi Channel logo. */
+    &__icon-logo {
+        background-image: url(logo-white.svg);
+        background-position: 50% 50%;
+        background-repeat: no-repeat;
+        background-size: var(--dm-header-logo-width) var(--dm-header-logo-height);
+        height: var(--dm-header-logo-height-container);
+        margin: auto;
+        width: var(--dm-header-logo-width-container);
+    }
+
+    @media (--tablet-viewport) {
+        &__icon-logo {
+            margin: initial;
+        }
+    }
+}

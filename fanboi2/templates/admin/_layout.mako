@@ -1,37 +1,34 @@
-<%inherit file='../partials/_layout.mako' />
-% if hasattr(self, 'subheader_title') and hasattr(self, 'subheader_body'):
-<header class="subheader">
-    <div class="container">
-        <h2 class="subheader-title">${self.subheader_title()}</h2>
-        <div class="subheader-body"><p>${self.subheader_body()}</p></div>
-    </div>
-</header>
-% endif
-<div class="sheet">
-    <div class="container">
-        <div class="cols">
-            <div class="cols-column sidebar">
-                <div class="sheet-body">
-                    <div class="menu">
-                        <h3 class="menu-header">My Actions</h3>
-                        <ul class="menu-actions">
-                            <li class="menu-actions-item"><a href="${request.route_path('admin_dashboard')}">Dashboard</a></li>
-                        </ul>
-                        <h3 class="menu-header">Moderation</h3>
-                        <ul class="menu-actions">
-                            <li class="menu-actions-item"><a href="${request.route_path('admin_bans')}">Bans</a></li>
-                            <li class="menu-actions-item"><a href="${request.route_path('admin_banwords')}">Banwords</a></li>
-                            <li class="menu-actions-item"><a href="${request.route_path('admin_boards')}">Boards</a></li>
-                        </ul>
-                        <h3 class="menu-header">System</h3>
-                        <ul class="menu-actions">
-                            <li class="menu-actions-item"><a href="${request.route_path('admin_pages')}">Pages</a></li>
-                            <li class="menu-actions-item"><a href="${request.route_path('admin_settings')}">Settings</a></li>
-                        </ul>
-                    </div>
-                </div>
+<%namespace name="subheader" file="../partials/_subheader.mako" />
+<%inherit file="../partials/_layout.mako" />
+<%subheader:render_subheader title="Admin">
+    <%def name="description()">
+        Welcome back
+    </%def>
+</%subheader:render_subheader>
+<div class="container">
+    <div class="flex flex--row flex--gap-m">
+        <div class="flex__item">
+            <div class="container u-pd-vertical-l">
+                <h3 class="u-txt-gray4">My Actions</h3>
+                <ul class="list u-mg-vertical-m">
+                    <li class="list__item"><a href="${request.route_path('admin_dashboard')}">Dashboard</a></li>
+                    <li class="list__item"><a href="${request.route_path('admin_logout')}">Logout</a></li>
+                </ul>
+                <h3 class="u-txt-gray4">Moderation</h3>
+                <ul class="list u-mg-vertical-m">
+                    <li class="list__item"><a href="${request.route_path('admin_bans')}">Bans</a></li>
+                    <li class="list__item"><a href="${request.route_path('admin_banwords')}">Banwords</a></li>
+                    <li class="list__item"><a href="${request.route_path('admin_boards')}">Boards</a></li>
+                </ul>
+                <h3 class="u-txt-gray4">System</h3>
+                <ul class="list u-mg-vertical-m">
+                    <li class="list__item"><a href="${request.route_path('admin_pages')}">Pages</a></li>
+                    <li class="list__item"><a href="${request.route_path('admin_settings')}">Settings</a></li>
+                </ul>
             </div>
-            <div class="cols-column">
+        </div>
+        <div class="flex__item flex__item--grow-2">
+            <div class="container u-pd-vertical-l">
                 ${next.body()}
             </div>
         </div>

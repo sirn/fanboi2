@@ -1,6 +1,6 @@
-<%include file='_subheader.mako' />
-<%inherit file='../partials/_layout.mako' />
-<%def name='title()'>New topic - ${board.title}</%def>
+<%include file="_subheader.mako" />
+<%inherit file="../partials/_layout.mako" />
+<%def name="title()">New topic - ${board.title}</%def>
 <div class="sheet">
     <div class="container">
     % if name == 'akismet_rejected':

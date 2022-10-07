@@ -1,0 +1,49 @@
+@import "../mixins";
+
+/** @define icon */
+
+@mixin icon($name) {
+    /* Modifier: #{$name}
+     * Display #{$name} icon */
+    &--#{$name} {
+        background-image: url($name + ".svg");
+        background-position: 50% 50%;
+        background-repeat: no-repeat;
+        background-size: var(--dm-icon-width) var(--dm-icon-height);
+    }
+}
+
+/* Block: icon
+ * Basic icon support. */
+.icon {
+    @include text-hide;
+
+    height: var(--dm-icon-height);
+    width: var(--dm-icon-width);
+    display: block;
+    overflow: hidden;
+
+    /* Modifier: inline
+     * Make the icon inline. */
+    &--inline-block {
+        display: inline-block;
+    }
+
+    /* Modifier: tappable
+     * Tappable-sized icons. */
+    &--tappable {
+        width: var(--dm-icon-height-tappable);
+        height: var(--dm-icon-width-tappable);
+    }
+
+    @include icon(arrow-down-black);
+    @include icon(arrow-down-white);
+    @include icon(arrow-up-black);
+    @include icon(arrow-up-blue);
+    @include icon(arrow-up-white);
+    @include icon(burger-black);
+    @include icon(burger-white);
+    @include icon(cross-black);
+    @include icon(cross-blue);
+    @include icon(cross-white);
+}

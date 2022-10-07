@@ -1,0 +1,33 @@
+@import "../mixins";
+
+/** @define utilities */
+
+@include viewport-utilities(u-pd-reset, "Reset padding on element") {
+    padding: 0 !important;
+}
+
+@each $size in $sizes {
+    @include viewport-utilities(u-pd-#{$size}, "Add #{$size} padding to the element") {
+        padding: var(--sp-vertical-#{$size}) var(--sp-horizontal-#{$size}) !important;
+    }
+}
+
+@mixin u-pd($name, $orient, $sides...) {
+    @each $size in $sizes {
+        @include viewport-utilities(
+            u-pd-#{$name}-#{$size},
+            "Add #{$size} #{$name} padding to the element"
+        ) {
+            @each $side in $sides {
+                padding-#{$side}: var(--sp-#{$orient}-#{$size}) !important;
+            }
+        }
+    }
+}
+
+@include u-pd(top, vertical, top);
+@include u-pd(bottom, vertical, bottom);
+@include u-pd(right, horizontal, right);
+@include u-pd(left, horizontal, left);
+@include u-pd(horizontal, horizontal, right, left);
+@include u-pd(vertical, vertical, top, bottom);

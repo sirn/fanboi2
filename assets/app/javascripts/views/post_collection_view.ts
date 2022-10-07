@@ -1,127 +1,150 @@
-import { VNode, h } from "virtual-dom";
-import { formatDate } from "../utils/formatters";
+import isEqual = require("lodash.isequal");
+import { h, VNode } from "virtual-dom";
 import { Post } from "../models/post";
+import { formatDate } from "../utils/formatters";
+import { mergeClasses, mergeDatasets } from "../utils/template";
 
 export class PostCollectionView {
-    postsNode: VNode;
+    posts: Post[];
+
+    // Cache
+    postsNode: VNode[];
+    postArgs: any = [];
 
     constructor(posts: Post[]) {
-        this.postsNode = PostCollectionView.renderPosts(posts);
+        this.posts = posts;
     }
 
-    render(): VNode {
-        return this.postsNode;
-    }
+    render(args: any = {}): VNode {
+        let postArgs = args.post || {};
 
-    private static renderPosts(posts: Post[]): VNode {
-        return h(
-            "div",
-            { className: "js-post-collection" },
-            posts.map(
-                (post: Post): VNode => {
-                    return h("div", { className: "post" }, [
-                        h("div", { className: "container" }, [
-                            PostCollectionView.renderHeader(post),
-                            PostCollectionView.renderBody(post)
-                        ])
-                    ]);
-                }
-            )
-        );
-    }
+        if (!this.postsNode || !isEqual(this.postArgs, postArgs)) {
+            let postPanelArgs = postArgs.panel || { className: "panel--shade2" };
+            let postContainerArgs = postArgs.container || {};
 
-    private static renderHeader(post: Post): VNode {
-        return h("div", { className: "post-header" }, [
-            PostCollectionView.renderHeaderNumber(post),
-            PostCollectionView.renderHeaderName(post),
-            PostCollectionView.renderHeaderDate(post),
-            PostCollectionView.renderHeaderIdent(post)
-        ]);
-    }
-
-    private static renderHeaderNumber(post: Post): VNode {
-        let classList = ["post-header-item", "number"];
-
-        if (post.bumped) {
-            classList.push("bumped");
+            this.postArgs = postArgs;
+            this.postsNode = this.posts.map((post: Post): VNode => {
+                return h(
+                    "div",
+                    mergeDatasets(
+                        mergeClasses(postPanelArgs, ["panel", "panel--separator"]),
+                        {
+                            post: post.number,
+                        }
+                    ),
+                    [
+                        h("div", mergeClasses(postContainerArgs, ["container"]), [
+                            h(
+                                "div",
+                                mergeClasses(postArgs, [
+                                    "post",
+                                    "post--datetime-mobile",
+                                ]),
+                                [
+                                    h(
+                                        "div",
+                                        { className: "panel__item post__header" },
+                                        [
+                                            h(
+                                                "span",
+                                                {
+                                                    className: [
+                                                        "post__item",
+                                                        ...[
+                                                            post.bumped
+                                                                ? "post__item--bumped"
+                                                                : "post__item--saged",
+                                                        ],
+                                                        "u-mg-right-xs",
+                                                    ].join(" "),
+                                                    dataset: {
+                                                        topicQuickReply: post.number,
+                                                    },
+                                                },
+                                                [post.number.toString()]
+                                            ),
+                                            h(
+                                                "span",
+                                                {
+                                                    className: [
+                                                        "post__item",
+                                                        "post__item--name",
+                                                        "u-mg-right-xs",
+                                                    ].join(" "),
+                                                },
+                                                [post.name]
+                                            ),
+                                            h(
+                                                "span",
+                                                {
+                                                    className: [
+                                                        "post__item",
+                                                        "post__item--datetime",
+                                                        "u-mg-right-xs-tablet",
+                                                    ].join(" "),
+                                                },
+                                                [
+                                                    `Posted ${formatDate(
+                                                        new Date(post.createdAt)
+                                                    )}`,
+                                                ]
+                                            ),
+                                            post.ident
+                                                ? h(
+                                                      "span",
+                                                      {
+                                                          className: [
+                                                              "post__item",
+                                                              "post__item--ident",
+                                                              "ident",
+                                                              ...(post.identType !=
+                                                              "ident"
+                                                                  ? [
+                                                                        `ident--${post.identType.replace(
+                                                                            "ident_",
+                                                                            ""
+                                                                        )}`,
+                                                                    ]
+                                                                  : []),
+                                                          ].join(" "),
+                                                      },
+                                                      [
+                                                          `${PostCollectionView.getPostIdentName(
+                                                              post
+                                                          )}:${post.ident}`,
+                                                      ]
+                                                  )
+                                                : "",
+                                        ]
+                                    ),
+                                    h(
+                                        "div",
+                                        {
+                                            className: "panel__item post__container",
+                                            innerHTML: post.bodyFormatted,
+                                        },
+                                        []
+                                    ),
+                                ]
+                            ),
+                        ]),
+                    ]
+                );
+            });
         }
 
-        return h(
-            "span",
-            {
-                className: classList.join(" "),
-                dataset: {
-                    topicQuickReply: post.number
-                }
-            },
-            [post.number.toString()]
-        );
+        return h("div", mergeDatasets(args, { postCollection: true }), this.postsNode);
     }
 
-    private static renderHeaderName(post: Post): VNode {
-        return h(
-            "span",
-            {
-                className: "post-header-item name"
-            },
-            [post.name]
-        );
-    }
-
-    private static renderHeaderDate(post: Post): VNode {
-        let createdAt = new Date(post.createdAt);
-        let formatter = formatDate(createdAt);
-
-        return h(
-            "span",
-            {
-                className: "post-header-item date"
-            },
-            [`Posted ${formatter}`]
-        );
-    }
-
-    private static renderHeaderIdent(post: Post): VNode | string {
-        if (post.ident) {
-            let identCls = ["post-header-item", "ident"];
-            let identName = "ID";
-
-            switch (post.identType) {
-                case "ident_v6": {
-                    identName = "ID6";
-                    identCls.push("ident-v6");
-                    break;
-                }
-
-                default: {
-                    identName = "ID";
-                    if (post.identType != "ident") {
-                        identCls.push(post.identType.replace("_", "-"));
-                    }
-                    break;
-                }
+    private static getPostIdentName(post: Post): string {
+        switch (post.identType) {
+            case "ident_v6": {
+                return "ID6";
             }
 
-            return h(
-                "span",
-                {
-                    className: identCls.join(" ")
-                },
-                [`${identName}:${post.ident}`]
-            );
-        } else {
-            return "";
+            default: {
+                return "ID";
+            }
         }
-    }
-
-    private static renderBody(post: Post): VNode {
-        return h(
-            "div",
-            {
-                className: "post-body",
-                innerHTML: post.bodyFormatted
-            },
-            []
-        );
     }
 }

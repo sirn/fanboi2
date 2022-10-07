@@ -1,13 +1,11 @@
-import { create, h } from "virtual-dom";
-
 import { SingletonComponent } from "./base";
 import { ResourceError } from "../utils/errors";
 import { dispatchCustomEvent } from "../utils/elements";
 import { attachErrors, detachErrors, serializeForm } from "../utils/forms";
 import { LoadingState } from "../utils/loading";
 
-export class TopicInlineReply extends SingletonComponent {
-    public targetSelector = "[data-topic-inline-reply]";
+export class TopicReplyForm extends SingletonComponent {
+    public targetSelector = "[data-topic-reply-form]";
 
     protected bindOne($target: Element) {
         let $form = $target;

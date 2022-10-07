@@ -35,38 +35,41 @@
 <body id="${request.route_name}" class="${formatters.user_theme(request)}">
 % endif
 
-<header id="top" class="header" data-board-selector="true">
+<header id="top" class="panel panel--brand" data-board-selector="true">
     <div class="container">
-        <h1 class="header-brand"><a href="/">Fanboi Channel</a></h1>
-        <div class="header-scroll-button"><a href="#bottom">Scroll to bottom</a></div>
+        <div class="header header--h-container">
+            <div class="header__item header__item--logo"><h1 class="u-mg-reset"><a href="/" class="icon header__icon-logo">Fanboi Channel</a></h1></div>
+            <div class="header__item header__item--board"><a href="/" class="icon icon--tappable icon--burger-white" data-board-selector-button="true">All boards</a></div>
+            <div class="header__item header__item--scroll"><a href="#bottom" class="icon icon--tappable icon--arrow-down-white">Scroll to bottom</a></div>
+        </div>
     </div>
 </header>
 
 ${next.body()}
 
-<section class="appendix">
-    <div class="container">
+<section class="panel panel--shade4">
+    <div class="container u-pd-vertical-l">
 <% global_appendix = partials.global_appendix(request) %>
 % if global_appendix:
-        <div class="appendix-content">
+        <div class="panel__item u-mg-bottom-m u-txt-plain u-txt-s u-txt-gray4">
             ${global_appendix}
         </div>
 % endif
-        <div class="appendix-lines" data-theme-selector="true">
-            <p class="appendix-lines-item">All contents are responsibility of its posters.</p>
+        <div class="panel__item u-txt-gray4" data-theme-selector="true">
+            <p class="u-mg-reset u-txt-s">All contents are responsibility of its posters.</p>
         </div>
     </div>
 </section>
 
-<footer id="bottom" class="footer">
-    <div class="container">
-        <div class="footer-scroll-button">
-          <a href="#top">Scroll to top</a>
+<footer id="bottom" class="panel">
+    <div class="container u-pd-vertical-l">
+        <div class="panel__item">
+            <a href="#top" class="icon icon--tappable icon--arrow-up-blue u-pull-right">Scroll to top</a>
+            <ul class="list flex--column">
+                <li class="list__item flex__item u-txt-s"><a href="https://git.sr.ht/~sirn/fanboi2">Fanboi2 v${info.app_version(request)}</a></li>
+                <li class="list__item flex__item u-txt-s"><a href="${request.route_path('api_root')}">API documentation</a></li>
+            </ul>
         </div>
-        <ul class="footer-links">
-            <li class="footer-links-item"><a href="https://git.sr.ht/~sirn/fanboi2">Fanboi2 v${info.app_version(request)}</a></li>
-            <li class="footer-links-item"><a href="${request.route_path('api_root')}">API documentation</a></li>
-        </ul>
     </div>
 </footer>
 

@@ -1,10 +1,8 @@
-<%namespace name='formatters' module='fanboi2.helpers.formatters' />
-<%inherit file='../_layout.mako' />
-<%def name='title()'>Boards - Admin Panel</%def>
-<%def name='subheader_title()'>Boards</%def>
-<%def name='subheader_body()'>Manage boards.</%def>
-<h2 class="sheet-title">${board.title}</h2>
-<%include file='_nav.mako' />
+<%namespace name="formatters" module="fanboi2.helpers.formatters" />
+<%namespace name="nav" file="_nav.mako"/>
+<%inherit file="../_layout.mako" />
+<%def name="title()">Boards - Admin Panel</%def>
+<%nav:render_nav title="${board.title}" board="${board}" />
 <div class="sheet-body">
     <table class="admin-table">
         <tbody class="admin-table-body">
@@ -62,5 +60,5 @@
     % endif
 </div>
 <div class="sheet-body">
-    <a class="button brand" href="${request.route_path('admin_board_edit', board=board.slug)}">Edit Board</a>
+    <a class="btn btn--shadowed btn--brand" href="${request.route_path('admin_board_edit', board=board.slug)}">Edit Board</a>
 </div>

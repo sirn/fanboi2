@@ -1,0 +1,61 @@
+@import "../mixins";
+
+/** @define flex */
+
+/* Block: flex
+ * A generic container for flex box. */
+.flex {
+    display: flex;
+
+    @include viewport-modifiers(row, "Display flex items in a row") {
+        flex-direction: row;
+    }
+
+    @include viewport-modifiers(column, "Display flex items in a column") {
+        flex-direction: column;
+    }
+
+    /* Modifier: items-center
+     * Align item at the center of flex box. */
+    &--items-center {
+        align-items: center;
+    }
+
+    @each $size in $sizes {
+        @include viewport-modifiers(gap-#{$size}, "Add #{$size} gap to flex item") {
+            gap: var(--sp-vertical-#{$size}) var(--sp-horizontal-#{$size});
+        }
+
+        @include viewport-modifiers(
+            row-gap-#{$size},
+            "Add #{$size} row gap to flex item"
+        ) {
+            row-gap: var(--sp-horizontal-#{$size});
+        }
+
+        @include viewport-modifiers(
+            column-gap-#{$size},
+            "Add #{$size} column gap to flex item"
+        ) {
+            column-gap: var(--sp-vertical-#{$size});
+        }
+    }
+
+    &__item {
+        @for $i from 1 through 10 {
+            @include viewport-modifiers(
+                order-#{$i},
+                "Specific the order within flex box"
+            ) {
+                order: #{$i};
+            }
+
+            @include viewport-modifiers(
+                grow-#{$i},
+                "Specific the grow priority within flex box"
+            ) {
+                flex-grow: #{$i};
+            }
+        }
+    }
+}

@@ -1,5 +1,5 @@
-import { CollectionComponent } from "./base";
 import { dispatchCustomEvent } from "../utils/elements";
+import { CollectionComponent } from "./base";
 
 export class TopicStateTracker extends CollectionComponent {
     public targetSelector = "[data-topic-state-tracker]";
@@ -25,7 +25,7 @@ export class TopicStateTracker extends CollectionComponent {
     private bindCheckbox(trackerName: string, $target: HTMLInputElement): void {
         dispatchCustomEvent($target, "readState", {
             name: trackerName,
-            callback: (name: string, value?: boolean) => {
+            callback: (_name: string, value?: boolean) => {
                 if (value != undefined) {
                     $target.checked = value;
                     $target.defaultChecked = $target.checked;
@@ -33,7 +33,7 @@ export class TopicStateTracker extends CollectionComponent {
             },
         });
 
-        $target.addEventListener("change", (e: Event): void => {
+        $target.addEventListener("change", (_e: Event): void => {
             $target.defaultChecked = $target.checked;
             dispatchCustomEvent($target, "updateState", {
                 name: trackerName,
@@ -47,14 +47,14 @@ export class TopicStateTracker extends CollectionComponent {
 
         dispatchCustomEvent($target, "readState", {
             name: trackerName,
-            callback: (name: string, value?: string) => {
+            callback: (_name: string, value?: string) => {
                 if (value != undefined) {
                     $target.value = value;
                 }
             },
         });
 
-        $target.addEventListener("change", (e: Event): void => {
+        $target.addEventListener("change", (_e: Event): void => {
             clearTimeout(throttleTimer);
             throttleTimer = window.setTimeout(() => {
                 dispatchCustomEvent($target, "updateState", {

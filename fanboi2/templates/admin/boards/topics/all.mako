@@ -1,10 +1,8 @@
-<%namespace name='datetime' file='../../../partials/_datetime.mako' />
-<%inherit file='../../_layout.mako' />
-<%def name='title()'>${board.title} - Admin Panel</%def>
-<%def name='subheader_title()'>Topics</%def>
-<%def name='subheader_body()'>Manage topics.</%def>
-<h2 class="sheet-title">${board.title}</h2>
-<%include file='_nav.mako' />
+<%namespace name="datetime" file="../../../partials/_datetime.mako" />
+<%namespace name="nav" file="_nav.mako"/>
+<%inherit file="../../_layout.mako" />
+<%def name="title()">${board.title} - Admin Panel</%def>
+<%nav:render_nav title="${board.title}" board="${board}" />
 % for topic in topics:
 <div class="admin-cascade">
     <div class="admin-cascade-header">
