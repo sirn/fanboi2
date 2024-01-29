@@ -5,7 +5,7 @@ packages:
 sources:
   - https://git.sr.ht/~sirn/fanboi2
 secrets:
-  - 9ac8ea59-6321-4c9b-8496-dbf9ededf6db
+  - 43b72c43-daac-407f-a4be-45e21a46ea22
 tasks:
   - push: |
       cd fanboi2/
