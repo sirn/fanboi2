@@ -52,6 +52,28 @@ class TestTopicCreateService(ModelSessionMixin, unittest.TestCase):
         self.assertEqual(topic.posts[0].ident, "foo,127.0.0.1")
         self.assertEqual(topic.posts[0].ident_type, "ident")
 
+    def test_create_ipv6(self):
+        from ..models import Board
+
+        board = self._make(
+            Board(slug="foo", title="Foo", settings={"name": "Nameless Foobar"})
+        )
+        self.dbsession.commit()
+        topic_create_svc = self._make_one()
+        topic = topic_create_svc.create(
+            board.slug, "Hello, world!", "Hello Eartians", "fe80:c9cd::1"
+        )
+        self.assertEqual(topic.board, board)
+        self.assertEqual(topic.title, "Hello, world!")
+        self.assertEqual(topic.meta.post_count, 1)
+        self.assertIsNotNone(topic.meta.bumped_at)
+        self.assertEqual(topic.posts[0].number, 1)
+        self.assertEqual(topic.posts[0].bumped, True)
+        self.assertEqual(topic.posts[0].name, "Nameless Foobar")
+        self.assertEqual(topic.posts[0].ip_address, "fe80:c9cd::1")
+        self.assertEqual(topic.posts[0].ident, "foo,fe80:c9cd::/64")
+        self.assertEqual(topic.posts[0].ident_type, "ident_v6")
+
     def test_create_without_ident(self):
         from ..models import Board
 
