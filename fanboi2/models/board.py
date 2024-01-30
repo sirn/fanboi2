@@ -13,6 +13,8 @@ DEFAULT_BOARD_CONFIG = {
     "use_ident": True,
     "max_posts": 1000,
     "post_delay": 10,
+    "post_delay_threshold": 0,
+    "post_delay_period": 0,
     "expire_duration": 0,
 }
 

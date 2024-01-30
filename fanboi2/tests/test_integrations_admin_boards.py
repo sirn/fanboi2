@@ -71,6 +71,8 @@ class TestIntegrationAdminBoards(IntegrationMixin, unittest.TestCase):
                 "max_posts": 1000,
                 "name": "Nameless Foobar",
                 "post_delay": 10,
+                "post_delay_period": 0,
+                "post_delay_threshold": 0,
                 "use_ident": True,
             },
         )
@@ -212,6 +214,8 @@ class TestIntegrationAdminBoards(IntegrationMixin, unittest.TestCase):
             + '    "max_posts": 1000,\n'
             + '    "name": "Nameless Foobar",\n'
             + '    "post_delay": 10,\n'
+            + '    "post_delay_period": 0,\n'
+            + '    "post_delay_threshold": 0,\n'
             + '    "use_ident": true\n'
             + "}",
         )
@@ -271,6 +275,8 @@ class TestIntegrationAdminBoards(IntegrationMixin, unittest.TestCase):
                 "max_posts": 1000,
                 "name": "Nameless Foobar",
                 "post_delay": 10,
+                "post_delay_period": 0,
+                "post_delay_threshold": 0,
                 "use_ident": True,
             },
         )

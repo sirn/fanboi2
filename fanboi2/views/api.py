@@ -106,7 +106,11 @@ def board_topics_post(request):
             time_left = rate_limiter_svc.time_left(**payload)
             raise RateLimitedError(time_left)
 
-        rate_limiter_svc.limit_for(board.settings["post_delay"], **payload)
+        rate_limiter_svc.limit_for(
+            board.settings["post_delay"],
+            board.settings["post_delay_threshold"],
+            board.settings["post_delay_period"],
+            **payload)
 
     topic_create_svc = request.find_service(ITopicCreateService)
     return topic_create_svc.enqueue(
@@ -198,7 +202,11 @@ def topic_posts_post(request):
             time_left = rate_limiter_svc.time_left(**payload)
             raise RateLimitedError(time_left)
 
-        rate_limiter_svc.limit_for(board.settings["post_delay"], **payload)
+        rate_limiter_svc.limit_for(
+            board.settings["post_delay"],
+            board.settings["post_delay_threshold"],
+            board.settings["post_delay_period"],
+            **payload)
 
     post_create_svc = request.find_service(IPostCreateService)
     return post_create_svc.enqueue(

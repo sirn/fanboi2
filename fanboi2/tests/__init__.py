@@ -1,5 +1,6 @@
 import datetime
 import os
+import copy
 
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -43,14 +44,16 @@ class DummyRedis(object):
         self._set_time(time)
 
     def get(self, key):
-        return self._store.get(key)
+        val = self._store.get(key)
+        if val:
+            return val[0]
 
     def set(self, key, value):
         try:
             value = bytes(value.encode("utf-8"))
         except AttributeError:
             pass
-        self._store[key] = value
+        self._store[key] = [value]
 
     def setnx(self, key, value):
         if not self.get(key):
@@ -68,6 +71,37 @@ class DummyRedis(object):
     def time(self):
         ts = self._time.timestamp()
         return (int(ts), int((ts - int(ts)) * 1000000))
+
+    def rpush(self, key, value):
+        if key not in self._store:
+            self._store[key] = []
+        self._store[key].append(value)
+        return len(self._store[key])
+
+    def lrange(self, key, start, end):
+        return self._store[key][start:end]
+
+    def lrem(self, key, count, value):
+        if count == 0:
+            new_list = [x for x in self._store[key] if x != value]
+        elif count < 0:
+            new_list = self._store[key][::-1]
+            for _ in range(-count):
+                try:
+                    new_list.remove(value)
+                except ValueError:
+                    break
+            new_list = new_list[::-1]
+        else:
+            new_list = copy.copy(self._store[key])
+            for _ in range(count):
+                try:
+                    new_list.remove()
+                except ValueError:
+                    break
+        changed = len(self._store[key] - len(new_list))
+        self._store[key] = new_list
+        return changed
 
     def _reset(self):
         self._store = {}

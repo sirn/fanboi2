@@ -156,7 +156,11 @@ def board_new_post(request):
             response.status = "429 Too Many Requests"
             return response
 
-        rate_limiter_svc.limit_for(board.settings["post_delay"], **payload)
+        rate_limiter_svc.limit_for(
+            board.settings["post_delay"],
+            board.settings["post_delay_threshold"],
+            board.settings["post_delay_period"],
+            **payload)
 
     topic_create_svc = request.find_service(ITopicCreateService)
     task = topic_create_svc.enqueue(
@@ -321,7 +325,11 @@ def topic_show_post(request):
             response.status = "429 Too Many Requests"
             return response
 
-        rate_limiter_svc.limit_for(board.settings["post_delay"], **payload)
+        rate_limiter_svc.limit_for(
+            board.settings["post_delay"],
+            board.settings["post_delay_threshold"],
+            board.settings["post_delay_period"],
+            **payload)
 
     post_create_svc = request.find_service(IPostCreateService)
     task = post_create_svc.enqueue(
