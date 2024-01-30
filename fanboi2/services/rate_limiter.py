@@ -6,7 +6,7 @@ class RateLimiterService(object):
     the user given by a payload should be rate-limited.
     """
 
-    SCALED_LIMIT_PRUNE_PERIOD = 7200
+    SCALED_LIMIT_PRUNE_PERIOD = 3600
 
     def __init__(self, redis_conn):
         self.redis_conn = redis_conn
@@ -26,8 +26,8 @@ class RateLimiterService(object):
         rate limit from :param:`expiration` up in logarithmic series that will
         allow maximum of :param:`threshold` attempts within :param:`period`.
 
-        Limits are tracked for up to 7,200 seconds. In other words, :param:`period`
-        must not exceed `3600` (due to penalty calculation).
+        Limits are tracked for up to 3600 seconds. In other words, :param:`period`
+        must not exceed `3600`.
 
         :param expiration: A number of seconds to rate limited for.
         :param threshold: A maximum attempt per :param:`period`.
@@ -54,13 +54,14 @@ class RateLimiterService(object):
         self.redis_conn.rpush(ts_key, ts)
         all_ts = self.redis_conn.lrange(ts_key, 0, -1)
         prune_cutoff = ts - self.SCALED_LIMIT_PRUNE_PERIOD
+        ts_cutoff = ts - period
         count = 0
         for t in all_ts:
             t = int(t)
-            if t < prune_cutoff:
-                self.redis_conn.lrem(ts_key, 0, t)
-            else:
+            if t > ts_cutoff:
                 count += 1
+            if t <= prune_cutoff:
+                self.redis_conn.lrem(ts_key, 0, t)
         self.redis_conn.expire(ts_key, self.SCALED_LIMIT_PRUNE_PERIOD)
         count = min(count, threshold)
 
