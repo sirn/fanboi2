@@ -63,10 +63,10 @@ class RateLimiterService(object):
             if t <= prune_cutoff:
                 self.redis_conn.lrem(ts_key, 0, t)
         self.redis_conn.expire(ts_key, self.SCALED_LIMIT_PRUNE_PERIOD)
-        count = min(count, threshold)
+        count = min(count, threshold - 1)
 
         r = math.exp(math.log(period / 10) / (threshold - 1))
-        t = round(expiration * (r ** (count - 1)))
+        t = round(expiration * (r ** count))
         key = self._get_key(**kwargs)
         self.redis_conn.set(key, 1)
         self.redis_conn.expire(key, t)

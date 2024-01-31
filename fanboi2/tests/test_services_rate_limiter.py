@@ -76,9 +76,6 @@ class TestRateLimiterService(unittest.TestCase):
         redis_conn = DummyRedis()
         rate_limiter_svc = self._get_target_class()(redis_conn)
         rate_limiter_svc.limit_for(10, 5, 1800, foo="bar")
-        self.assertEqual(rate_limiter_svc.time_left(foo="bar"), 3)
-
-        rate_limiter_svc.limit_for(10, 5, 1800, foo="bar")
         self.assertEqual(rate_limiter_svc.time_left(foo="bar"), 10)
 
         rate_limiter_svc.limit_for(10, 5, 1800, foo="bar")
