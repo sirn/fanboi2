@@ -12,4 +12,4 @@ def main(argv=sys.argv):
     setup_logger(settings)
     config = make_configurator(settings)
     config.make_wsgi_app()
-    celery_main(argv)
+    celery_main()

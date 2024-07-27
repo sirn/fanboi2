@@ -2,13 +2,13 @@
 image: freebsd/latest
 packages:
   - google-cloud-sdk
-  - node16
-  - npm-node16
-  - postgresql13-client
-  - postgresql13-server
-  - py39-pip
-  - py39-sqlite3
-  - python39
+  - node20
+  - npm-node20
+  - postgresql14-client
+  - postgresql14-server
+  - py311-pip
+  - py311-sqlite3
+  - python311
   - rust
 sources:
   - https://git.sr.ht/~sirn/fanboi2
@@ -26,7 +26,7 @@ tasks:
       sudo sysrc postgresql_enable=YES
       sudo sysrc postgresql_flags="-l /var/log/postgresql.log"
 
-      cat <<EOF | sudo tee /var/db/postgres/data13/pg_hba.conf
+      cat <<EOF | sudo tee /var/db/postgres/data14/pg_hba.conf
       local all all trust
       host all all 127.0.0.1/32 trust
       host all all ::1/128 trust
@@ -40,7 +40,7 @@ tasks:
   - build: |
       cd fanboi2/ || exit 1
       export PATH=$HOME/.local/bin:$PATH
-      export PYTHON=/usr/local/bin/python3.9
+      export PYTHON=/usr/local/bin/python3.11
 
       NEW_VERSION=$(./tools/scripts/gen-version.sh)
       ./tools/scripts/update-version.sh "$NEW_VERSION"
@@ -51,7 +51,7 @@ tasks:
       cd fanboi2/ || exit 1
       export PATH=$HOME/.local/bin:$PATH
       export VENVDIR=$HOME/venv
-      export PYTHON=/usr/local/bin/python3.9
+      export PYTHON=/usr/local/bin/python3.11
       export POSTGRESQL_TEST_DATABASE="postgresql://fanboi2:@localhost:5432/fanboi2_test"
 
       make test
@@ -59,7 +59,7 @@ tasks:
       cd fanboi2/ || exit 1
       export PATH=$HOME/.local/bin:$PATH
       export VENVDIR=$HOME/venv
-      export PYTHON=/usr/local/bin/python3.9
+      export PYTHON=/usr/local/bin/python3.11
 
       gcloud auth activate-service-account --key-file ~/.local/etc/google_service_account.json
       bmake dist

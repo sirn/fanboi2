@@ -2,7 +2,7 @@
   description = "Development environment for Fanboi Channel";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -30,9 +30,10 @@
             nodePackages.pnpm
 
             # Python
-            (python39.withPackages (ps: with ps; [
+            (python311.withPackages (ps: with ps; [
               black
               flake8
+              python-lsp-black
               python-lsp-server
             ]))
           ];

@@ -1,6 +1,6 @@
 # Fanboi2
 
-[![python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://docs.python.org/3/whatsnew/3.9.html)
+[![python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://docs.python.org/3/whatsnew/3.11.html)
 [![builds.sr.ht status](https://builds.sr.ht/~sirn/fanboi2/commits/main/freebsd.yml.svg)](https://builds.sr.ht/~sirn/fanboi2/commits/main/freebsd.yml?)
 
 Board engine behind [Fanboi Channel](https://fanboi.ch/) written in Python.
@@ -9,8 +9,8 @@ Board engine behind [Fanboi Channel](https://fanboi.ch/) written in Python.
 
 For production environment, Fanboi2 has the following runtime requirements:
 
--   [Python 3.9](https://www.python.org/downloads/)
--   [PostgreSQL 13](https://www.postgresql.org/)
+-   [Python 3.11](https://www.python.org/downloads/)
+-   [PostgreSQL 14](https://www.postgresql.org/)
 -   [Redis](https://redis.io/)
 
 Additionally, the following packages are build-time requirements for compiling assets:
@@ -25,7 +25,7 @@ On a non-FreeBSD, you will also need to install **BSD Make** (usually called `bm
 On FreeBSD systems, these packages can be installed with:
 
 ```shellsession
-$ sudo pkg install ca_root_nss python39 py39-pip py39-sqlite3 postgresql13-server postgresql13-client redis node16 npm-node16
+$ sudo pkg install ca_root_nss python311 py311-pip py311-sqlite3 postgresql14-server postgresql14-client redis node20 npm-node20
 ```
 
 Install PNPM:
@@ -75,8 +75,8 @@ REDIS_URL=redis://127.0.0.1:6379/0
 SERVER_DEV=true
 SERVER_HOST=0.0.0.0
 SERVER_PORT=6543
-SESSION_SECRET=\$(openssl rand -hex 32)
-AUTH_SECRET=\$(openssl rand -hex 32)
+SESSION_SECRET=$(openssl rand -hex 32)
+AUTH_SECRET=$(openssl rand -hex 32)
 EOF
 ```
 
