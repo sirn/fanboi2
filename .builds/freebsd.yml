@@ -14,6 +14,9 @@ sources:
   - https://git.sr.ht/~sirn/fanboi2
 secrets:
   - 1d90529f-f66a-44bb-b5db-b41b255df8c2
+environment:
+  CURRENT_REF: refs/heads/main
+  CURRENT_REPO: https://git.sr.ht/~sirn/fanboi2
 tasks:
   - setup: |
       cd fanboi2/ || exit 1
@@ -65,11 +68,16 @@ tasks:
       bmake dist
 
       DIST_NAME=$(ls -t1 dist | head -n1)
-      echo "$DIST_NAME" > CURRENT
       gsutil cp dist/"$DIST_NAME" gs://artifacts.fanboi.ch/dist/"$DIST_NAME"
-      gsutil cp CURRENT gs://artifacts.fanboi.ch/dist/CURRENT
+
+      LOCAL_REF=$(git rev-parse HEAD)
+      REMOTE_REF=$(git ls-remote $CURRENT_REPO $CURRENT_REF | awk '{ print $1 }')
+      if [ "$LOCAL_REF" = "$REMOTE_REF" ]; then
+          echo "$DIST_NAME" > CURRENT
+          gsutil cp CURRENT gs://artifacts.fanboi.ch/dist/CURRENT
+      fi
 
       if [ -n "$(git tag --points-at HEAD)" ]; then
-           echo "$DIST_NAME" > RELEASE
-           gsutil cp RELEASE gs://artifacts.fanboi.ch/dist/RELEASE
+          echo "$DIST_NAME" > RELEASE
+          gsutil cp RELEASE gs://artifacts.fanboi.ch/dist/RELEASE
       fi
