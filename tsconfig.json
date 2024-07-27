@@ -1,13 +1,18 @@
 {
-    "compilerOptions": {
-        "lib": ["DOM", "ES6", "ScriptHost"],
-        "module": "CommonJS",
-        "noImplicitAny": true,
-        "preserveConstEnums": true,
-        "removeComments": true,
-        "sourceMap": true,
-        "strictNullChecks": true,
-        "target": "ES5"
-    },
-    "files": ["assets/app/javascripts/app.ts"]
+  "compilerOptions": {
+    "rootDir": ".",
+    "strict": false,
+    "module": "esnext",
+    "target": "es5",
+    "lib": ["ES2020", "DOM"],
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "noImplicitThis": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "baseUrl": "."
+  },
+  "include": ["assets/**/*.ts"],
+  "exclude": ["node_modules"]
 }

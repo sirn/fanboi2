@@ -1,21 +1,17 @@
-var gulp = require("gulp");
-var sourcemaps = require("gulp-sourcemaps");
-var concat = require("gulp-concat");
-var es = require("event-stream");
-
-var postcss = require("gulp-postcss");
-var sass = require("gulp-sass")(require("sass"));
-
-var uglify = require("gulp-uglify");
-var source = require("vinyl-source-stream");
-var buffer = require("vinyl-buffer");
-var browserify = require("browserify");
-var tsify = require("tsify");
+const autoprefixer = require("autoprefixer");
+const concat = require("gulp-concat");
+const cssnano = require("cssnano");
+const gulp = require("gulp");
+const postcss = require("gulp-postcss");
+const tailwindcss = require("tailwindcss");
+const urlrev = require("postcss-urlrev");
+const webpack = require("webpack-stream");
+const webpackCompiler = require("webpack");
 
 /* Utils
  * -------------------------------------------------------------------------------- */
 
-function logError(error) {
+const logError = (error) => {
     console.log(error);
     this.emit("end");
 }
@@ -23,140 +19,110 @@ function logError(error) {
 /* Assets
  * -------------------------------------------------------------------------------- */
 
-function assets() {
-    return es
-        .merge([
-            gulp.src("assets/admin/assets/*"),
-            gulp.src("assets/app/assets/*"),
-            gulp.src("assets/legacy/assets/*"),
-            gulp.src("assets/vendor/assets/*"),
-        ])
+const assets = () => {
+    return gulp
+        .src("assets/assets/**/*")
         .pipe(gulp.dest("fanboi2/static"));
 }
 
 /* Styles
  * -------------------------------------------------------------------------------- */
 
-var postcssProcessors = [
-    require("autoprefixer"),
-    require("postcss-round-subpixels"),
-    require("mqpacker"),
-    require("postcss-urlrev")({
-        relativePath: "fanboi2/static",
-        replacer: function (url, hash) {
-            /* PostCSS-Urlrev uses ?v= by default. Override to
-             * make it compatible with ?h= syntax in app. */
-            return url + "?h=" + hash.slice(0, 8);
-        },
-    }),
-    require("cssnano")({ preset: "default" }),
-];
-
-function styleApp() {
+const styleMain = () => {
     return gulp
-        .src([
-            "assets/app/stylesheets/app.scss",
-            "assets/app/stylesheets/*.scss",
-            "assets/app/stylesheets/themes/*.scss",
-        ])
-        .pipe(sourcemaps.init())
-        .pipe(sass().on("error", sass.logError))
+        .src(["assets/styles/main.css"])
+        .pipe(postcss([
+            tailwindcss,
+            autoprefixer,
+            urlrev({
+                relativePath: "fanboi2/static",
+                replacer: function (url, hash) {
+                    /* PostCSS-Urlrev uses ?v= by default. Override to
+                     * make it compatible with ?h= syntax in app. */
+                    return url + "?h=" + hash.slice(0, 8);
+                },
+            }),
+            cssnano,
+        ], {}))
         .pipe(concat("app.css"))
-        .pipe(postcss(postcssProcessors).on("error", logError))
-        .pipe(sourcemaps.write("."))
         .pipe(gulp.dest("fanboi2/static"));
-}
+};
 
-function styleAdmin() {
-    return gulp
-        .src([
-            "assets/admin/stylesheets/*.scss",
-            "assets/admin/stylesheets/themes/*.scss",
-        ])
-        .pipe(sourcemaps.init())
-        .pipe(sass().on("error", sass.logError))
-        .pipe(concat("admin.css"))
-        .pipe(postcss(postcssProcessors).on("error", logError))
-        .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest("fanboi2/static"));
-}
-
-function styleVendor() {
-    return gulp
-        .src("assets/vendor/**/*.css")
-        .pipe(sourcemaps.init())
-        .pipe(concat("vendor.css"))
-        .pipe(postcss(postcssProcessors).on("error", logError))
-        .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest("fanboi2/static"));
-}
-
-var styles = gulp.series(assets, gulp.parallel(styleApp, styleAdmin, styleVendor));
+const styles = gulp.series(assets, styleMain);
 
 /* Scripts
  * -------------------------------------------------------------------------------- */
 
-var externalDependencies = [
-    "dom4",
-    "domready",
-    "es6-promise",
-    "js-cookie",
-    "virtual-dom",
-];
-
-var scriptApp = function () {
-    return browserify({ debug: true })
-        .plugin(tsify)
-        .require("assets/app/javascripts/app.ts", { entry: true })
-        .external(externalDependencies)
-        .bundle()
-        .on("error", logError)
-        .pipe(source("app.js"))
-        .pipe(buffer())
-        .pipe(sourcemaps.init({ loadMaps: true }))
-        .pipe(uglify())
-        .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest("fanboi2/static"));
+const scriptMain = () => {
+  return gulp
+      .src("assets/scripts/main.ts", { entry: true, allowEmpty: true })
+      .pipe(
+          webpack(
+              {
+                  mode: "production",
+                  module: {
+                      rules: [{ test: /\.tsx?$/, use: "ts-loader", exclude: /node_modules/ }],
+                  },
+                  resolve: {
+                      fallback: {
+                          assert: require.resolve("assert"),
+                          buffer: require.resolve("buffer"),
+                          crypto: require.resolve("crypto-browserify"),
+                          http: require.resolve("stream-http"),
+                          https: require.resolve("https-browserify"),
+                          os: require.resolve("os-browserify"),
+                          stream: require.resolve("stream-browserify"),
+                          url: require.resolve("url"),
+                          zlib: require.resolve("browserify-zlib"),
+                      },
+                      extensions: [".tsx", ".ts", ".js"],
+                  },
+                  plugins: [
+                      new webpackCompiler.ProvidePlugin({
+                          process: "process/browser",
+                          Buffer: ["buffer", "Buffer"],
+                      }),
+                  ],
+                  performance: { hints: false },
+                  optimization: {
+                      runtimeChunk: "single",
+                      splitChunks: {
+                          chunks: "all",
+                          maxInitialRequests: Infinity,
+                          minSize: 2,
+                          cacheGroups: {
+                              vendor: {
+                                  test: /[\\/]node_modules[\\/]/,
+                                  name: "vendor",
+                              },
+                          },
+                      },
+                  },
+                  output: {
+                      filename: "[name].bundle.js",
+                  },
+              },
+              webpackCompiler
+          )
+      )
+      .pipe(gulp.dest("fanboi2/static"));
 };
 
-var scriptLegacy = function () {
-    return gulp
-        .src("assets/legacy/**/*.js")
-        .pipe(sourcemaps.init())
-        .pipe(concat("legacy.js"))
-        .pipe(uglify())
-        .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest("fanboi2/static"));
-};
-
-var scriptVendor = function () {
-    return browserify({ debug: true })
-        .require(externalDependencies)
-        .bundle()
-        .on("error", logError)
-        .pipe(source("vendor.js"))
-        .pipe(buffer())
-        .pipe(sourcemaps.init({ loadMaps: true }))
-        .pipe(uglify())
-        .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest("fanboi2/static"));
-};
-
-var scripts = gulp.parallel(scriptApp, scriptLegacy, scriptVendor);
+const scripts = gulp.parallel(scriptMain);
 
 /* Build
  * -------------------------------------------------------------------------------- */
 
-var build = gulp.parallel(styles, scripts);
+const build = gulp.parallel(styles, scripts);
 
 function watch() {
-    gulp.watch("assets/app/**/*.scss", styles);
-    gulp.watch("assets/admin/**/*.scss", styles);
-    gulp.watch("assets/vendor/**/*.css", styles);
+    gulp.watch("assets/assets/**/*", assets);
+    gulp.watch("assets/scripts/**/*.ts", scripts);
+    gulp.watch("assets/styles/**/*.css", styles);
 
-    gulp.watch("assets/app/**/*.ts", scripts);
-    gulp.watch("assets/vendor/**/*.js", scripts);
-    gulp.watch("assets/legacy/**/*.js", scripts);
+    /* This should match with modules.exports.content in tailwind.config.js */
+    gulp.watch("assets/scripts/**/*.ts", styles);
+    gulp.watch("fanboi2/templates/**/*.mako", styles);
 }
 
 /* Exports

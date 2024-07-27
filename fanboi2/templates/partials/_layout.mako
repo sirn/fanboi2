@@ -12,13 +12,8 @@
     <link rel="icon" href="${request.tagged_static_path('fanboi2:static/icon.png')}" sizes="256x256">
     <link rel="shortcut icon" href="${request.tagged_static_path('fanboi2:static/icon.ico')}" type="image/x-icon">
     <link rel="apple-touch-icon" href="${request.tagged_static_path('fanboi2:static/touch-icon.png')}">
-
-    <link rel="stylesheet" href="${request.tagged_static_path('fanboi2:static/vendor.css')}">
     <link rel="stylesheet" href="${request.tagged_static_path('fanboi2:static/app.css')}">
-    <!--[if IE]><script type="text/javascript" src="${request.tagged_static_path('fanboi2:static/legacy.js')}"></script><![endif]-->
-
     <title>${self.title() + ' - ' if hasattr(self, 'title') else ''}Fanboi Channel</title>
-
     % if hasattr(self, 'header'):
         ${self.header()}
     % endif
@@ -71,13 +66,12 @@ ${next.body()}
     </div>
 </footer>
 
-<script type="text/javascript" src="${request.tagged_static_path('fanboi2:static/vendor.js')}"></script>
-<script type="text/javascript" src="${request.tagged_static_path('fanboi2:static/app.js')}"></script>
+<script type="text/javascript" src="${request.tagged_static_path('fanboi2:static/main.bundle.js')}"></script>
+<script type="text/javascript" src="${request.tagged_static_path('fanboi2:static/runtime.bundle.js')}"></script>
 
 <% global_footer = partials.global_footer(request) %>
 % if global_footer:
     ${global_footer}
 % endif
-
 </body>
 </html>
