@@ -1,0 +1,28 @@
+{% extends "layout.jinja2" %}
+{% from "components/container.jinja2" import container %}
+{% from "components/divider.jinja2" import divider, divider_item %}
+{% block body %}
+{% call divider() %}
+    {% for topic in topics %}
+    {% call divider_item() %}
+        {% call container() %}
+            <h2><a href="/{{ board.slug }}/{{ topic.id }}" class="text-scarlet-600 font-semibold hover:text-porcelain-500">{{ topic.title }}</a></h2>
+        {% endcall %}
+        <div class="bg-porcelain-100 divide-y divide-white">
+            {% for post in topic.recent_posts(5) %}
+            <div>
+                <div class="flex flex-col mx-auto max-w-5xl py-4 px-4">
+                    {{ post | post }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="bg-porcelain-200">
+            {% call container() %}
+                asdf
+            {% endcall %}
+        </div>
+    {% endcall %}
+    {% endfor %}
+{% endcall %}
+{% endblock %}

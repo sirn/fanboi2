@@ -1,0 +1,15 @@
+{% extends "layout.jinja2" %}
+{% from "components/container.jinja2" import container %}
+{% from "components/divider.jinja2" import divider, divider_item %}
+{% block body %}
+{% call divider() %}
+    {% for board in boards %}
+    {% call divider_item() %}
+        {% call container() %}
+            <a href="/{{ board.slug }}" class="link font-semibold">{{ board.title }}</a>
+            <p class="mt-1 text-porcelain-600 text-sm">{{ board.description }}</p>
+        {% endcall %}
+    {% endcall %}
+    {% endfor %}
+{% endcall %}
+{% endblock %}

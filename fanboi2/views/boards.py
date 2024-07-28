@@ -160,7 +160,8 @@ def board_new_post(request):
             board.settings["post_delay"],
             board.settings["post_delay_threshold"],
             board.settings["post_delay_period"],
-            **payload)
+            **payload
+        )
 
     topic_create_svc = request.find_service(ITopicCreateService)
     task = topic_create_svc.enqueue(
@@ -329,7 +330,8 @@ def topic_show_post(request):
             board.settings["post_delay"],
             board.settings["post_delay_threshold"],
             board.settings["post_delay_period"],
-            **payload)
+            **payload
+        )
 
     post_create_svc = request.find_service(IPostCreateService)
     task = post_create_svc.enqueue(
@@ -382,8 +384,12 @@ def error_bad_request(exc, request):
 
 def includeme(config):  # pragma: no cover
     config.add_route("root", "/")
-
-    config.add_view(root, request_method="GET", route_name="root", renderer="root.mako")
+    config.add_view(
+        root,
+        request_method="GET",
+        route_name="root",
+        renderer="boards/index.jinja2",
+    )
 
     #
     # Board
@@ -397,7 +403,7 @@ def includeme(config):  # pragma: no cover
         board_show,
         request_method="GET",
         route_name="board",
-        renderer="boards/show.mako",
+        renderer="topics/index.jinja2",
     )
 
     config.add_view(
@@ -425,8 +431,8 @@ def includeme(config):  # pragma: no cover
     # Topics
     #
 
-    config.add_route("topic", "/{board:\w+}/{topic:\d+}/")
-    config.add_route("topic_scoped", "/{board:\w+}/{topic:\d+}/{query}/")
+    config.add_route("topic", r"/{board:\w+}/{topic:\d+}/")
+    config.add_route("topic_scoped", r"/{board:\w+}/{topic:\d+}/{query}/")
 
     config.add_view(
         topic_show_get,

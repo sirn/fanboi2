@@ -122,7 +122,7 @@ function watch() {
 
     /* This should match with modules.exports.content in tailwind.config.js */
     gulp.watch("assets/scripts/**/*.ts", styles);
-    gulp.watch("fanboi2/templates/**/*.mako", styles);
+    gulp.watch("fanboi2/templates/**/*.jinja2", styles);
 }
 
 /* Exports

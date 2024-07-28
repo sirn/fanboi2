@@ -1,0 +1,11 @@
+{% macro divider() -%}
+<div class="divide-y divide-porcelain-50">
+    {{ caller() }}
+</div>
+{%- endmacro %}
+
+{% macro divider_item() -%}
+<div>
+    {{ caller() }}
+</div>
+{%- endmacro %}
