@@ -49,12 +49,9 @@ def make_configurator(settings: Dict[str, Union[int, str, bool]]):  # pragma: no
         config.include("fanboi2.core")
         config.include("fanboi2.filters")
         config.include("fanboi2.helpers")
+        config.include("fanboi2.renderers")
         config.include("fanboi2.services")
         config.include("fanboi2.tasks")
-
-        config.include("fanboi2.views.admin", route_prefix="/admin")
-        config.include("fanboi2.views.api", route_prefix="/api")
-        config.include("fanboi2.views.pages", route_prefix="/pages")
-        config.include("fanboi2.views.boards", route_prefix="/")
+        config.include("fanboi2.views")
 
     return config

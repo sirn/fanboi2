@@ -1,0 +1,58 @@
+{% extends "layout.jinja2" %}
+{% from "components/container.jinja2" import render_container %}
+{% from "components/divider.jinja2" import render_divider, render_divider_item %}
+{% block body %}
+<div class="bg-porcelain-950">
+    {% call render_container("py-0") %}
+        <div>
+            <h2 class="text-white font-semibold">{{ board.title }}</h2>
+            <p class="text-porcelain-500 text-sm">{{ board.description }}</p>
+        </div>
+        <div class="inline-flex items-baseline mt-2 mb-2 gap-4">
+            <a href="" class="-mb-2 py-2 text-white text-sm border-b-2 border-scarlet-600">Recent posts</a>
+            <a href="" class="-mb-2 py-2 text-white text-sm">All posts</a>
+            <a href="" class="-mb-2 py-2 text-white text-sm">New topic</a>
+        </div>
+    {% endcall %}
+</div>
+{% call render_divider() %}
+    {% for topic in topics %}
+    {% call render_divider_item() %}
+        {% call render_container() %}
+            <h3><a href="/{{ board.slug }}/{{ topic.id }}" class="text-scarlet-600 font-semibold hover:text-porcelain-500">{{ topic.title }}</a></h3>
+            <p class="text-sm text-porcelain-500">Last posted <span class="font-semibold">{{ topic.meta.bumped_at | datetime }}</span></p>
+            <p class="text-sm text-porcelain-500">Total of <span class="font-semibold">{{ topic.meta.post_count }} {% if topic.meta.post_count != 1 %}posts{% else %}post{% endif %}</span></p>
+        {% endcall %}
+        <div class="bg-porcelain-100 divide-y divide-white">
+            {% for post in topic.recent_posts(5) %}
+            <div>
+                <div class="flex flex-col mx-auto max-w-5xl py-4 px-4 gap-2 overflow-x-scroll">
+                    <div class="inline-flex leading-6 items-center text-sm gap-2">
+                        <div class="bg-porcelain-500 text-white px-1 rounded-sm font-bold">{{ post.number }}</div>
+                        <div class="bg-white text-porcelain-500 px-2 rounded-sm font-bold">{{ post.name }}</div>
+                        <div class="hidden text-porcelain-500 font-bold md:block">{{ post.created_at | datetime }}</div>
+                        <div class="text-porcelain-500 font-bold {{ post | format_post_ident_class }}">{{ post | format_post_ident }}</div>
+                    </div>
+                    <div class="post text-gray-700 leading-6">
+                        {{ post | format_post }}
+                    </div>
+                    <div class="inline-flex items-center text-sm gap-2 md:hidden">
+                        <div class="text-porcelain-500 font-normal italic">Posted {{ post.created_at | datetime }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="bg-porcelain-200">
+            {% call render_container() %}
+            <div class="inline-flex flex-col md:flex-row gap-2">
+                <a class="text-sm shadow-sm px-2 py-2 rounded-sm bg-white text-porcelain-600" href="">Recent posts</a>
+                <a class="text-sm shadow-sm px-2 py-2 rounded-sm bg-white text-porcelain-600" href="">All posts</a>
+                <a class="text-sm shadow-sm px-2 py-2 rounded-sm bg-green-600 text-white" href="">Reply</a>
+            </div>
+            {% endcall %}
+        </div>
+    {% endcall %}
+    {% endfor %}
+{% endcall %}
+{% endblock %}

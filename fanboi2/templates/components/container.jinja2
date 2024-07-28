@@ -1,0 +1,5 @@
+{% macro render_container(extra_classes=nil) -%}
+<div class="{{ 'flex flex-col mx-auto max-w-5xl py-4 px-4' | merge_class(extra_classes) }}">
+    {{ caller() }}
+</div>
+{%- endmacro %}

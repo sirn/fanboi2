@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+        <link rel="icon" href="{{ 'fanboi2:static/icon.png' | static_path }}" sizes="256x256">
+        <link rel="shortcut icon" href="{{ 'fanboi2:static/icon.ico' | static_path }}" type="image/x-icon">
+        <link rel="apple-touch-icon" href="{{ 'fanboi2:static/touch-icon.png' | static_path }}">
+        <link rel="stylesheet" href="{{ 'fanboi2:static/app.css' | static_path }}">
+    </head>
+    <body class="h-screen min-w-80">
+        <div class="flex flex-1 flex-col min-h-full w-full">
+            <header class="border-scarlet-600 bg-porcelain-950">
+                <div class="mx-auto max-w-5xl pt-0 pb-4 px-4">
+                    <a href="/" class="inline-flex bg-scarlet-600 px-3 py-2 pr-8 rounded-b-sm shadow-sm">
+                        <img src="{{ 'fanboi2:static/logo-white.svg' | static_path }}" alt="" class="h-4">
+                        <span class="sr-only">Fanboi Channel</span>
+                    </a>
+                </div>
+            </header>
+
+            <div class="flex-1">
+                {% block body %}
+                {% endblock %}
+            </div>
+
+            <footer class="bg-porcelain-100">
+                <div class="mx-auto max-w-5xl py-4 px-4">
+                    <div class="flex flex-col text-sm">
+                        <p><a href="https://git.sr.ht/~sirn/fanboi2" class="font-semibold text-scarlet-600 hover:text-porcelain-500">Fanboi2 v2024.2.1+2.git.g375a94c</a></p>
+                        <p><a href="/api/" class="font-semibold text-porcelain-700 hover:text-porcelain-500">API documentation</a></p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <script src="{{ 'fanboi2:static/runtime.bundle.js' | static_path }}"></script>
+        <script src="{{ 'fanboi2:static/vendor.bundle.js' | static_path }}"></script>
+        <script src="{{ 'fanboi2:static/main.bundle.js' | static_path }}"></script>
+    </body>
+</html>

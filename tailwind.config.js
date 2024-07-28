@@ -1,6 +1,6 @@
 module.exports = {
     content: [
-        "./fanboi2/templates/**/*.mako",
+        "./fanboi2/templates/**/*.jinja2",
         "./assets/scripts/**/*.ts"
     ],
     theme: {
@@ -32,6 +32,7 @@ module.exports = {
                     '900': 'oklch(36.11% 0.03 237.93)',
                     '950': 'oklch(27.55% 0.02 245.87)',
                 },
+
             },
         },
     },

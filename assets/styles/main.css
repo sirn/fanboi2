@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .link {
+        @apply text-scarlet-600 hover:text-porcelain-500;
+    }
+
+    .post {
+        @apply [&>p+p]:mt-2;
+        @apply [&>p.thumbnails]:flex;
+        @apply [&>p.thumbnails]:w-full;
+        @apply [&>p.thumbnails]:gap-2;
+        @apply [&>p.thumbnails>a.thumbnail]:w-1/4;
+        @apply [&>p.thumbnails>a.thumbnail]:max-w-32;
+        @apply [&>p.thumbnails>a.thumbnail]:min-w-16;
+        @apply [&>p.thumbnails>a.thumbnail_img]:aspect-1;
+        @apply [&>p.thumbnails>a.thumbnail_img]:w-full;
+        @apply [&>p.thumbnails>a.thumbnail_img]:object-cover;
+        @apply [&>p.thumbnails>a.thumbnail_img]:rounded-md;
+        @apply [&_a.anchor]:text-[#08c];
+        @apply [&_a.anchor]:hover:text-porcelain-500;
+    }
+}
