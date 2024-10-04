@@ -8,9 +8,9 @@
         <link rel="apple-touch-icon" href="{{ 'fanboi2:static/touch-icon.png' | static_path }}">
         <link rel="stylesheet" href="{{ 'fanboi2:static/app.css' | static_path }}">
     </head>
-    <body class="h-screen min-w-80">
+    <body class="h-screen min-w-80 dark:text-white dark:bg-slate-900">
         <div class="flex flex-1 flex-col min-h-full w-full">
-            <header class="border-scarlet-600 bg-porcelain-950">
+            <header class="border-scarlet-600 bg-porcelain-950 dark:bg-slate-950">
                 <div class="mx-auto max-w-5xl pt-0 pb-4 px-4">
                     <a href="/" class="inline-flex bg-scarlet-600 px-3 py-2 pr-8 rounded-b-sm shadow-sm">
                         <img src="{{ 'fanboi2:static/logo-white.svg' | static_path }}" alt="" class="h-4">
@@ -24,11 +24,11 @@
                 {% endblock %}
             </div>
 
-            <footer class="bg-porcelain-100">
+            <footer class="bg-porcelain-100 dark:bg-slate-950">
                 <div class="mx-auto max-w-5xl py-4 px-4">
                     <div class="flex flex-col text-sm">
                         <p><a href="https://git.sr.ht/~sirn/fanboi2" class="font-semibold text-scarlet-600 hover:text-porcelain-500">Fanboi2 v2024.2.1+2.git.g375a94c</a></p>
-                        <p><a href="/api/" class="font-semibold text-porcelain-700 hover:text-porcelain-500">API documentation</a></p>
+                        <p><a href="/api/" class="font-semibold text-porcelain-700 hover:text-porcelain-500 dark:text-porcelain-400">API documentation</a></p>
                     </div>
                 </div>
             </footer>

@@ -20,6 +20,6 @@
         @apply [&>p.thumbnails>a.thumbnail_img]:object-cover;
         @apply [&>p.thumbnails>a.thumbnail_img]:rounded-md;
         @apply [&_a.anchor]:text-[#08c];
-        @apply [&_a.anchor]:hover:text-porcelain-500;
+        @apply [&_a.anchor:hover]:text-porcelain-500;
     }
 }

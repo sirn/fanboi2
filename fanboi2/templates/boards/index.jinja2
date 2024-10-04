@@ -7,7 +7,7 @@
     {% call render_divider_item() %}
         {% call render_container() %}
             <a href="/{{ board.slug }}" class="link font-semibold">{{ board.title }}</a>
-            <p class="mt-1 text-porcelain-600 text-sm">{{ board.description }}</p>
+            <p class="text-porcelain-600 text-sm dark:text-porcelain-400">{{ board.description }}</p>
         {% endcall %}
     {% endcall %}
     {% endfor %}
